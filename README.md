@@ -1,47 +1,32 @@
-## Sponsor Table
+# Designers Task Manager (DTM)
 
-### Local run
+DTM is a real-world pet project built as a portfolio case about evolving legacy automation into a maintainable product architecture.
 
-Direct mode run:
+## What the project does
+- Reads task data from Google Sheets.
+- Builds visual planning views for a design team (timeline and designer-focused boards).
+- Sends morning reminders to designers via Telegram.
+- Uses OpenAI to improve reminder text style.
 
-```bash
-python local_run.py --mode test
-python local_run.py --mode timer
-python local_run.py --mode morning
-```
+## Why this repository exists
+- Show practical refactoring of a working legacy system.
+- Demonstrate safe migration approach: preserve business behavior while improving code quality.
+- Build a foundation for moving from Google Sheets visualization to a dedicated frontend.
 
-Event emulation (as in Yandex trigger):
+## Tech stack
+- Python
+- Google Sheets / Drive API
+- Telegram Bot API
+- OpenAI API
+- Yandex Cloud / Object Storage
 
-```bash
-python local_run.py --trigger-id a1sldapc8v2pha7dichv
-python local_run.py --trigger-id a1smsif4rc82qbj1e3hf
-python local_run.py --event-file ./event.json
-```
+## Engineering focus
+- Separation of source and target sheets for safer testing.
+- Local test contour for repeatable verification.
+- Documentation-first reconstruction plan.
+- Security hygiene for public repository readiness.
 
-Notebook run is still supported:
-
-```python
-from main import main
-import asyncio
-
-await main(mode="test")
-# or
-await main(event="morning")
-```
-
-### Snapshot storage (Yandex Object Storage / S3)
-
-Env vars are supported via `.env`:
-- `S3_ENDPOINT_URL`
-- `S3_BUCKET`
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-
-Example usage:
-
-```python
-from utils.storage import S3SnapshotStorage
-
-storage = S3SnapshotStorage()
-storage.upload_json("snapshots/sample.json", {"ok": True})
-```
+## Project status
+- Production workflow is active.
+- Architecture is under phased reconstruction.
+- Legacy snapshot is kept in `old/` for controlled comparison during migration.
