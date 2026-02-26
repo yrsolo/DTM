@@ -10,6 +10,7 @@
 - ADR-реестр: `doc/06_adrs.md`.
 - Security-аудит публикации: `doc/07_publication_security_audit.md`.
 - Runbook публикации: `doc/08_public_repo_bootstrap.md`.
+- Git workflow: `doc/09_git_workflow.md`.
 
 ## Принцип выполнения
 - Только поэтапная миграция (strangler pattern), без "big bang rewrite".
