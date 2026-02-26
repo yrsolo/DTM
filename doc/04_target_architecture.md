@@ -98,7 +98,7 @@
 ## Целевая структура папок
 
 ```text
-TABLE_PARSE/
+DTM/
   src/
     domain/
       entities/

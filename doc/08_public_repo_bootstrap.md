@@ -16,9 +16,9 @@
 Вариант с новым git-репозиторием в отдельной папке:
 ```powershell
 cd ..
-New-Item -ItemType Directory TABLE_PARSE_PUBLIC
-robocopy TABLE_PARSE TABLE_PARSE_PUBLIC /E /XD .git venv .idea __pycache__ .ipynb_checkpoints
-cd TABLE_PARSE_PUBLIC
+New-Item -ItemType Directory DTM_PUBLIC
+robocopy DTM DTM_PUBLIC /E /XD .git venv .venv .idea __pycache__ .ipynb_checkpoints
+cd DTM_PUBLIC
 git init
 git add .
 git commit -m "Initial clean public release"
