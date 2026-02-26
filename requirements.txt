@@ -11,3 +11,4 @@ python-telegram-bot
 python-dotenv
 httpx
 openai
+boto3

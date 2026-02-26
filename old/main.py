@@ -14,12 +14,9 @@ async def main(**kwargs):
     Args:
         kwargs: Параметры запуска.
     """
-    # ????????????? ????????????
-    mode = kwargs.get("mode", None)
+    # Инициализация планировщика
     event = kwargs.get("event", None)
-    if mode:
-        pass
-    elif event:
+    if event:
         print(f"{event=}")
         if event == "morning":
             mode = "morning"
@@ -40,7 +37,7 @@ async def main(**kwargs):
         planner.designer_task_to_calendar()  # Генерация и запись календаря дизайнеров
         planner.task_to_table()  # Запись задач в лист "Дизайнеры"
         run_time = pd.Timestamp.now() - start_time
-        print(f"Table update runtime: {run_time}")
+        print(f"Время обновления таблиц: {run_time}")
 
     if mode in {"morning", "test"}:
         start_time = pd.Timestamp.now()
@@ -49,7 +46,7 @@ async def main(**kwargs):
         if dow in {0, 1, 2, 3, 4} or mode == "test":
             await planner.send_reminders()
         run_time = pd.Timestamp.now() - start_time
-        print(f"Reminder runtime: {run_time}")
+        print(f"Время отправки оповещений: {run_time}")
 
 
 if __name__ == "__main__":

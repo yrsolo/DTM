@@ -5,7 +5,7 @@
 сервисные функции для работы с Google Sheets.
 """
 
-from config import HELPER_CHARACTER, MODEL, OPENAI, ORG, PROXIES, SOURCE_SHEET_INFO, TG
+from config import HELPER_CHARACTER, MODEL, OPENAI, ORG, PROXY, TG
 from core.manager import CalendarManager, TaskCalendarManager, TaskManager, TaskTimingProcessor
 from core.people import PeopleManager
 from core.reminder import AsyncOpenAIChatAgent, Reminder
@@ -17,23 +17,18 @@ class GoogleSheetPlanner:
     def __init__(self, key_json, sheet_info_data, mode="test"):
         self.mode = mode
         self.sheet_info = GoogleSheetInfo(**sheet_info_data)
-        self.source_sheet_info = GoogleSheetInfo(**SOURCE_SHEET_INFO)
         self.service = GoogleSheetsService(key_json)
         self.timing_processor = TaskTimingProcessor()
-        self.task_repository = GoogleSheetsTaskRepository(
-            self.sheet_info,
-            self.service,
-            source_sheet_info=self.source_sheet_info,
-        )
+        self.task_repository = GoogleSheetsTaskRepository(self.sheet_info, self.service)
         self.task_manager = TaskManager(self.task_repository)
         self.calendar_manager = CalendarManager(self.sheet_info, self.service, self.task_repository)
         self.task_calendar_manager = TaskCalendarManager(
             self.sheet_info, self.service, self.task_repository
         )
         self.openai_agent = AsyncOpenAIChatAgent(
-            api_key=OPENAI, organization=ORG, proxies=PROXIES, model=MODEL
+            api_key=OPENAI, organization=ORG, proxy=PROXY, model=MODEL
         )
-        self.people_manager = PeopleManager(service=self.service, sheet_info=self.source_sheet_info)
+        self.people_manager = PeopleManager(service=self.service, sheet_info=self.sheet_info)
         self.reminder = Reminder(
             self.task_repository,
             self.openai_agent,

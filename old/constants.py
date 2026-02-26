@@ -10,15 +10,12 @@ load_dotenv()
 TG = os.environ.get("TG_TOKEN")
 OPENAI = os.environ.get("OPENAI_TOKEN")
 ORG = os.environ.get("ORG_TOKEN")
-PROXY = os.environ.get("PROXY_URL", "")
-PROXIES = MapProxy({"https://": PROXY}) if PROXY else MapProxy({})
 
-KEY_JSON = "key/google_key_poised-backbone-191400-4e9fc454915f.json"
+KEY_JSON = "key/google_key_|||||||.json"
 
-DEFAULT_CHAT_ID = os.environ.get("DEFAULT_CHAT_ID", "-4083724311")
+DEFAULT_CHAT_ID = "-4083724311"
 
-SOURCE_SHEET_NAME = os.environ.get("SOURCE_SHEET_NAME", "Спонсорские ТНТ")
-TARGET_SHEET_NAME = os.environ.get("TARGET_SHEET_NAME", "Спонсорские ТНТ ТЕСТ")
+SHEET_NAME = "Спонсорские ТНТ ТЕСТ"
 
 REPLACE_NAMES = MapProxy(
     {
@@ -60,14 +57,7 @@ SHEET_NAMES = MapProxy(
 
 SHEET_INFO = MapProxy(
     {
-        "spreadsheet_name": TARGET_SHEET_NAME,
-        "sheet_names": SHEET_NAMES,
-    }
-)
-
-SOURCE_SHEET_INFO = MapProxy(
-    {
-        "spreadsheet_name": SOURCE_SHEET_NAME,
+        "spreadsheet_name": SHEET_NAME,
         "sheet_names": SHEET_NAMES,
     }
 )
@@ -128,6 +118,7 @@ COLORS = MapProxy(
     }
 )
 
+PROXY = "http://|||||||:|||||||@195.158.|||||||.|||||||:8000"
 
 # MODEL = 'o1-preview'
 # MODEL = 'gpt-4o'
@@ -156,8 +147,8 @@ HELPER_CHARACTER = """
 
 TRIGGERS = MapProxy(
     {
-        "a1sldapc8v2pha7dichv": "timer",
-        "a1smsif4rc82qbj1e3hf": "morning",
+        "a1slda|||||||dichv": "timer",
+        "a1sms|||||||bj1e3hf": "morning",
     }
 )
 NO_VISIBLE_STAGES = ("ответ", "эфир", "тракт", "_", "съемка", "старт")

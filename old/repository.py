@@ -46,9 +46,8 @@ class TimingParser:
         timings = defaultdict(list)
 
         # Разбиваем строку на отдельные строки по переносам
-        if timing_str is None or (not isinstance(timing_str, str) and pd.isna(timing_str)):
+        if timing_str is None:
             return timings
-        timing_str = str(timing_str)
         lines = timing_str.strip().split("\n")
 
         for line in lines:
@@ -180,16 +179,8 @@ def _determine_status_from_color(color):
 class GoogleSheetsTaskRepository(TaskRepository):
     """Репозиторий для работы с задачами в Google Таблицах"""
 
-    def __init__(
-        self,
-        sheet_info: GoogleSheetInfo,
-        service: GoogleSheetsService,
-        source_sheet_info: GoogleSheetInfo = None,
-    ):
-        # sheet_info is used as target for writes by managers.
+    def __init__(self, sheet_info: GoogleSheetInfo, service: GoogleSheetsService):
         self.sheet_info = sheet_info
-        # source_sheet_info is used for reads from main table.
-        self.source_sheet_info = source_sheet_info or sheet_info
         self.service = service
         self.df = None
         self.replace_names = REPLACE_NAMES
@@ -227,9 +218,9 @@ class GoogleSheetsTaskRepository(TaskRepository):
 
     def _load_and_process_data(self):
         """Загрузить и обработать данные из Google Таблицы."""
-        spreadsheet_name = self.source_sheet_info.spreadsheet_name
-        sheet_name = self.source_sheet_info.get_sheet_name("tasks")
-        assistant_sheet_name = self.source_sheet_info.get_sheet_name("assistant")
+        spreadsheet_name = self.sheet_info.spreadsheet_name
+        sheet_name = self.sheet_info.get_sheet_name("tasks")
+        assistant_sheet_name = self.sheet_info.get_sheet_name("assistant")
         df = self.service.get_dataframe(spreadsheet_name, sheet_name)
         color_range = f"A2:A{len(df) + 1}"
         colors = self.service.get_cell_colors(spreadsheet_name, sheet_name, color_range)
@@ -262,12 +253,8 @@ class GoogleSheetsTaskRepository(TaskRepository):
 
     def _generate_task_name(self, row):
         """Сгенерировать название задачи"""
-        raw_format = row.get("ФОРМАТ", "")
-        raw_format = "" if pd.isna(raw_format) else str(raw_format)
-        format_ = raw_format.split("\n")[0] if raw_format else ""
-        brand = "" if pd.isna(row.get("БРЕНД")) else str(row.get("БРЕНД"))
-        project = "" if pd.isna(row.get("ПРОЕКТ")) else str(row.get("ПРОЕКТ"))
-        name = f"{brand} [{project}] {format_}".strip()
+        format_ = row["ФОРМАТ"].split("\n")[0] if row["ФОРМАТ"] else ""
+        name = str(row["БРЕНД"]) + " [" + str(row["ПРОЕКТ"]) + "] " + str(format_)
         for key, value in self.replace_names.items():
             name = name.replace(key, value)
         return name
