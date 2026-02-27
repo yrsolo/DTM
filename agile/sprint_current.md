@@ -7,11 +7,11 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] DTM-83 / TSK-085 - emergency workflow credential fallback (`YC_SA_JSON_CREDENTIALS`) and redeploy trigger.
+- [IN_PROGRESS] DTM-84 / TSK-086 - fix import-time Telegram token crash in serverless runtime + add function invoke smoke script.
 
 ## Stage 9 Estimate (Dynamic)
-- Baseline estimate: 8 tasks (adjusted after explicit doc-structure refactor slice).
-- Done: 6
+- Baseline estimate: 9 tasks (adjusted after serverless runtime hotfix slice).
+- Done: 7
 - Remaining: 2
 - Rule: update `Done/Remaining` after each completed Stage 9 task.
 
@@ -22,18 +22,19 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 - [DONE] DTM-80 / TSK-082 - docs/agile hygiene cleanup and archive normalization.
 - [DONE] DTM-81 / TSK-083 - documentation readability refactor (`doc` map + concise backlog format).
 - [DONE] DTM-82 / TSK-084 - doc folder restructuring by purpose (`core/ops/governance/stages/archive`).
+- [DONE] DTM-83 / TSK-085 - owner-approved main deploy trigger + credential fallback; deploy run `22500598734` successful.
 
 ## Blocked
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-83 / TSK-085 - owner-approved `dev -> main` merge and deploy trigger execution.
+- [TODO] DTM-84 / TSK-086 - fix import-time Telegram token crash in serverless runtime + add function invoke smoke script.
 - [TODO] Stage 9: cloud-profile shadow-run with explicit `PROTOTYPE_*_S3_KEY` pass criteria.
 - [TODO] Stage 9: deploy-pipeline consumer contract-regression checks.
 - [TODO] Stage 9: deployment smoke checklist for Yandex Cloud Function profile.
 
 ## Active Task Files
-- `agile/tasks/DTM-83_stage9-main-merge-and-deploy-trigger.md`
+- `agile/tasks/DTM-84_stage9-serverless-import-token-crash-fix.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`

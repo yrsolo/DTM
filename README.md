@@ -122,6 +122,8 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `YC_CLOUD_FUNCTION_NAME`
 - Full setup guide:
   - `doc/ops/stage9_main_autodeploy_setup.md`
+- Direct cloud endpoint smoke invoke:
+  - `.venv\Scripts\python.exe agent\invoke_function_smoke.py --url <function_url>`
 - Lockbox sync helper for full `.env` payload:
   - `.venv\Scripts\python.exe agent\sync_lockbox_from_env.py --secret-name DTM`
 - Cloud-side follow-up: publish function version with Lockbox `--secret` mappings and grant runtime service account role `lockbox.payloadViewer` for secret `DTM`.

@@ -35,6 +35,8 @@ Optional overrides:
 2. Verify GitHub Actions job `Deploy Yandex Cloud Function (main)` is green.
 3. Verify new function version appears in Yandex Cloud console.
 4. Trigger function once and confirm runtime logs are healthy.
+5. Optional scripted HTTP invoke smoke:
+   - `.venv\Scripts\python.exe agent\invoke_function_smoke.py --url <function_url>`
 
 ## Notes
 - Current workflow packages source from repository (Python modules and docs) and excludes secrets, artifacts, notebooks, and local virtualenv.

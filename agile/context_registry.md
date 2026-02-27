@@ -15,7 +15,8 @@ Purpose: track freshness and trust of planning sources before execution tasking.
 | `doc/03_reconstruction_backlog.md` | 2026-02-27 | TeamLead | rewritten to concise stage status and active queue format; historical verbose snapshot moved to `doc/archive/03_reconstruction_backlog_2026-02-27.pre_readability.md` | high | now suitable as fast planning source |
 | `doc/00_documentation_map.md` | 2026-02-27 | TeamLead | updated with explicit folder semantics (`doc/ops`, `doc/governance`, `doc/stages`, `doc/archive`) and read order | high | primary onboarding path for docs readability |
 | `doc/ops/stage9_main_autodeploy_setup.md` | 2026-02-27 | TeamLead | aligned with latest cloud/deploy commits and Stage 9 delivery objective | high | primary Stage 9 setup reference |
-| `agent/OPERATING_CONTRACT.md` + `AGENTS.md` + `agent/teamlead.md` | 2026-02-27 | TeamLead | runtime gate re-read this session (`CONTRACT CHECK: OK`) and Jira lifecycle enforced for DTM-82 | high | process source of truth |
+| `core/reminder.py` + `utils/service.py` import paths | 2026-02-27 | TeamLead | reproduced cloud `InvalidToken` import crash from endpoint response and verified eager notifier construction paths; applied lazy Telegram bot initialization and removed global notifier side effect | high | safe for DTM-84 hotfix deployment |
+| `agent/OPERATING_CONTRACT.md` + `AGENTS.md` + `agent/teamlead.md` | 2026-02-27 | TeamLead | runtime gate re-read this session (`CONTRACT CHECK: OK`) and Jira lifecycle enforced for DTM-84 | high | process source of truth |
 
 ## Archive
 - Historical detailed evidence log preserved at `agile/archive/context_registry_2026-02-27.pre_hygiene.md`.

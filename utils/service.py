@@ -9,10 +9,7 @@ from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
 from config import SHEET_NAMES
-from core.reminder import TelegramNotifier
 from utils.func import color_to_rgb, color_to_str, parse_range
-
-t = TelegramNotifier()
 
 
 class GoogleSheetInfo:

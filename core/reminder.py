@@ -39,8 +39,14 @@ class TelegramNotifier(object):
             bot_token (str): Токен бота.
             default_chat_id (str): ID чата по умолчанию.
         """
-        self.bot = Application.builder().token(bot_token).build().bot
+        self._bot_token = bot_token
+        self._bot = None
         self.default_chat_id = default_chat_id
+
+    def _get_bot(self):
+        if self._bot is None:
+            self._bot = Application.builder().token(self._bot_token).build().bot
+        return self._bot
 
     async def send_message(self, chat_id, text, parse_mode='Markdown'):
         """Отправить сообщение в Telegram.
@@ -53,13 +59,15 @@ class TelegramNotifier(object):
             str: Ответ Telegram.
         """
         try:
-            return await self.bot.send_message(chat_id=chat_id, text=text, parse_mode=parse_mode)
+            bot = self._get_bot()
+            return await bot.send_message(chat_id=chat_id, text=text, parse_mode=parse_mode)
         except Exception as e:
             _safe_print(f'Ошибка при отправке сообщения в Telegram: {e}')
             _safe_print('Повторная попытка отправки сообщения в Telegram без разметки')
-            self.log(f'Ошибка при отправке сообщения в Telegram: {e} \n Сообщение: \n{text}')
+            _safe_print(f'Лог в Telegram пропущен: {e}')
             try:
-                return await self.bot.send_message(chat_id=chat_id, text=text, parse_mode=None)
+                bot = self._get_bot()
+                return await bot.send_message(chat_id=chat_id, text=text, parse_mode=None)
             except Exception as e:
                 _safe_print(f'Ошибка при отправке сообщения в Telegram без разметки: {e}')
                 _safe_print(f'Сообщение: {text}')
