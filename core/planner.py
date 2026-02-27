@@ -1,46 +1,72 @@
 """
-Модуль содержит класс GoogleSheetPlanner, предоставляющий высокоуровневый интерфейс
-для работы с задачами и календарем в Google Sheets. Этот класс интегрирует различные
-компоненты системы, такие как управление задачами, управление календарем и
-сервисные функции для работы с Google Sheets.
+Модуль содержит класс GoogleSheetPlanner.
+В Stage 2 wiring зависимостей вынесен в bootstrap-слой.
 """
 
-from config import HELPER_CHARACTER, MODEL, OPENAI, ORG, PROXIES, SOURCE_SHEET_INFO, TG
-from core.manager import CalendarManager, TaskCalendarManager, TaskManager, TaskTimingProcessor
-from core.people import PeopleManager
-from core.reminder import AsyncOpenAIChatAgent, Reminder
-from core.repository import GoogleSheetsTaskRepository
-from utils.service import GoogleSheetInfo, GoogleSheetsService
+from config import SOURCE_SHEET_INFO
+from core.bootstrap import PlannerDependencies, build_planner_dependencies
+from utils.service import GoogleSheetInfo
+
+
+def build_reminder_sli_summary(reminder_delivery_counters):
+    counters = dict(reminder_delivery_counters or {})
+    sent = int(counters.get("sent", 0))
+    send_errors = int(counters.get("send_errors", 0))
+    # Attemptable = entries that reached "send attempt" decision point.
+    # Excludes functional skips (no message/person/chat_id/vacation/mock mode).
+    reminder_delivery_attemptable_count = sent + send_errors + int(counters.get("skipped_duplicate", 0))
+    reminder_delivery_attempted_count = sent + send_errors
+    reminder_delivery_rate = (
+        round(sent / reminder_delivery_attemptable_count, 4)
+        if reminder_delivery_attemptable_count > 0
+        else None
+    )
+    reminder_failure_rate = (
+        round(send_errors / reminder_delivery_attemptable_count, 4)
+        if reminder_delivery_attemptable_count > 0
+        else None
+    )
+
+    return {
+        "reminder_delivery_attemptable_count": reminder_delivery_attemptable_count,
+        "reminder_delivery_attempted_count": reminder_delivery_attempted_count,
+        "reminder_delivery_rate": reminder_delivery_rate,
+        "reminder_failure_rate": reminder_failure_rate,
+    }
 
 
 class GoogleSheetPlanner:
-    def __init__(self, key_json, sheet_info_data, mode="test"):
+    def __init__(
+            self,
+            key_json,
+            sheet_info_data,
+            mode="test",
+            dry_run=False,
+            mock_external=False,
+            dependencies: PlannerDependencies = None,
+    ):
         self.mode = mode
+        self.dry_run = dry_run
+        self.mock_external = bool(mock_external)
         self.sheet_info = GoogleSheetInfo(**sheet_info_data)
         self.source_sheet_info = GoogleSheetInfo(**SOURCE_SHEET_INFO)
-        self.service = GoogleSheetsService(key_json)
-        self.timing_processor = TaskTimingProcessor()
-        self.task_repository = GoogleSheetsTaskRepository(
-            self.sheet_info,
-            self.service,
-            source_sheet_info=self.source_sheet_info,
-        )
-        self.task_manager = TaskManager(self.task_repository)
-        self.calendar_manager = CalendarManager(self.sheet_info, self.service, self.task_repository)
-        self.task_calendar_manager = TaskCalendarManager(
-            self.sheet_info, self.service, self.task_repository
-        )
-        self.openai_agent = AsyncOpenAIChatAgent(
-            api_key=OPENAI, organization=ORG, proxies=PROXIES, model=MODEL
-        )
-        self.people_manager = PeopleManager(service=self.service, sheet_info=self.source_sheet_info)
-        self.reminder = Reminder(
-            self.task_repository,
-            self.openai_agent,
-            HELPER_CHARACTER,
-            tg_bot_token=TG,
-            people_manager=self.people_manager,
-        )
+        if dependencies is None:
+            dependencies = build_planner_dependencies(
+                key_json,
+                sheet_info_data,
+                dry_run=dry_run,
+                mock_external=self.mock_external,
+            )
+
+        self.service = dependencies.service
+        self.timing_processor = dependencies.timing_processor
+        self.task_repository = dependencies.task_repository
+        self.task_manager = dependencies.task_manager
+        self.calendar_manager = dependencies.calendar_manager
+        self.task_calendar_manager = dependencies.task_calendar_manager
+        self.openai_agent = dependencies.openai_agent
+        self.people_manager = dependencies.people_manager
+        self.reminder = dependencies.reminder
 
     def task_to_table(self, color_status=("work", "pre_done")):
         self.task_manager.task_to_table(color_status)
@@ -64,3 +90,37 @@ class GoogleSheetPlanner:
     async def send_reminders(self):
         await self.reminder.get_reminders()
         await self.reminder.send_reminders(mode=self.mode)
+
+    def build_quality_report(self):
+        task_row_issues = [str(issue) for issue in getattr(self.task_repository, "row_issues", [])]
+        people_row_issues = [str(issue) for issue in getattr(self.people_manager, "row_issues", [])]
+        reminder_delivery_counters = getattr(self.reminder, "get_delivery_counters", lambda: {})()
+        timing_parse_issues = [
+            str(issue) for issue in getattr(self.task_repository.timing_parser, "parse_issues", [])
+        ]
+        timing_parse_error_count = int(
+            getattr(self.task_repository.timing_parser, "total_parse_errors", 0)
+        )
+        reminder_sli_summary = build_reminder_sli_summary(reminder_delivery_counters)
+
+        return {
+            "mode": self.mode,
+            "dry_run": bool(self.dry_run),
+            "summary": {
+                "task_row_issue_count": len(task_row_issues),
+                "people_row_issue_count": len(people_row_issues),
+                "timing_parse_error_count": timing_parse_error_count,
+                "reminder_sent_count": int(reminder_delivery_counters.get("sent", 0)),
+                "reminder_send_error_count": int(reminder_delivery_counters.get("send_errors", 0)),
+                "reminder_send_retry_attempt_count": int(reminder_delivery_counters.get("send_retry_attempts", 0)),
+                "reminder_send_retry_exhausted_count": int(reminder_delivery_counters.get("send_retry_exhausted", 0)),
+                "reminder_send_error_transient_count": int(reminder_delivery_counters.get("send_error_transient", 0)),
+                "reminder_send_error_permanent_count": int(reminder_delivery_counters.get("send_error_permanent", 0)),
+                "reminder_send_error_unknown_count": int(reminder_delivery_counters.get("send_error_unknown", 0)),
+                **reminder_sli_summary,
+            },
+            "task_row_issues": task_row_issues,
+            "people_row_issues": people_row_issues,
+            "timing_parse_issues": timing_parse_issues,
+            "reminder_delivery_counters": reminder_delivery_counters,
+        }

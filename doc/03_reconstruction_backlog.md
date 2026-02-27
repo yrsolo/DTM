@@ -1,214 +1,47 @@
-# Backlog реконструкции (подробный план)
+﻿# Reconstruction Backlog (Concise)
 
-## Цели реконструкции
-- Сохранить 100% текущей функциональности.
-- Убрать архитектурную связанность и сделать систему расширяемой.
-- Создать безопасный контур разработки на тестовой таблице.
-- Подготовить базу для переноса визуализации из Google Sheets в отдельный интерфейс.
-- Целевая модель описана в: `doc/04_target_architecture.md`.
-- Риск-реестр: `doc/05_risk_register.md`.
-- ADR-реестр: `doc/06_adrs.md`.
-- Security-аудит публикации: `doc/07_publication_security_audit.md`.
-- Runbook публикации: `doc/08_public_repo_bootstrap.md`.
-- Git workflow: `doc/09_git_workflow.md`.
+## Purpose
+Safe, incremental migration of DTM from legacy tightly coupled automation to maintainable architecture and serverless-ready delivery.
 
-## Принцип выполнения
-- Только поэтапная миграция (strangler pattern), без "big bang rewrite".
-- Каждый этап завершать валидацией на реальных данных.
-- Новую логику включать через флаги/режимы, а не заменять одномоментно.
-- На каждый этап обязателен rollback-сценарий (откат не более 5-10 минут).
+## Current Stage Status
+| stage | focus | status | evidence docs |
+|---|---|---|---|
+| 0 | runtime safety contour, dry-run, baseline, secret gate | done | `doc/ops/baseline_validation_and_artifacts.md` |
+| 1 | input contracts and data quality stabilization | done | `doc/02_current_modules_and_functionality.md` |
+| 2 | layer decomposition (`domain/application/infrastructure`) | done | `doc/stages/10_stage2_layer_inventory.md` |
+| 3 | rendering adapter boundary and legacy path cleanup | done | `doc/stages/10_stage2_layer_inventory.md` + Stage 3 task files |
+| 4 | reminder fallback/idempotency/parallelism | done | Stage 4 task files in `agile/tasks` |
+| 5 | observability, SLI, alert evaluator, runbook cadence | done | `doc/05_risk_register.md`, `doc/ops/baseline_validation_and_artifacts.md` |
+| 6 | read-model contract and publication path | done | `doc/stages/11_stage6_read_model_contract.md`, `doc/stages/12_stage6_ui_view_spec.md`, `doc/stages/13_stage6_closeout_and_handoff.md` |
+| 7 | frontend migration prep (schema/fixture/policy/checklists) | done | `doc/stages/14_stage7_execution_plan.md` ... `doc/stages/18_stage7_closeout_and_stage8_handoff.md` |
+| 8 | static web prototype and shadow-run evidence package | done | `doc/stages/19_stage8_execution_plan.md`, `doc/stages/20_stage8_closeout_and_stage9_handoff.md` |
+| 9 | serverless deploy contour and cloud runtime wiring | in progress | `doc/ops/stage9_main_autodeploy_setup.md`, `agile/sprint_current.md` |
 
-## Definition of Done (для каждого спринта)
-- Код + миграции (если есть) + обновленная документация.
-- Демо-сценарий прогона на тестовой среде.
-- Артефакты сравнения baseline/new (таблицы, diff, логи).
-- Метрики качества этапа (ошибки, latency, стабильность).
+## Stage 9 Progress
+Completed:
+- `DTM-76`: main-branch auto-deploy workflow for Yandex Cloud Function.
+- `DTM-77`: `.env` to Lockbox sync automation and Google key runtime source.
+- `DTM-78`: Lockbox env mapping bound to function, cloud invoke smoke.
+- `DTM-80`: agile/process hygiene cleanup and archive normalization.
 
-## SLO/SLI (эксплуатационный минимум)
-- SLI `sync_success_rate`: доля успешных прогонов синка.
-- SLI `reminder_delivery_rate`: доля успешных доставок сообщений.
-- SLI `pipeline_duration_p95`: p95 времени полного прогона.
-- SLO стартово:
-  - `sync_success_rate >= 99%`
-  - `reminder_delivery_rate >= 98%`
-  - `pipeline_duration_p95 <= 10 min`
+Completed:
+- `DTM-81`: documentation readability refactor (`doc` map + concise backlog shape).
 
-## Decision log (ADR)
-- Ключевые архитектурные решения фиксируются в ADR:
-  - выбор архитектурного стиля;
-  - выбор хранилища;
-  - стратегия миграции Sheets -> DB/UI;
-  - стратегия idempotency и retry.
+Completed:
+- `DTM-82`: doc folder restructuring by purpose (`core/ops/governance/stages/archive`) and active-link cleanup.
 
----
+Planned next:
+- Cloud-profile shadow-run with explicit `PROTOTYPE_*_S3_KEY` pass criteria.
+- Deploy-pipeline consumer contract-regression checks.
+- Deployment smoke checklist for Yandex Cloud Function profile.
 
-## Этап 0. Организация локальной тестовой системы (первый приоритет)
+## Operating Principles
+- One active execution task at a time (WIP=1).
+- Jira is mandatory lifecycle control plane for each execution task.
+- Text docs are hypotheses until freshness/trust check is recorded in `agile/context_registry.md`.
+- Historical verbose logs are archived; active docs stay short and readable.
 
-## 0.1. Явно зафиксировать тестовый контур
-- Подтвердить использование `SOURCE_SHEET_NAME`/`TARGET_SHEET_NAME` как дефолтного dev-контура.
-- Ввести `ENV=dev/test/prod`.
-- Вынести настройки окружений в отдельные секции/файлы (`.env.dev`, `.env.prod`).
-
-Критерий готовности:
-- локальный запуск не может писать в боевую таблицу при `ENV=dev`.
-
-## 0.2. Разделить таблицу чтения и таблицу записи
-- Добавить 2 конфигурации:
-  - `SOURCE_SHEET_NAME` (откуда читать задачи/людей),
-  - `TARGET_SHEET_NAME` (куда писать `Дизайнеры/Календарь/Задачи`).
-- На dev-среде включить сценарий:
-  - чтение из актуальной рабочей таблицы;
-  - запись только в тестовую таблицу.
-- Обновить `GoogleSheetInfo`/планировщик так, чтобы read/write таблицы могли различаться без хака в коде.
-
-Критерий готовности:
-- один запуск формирует выходные листы в `TARGET`, не изменяя `SOURCE`.
-
-Статус:
-- реализовано в текущем коде (`GoogleSheetPlanner` + `SOURCE_SHEET_INFO`/`SHEET_INFO`).
-
-## 0.3. Режимы прогона и dry-run
-- Добавить режим:
-  - `--mode sync-only` (без Telegram),
-  - `--mode reminders-only`,
-  - `--dry-run` (без записи в Google API, только лог diff).
-
-Критерий готовности:
-- можно локально проверить итог без фактической записи.
-
-## 0.4. Базовая валидация результата "как есть"
-- Снять baseline-скрин/экспорт целевых листов после текущего кода.
-- После каждого изменения сравнивать:
-  - количество строк/столбцов;
-  - значения ключевых ячеек;
-  - наличие заметок и цветов.
-
-Критерий готовности:
-- есть повторяемый чеклист "ничего не сломали".
-
-## 0.5. Gate публикации и безопасность репозитория
-- Ввести pre-commit проверку на секреты (`detect-secrets` или `gitleaks`).
-- Провести sanitation репозитория (ключи, токены, прокси-креды, личные данные).
-- Добавить security-checklist перед публикацией.
-
-Критерий готовности:
-- репозиторий проходит secret-scan без критичных находок.
-
----
-
-## Этап 1. Стабилизация данных и контрактов
-- Ввести модели данных (Pydantic/dataclass) для:
-  - `TaskRaw`, `TaskParsed`, `Person`, `ReminderMessage`.
-- Валидировать обязательные колонки и типы при чтении листов.
-- Явно обрабатывать ошибки данных (пустые даты, кривые тайминги, нет chat_id).
-
-Критерий готовности:
-- ошибки входных данных не приводят к падению всего пайплайна.
-
----
-
-## Этап 2. Декомпозиция по слоям
-- Выделить слои:
-  - `domain` (чистые правила),
-  - `application` (use-cases),
-  - `infrastructure` (Google/Telegram/OpenAI),
-  - `interfaces` (CLI/Cloud handler).
-- Убрать прямые вызовы Google API из доменных классов.
-
-Критерий готовности:
-- основная бизнес-логика тестируется без внешних API.
-
----
-
-## Этап 3. Рефакторинг календарей и визуализации в Sheets
-- Унифицировать генерацию структур для `Календарь` и `Задачи`.
-- Вынести "рендер в таблицу" в отдельный адаптер.
-- Сделать единые правила цветов/подписей/нотов.
-
-Критерий готовности:
-- обе визуализации строятся через единый промежуточный формат.
-
----
-
-## Этап 4. Рефакторинг reminder-пайплайна
-- Разделить:
-  - генератор фактов по задачам,
-  - генератор черновика,
-  - LLM-enhancer,
-  - отправщик в Telegram.
-- Добавить fallback:
-  - если OpenAI недоступен, отправлять валидный черновик.
-- Добавить защиту от дублей отправки.
-
-Критерий готовности:
-- напоминания отправляются стабильно даже при деградации внешних сервисов.
-
----
-
-## Этап 5. Наблюдаемость и эксплуатация
-- Структурные логи по каждому шагу пайплайна.
-- Метрики:
-  - число обработанных задач,
-  - число отправленных сообщений,
-  - число ошибок по интеграциям.
-- Уведомления о критических сбоях в отдельный тех-чат.
-
-Критерий готовности:
-- можно быстро понять "что сломалось и где".
-
----
-
-## Этап 5.1. Риск-реестр и mitigation
-- Вести risk register:
-  - риск;
-  - вероятность;
-  - влияние;
-  - mitigation;
-  - owner.
-- Отдельно контролировать риски:
-  - квоты Google API;
-  - timezone/календарные ошибки;
-  - дубли отправки Telegram;
-  - деградация OpenAI.
-
-Критерий готовности:
-- по каждому high-risk есть конкретный mitigation и owner.
-
----
-
-## Этап 6. Подготовка к новой платформе визуализации
-- Ввести read-model API (единый JSON-слепок задач/этапов/дедлайнов).
-- Оставить Google Sheets как "витрину", но не как единственный формат.
-- Спроектировать новую UI-витрину (web):
-  - фильтры по дизайнеру/бренду/статусу;
-  - timeline/gantt;
-  - история изменений и комментарии.
-
-Критерий готовности:
-- данные пригодны для фронтенда без повторного парсинга таблиц.
-
----
-
-## Предлагаемая очередность спринтов
-1. Спринт 1: Этап 0.1-0.2 (dev-контур + read/write split).
-2. Спринт 2: Этап 0.3-0.5 (режимы прогонов + baseline + security gate).
-3. Спринт 3: Этап 1 (контракты данных).
-4. Спринт 4: Этап 2 (слоистая архитектура + ADR для ключевых решений).
-5. Спринт 5: Этап 3 (рефакторинг календарей + contract tests адаптеров).
-6. Спринт 6: Этап 4 (refactor reminders + idempotency).
-7. Спринт 7: Этап 5-5.1 (observability + risk register + SLO/SLI).
-8. Спринт 8: Этап 6 (подготовка UI миграции и read-model API).
-
-## Стратегия cutover
-- Шаг 1: shadow-run (новый пайплайн без влияния на боевой результат).
-- Шаг 2: ограниченный запуск (10%).
-- Шаг 3: частичный запуск (50%).
-- Шаг 4: полный запуск (100%).
-- На каждом шаге есть стоп-критерии и rollback.
-
-## Что делать сразу после утверждения backlog
-1. Зафиксировать и протестировать текущую реализацию `SOURCE_SHEET_NAME`/`TARGET_SHEET_NAME` на smoke-тестах.
-2. Прогнать локально: read из рабочей, write в `Спонсорские ТНТ ТЕСТ`.
-3. Зафиксировать baseline результата и дифф.
-4. Подключить сканер секретов и прогнать sanitation репозитория.
-5. Создать demo-dataset без персональных данных для портфолио.
+## References
+- Documentation map: `doc/00_documentation_map.md`
+- Current sprint board: `agile/sprint_current.md`
+- Historical full backlog snapshot: `doc/archive/03_reconstruction_backlog_2026-02-27.pre_readability.md`

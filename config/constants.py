@@ -1,11 +1,37 @@
 """Constants for the project."""
 
+import base64
 import os
+from pathlib import Path
+import tempfile
 from types import MappingProxyType as MapProxy
 
 from dotenv import load_dotenv
 
-load_dotenv()
+
+def _load_runtime_env() -> str:
+    """Load base .env and optional profile-specific file.
+
+    Profile file naming: .env.<env>, for example .env.dev or .env.prod.
+    """
+    load_dotenv()
+    runtime_env = os.environ.get("ENV", "dev").strip().lower() or "dev"
+    profile_path = Path(f".env.{runtime_env}")
+    if profile_path.exists():
+        load_dotenv(dotenv_path=profile_path, override=True)
+    if runtime_env not in {"dev", "test", "prod"}:
+        raise ValueError(
+            f"Unsupported ENV={runtime_env!r}. Allowed values: dev, test, prod."
+        )
+    return runtime_env
+
+
+RUNTIME_ENV = _load_runtime_env()
+STRICT_ENV_GUARD = os.environ.get("STRICT_ENV_GUARD", "0").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
 TG = os.environ.get("TG_TOKEN")
 OPENAI = os.environ.get("OPENAI_TOKEN")
@@ -13,12 +39,47 @@ ORG = os.environ.get("ORG_TOKEN")
 PROXY = os.environ.get("PROXY_URL", "")
 PROXIES = MapProxy({"https://": PROXY}) if PROXY else MapProxy({})
 
-KEY_JSON = "key/google_key_poised-backbone-191400-4e9fc454915f.json"
+def _resolve_google_key_json_path() -> str:
+    """Resolve Google service-account key path.
+
+    Priority:
+    1) GOOGLE_KEY_JSON_PATH (already materialized file path)
+    2) GOOGLE_KEY_JSON_B64 (base64-encoded JSON payload)
+    3) GOOGLE_KEY_JSON (raw JSON payload text)
+    4) local development fallback file path in repository
+    """
+    key_path = os.environ.get("GOOGLE_KEY_JSON_PATH", "").strip()
+    if key_path:
+        return key_path
+
+    key_b64 = os.environ.get("GOOGLE_KEY_JSON_B64", "").strip()
+    key_text = os.environ.get("GOOGLE_KEY_JSON", "").strip()
+    if key_b64:
+        key_text = base64.b64decode(key_b64).decode("utf-8")
+
+    if key_text:
+        tmp_file = Path(tempfile.gettempdir()) / "dtm_google_key.json"
+        tmp_file.write_text(key_text, encoding="utf-8")
+        return str(tmp_file)
+
+    return "key/google_key_poised-backbone-191400-4e9fc454915f.json"
+
+
+KEY_JSON = _resolve_google_key_json_path()
 
 DEFAULT_CHAT_ID = os.environ.get("DEFAULT_CHAT_ID", "-4083724311")
 
 SOURCE_SHEET_NAME = os.environ.get("SOURCE_SHEET_NAME", "Спонсорские ТНТ")
 TARGET_SHEET_NAME = os.environ.get("TARGET_SHEET_NAME", "Спонсорские ТНТ ТЕСТ")
+if (
+    STRICT_ENV_GUARD
+    and RUNTIME_ENV in {"dev", "test"}
+    and SOURCE_SHEET_NAME == TARGET_SHEET_NAME
+):
+    raise ValueError(
+        "Unsafe env contour: for ENV=dev/test SOURCE_SHEET_NAME and "
+        "TARGET_SHEET_NAME must be different when STRICT_ENV_GUARD=1."
+    )
 
 REPLACE_NAMES = MapProxy(
     {

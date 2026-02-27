@@ -2,10 +2,27 @@
 
 import asyncio
 
-import pandas as pd
-
 from config import KEY_JSON, SHEET_INFO, TRIGGERS
+from core.bootstrap import build_planner_dependencies
 from core.planner import GoogleSheetPlanner
+from core.use_cases import resolve_run_mode, run_planner_use_case
+
+
+def _print_quality_report(report):
+    summary = report.get("summary", {})
+    print(
+        "quality_report_summary="
+        f"task_row_issues={summary.get('task_row_issue_count', 0)} "
+        f"people_row_issues={summary.get('people_row_issue_count', 0)} "
+        f"timing_parse_errors={summary.get('timing_parse_error_count', 0)} "
+        f"reminder_sent={summary.get('reminder_sent_count', 0)} "
+        f"reminder_send_errors={summary.get('reminder_send_error_count', 0)} "
+        f"reminder_retry_attempts={summary.get('reminder_send_retry_attempt_count', 0)} "
+        f"reminder_retry_exhausted={summary.get('reminder_send_retry_exhausted_count', 0)} "
+        f"reminder_attemptable={summary.get('reminder_delivery_attemptable_count')} "
+        f"reminder_delivery_rate={summary.get('reminder_delivery_rate')} "
+        f"reminder_failure_rate={summary.get('reminder_failure_rate')}"
+    )
 
 
 async def main(**kwargs):
@@ -15,41 +32,33 @@ async def main(**kwargs):
         kwargs: Параметры запуска.
     """
     # ????????????? ????????????
-    mode = kwargs.get("mode", None)
-    event = kwargs.get("event", None)
-    if mode:
-        pass
-    elif event:
-        print(f"{event=}")
-        if event == "morning":
-            mode = "morning"
-        else:
-            trigger_id = event["messages"][0]["details"]["trigger_id"]
-            mode = TRIGGERS.get(trigger_id, "test")
-            print(f"{trigger_id=}")
-    else:
-        mode = "test"
-    print(f"{mode=}")
+    mode = kwargs.get("mode")
+    event = kwargs.get("event")
+    dry_run = kwargs.get("dry_run", False)
+    mock_external = kwargs.get("mock_external")
+    mode = resolve_run_mode(mode=mode, event=event, triggers=TRIGGERS)
+    if mock_external is None:
+        mock_external = mode == "test"
+    print(f"{mode=} {dry_run=} {mock_external=}")
 
-    planner = GoogleSheetPlanner(KEY_JSON, SHEET_INFO, mode=mode)
+    dependencies = build_planner_dependencies(
+        KEY_JSON,
+        SHEET_INFO,
+        dry_run=dry_run,
+        mock_external=mock_external,
+    )
+    planner = GoogleSheetPlanner(
+        KEY_JSON,
+        SHEET_INFO,
+        mode=mode,
+        dry_run=dry_run,
+        mock_external=mock_external,
+        dependencies=dependencies,
+    )
 
-    if mode in {"timer", "test"}:
-        start_time = pd.Timestamp.now()
-        planner.update()
-        planner.task_to_calendar()  # Генерация и запись календаря задач
-        planner.designer_task_to_calendar()  # Генерация и запись календаря дизайнеров
-        planner.task_to_table()  # Запись задач в лист "Дизайнеры"
-        run_time = pd.Timestamp.now() - start_time
-        print(f"Table update runtime: {run_time}")
-
-    if mode in {"morning", "test"}:
-        start_time = pd.Timestamp.now()
-        now = pd.Timestamp.now(tz="Europe/Moscow")
-        dow = now.dayofweek
-        if dow in {0, 1, 2, 3, 4} or mode == "test":
-            await planner.send_reminders()
-        run_time = pd.Timestamp.now() - start_time
-        print(f"Reminder runtime: {run_time}")
+    quality_report = await run_planner_use_case(planner, mode)
+    _print_quality_report(quality_report)
+    return quality_report
 
 
 if __name__ == "__main__":

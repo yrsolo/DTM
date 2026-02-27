@@ -16,8 +16,27 @@ from typing import Dict, List
 import pandas as pd
 
 from config import COLOR_STATUS, REPLACE_NAMES, TASK_FIELD_MAP
+from core.contracts import TaskRowContract, is_nullish, normalize_text
+from core.errors import MissingRequiredColumnsError, RowValidationIssue, TimingParseIssue
 from core.reminder import TelegramNotifier
 from utils.service import GoogleSheetInfo, GoogleSheetsService
+
+
+def _is_nullish(value) -> bool:
+    """Compatibility wrapper for local module usage."""
+    return is_nullish(value)
+
+
+def _normalize_text(value, strip: bool = True) -> str:
+    """Compatibility wrapper for local module usage."""
+    return normalize_text(value, strip=strip)
+
+
+def _safe_print(text: str) -> None:
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        print(str(text).encode("ascii", "replace").decode("ascii"))
 
 
 class TimingParser:
@@ -27,9 +46,20 @@ class TimingParser:
         """Инициализация парсера тайминга."""
         self.date_pattern = re.compile(r"(\d{2}\.\d{2})")
         self.logger = TelegramNotifier()
+        self.parse_issues: List[TimingParseIssue] = []
+        self.total_parse_errors = 0
+
+    def reset_diagnostics(self):
+        self.parse_issues = []
+        self.total_parse_errors = 0
+
+    def issues_since(self, start_index: int) -> List[TimingParseIssue]:
+        if start_index < 0:
+            start_index = 0
+        return self.parse_issues[start_index:]
 
     def parse(
-        self, timing_str: str, next_task_date: pd.Timestamp = None
+        self, timing_str: str, next_task_date: pd.Timestamp = None, row_number: int = 0
     ) -> Dict[pd.Timestamp, List[str]]:
         """Преобразует строку тайминга в словарь, где ключи - даты, значения - списки этапов задач.
 
@@ -45,10 +75,12 @@ class TimingParser:
             next_task_date = pd.Timestamp.now()
         timings = defaultdict(list)
 
-        # Разбиваем строку на отдельные строки по переносам
-        if timing_str is None or (not isinstance(timing_str, str) and pd.isna(timing_str)):
+        # Разбиваем строку на отдельные строки по переносам.
+        if _is_nullish(timing_str):
             return timings
         timing_str = str(timing_str)
+        if not timing_str.strip():
+            return timings
         lines = timing_str.strip().split("\n")
 
         for line in lines:
@@ -61,7 +93,7 @@ class TimingParser:
 
             date_str = match.group(1)
             stage = line[len(date_str) :].strip().strip("-").strip()
-            if not pd.isna(stage):
+            if stage:
                 # Преобразуем строку даты в объект pandas.Timestamp
                 # year = datetime.datetime.now().year
                 year = next_task_date.year
@@ -80,9 +112,17 @@ class TimingParser:
 Подробности ошибки: {e}
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 """
-                    print(err_text)
+                    _safe_print(err_text)
                     if month != "02" or day != "29":
-                        self.logger.log(err_text)
+                        _safe_print("Timing parse Telegram log skipped in sync context")
+                    issue = TimingParseIssue(
+                        row_number=row_number,
+                        timing_line=line,
+                        normalized_date=formatted_date_str,
+                        error=str(e),
+                    )
+                    self.parse_issues.append(issue)
+                    self.total_parse_errors += 1
                     date = pd.Timestamp.now()
 
                 if date < (next_task_date - pd.DateOffset(months=5)):
@@ -110,21 +150,23 @@ class Task:
         task_id,
         parser=None,
         next_task_date=None,
+        source_row_number=0,
     ):
-        self.brand = brand
-        self.format_ = format_
-        self.project_name = project_name
-        self.customer = customer
-        self.designer = designer
-        self.raw_timing = raw_timing
+        self.brand = _normalize_text(brand)
+        self.format_ = _normalize_text(format_)
+        self.project_name = _normalize_text(project_name)
+        self.customer = _normalize_text(customer)
+        self.designer = _normalize_text(designer)
+        self.raw_timing = _normalize_text(raw_timing, strip=False)
         self.timing_cache = None
-        self.status = status
+        self.status = _normalize_text(status)
         self.color = color
-        self.color_status = color_status
-        self.name = name
+        self.color_status = _normalize_text(color_status)
+        self.name = _normalize_text(name)
         self.id = task_id
         self.parser = parser or TimingParser()
         self.next_task_date = next_task_date
+        self.source_row_number = int(source_row_number or 0)
 
     def __repr__(self):
         return f"{self.id} {self.name}"
@@ -134,7 +176,11 @@ class Task:
         if self.timing_cache:
             return self.timing_cache
         else:
-            self.timing_cache = self.parser.parse(self.raw_timing, self.next_task_date)
+            self.timing_cache = self.parser.parse(
+                self.raw_timing,
+                self.next_task_date,
+                row_number=self.source_row_number,
+            )
             return self.timing_cache
 
     @property
@@ -194,6 +240,7 @@ class GoogleSheetsTaskRepository(TaskRepository):
         self.df = None
         self.replace_names = REPLACE_NAMES
         self.tasks = dict()
+        self.row_issues: List[RowValidationIssue] = []
         self.timing_parser = TimingParser()
         self.dop = {}
 
@@ -231,6 +278,7 @@ class GoogleSheetsTaskRepository(TaskRepository):
         sheet_name = self.source_sheet_info.get_sheet_name("tasks")
         assistant_sheet_name = self.source_sheet_info.get_sheet_name("assistant")
         df = self.service.get_dataframe(spreadsheet_name, sheet_name)
+        self._validate_required_columns(df, spreadsheet_name, sheet_name)
         color_range = f"A2:A{len(df) + 1}"
         colors = self.service.get_cell_colors(spreadsheet_name, sheet_name, color_range)
         # в ячейке ДИЗАЙНЕР может быть несколько человек, там str в котором на каждой строчке один человек
@@ -260,6 +308,18 @@ class GoogleSheetsTaskRepository(TaskRepository):
         self.df = df
         self._df_to_task(df)
 
+    def _validate_required_columns(self, df, spreadsheet_name, sheet_name):
+        required_columns = TaskRowContract.required_columns(TASK_FIELD_MAP)
+        missing = sorted(col for col in required_columns if col not in df.columns)
+        if missing:
+            raise MissingRequiredColumnsError(
+                entity_name="task",
+                spreadsheet_name=spreadsheet_name,
+                sheet_name=sheet_name,
+                missing_columns=tuple(missing),
+                field_map_name="TASK_FIELD_MAP",
+            )
+
     def _generate_task_name(self, row):
         """Сгенерировать название задачи"""
         raw_format = row.get("ФОРМАТ", "")
@@ -279,17 +339,55 @@ class GoogleSheetsTaskRepository(TaskRepository):
 
     def _df_to_task(self, df):
         """Преобразовать DataFrame в список задач"""
+        self.row_issues = []
+        self.tasks = dict()
+        self.timing_parser.reset_diagnostics()
         tasks_list = []
         next_task_date = None
         for idx, row in df.iterrows():
-            task = {key: row[value] for key, value in TASK_FIELD_MAP.items()}
-            task = Task(**task, parser=self.timing_parser, next_task_date=next_task_date)
+            row_number = int(idx) + 2
+            try:
+                contract = TaskRowContract.from_mapping(row, TASK_FIELD_MAP)
+                task = Task(
+                    **contract.to_task_kwargs(),
+                    parser=self.timing_parser,
+                    next_task_date=next_task_date,
+                    source_row_number=row_number,
+                )
+            except (TypeError, ValueError, KeyError) as exc:
+                self._record_row_issue("task", row_number, f"mapping failure: {exc}")
+                continue
+            if _is_nullish(task.id):
+                self._record_row_issue("task", row_number, "missing task id")
+                continue
+            if task.id in self.tasks:
+                self._record_row_issue("task", row_number, "duplicate task id", row_id=str(task.id))
+                continue
             tasks_list.append(task)
             self.tasks[task.id] = task
+            issue_cursor = len(self.timing_parser.parse_issues)
             mean_date = pd.Series(task.timing.keys()).mean()
+            new_issues = self.timing_parser.issues_since(issue_cursor)
+            if new_issues:
+                self._record_row_issue(
+                    "task",
+                    row_number,
+                    f"timing parse errors: {len(new_issues)}",
+                    row_id=str(task.id),
+                )
             if not pd.isna(mean_date):
                 next_task_date = mean_date
         return tasks_list
+
+    def _record_row_issue(self, entity_name: str, row_number: int, reason: str, row_id: str = ""):
+        issue = RowValidationIssue(
+            entity_name=entity_name,
+            row_number=row_number,
+            reason=reason,
+            row_id=row_id,
+        )
+        self.row_issues.append(issue)
+        _safe_print(str(issue))
 
     def _filter(self, column_name, value):
         """Отфильтровать DataFrame по значению в колонке"""
