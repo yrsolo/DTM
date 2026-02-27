@@ -50,6 +50,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - `mode=test` now enables mock external mode by default in `main.py` unless explicitly overridden.
 - Optional artifact export: `--quality-report-file <path>` writes structured diagnostics snapshot (`task/people row issues`, `timing parse errors`) as JSON.
 - Optional trend persistence: `--sli-trend-file <path>` appends rolling reminder SLI snapshots across runs (use `--sli-trend-limit <N>` to cap history length, default `200`).
+- Optional Stage 6 artifact publication: `--read-model-file <path>` writes canonical read-model JSON from current run artifacts (`--read-model-build-id <id>` sets source build marker).
 - Reminder run summary now includes delivery counters (`sent`, `skipped_*`, `send_errors`) and quality report summary includes reminder send/error counts.
 - Quality report summary also includes retry counters: `reminder_send_retry_attempt_count` and `reminder_send_retry_exhausted_count`.
 - Quality report summary now also includes derived reminder SLI metrics: attemptable deliveries, attempted sends, delivery rate, and failure rate.

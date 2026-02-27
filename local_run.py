@@ -12,6 +12,7 @@ from agent.reminder_alert_evaluator import (
     resolve_fail_on,
     should_fail,
 )
+from core.read_model import build_read_model
 from main import main
 
 
@@ -108,6 +109,16 @@ def parse_args():
         action="store_true",
         help="Print owner notify command without sending Telegram message.",
     )
+    parser.add_argument(
+        "--read-model-file",
+        type=Path,
+        help="Optional path to write Stage 6 read-model JSON artifact.",
+    )
+    parser.add_argument(
+        "--read-model-build-id",
+        default="",
+        help="Optional build identifier embedded into read-model source metadata.",
+    )
     return parser.parse_args()
 
 
@@ -161,6 +172,15 @@ def persist_alert_evaluation(alert_evaluation, out_file):
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(
         json.dumps(alert_evaluation, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def persist_read_model(read_model, out_file):
+    out_file = Path(out_file)
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    out_file.write_text(
+        json.dumps(read_model, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
 
@@ -235,5 +255,13 @@ if __name__ == "__main__":
     if args.alert_evaluation_file and alert_evaluation is not None:
         persist_alert_evaluation(alert_evaluation, args.alert_evaluation_file)
         print(f"alert_evaluation_file={args.alert_evaluation_file}")
+    if args.read_model_file:
+        read_model = build_read_model(
+            quality_report=quality_report,
+            alert_evaluation=alert_evaluation,
+            build_id=(args.read_model_build_id or None),
+        )
+        persist_read_model(read_model, args.read_model_file)
+        print(f"read_model_file={args.read_model_file}")
     if alert_evaluation is not None and should_fail(alert_evaluation["level"], effective_fail_on):
         raise SystemExit(2)

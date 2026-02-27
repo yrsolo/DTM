@@ -206,6 +206,7 @@
 - Stage 6 kickoff planning increment started: baseline estimate fixed at 8 tasks with dynamic `done/remaining` tracking in sprint board; owner completion Telegram update rule added to operating flow (`DTM-55`).
 - Stage 6 slice completed: canonical read-model JSON contract document added (`doc/11_stage6_read_model_contract.md`) with entities, required fields, metadata, and schema versioning policy (`DTM-56`).
 - Stage 6 slice completed: read-model builder module implemented (`core/read_model.py`) from current artifacts (`quality_report` + optional alert evaluation) with deterministic smoke coverage (`DTM-57`).
+- Stage 6 slice completed: local launcher publication path added for read-model artifacts (`local_run.py --read-model-file`) with deterministic publication smoke (`DTM-58`).
 
 ---
 

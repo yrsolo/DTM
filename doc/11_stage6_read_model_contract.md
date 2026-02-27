@@ -114,3 +114,5 @@ Runtime quality and delivery counters consumed by dashboards.
 
 ## Smoke Coverage
 - Deterministic builder contract smoke: `agent/read_model_builder_smoke.py`.
+- Local launcher publication smoke: `agent/read_model_publication_smoke.py`.
+- Local launcher artifact option: `local_run.py --read-model-file <path> [--read-model-build-id <id>]`.
