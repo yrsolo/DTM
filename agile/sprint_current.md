@@ -7,7 +7,7 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 1 active task (WIP), 3 tasks queued for this short sprint cycle.
 
 ## Now
-- [IN_PROGRESS] DTM-25 / TSK-028 Stage 3 sheet renderer adapter extraction
+- [IN_PROGRESS] none
 
 ## Done
 - [DONE] Initial git workflow policy added.
@@ -36,12 +36,13 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - [DONE] DTM-22 / TSK-025 Stage 2 infrastructure adapter boundary for external services.
 - [DONE] DTM-23 / TSK-026 Stage 3 calendar rendering shared cell-contract scaffold
 - [DONE] DTM-24 / TSK-027 Stage 3 task-calendar renderer alignment
+- [DONE] DTM-25 / TSK-028 Stage 3 sheet renderer adapter extraction
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 3 follow-up grooming after DTM-25 (Jira keys pending decomposition)
+- [TODO] Stage 3 follow-up grooming (new Jira keys pending decomposition)
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -89,7 +90,7 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - TSK-027 - Stage 3 task-calendar renderer alignment
   - Jira: DTM-24 (status: Done / `Gotovo`)
 - TSK-028 - Stage 3 sheet renderer adapter extraction
-  - Jira: DTM-25 (status: In Progress / `V rabote`)
+  - Jira: DTM-25 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -158,3 +159,4 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - 2026-02-27: DTM-24 moved to `V rabote` as next single active Stage 3 execution task.
 - 2026-02-27: DTM-24 completed (task-calendar renderer alignment into helper methods over shared `RenderCell`; sync dry-run smoke; Jira `Gotovo`).
 - 2026-02-27: DTM-25 moved to `V rabote` as next single active Stage 3 execution task.
+- 2026-02-27: DTM-25 completed (sheet renderer adapter boundary extraction + bootstrap DI wiring; sync dry-run smoke; Jira `Gotovo`).

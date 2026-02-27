@@ -3,11 +3,12 @@
 from dataclasses import dataclass
 
 from config import HELPER_CHARACTER, MODEL, OPENAI, ORG, PROXIES, SOURCE_SHEET_INFO, TG
-from core.adapters import ChatAdapter, MessageAdapter
+from core.adapters import ChatAdapter, MessageAdapter, SheetRenderAdapter
 from core.manager import CalendarManager, TaskCalendarManager, TaskManager, TaskTimingProcessor
 from core.people import PeopleManager
 from core.reminder import AsyncOpenAIChatAgent, MockOpenAIChatAgent, Reminder, TelegramNotifier
 from core.repository import GoogleSheetsTaskRepository
+from core.sheet_renderer import ServiceSheetRenderAdapter
 from utils.service import GoogleSheetInfo, GoogleSheetsService
 
 
@@ -19,6 +20,7 @@ class PlannerDependencies:
     task_manager: TaskManager
     calendar_manager: CalendarManager
     task_calendar_manager: TaskCalendarManager
+    task_calendar_renderer: SheetRenderAdapter
     openai_agent: ChatAdapter
     telegram_adapter: MessageAdapter | None
     people_manager: PeopleManager
@@ -43,7 +45,17 @@ def build_planner_dependencies(
     )
     task_manager = TaskManager(task_repository)
     calendar_manager = CalendarManager(sheet_info, service, task_repository)
-    task_calendar_manager = TaskCalendarManager(sheet_info, service, task_repository)
+    task_calendar_renderer: SheetRenderAdapter = ServiceSheetRenderAdapter(
+        service=service,
+        spreadsheet_name=sheet_info.spreadsheet_name,
+        sheet_name=sheet_info.get_sheet_name("task_calendar"),
+    )
+    task_calendar_manager = TaskCalendarManager(
+        sheet_info,
+        service,
+        task_repository,
+        renderer=task_calendar_renderer,
+    )
 
     openai_agent: ChatAdapter = (
         MockOpenAIChatAgent()
@@ -75,6 +87,7 @@ def build_planner_dependencies(
         task_manager=task_manager,
         calendar_manager=calendar_manager,
         task_calendar_manager=task_calendar_manager,
+        task_calendar_renderer=task_calendar_renderer,
         openai_agent=openai_agent,
         telegram_adapter=telegram_adapter,
         people_manager=people_manager,

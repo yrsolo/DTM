@@ -21,6 +21,27 @@ class LoggerAdapter(Protocol):
         ...
 
 
+@runtime_checkable
+class SheetRenderAdapter(Protocol):
+    def begin(self) -> None:
+        ...
+
+    def clear_cells(self, range_: str = "A1:ZZ1000") -> None:
+        ...
+
+    def clear_requests(self) -> None:
+        ...
+
+    def update_cell(self, cell_data: dict[str, Any]) -> None:
+        ...
+
+    def update_borders(self, border_data: dict[str, Any]) -> None:
+        ...
+
+    def execute_updates(self) -> None:
+        ...
+
+
 class NullLogger:
     def log(self, text: str) -> None:
         return None

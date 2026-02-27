@@ -153,7 +153,7 @@
 Статус:
 - Stage 3 started: shared render cell-contract scaffold introduced (`core/render_contracts.py`) and integrated into `TaskCalendarManager` rendering flow (`DTM-23`).
 - Stage 3 alignment increment completed: task-calendar renderer payload/style branches normalized through helper methods over shared render contract (`DTM-24`).
-- Stage 3 current active task: sheet renderer adapter extraction (`DTM-25`, in progress).
+- Stage 3 adapter extraction increment completed: sheet write operations of `TaskCalendarManager` moved behind `SheetRenderAdapter` boundary with `ServiceSheetRenderAdapter` and bootstrap DI wiring (`DTM-25`).
 
 Критерий готовности:
 - обе визуализации строятся через единый промежуточный формат.

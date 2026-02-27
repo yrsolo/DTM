@@ -16,8 +16,10 @@ from typing import Dict, List
 import pandas as pd
 
 from config import COLORS
+from core.adapters import SheetRenderAdapter
 from core.render_contracts import RenderCell
 from core.repository import TimingParser
+from core.sheet_renderer import ServiceSheetRenderAdapter
 from utils.func import GetColor, RGBColor, cell_to_indices, filter_stages
 
 
@@ -254,7 +256,13 @@ def write_cur_time(service, spreadsheet_name, sheet_name, cell="A1"):
 
 
 class TaskCalendarManager:
-    def __init__(self, sheet_info, service, repository):
+    def __init__(
+        self,
+        sheet_info,
+        service,
+        repository,
+        renderer: SheetRenderAdapter | None = None,
+    ):
         self.sheet_info = sheet_info
         self.service = service
         self.calendar = None
@@ -263,6 +271,11 @@ class TaskCalendarManager:
         self.sheet_name = sheet_info.get_sheet_name("task_calendar")
         self.timeline = {}
         self.get_color = GetColor()
+        self.renderer = renderer or ServiceSheetRenderAdapter(
+            service=service,
+            spreadsheet_name=self.spreadsheet_name,
+            sheet_name=self.sheet_name,
+        )
 
     def get_actual_tasks(self, color_status=("wait", "work", "pre_done")):
         self.tasks = self.repository.get_task_by_color_status(color_status)
@@ -302,7 +315,7 @@ class TaskCalendarManager:
         while day < end:
             cell_data = self._build_timeline_cell(row=row, col=col, day=day, now=now, base_color=color)
 
-            self.service.update_cell(cell_data=cell_data)
+            self.renderer.update_cell(cell_data=cell_data)
             col += 1
             day += pd.Timedelta("1D")
 
@@ -366,7 +379,7 @@ class TaskCalendarManager:
     def task_to_sheet(self, row, task, color):
         # task name
         cell_data = self._build_task_name_cell(row=row, task=task)
-        self.service.update_cell(cell_data=cell_data)
+        self.renderer.update_cell(cell_data=cell_data)
 
         day = max(self.timeline["start"], task.min_date)
         col = 2 + (day - self.timeline["start"]).days
@@ -384,7 +397,7 @@ class TaskCalendarManager:
                 stage=stage,
             )
 
-            self.service.update_cell(cell_data=cell_data)
+            self.renderer.update_cell(cell_data=cell_data)
 
             col += 1
             day += pd.Timedelta("1D")
@@ -395,7 +408,7 @@ class TaskCalendarManager:
         # task name
         color = self.get_color()
         cell_data = self._build_designer_cell(designer=designer, row=row, color=color)
-        self.service.update_cell(cell_data=cell_data)
+        self.renderer.update_cell(cell_data=cell_data)
         row += 1
 
         n = len(tasks)
@@ -410,17 +423,17 @@ class TaskCalendarManager:
         return row
 
     def init(self):
-        self.service.set_spreadsheet_and_worksheet(self.spreadsheet_name, self.sheet_name)
-        self.service.clear_cells()
-        self.service.clear_requests()
+        self.renderer.begin()
+        self.renderer.clear_cells()
+        self.renderer.clear_requests()
 
     def write(self):
-        self.service.execute_updates()
+        self.renderer.execute_updates()
 
     def write_cur_time(self):
         cur_time = pd.Timestamp.now(tz="Europe/Moscow").strftime("%H:%M %B %d")
         cell_data = self._build_timestamp_cell(cur_time=cur_time)
-        self.service.update_cell(cell_data=cell_data)
+        self.renderer.update_cell(cell_data=cell_data)
 
     def all_tasks_to_sheet(self, color_status=("wait", "work", "pre_done")):
         """main"""
@@ -439,7 +452,7 @@ class TaskCalendarManager:
             "color": RGBColor(COLORS["green"]) ** 2,
             "worksheet_range": "G1:H50",
         }
-        self.service.update_borders(border_data=border_data)
+        self.renderer.update_borders(border_data=border_data)
         self.write_cur_time()
         self.write()
 
