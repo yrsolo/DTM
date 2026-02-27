@@ -7,7 +7,7 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] DTM-83 / TSK-085 - owner-approved `dev -> main` merge and deploy trigger execution.
+- [IN_PROGRESS] none.
 
 ## Stage 9 Estimate (Dynamic)
 - Baseline estimate: 8 tasks (adjusted after explicit doc-structure refactor slice).
@@ -24,7 +24,7 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 - [DONE] DTM-82 / TSK-084 - doc folder restructuring by purpose (`core/ops/governance/stages/archive`).
 
 ## Blocked
-- [BLOCKED] none.
+- [BLOCKED] DTM-83 / TSK-085 - deploy workflow run failed (`No credentials`) after `main` push; requires cloud auth setup decision.
 
 ## Next 3-5 Tasks (Groomed)
 - [TODO] DTM-83 / TSK-085 - owner-approved `dev -> main` merge and deploy trigger execution.
