@@ -69,10 +69,10 @@
 - risk: Telegram transient delivery failures without explicit retry policy.
 - probability: medium
 - impact: high
-- mitigation: current handling logs errors and counts `send_errors`; explicit retry/backoff policy is pending.
+- mitigation: bounded retry/backoff policy for transient send failures with retry/exhausted counters in quality report.
 - owner: backend
-- status: open
-- notes: next step is controlled retry strategy with bounded attempts and jitter.
+- status: watch
+- notes: implemented in Stage 5 (`DTM-41`); monitor retry exhaustion rate and tune limits.
 
 8. `R-008`
 - risk: insufficient operational visibility for reminder incidents.

@@ -189,6 +189,7 @@
 - Stage 5 kickoff increment completed: risk register aligned to implemented reminder/API mitigations with explicit retry-policy stance and ownership (`DTM-38`).
 - Stage 5 kickoff increment completed: explicit reminder SLI alert thresholds and escalation policy documented with owner notification flow alignment (`DTM-39`).
 - Stage 5 follow-up increment completed: rolling reminder SLI trend snapshots persisted across runs via local artifact flow (`DTM-40`).
+- Stage 5 follow-up increment completed: bounded retry/backoff policy added for transient Telegram reminder delivery failures with retry observability counters (`DTM-41`).
 
 ---
 

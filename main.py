@@ -17,6 +17,8 @@ def _print_quality_report(report):
         f"timing_parse_errors={summary.get('timing_parse_error_count', 0)} "
         f"reminder_sent={summary.get('reminder_sent_count', 0)} "
         f"reminder_send_errors={summary.get('reminder_send_error_count', 0)} "
+        f"reminder_retry_attempts={summary.get('reminder_send_retry_attempt_count', 0)} "
+        f"reminder_retry_exhausted={summary.get('reminder_send_retry_exhausted_count', 0)} "
         f"reminder_attemptable={summary.get('reminder_delivery_attemptable_count')} "
         f"reminder_delivery_rate={summary.get('reminder_delivery_rate')} "
         f"reminder_failure_rate={summary.get('reminder_failure_rate')}"

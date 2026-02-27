@@ -9,6 +9,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Uses OpenAI to improve reminder text style, with automatic fallback to draft text when enhancer is unavailable.
 - Reminder delivery has in-run duplicate guard (idempotent send key) to prevent repeated sends in one runtime cycle.
 - Reminder text enhancement is processed in parallel with bounded concurrency for faster multi-designer runs.
+- Reminder delivery now applies bounded retry/backoff for transient Telegram send failures.
 
 ## Why this repository exists
 - Show practical refactoring of a working legacy system.
@@ -48,6 +49,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Optional artifact export: `--quality-report-file <path>` writes structured diagnostics snapshot (`task/people row issues`, `timing parse errors`) as JSON.
 - Optional trend persistence: `--sli-trend-file <path>` appends rolling reminder SLI snapshots across runs (use `--sli-trend-limit <N>` to cap history length, default `200`).
 - Reminder run summary now includes delivery counters (`sent`, `skipped_*`, `send_errors`) and quality report summary includes reminder send/error counts.
+- Quality report summary also includes retry counters: `reminder_send_retry_attempt_count` and `reminder_send_retry_exhausted_count`.
 - Quality report summary now also includes derived reminder SLI metrics: attemptable deliveries, attempted sends, delivery rate, and failure rate.
 
 ## Baseline validation flow (Stage 0.4)

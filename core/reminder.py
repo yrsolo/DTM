@@ -192,6 +192,10 @@ class Reminder(object):
             mock_telegram=False,
             telegram_adapter: MessageAdapter = None,
             enhance_concurrency=4,
+            send_retry_attempts=3,
+            send_retry_backoff_seconds=0.5,
+            send_retry_backoff_multiplier=2.0,
+            sleep_func=None,
     ):
         """Инициализация напоминаний о задачах.
 
@@ -219,6 +223,10 @@ class Reminder(object):
         self.people_manager = people_manager
         self.enhance_concurrency = max(1, int(enhance_concurrency))
         self.enhance_semaphore = asyncio.Semaphore(self.enhance_concurrency)
+        self.send_retry_attempts = max(1, int(send_retry_attempts))
+        self.send_retry_backoff_seconds = max(0.0, float(send_retry_backoff_seconds))
+        self.send_retry_backoff_multiplier = max(1.0, float(send_retry_backoff_multiplier))
+        self._sleep = sleep_func or asyncio.sleep
         self.delivery_counters = {}
         self.reset_delivery_counters()
 
@@ -233,6 +241,8 @@ class Reminder(object):
             "skipped_mock": 0,
             "skipped_duplicate": 0,
             "send_errors": 0,
+            "send_retry_attempts": 0,
+            "send_retry_exhausted": 0,
         }
 
     def _inc_delivery_counter(self, key, value=1):
@@ -457,13 +467,45 @@ class Reminder(object):
             _safe_print(f"duplicate_reminder_skip: {designer_name} chat_id={chat_id}")
             self._inc_delivery_counter("skipped_duplicate")
             return
-        try:
-            await self.tg_bot.send_message(chat_id, message)
-            self.sent_delivery_keys.add(delivery_key)
-            self._inc_delivery_counter("sent")
-        except Exception as e:
-            _safe_print(f"reminder_send_error: {designer_name} chat_id={chat_id} error={e}")
-            self._inc_delivery_counter("send_errors")
+        for attempt in range(1, self.send_retry_attempts + 1):
+            try:
+                await self.tg_bot.send_message(chat_id, message)
+                self.sent_delivery_keys.add(delivery_key)
+                self._inc_delivery_counter("sent")
+                return
+            except Exception as e:
+                transient = self._is_transient_send_error(e)
+                can_retry = transient and attempt < self.send_retry_attempts
+                if can_retry:
+                    self._inc_delivery_counter("send_retry_attempts")
+                    delay = self._get_retry_backoff_delay(attempt)
+                    _safe_print(
+                        "reminder_send_retry: "
+                        f"{designer_name} chat_id={chat_id} attempt={attempt + 1}/{self.send_retry_attempts} "
+                        f"delay_seconds={delay} error={e}"
+                    )
+                    await self._sleep(delay)
+                    continue
+
+                if transient and attempt > 1:
+                    self._inc_delivery_counter("send_retry_exhausted")
+                _safe_print(
+                    "reminder_send_error: "
+                    f"{designer_name} chat_id={chat_id} attempt={attempt}/{self.send_retry_attempts} "
+                    f"transient={transient} error={e}"
+                )
+                self._inc_delivery_counter("send_errors")
+                return
+
+    def _get_retry_backoff_delay(self, failed_attempt):
+        return self.send_retry_backoff_seconds * (self.send_retry_backoff_multiplier ** (failed_attempt - 1))
+
+    @staticmethod
+    def _is_transient_send_error(error):
+        if isinstance(error, (asyncio.TimeoutError, TimeoutError, aiohttp.ClientError, httpx.TransportError)):
+            return True
+        error_name = type(error).__name__
+        return error_name in {"TimedOut", "NetworkError", "RetryAfter"}
 
     async def send_reminders(self, mode='test'):
         """Отправить напоминания.

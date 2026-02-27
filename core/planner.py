@@ -112,6 +112,8 @@ class GoogleSheetPlanner:
                 "timing_parse_error_count": timing_parse_error_count,
                 "reminder_sent_count": int(reminder_delivery_counters.get("sent", 0)),
                 "reminder_send_error_count": int(reminder_delivery_counters.get("send_errors", 0)),
+                "reminder_send_retry_attempt_count": int(reminder_delivery_counters.get("send_retry_attempts", 0)),
+                "reminder_send_retry_exhausted_count": int(reminder_delivery_counters.get("send_retry_exhausted", 0)),
                 **reminder_sli_summary,
             },
             "task_row_issues": task_row_issues,
