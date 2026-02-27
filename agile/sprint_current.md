@@ -45,13 +45,16 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - [DONE] DTM-31 / TSK-034 Stage 3 close-out: TaskCalendarManagerOld legacy path disposition
 - [DONE] DTM-32 / TSK-035 Stage 4 fallback: send draft when OpenAI enhancer unavailable
 - [DONE] DTM-33 / TSK-036 Stage 4 idempotency: prevent duplicate reminder sends in same run
+- [DONE] DTM-34 / TSK-037 Stage 4 reminder pipeline decomposition (facts/draft/enhancer/sender)
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 4 follow-up: reminder pipeline decomposition (facts/draft/enhancer/sender)
 - [TODO] Stage 4 follow-up: reminder observability counters for send outcomes
+- [TODO] Stage 4 follow-up: reminder pipeline split into dedicated components (facts/draft/enhancer/sender objects)
+- [TODO] Stage 5 kickoff: structured SLI counters for reminder delivery and failures
+- [TODO] Stage 5 kickoff: risk-register update for reminder/API degradation and retry policy
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -116,6 +119,8 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
   - Jira: DTM-32 (status: Done / `Gotovo`)
 - TSK-036 - Stage 4 idempotency: prevent duplicate reminder sends in same run
   - Jira: DTM-33 (status: Done / `Gotovo`)
+- TSK-037 - Stage 4 reminder pipeline decomposition (facts/draft/enhancer/sender)
+  - Jira: DTM-34 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -151,6 +156,7 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - agile/tasks/DTM-31_stage3-legacy-path-disposition-taskcalendar-old.md
 - agile/tasks/DTM-32_stage4-reminder-fallback-draft-on-openai-unavailable.md
 - agile/tasks/DTM-33_stage4-idempotent-reminder-delivery-guard.md
+- agile/tasks/DTM-34_stage4-reminder-pipeline-decomposition.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -209,3 +215,5 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - 2026-02-27: DTM-32 completed (draft fallback enforced for empty/unavailable enhancer responses + deterministic fallback smoke; Jira `Gotovo`).
 - 2026-02-27: DTM-33 moved to `V rabote` for Stage 4 idempotent reminder delivery guard.
 - 2026-02-27: DTM-33 completed (in-run duplicate-send guard for reminders + deterministic idempotency smoke; Jira `Gotovo`).
+- 2026-02-27: DTM-34 moved to `V rabote` for Stage 4 reminder pipeline decomposition (facts/draft/enhancer/sender).
+- 2026-02-27: DTM-34 completed (reminder pipeline decomposition helpers + fallback/idempotency behavior preserved + smoke-checks; Jira `Gotovo`).

@@ -143,3 +143,4 @@
 - Stage 2 infra adapter extraction: reminder/bootstrap flow uses explicit external adapter contracts (`core/adapters.py`) with injected Telegram/OpenAI implementations.
 - Stage 4 fallback hardening: reminder pipeline now enforces draft fallback when enhancer output is empty/unavailable and includes deterministic local smoke `agent/reminder_fallback_smoke.py`.
 - Stage 4 idempotency increment: reminder send path tracks in-run delivery keys and skips duplicate sends; deterministic smoke added in `agent/reminder_idempotency_smoke.py`.
+- Stage 4 decomposition increment: reminder flow decomposed into explicit helper steps (context collection, per-designer message build, delivery resolution, send execution) while preserving `get_reminders`/`send_reminders` external contract.

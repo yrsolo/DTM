@@ -182,6 +182,7 @@
 Статус:
 - Stage 4 kickoff started: fallback hardening for empty/unavailable OpenAI enhancer response with draft-message delivery preservation (`DTM-32`).
 - Stage 4 idempotency increment completed: in-run duplicate-delivery guard added for reminder sends with deterministic smoke verification (`DTM-33`).
+- Stage 4 decomposition increment completed: reminder pipeline split into explicit internal steps (context/draft-enhance/delivery) with preserved behavior and deterministic smoke verification (`DTM-34`).
 
 ---
 

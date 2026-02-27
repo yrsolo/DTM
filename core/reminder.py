@@ -215,6 +215,16 @@ class Reminder(object):
         self.next_work_day = None
         self.people_manager = people_manager
 
+    def _build_reminder_context(self):
+        today, next_work_day = self.calculate_dates()
+        tasks_today = self.distribute_tasks(today)
+        tasks_next_day = self.distribute_tasks(next_work_day)
+        return today, next_work_day, tasks_today, tasks_next_day
+
+    @staticmethod
+    def _collect_designers(tasks_today, tasks_next_day):
+        return set(tasks_today.keys()) | set(tasks_next_day.keys())
+
     async def get_tasks_for_date(self, date):
         """Получить задачи на конкретную дату.
 
@@ -225,6 +235,13 @@ class Reminder(object):
             list: Список задач.
         """
         return self.task_repository.get_tasks_by_date(date)
+
+    async def _build_designer_message(self, designer, tasks_today, tasks_next_day):
+        return await self.get_enhanced_message(
+            designer,
+            tasks_today.get(designer, []),
+            tasks_next_day.get(designer, []),
+        )
 
     async def get_enhanced_message(self, designer, tasks_today, tasks_next_day):
         """Получить улучшенное сообщение для дизайнера.
@@ -360,15 +377,43 @@ class Reminder(object):
         Returns:
             dict: Словарь улучшенных сообщений.
         """
-        today, next_work_day = self.calculate_dates()
-        tasks_today = self.distribute_tasks(today)
-        tasks_next_day = self.distribute_tasks(next_work_day)
+        _, _, tasks_today, tasks_next_day = self._build_reminder_context()
 
-
-        for designer in set(tasks_today.keys()) | set(tasks_next_day.keys()):
-            await self.get_enhanced_message(designer, tasks_today.get(designer, []), tasks_next_day.get(designer, []))
+        for designer in self._collect_designers(tasks_today, tasks_next_day):
+            await self._build_designer_message(designer, tasks_today, tasks_next_day)
 
         return self.enhanced_messages
+
+    def _resolve_delivery_message(self, designer_name, message):
+        if message:
+            return message
+
+        fallback_message = self.draft_messages.get(designer_name)
+        if fallback_message:
+            self.enhanced_messages[designer_name] = fallback_message
+            _safe_print(f"empty_message_fallback: using draft for {designer_name}")
+            return fallback_message
+
+        _safe_print(f"empty_message_skip: no draft for {designer_name}")
+        return None
+
+    def _resolve_delivery_target(self, designer_name, mode):
+        designer = self.people_manager.get_person(designer_name)
+        if not designer:
+            return None, None, None
+        test_chat_id = 91864013
+        test = mode == 'test'
+        chat_id = test_chat_id if test else designer.chat_id
+        can_send = bool(chat_id) and bool(self.tg_bot) and (designer.vacation != '\u0434\u0430')
+        return designer, chat_id, can_send
+
+    async def _deliver_message(self, designer_name, chat_id, message):
+        delivery_key = self._build_delivery_key(designer_name, chat_id, message)
+        if delivery_key in self.sent_delivery_keys:
+            _safe_print(f"duplicate_reminder_skip: {designer_name} chat_id={chat_id}")
+            return
+        await self.tg_bot.send_message(chat_id, message)
+        self.sent_delivery_keys.add(delivery_key)
 
     async def send_reminders(self, mode='test'):
         """Отправить напоминания.
@@ -377,33 +422,17 @@ class Reminder(object):
             mode (str): Режим работы.
         """
         for designer_name, message in self.enhanced_messages.items():
-            if not message:
-                fallback_message = self.draft_messages.get(designer_name)
-                if fallback_message:
-                    message = fallback_message
-                    self.enhanced_messages[designer_name] = message
-                    _safe_print(f"empty_message_fallback: using draft for {designer_name}")
-                else:
-                    _safe_print(f"empty_message_skip: no draft for {designer_name}")
-                    continue
+            resolved_message = self._resolve_delivery_message(designer_name, message)
+            if not resolved_message:
+                continue
 
-            designer = self.people_manager.get_person(designer_name)
-            if designer:
-                vacation = designer.vacation != 'да'
-                test_chat_id = 91864013
-                test = mode == 'test'
-                chat_id = test_chat_id if test else designer.chat_id
-                _safe_print(f'{mode=} {designer_name=} {chat_id=} {message=}')
-                if self.mock_telegram:
-                    _safe_print(f'mock_telegram_send: skipped for {designer_name} to chat_id={chat_id}')
-                    continue
-                if chat_id and self.tg_bot and vacation:
-                    delivery_key = self._build_delivery_key(designer_name, chat_id, message)
-                    if delivery_key in self.sent_delivery_keys:
-                        _safe_print(f"duplicate_reminder_skip: {designer_name} chat_id={chat_id}")
-                        continue
-                    await self.tg_bot.send_message(chat_id, message)
-                    self.sent_delivery_keys.add(delivery_key)
+            _, chat_id, can_send = self._resolve_delivery_target(designer_name, mode)
+            _safe_print(f'{mode=} {designer_name=} {chat_id=} {resolved_message=}')
+            if self.mock_telegram:
+                _safe_print(f'mock_telegram_send: skipped for {designer_name} to chat_id={chat_id}')
+                continue
+            if can_send:
+                await self._deliver_message(designer_name, chat_id, resolved_message)
 
     def _build_delivery_key(self, designer_name, chat_id, message):
         normalized_day = (
