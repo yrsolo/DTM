@@ -31,9 +31,10 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- DTM-15 - Stage 1 row-level validation policy for malformed task/person rows
-- DTM-16 - Stage 1 timing parse diagnostics and non-fatal error accounting
-- DTM-17 - Stage 1 quality report surfacing in local run artifacts
+- DTM-16 - Stage 1 row-level validation policy for malformed task/person rows
+- DTM-17 - Stage 1 timing parse diagnostics and non-fatal error accounting
+- DTM-18 - Stage 1 quality report surfacing in local run artifacts
+- DTM-15 - TSK-018 Reminder tests: mock OpenAI and Telegram delivery paths (low priority)
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -60,6 +61,8 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
   - Jira: DTM-13 (status: Done / `Gotovo`)
 - TSK-017 - Stage 1 typed data-quality error taxonomy and reporting
   - Jira: DTM-14 (status: Done / `Gotovo`)
+- TSK-018 - Reminder tests: mock OpenAI and Telegram delivery paths
+  - Jira: DTM-15 (status: To Do / `K vypolneniyu`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -76,6 +79,7 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - agile/tasks/DTM-12_typed-row-contract-scaffolding.md
 - agile/tasks/DTM-13_schema-guardrails-row-contracts.md
 - agile/tasks/DTM-14_typed-data-quality-error-taxonomy.md
+- agile/tasks/DTM-15_reminder-tests-mock-openai-telegram.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -98,3 +102,4 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - 2026-02-27: DTM-12 completed (typed row-contract scaffold for task/person mapping via `core/contracts.py`; timer/reminder dry-run smoke passed).
 - 2026-02-27: DTM-13 completed (contract-driven required-header guardrails for tasks/people, smoke-check, Jira `Gotovo`).
 - 2026-02-27: DTM-14 completed (typed data-quality error taxonomy + unified missing-header diagnostics in task/people loaders, smoke-check, Jira `Gotovo`).
+- 2026-02-27: DTM-15 created as non-urgent backlog task to mock OpenAI/Telegram side effects in reminder tests.
