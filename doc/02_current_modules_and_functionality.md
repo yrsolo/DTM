@@ -144,3 +144,4 @@
 - Stage 4 fallback hardening: reminder pipeline now enforces draft fallback when enhancer output is empty/unavailable and includes deterministic local smoke `agent/reminder_fallback_smoke.py`.
 - Stage 4 idempotency increment: reminder send path tracks in-run delivery keys and skips duplicate sends; deterministic smoke added in `agent/reminder_idempotency_smoke.py`.
 - Stage 4 decomposition increment: reminder flow decomposed into explicit helper steps (context collection, per-designer message build, delivery resolution, send execution) while preserving `get_reminders`/`send_reminders` external contract.
+- Stage 4 parallel enhancement increment: reminder enhancer calls now fan out in parallel via `asyncio.gather` with bounded concurrency (`enhance_concurrency` semaphore), and OpenAI/httpx client is reused per agent instance; deterministic parallel smoke added in `agent/reminder_parallel_enhancer_smoke.py`.

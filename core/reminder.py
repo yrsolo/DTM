@@ -104,6 +104,16 @@ class AsyncOpenAIChatAgent(object):
         self.endpoint = 'https://api.openai.com/v1/chat/completions'
         self.model = model
         self.logger = logger or NullLogger()
+        proxy_url = _sanitize_proxy_url(self.proxies.get("https://") or self.proxies.get("http://"))
+        client_kwargs = {}
+        if proxy_url:
+            # httpx>=0.28 uses singular "proxy" argument.
+            client_kwargs["proxy"] = proxy_url
+        self.http_client = httpx.AsyncClient(**client_kwargs)
+        self.client = AsyncOpenAI(
+            api_key=self.api_key,
+            http_client=self.http_client,
+        )
 
 
     async def chat(self, messages, model=None):
@@ -122,17 +132,6 @@ class AsyncOpenAIChatAgent(object):
 
         _safe_print(f"openai_proxies={self.proxies}")
 
-        proxy_url = _sanitize_proxy_url(self.proxies.get("https://") or self.proxies.get("http://"))
-        client_kwargs = {}
-        if proxy_url:
-            # httpx>=0.28 uses singular "proxy" argument.
-            client_kwargs["proxy"] = proxy_url
-
-        client = AsyncOpenAI(
-            api_key=self.api_key,
-            http_client=httpx.AsyncClient(**client_kwargs),
-        )
-
         if isinstance(messages, str):
             messages = [{'role': 'user', 'content': messages}]
 
@@ -146,7 +145,7 @@ class AsyncOpenAIChatAgent(object):
         _safe_print(f"openai_messages={messages}")
 
         try:
-            completion = await client.chat.completions.create(
+            completion = await self.client.chat.completions.create(
                 model=model,
                 messages=messages,
             )
@@ -161,6 +160,9 @@ class AsyncOpenAIChatAgent(object):
             return None
 
         return completion.choices[0].message.content
+
+    async def aclose(self):
+        await self.http_client.aclose()
 
 
 class MockOpenAIChatAgent(object):
@@ -189,6 +191,7 @@ class Reminder(object):
             mock_openai=False,
             mock_telegram=False,
             telegram_adapter: MessageAdapter = None,
+            enhance_concurrency=4,
     ):
         """Инициализация напоминаний о задачах.
 
@@ -214,6 +217,8 @@ class Reminder(object):
         self.today = None
         self.next_work_day = None
         self.people_manager = people_manager
+        self.enhance_concurrency = max(1, int(enhance_concurrency))
+        self.enhance_semaphore = asyncio.Semaphore(self.enhance_concurrency)
 
     def _build_reminder_context(self):
         today, next_work_day = self.calculate_dates()
@@ -223,7 +228,7 @@ class Reminder(object):
 
     @staticmethod
     def _collect_designers(tasks_today, tasks_next_day):
-        return set(tasks_today.keys()) | set(tasks_next_day.keys())
+        return sorted(set(tasks_today.keys()) | set(tasks_next_day.keys()))
 
     async def get_tasks_for_date(self, date):
         """Получить задачи на конкретную дату.
@@ -243,6 +248,10 @@ class Reminder(object):
             tasks_next_day.get(designer, []),
         )
 
+    async def _enhance_message_limited(self, message):
+        async with self.enhance_semaphore:
+            return await self.enhance_message(message)
+
     async def get_enhanced_message(self, designer, tasks_today, tasks_next_day):
         """Получить улучшенное сообщение для дизайнера.
 
@@ -261,7 +270,7 @@ class Reminder(object):
                 self.enhanced_messages[designer] = draft
                 return draft
             try:
-                enhanced = await self.enhance_message(draft)
+                enhanced = await self._enhance_message_limited(draft)
                 if not enhanced:
                     _safe_print("chat_enhancer_empty_response: fallback_to_draft")
                     enhanced = draft
@@ -378,9 +387,15 @@ class Reminder(object):
             dict: Словарь улучшенных сообщений.
         """
         _, _, tasks_today, tasks_next_day = self._build_reminder_context()
-
-        for designer in self._collect_designers(tasks_today, tasks_next_day):
-            await self._build_designer_message(designer, tasks_today, tasks_next_day)
+        designers = self._collect_designers(tasks_today, tasks_next_day)
+        tasks = [
+            self._build_designer_message(designer, tasks_today, tasks_next_day)
+            for designer in designers
+        ]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        for designer, result in zip(designers, results):
+            if isinstance(result, Exception):
+                _safe_print(f"chat_enhancer_unhandled_error: {designer=} {result}")
 
         return self.enhanced_messages
 

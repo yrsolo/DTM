@@ -8,6 +8,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Sends morning reminders to designers via Telegram.
 - Uses OpenAI to improve reminder text style, with automatic fallback to draft text when enhancer is unavailable.
 - Reminder delivery has in-run duplicate guard (idempotent send key) to prevent repeated sends in one runtime cycle.
+- Reminder text enhancement is processed in parallel with bounded concurrency for faster multi-designer runs.
 
 ## Why this repository exists
 - Show practical refactoring of a working legacy system.
