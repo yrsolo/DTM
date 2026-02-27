@@ -65,3 +65,4 @@ Purpose: track freshness and trust of planning sources before TeamLead creates/a
    - DTM-21 smoke passed after use-case extraction: sync/reminder branches and quality summary output preserved.
    - DTM-22 pre-task freshness check completed for reminder/bootstrap external adapter coupling before extraction.
    - DTM-22 smoke passed after adapter boundary extraction: sync-only dry-run and reminders-only mock run stayed green.
+   - DTM-24 smoke passed after task-calendar renderer alignment helpers over `RenderCell`: `python -m py_compile core/manager.py` and `python local_run.py --mode sync-only --dry-run`.

@@ -300,21 +300,7 @@ class TaskCalendarManager:
         color = self.get_color("gray")
 
         while day < end:
-            if day.weekday() >= 5:
-                day_color = (color if day != now else self.get_color("green")) ** 0.25
-            else:
-                day_color = color if day != now else self.get_color("green")
-
-            cell_data = RenderCell(
-                value=day.strftime("%d.%m"),
-                color=day_color,
-                text_color=color**3,
-                col=col,
-                row=row,
-                bold=True,
-                italic=True,
-                font_size=9,
-            ).to_cell_data()
+            cell_data = self._build_timeline_cell(row=row, col=col, day=day, now=now, base_color=color)
 
             self.service.update_cell(cell_data=cell_data)
             col += 1
@@ -322,15 +308,64 @@ class TaskCalendarManager:
 
         # self.service.execute_updates()
 
-    def task_to_sheet(self, row, task, color):
-        # task name
-        cell_data = RenderCell(
+    def _build_timeline_cell(self, row, col, day, now, base_color):
+        if day.weekday() >= 5:
+            day_color = (base_color if day != now else self.get_color("green")) ** 0.25
+        else:
+            day_color = base_color if day != now else self.get_color("green")
+        return RenderCell(
+            value=day.strftime("%d.%m"),
+            color=day_color,
+            text_color=base_color**3,
+            col=col,
+            row=row,
+            bold=True,
+            italic=True,
+            font_size=9,
+        ).to_cell_data()
+
+    def _build_task_name_cell(self, row, task):
+        return RenderCell(
             value=task.name,
             note=f"Менеджер: {task.customer}\nСтатус:\n{task.status}\nТайминг:\n{task.raw_timing}",
             col=1,
             row=row,
             font_size=9,
         ).to_cell_data()
+
+    def _build_stage_cell(self, row, col, day, task, color, stage):
+        if day.weekday() >= 5:
+            stage_color = (color if task.color_status not in ["wait"] else color.gray) ** 0.6
+        else:
+            stage_color = color if task.color_status not in ["wait"] else color.gray
+        return RenderCell(
+            value=stage[:5].upper(),
+            note=f"{stage} \n{task.name}" if stage else "",
+            color=stage_color,
+            text_color=color**0.01,
+            col=col,
+            row=row,
+            bold=True,
+            font_size=8,
+        ).to_cell_data()
+
+    def _build_designer_cell(self, designer, row, color):
+        return RenderCell(
+            value=designer,
+            color=color**1.5,
+            text_color=color**0.03,
+            col=1,
+            row=row,
+            bold=True,
+            font_size=10,
+        ).to_cell_data()
+
+    def _build_timestamp_cell(self, cur_time):
+        return RenderCell(value=cur_time, col=1, row=1, bold=True).to_cell_data()
+
+    def task_to_sheet(self, row, task, color):
+        # task name
+        cell_data = self._build_task_name_cell(row=row, task=task)
         self.service.update_cell(cell_data=cell_data)
 
         day = max(self.timeline["start"], task.min_date)
@@ -340,23 +375,14 @@ class TaskCalendarManager:
         while day <= self.timeline["end"] and day <= task.max_date:
             stage = ", ".join(task.timing.get(day, [""]))
             # print(day,col, stage)
-            if day.weekday() >= 5:
-                stage_color = (
-                    color if task.color_status not in ["wait"] else color.gray
-                ) ** 0.6
-            else:
-                stage_color = color if task.color_status not in ["wait"] else color.gray
-
-            cell_data = RenderCell(
-                value=stage[:5].upper(),
-                note=f"{stage} \n{task.name}" if stage else "",
-                color=stage_color,
-                text_color=color**0.01,
-                col=col,
+            cell_data = self._build_stage_cell(
                 row=row,
-                bold=True,
-                font_size=8,
-            ).to_cell_data()
+                col=col,
+                day=day,
+                task=task,
+                color=color,
+                stage=stage,
+            )
 
             self.service.update_cell(cell_data=cell_data)
 
@@ -368,15 +394,7 @@ class TaskCalendarManager:
         self.create_timeline(row)
         # task name
         color = self.get_color()
-        cell_data = RenderCell(
-            value=designer,
-            color=color**1.5,
-            text_color=color**0.03,
-            col=1,
-            row=row,
-            bold=True,
-            font_size=10,
-        ).to_cell_data()
+        cell_data = self._build_designer_cell(designer=designer, row=row, color=color)
         self.service.update_cell(cell_data=cell_data)
         row += 1
 
@@ -401,7 +419,7 @@ class TaskCalendarManager:
 
     def write_cur_time(self):
         cur_time = pd.Timestamp.now(tz="Europe/Moscow").strftime("%H:%M %B %d")
-        cell_data = RenderCell(value=cur_time, col=1, row=1, bold=True).to_cell_data()
+        cell_data = self._build_timestamp_cell(cur_time=cur_time)
         self.service.update_cell(cell_data=cell_data)
 
     def all_tasks_to_sheet(self, color_status=("wait", "work", "pre_done")):

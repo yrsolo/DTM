@@ -3,7 +3,7 @@
 ## Context
 - `DTM-23` introduced shared render contract scaffold (`core/render_contracts.py`) and integrated it into core `TaskCalendarManager` payload creation path.
 - Remaining renderer flow still mixes style/formatting decisions inline with drawing loops in `core/manager.py`.
-- Jira issue: `DTM-24` (status: `V rabote`).
+- Jira issue: `DTM-24` (status: `Gotovo`).
 
 ## Goal
 - Align task-calendar renderer logic to shared render contract usage with cleaner, testable boundaries.
@@ -21,14 +21,17 @@
 4. Update sprint/docs/Jira evidence.
 
 ## Checklist (DoD)
-- [ ] Remaining task-calendar render payload branches aligned with shared contract helpers.
-- [ ] Existing runtime behavior preserved (dry-run output path unchanged at flow level).
-- [ ] Smoke checks pass (`py_compile`, `local_run.py --mode sync-only --dry-run`).
-- [ ] `agile/sprint_current.md` updated.
-- [ ] Jira evidence comment added and issue transitioned according to lifecycle.
+- [x] Remaining task-calendar render payload branches aligned with shared contract helpers.
+- [x] Existing runtime behavior preserved (dry-run output path unchanged at flow level).
+- [x] Smoke checks pass (`py_compile`, `local_run.py --mode sync-only --dry-run`).
+- [x] `agile/sprint_current.md` updated.
+- [x] Jira evidence comment added and issue transitioned according to lifecycle.
 
 ## Work log
 - 2026-02-27: Task moved to `V rabote` after `DTM-23` completion.
+- 2026-02-27: Extracted task-calendar render helper methods in `TaskCalendarManager` around shared `RenderCell` contract.
+- 2026-02-27: Smoke passed: `python -m py_compile core/manager.py`, `python local_run.py --mode sync-only --dry-run`.
+- 2026-02-27: Jira evidence comment added; issue transitioned to `Gotovo`.
 
 ## Links
 - `core/manager.py`
