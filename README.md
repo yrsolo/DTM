@@ -61,7 +61,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `--alert-fail-on none|warn|critical` explicitly overrides preset exit policy.
   - `--notify-owner-on none|warn|critical` enables controlled owner-notify trigger from evaluator output (default: `none`).
   - `--notify-owner-context "<text>"` passes explicit context to notify helper (Russian text only).
-  - `--notify-owner-dry-run` prints notify command without sending Telegram message.
+  - `--notify-owner-dry-run` prints readable notify command preview (RU payload) without sending Telegram message.
 
 ## Baseline validation flow (Stage 0.4)
 - Capture artifact bundle:

@@ -7,6 +7,8 @@ from pathlib import Path
 import json
 import sys
 import time
+import io
+from contextlib import redirect_stdout
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
@@ -67,22 +69,27 @@ def run() -> None:
     assert should_fail("WARN", resolve_fail_on("ci", None)) is True
     assert should_fail("CRITICAL", resolve_fail_on("local", None)) is False
 
-    dry_run_notified = maybe_notify_owner(
-        alert_evaluation={
-            "level": "CRITICAL",
-            "reason": "smoke",
-            "source_file": "tmp/quality_report.json",
-            "summary": {
-                "reminder_delivery_attemptable_count": 10,
-                "reminder_delivery_rate": 0.9,
-                "reminder_send_error_count": 4,
+    dry_run_stdout = io.StringIO()
+    with redirect_stdout(dry_run_stdout):
+        dry_run_notified = maybe_notify_owner(
+            alert_evaluation={
+                "level": "CRITICAL",
+                "reason": "smoke",
+                "source_file": "tmp/quality_report.json",
+                "summary": {
+                    "reminder_delivery_attemptable_count": 10,
+                    "reminder_delivery_rate": 0.9,
+                    "reminder_send_error_count": 4,
+                },
             },
-        },
-        notify_on="critical",
-        notify_context="smoke",
-        notify_dry_run=True,
-    )
+            notify_on="critical",
+            notify_context="smoke",
+            notify_dry_run=True,
+        )
     assert dry_run_notified is True
+    rendered = dry_run_stdout.getvalue()
+    assert "Критический уровень" in rendered, rendered
+    assert "\\u041a" not in rendered, rendered
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         root = Path(tmp_dir)

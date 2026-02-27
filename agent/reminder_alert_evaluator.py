@@ -243,7 +243,7 @@ def maybe_notify_owner(
         payload["context"],
     ]
     if notify_dry_run:
-        print("owner_notify_dry_run command=" + json.dumps(cmd, ensure_ascii=True))
+        print("owner_notify_dry_run command=" + json.dumps(cmd, ensure_ascii=False))
         return True
 
     run = subprocess.run(

@@ -65,12 +65,13 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - [DONE] DTM-51 / TSK-054 Stage 5 follow-up: CI wrapper command for evaluator (`--fail-profile ci`) in routine checks
 - [DONE] DTM-52 / TSK-055 Stage 5 follow-up: monthly alert-threshold drift review note in sprint ceremony template
 - [DONE] DTM-53 / TSK-056 Stage 5 follow-up: retry taxonomy trend threshold note for weekly ops review
+- [DONE] DTM-54 / TSK-057 Stage 5 follow-up: owner notify fallback wording check for alert evaluator dry-run output
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 5 follow-up: owner notify fallback wording check for alert evaluator dry-run output
+- [TODO] none
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -175,6 +176,8 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
   - Jira: DTM-52 (status: Done / `Gotovo`)
 - TSK-056 - Stage 5 follow-up: retry taxonomy trend threshold note for weekly ops review
   - Jira: DTM-53 (status: Done / `Gotovo`)
+- TSK-057 - Stage 5 follow-up: owner notify fallback wording check for alert evaluator dry-run output
+  - Jira: DTM-54 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -230,6 +233,7 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - agile/tasks/DTM-51_stage5-ci-wrapper-command-evaluator-fail-profile-ci.md
 - agile/tasks/DTM-52_stage5-monthly-alert-threshold-drift-review-note-in-ceremony-template.md
 - agile/tasks/DTM-53_stage5-retry-taxonomy-trend-threshold-note-weekly-ops-review.md
+- agile/tasks/DTM-54_stage5-owner-notify-fallback-wording-check-evaluator-dry-run.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -328,3 +332,5 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - 2026-02-27: DTM-52 completed (monthly drift review checkpoint added to `agile/retro.md` ceremony template; Jira `Gotovo`).
 - 2026-02-27: DTM-53 moved to `V rabote` for Stage 5 weekly ops note on retry taxonomy trend thresholds.
 - 2026-02-27: DTM-53 completed (weekly retry taxonomy trend threshold triggers added in `doc/02` and `doc/05`; Jira `Gotovo`).
+- 2026-02-27: DTM-54 moved to `V rabote` for Stage 5 owner-notify fallback wording consistency check in evaluator/local dry-run output.
+- 2026-02-27: DTM-54 completed (readable owner-notify dry-run command output + local notify fallback context normalization `авторежим`; evaluator/local smoke checks passed; Jira `Gotovo`).

@@ -202,6 +202,7 @@
 - Stage 5 follow-up increment completed: CI wrapper command standardized for evaluator gate (`run_alert_eval_ci.cmd` with `--fail-profile ci`) in routine checks (`DTM-51`).
 - Stage 5 follow-up increment completed: sprint ceremony template now includes monthly alert-threshold drift review checkpoint (`DTM-52`).
 - Stage 5 follow-up increment completed: weekly ops review now includes retry taxonomy trend threshold triggers (`DTM-53`).
+- Stage 5 follow-up increment completed: owner-notify dry-run output now preserves readable RU payload wording and normalized local fallback context for no-mode runs (`DTM-54`).
 
 ---
 

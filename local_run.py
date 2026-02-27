@@ -173,6 +173,11 @@ def load_event(args):
     return None
 
 
+def _default_notify_context(mode: str | None) -> str:
+    run_mode = mode or "авторежим"
+    return f"локальный запуск: режим {run_mode}"
+
+
 if __name__ == "__main__":
     args = parse_args()
     event = load_event(args)
@@ -224,7 +229,7 @@ if __name__ == "__main__":
         maybe_notify_owner(
             alert_evaluation=alert_evaluation,
             notify_on=args.notify_owner_on,
-            notify_context=args.notify_owner_context or f"локальный запуск: режим {args.mode}",
+            notify_context=args.notify_owner_context or _default_notify_context(args.mode),
             notify_dry_run=args.notify_owner_dry_run,
         )
     if args.alert_evaluation_file and alert_evaluation is not None:
