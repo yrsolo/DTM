@@ -7,7 +7,7 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] none.
+- [IN_PROGRESS] DTM-83 / TSK-085 - owner-approved `dev -> main` merge and deploy trigger execution.
 
 ## Stage 9 Estimate (Dynamic)
 - Baseline estimate: 8 tasks (adjusted after explicit doc-structure refactor slice).
@@ -27,12 +27,13 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
+- [TODO] DTM-83 / TSK-085 - owner-approved `dev -> main` merge and deploy trigger execution.
 - [TODO] Stage 9: cloud-profile shadow-run with explicit `PROTOTYPE_*_S3_KEY` pass criteria.
 - [TODO] Stage 9: deploy-pipeline consumer contract-regression checks.
 - [TODO] Stage 9: deployment smoke checklist for Yandex Cloud Function profile.
 
 ## Active Task Files
-- `agile/tasks/DTM-82_doc-folder-structure-refactor.md`
+- `agile/tasks/DTM-83_stage9-main-merge-and-deploy-trigger.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`
