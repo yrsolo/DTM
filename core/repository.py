@@ -231,6 +231,7 @@ class GoogleSheetsTaskRepository(TaskRepository):
         sheet_name = self.source_sheet_info.get_sheet_name("tasks")
         assistant_sheet_name = self.source_sheet_info.get_sheet_name("assistant")
         df = self.service.get_dataframe(spreadsheet_name, sheet_name)
+        self._validate_required_columns(df, spreadsheet_name, sheet_name)
         color_range = f"A2:A{len(df) + 1}"
         colors = self.service.get_cell_colors(spreadsheet_name, sheet_name, color_range)
         # в ячейке ДИЗАЙНЕР может быть несколько человек, там str в котором на каждой строчке один человек
@@ -260,6 +261,18 @@ class GoogleSheetsTaskRepository(TaskRepository):
         self.df = df
         self._df_to_task(df)
 
+    def _validate_required_columns(self, df, spreadsheet_name, sheet_name):
+        required_columns = {
+            col for col in TASK_FIELD_MAP.values() if col not in {"color", "color_status", "name", "id"}
+        }
+        missing = sorted(col for col in required_columns if col not in df.columns)
+        if missing:
+            missing_str = ", ".join(missing)
+            raise ValueError(
+                f"Missing required task columns in '{spreadsheet_name}/{sheet_name}': {missing_str}. "
+                "Check source sheet headers against config.TASK_FIELD_MAP."
+            )
+
     def _generate_task_name(self, row):
         """Сгенерировать название задачи"""
         raw_format = row.get("ФОРМАТ", "")
@@ -282,7 +295,7 @@ class GoogleSheetsTaskRepository(TaskRepository):
         tasks_list = []
         next_task_date = None
         for idx, row in df.iterrows():
-            task = {key: row[value] for key, value in TASK_FIELD_MAP.items()}
+            task = {key: row.get(value, None) for key, value in TASK_FIELD_MAP.items()}
             task = Task(**task, parser=self.timing_parser, next_task_date=next_task_date)
             tasks_list.append(task)
             self.tasks[task.id] = task

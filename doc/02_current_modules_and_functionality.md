@@ -104,3 +104,7 @@
 ## Узкие места для реконструкции
 - Смешение доменной логики, форматирования и API-адаптеров.
 - Нет регрессионного тестового контура на реальных данных таблицы.
+
+## 2026-02-27 update
+- `GoogleSheetsTaskRepository` now validates required task columns before mapping rows to `Task` objects.
+- If required headers are missing, repository raises explicit `ValueError` with column names and sheet reference.
