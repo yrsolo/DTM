@@ -157,6 +157,7 @@
 - Stage 3 adapter extraction continued: `CalendarManager` write path moved behind `SheetRenderAdapter` boundary with bootstrap DI wiring (`DTM-26`).
 - Stage 3 parity increment completed: `CalendarManager` header/date/body payload assembly normalized through helper methods over `RenderCell` (`DTM-27`).
 - Stage 3 harness increment completed: adapter dry-run assertion script added (`agent/render_adapter_smoke.py`, `DTM-28`).
+- Stage 3 close-out increment completed: `TaskManager` designers-sheet write path moved to `SheetRenderAdapter` + `RenderCell` with bootstrap DI renderer wiring (`DTM-29`).
 
 Критерий готовности:
 - обе визуализации строятся через единый промежуточный формат.

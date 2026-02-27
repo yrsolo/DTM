@@ -18,6 +18,7 @@ class PlannerDependencies:
     timing_processor: TaskTimingProcessor
     task_repository: GoogleSheetsTaskRepository
     task_manager: TaskManager
+    designers_renderer: SheetRenderAdapter
     calendar_manager: CalendarManager
     calendar_renderer: SheetRenderAdapter
     task_calendar_manager: TaskCalendarManager
@@ -44,7 +45,15 @@ def build_planner_dependencies(
         service,
         source_sheet_info=source_sheet_info,
     )
-    task_manager = TaskManager(task_repository)
+    designers_renderer: SheetRenderAdapter = ServiceSheetRenderAdapter(
+        service=service,
+        spreadsheet_name=sheet_info.spreadsheet_name,
+        sheet_name=sheet_info.get_sheet_name("designers"),
+    )
+    task_manager = TaskManager(
+        task_repository,
+        renderer=designers_renderer,
+    )
     calendar_renderer: SheetRenderAdapter = ServiceSheetRenderAdapter(
         service=service,
         spreadsheet_name=sheet_info.spreadsheet_name,
@@ -96,6 +105,7 @@ def build_planner_dependencies(
         timing_processor=timing_processor,
         task_repository=task_repository,
         task_manager=task_manager,
+        designers_renderer=designers_renderer,
         calendar_manager=calendar_manager,
         calendar_renderer=calendar_renderer,
         task_calendar_manager=task_calendar_manager,

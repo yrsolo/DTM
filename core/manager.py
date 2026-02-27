@@ -24,11 +24,18 @@ from utils.func import GetColor, RGBColor, cell_to_indices, filter_stages
 
 
 class TaskManager:
-    def __init__(self, task_repository):
+    def __init__(self, task_repository, renderer: SheetRenderAdapter | None = None):
         self.repository = task_repository
         self.tasks = None
         self.designers = None
         self.get_color = GetColor()
+        self.spreadsheet_name = self.repository.sheet_info.spreadsheet_name
+        self.sheet_name = self.repository.sheet_info.get_sheet_name("designers")
+        self.renderer = renderer or ServiceSheetRenderAdapter(
+            service=self.repository.service,
+            spreadsheet_name=self.spreadsheet_name,
+            sheet_name=self.sheet_name,
+        )
 
     def update(self):
         """Обновить данные из репозитория"""
@@ -46,11 +53,9 @@ class TaskManager:
 
         self.update()
         tasks = [task for task in self.tasks if task.color_status in color_status]
-        # Получаем ID дизайнерского листа
-        spreadsheet_name = self.repository.sheet_info.spreadsheet_name
-        sheet_name = self.repository.sheet_info.get_sheet_name("designers")
-        # Очищаем лист
-        self.repository.service.clear_cells(spreadsheet_name, sheet_name)
+        self.renderer.begin()
+        if self.sheet_name:
+            self.renderer.clear_cells()
 
         # Устанавливаем начальные координаты
         start_row, col = 2, 2
@@ -63,30 +68,50 @@ class TaskManager:
                 continue
 
             # Добавляем имя дизайнера
-            cell_data = {
-                "value": designer,
-                "color": self.get_color("deep purple"),
-                "text_color": self.get_color("white"),
-                "col": col,
-                "row": start_row,
-                "bold": True,
-                # 'italic': True,
-                "font_size": 12,
-            }
-            self.repository.service.update_cell(spreadsheet_name, sheet_name, cell_data=cell_data)
+            cell_data = self._build_designer_header_cell(designer=designer, row=start_row, col=col)
+            self.renderer.update_cell(cell_data=cell_data)
 
             for task in tasks_for_designer:
-                note = str(task.customer) + "\n" + str(task.raw_timing)
-                self.repository.service.update_cell(
-                    spreadsheet_name, sheet_name, row, col, value=task.name, note=note
-                )
+                cell_data = self._build_task_cell(task=task, row=row, col=col)
+                self.renderer.update_cell(cell_data=cell_data)
                 row += 1
 
             col += 1
             row = start_row + 1
 
-        write_cur_time(self.repository.service, spreadsheet_name, sheet_name, cell="A1")
-        self.repository.service.execute_updates(spreadsheet_name)
+        self._write_cur_time(cell="A1")
+        self.renderer.execute_updates()
+
+    def _build_designer_header_cell(self, designer, row, col):
+        return RenderCell(
+            value=designer,
+            color=self.get_color("deep purple"),
+            text_color=self.get_color("white"),
+            col=col,
+            row=row,
+            bold=True,
+            font_size=12,
+        ).to_cell_data()
+
+    def _build_task_cell(self, task, row, col):
+        note = f"{task.customer}\n{task.raw_timing}"
+        return RenderCell(
+            value=task.name,
+            note=note,
+            col=col,
+            row=row,
+        ).to_cell_data()
+
+    def _write_cur_time(self, cell="A1"):
+        cur_time = pd.Timestamp.now(tz="Europe/Moscow").strftime("%H:%M %B %d")
+        row, col = cell_to_indices(cell)
+        self.renderer.update_cell(
+            cell_data={
+                "row": row + 1,
+                "col": col + 1,
+                "value": cur_time,
+            }
+        )
 
 
 def get_date_range(timings_dict: Dict[pd.Timestamp, List[str]]):
