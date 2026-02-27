@@ -32,12 +32,12 @@ Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk
 - [DONE] DTM-15 / TSK-018 Reminder tests: mock OpenAI and Telegram delivery paths.
 - [DONE] DTM-19 / TSK-022 Stage 2 layer boundary inventory and dependency map.
 - [DONE] DTM-20 / TSK-023 Stage 2 domain module extraction scaffold.
+- [DONE] DTM-21 / TSK-024 Stage 2 application use-case orchestration extraction.
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-21 / TSK-024 Stage 2 application use-case orchestration extraction
 - [TODO] DTM-22 / TSK-025 Stage 2 infrastructure adapter boundary for external services
 
 ## Selected Work (Jira/Local)
@@ -78,7 +78,7 @@ Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk
 - TSK-023 - Stage 2 domain module extraction scaffold
   - Jira: DTM-20 (status: Done / `Gotovo`)
 - TSK-024 - Stage 2 application use-case orchestration extraction
-  - Jira: DTM-21 (status: To Do / `K vypolneniyu`)
+  - Jira: DTM-21 (status: Done / `Gotovo`)
 - TSK-025 - Stage 2 infrastructure adapter boundary for external services
   - Jira: DTM-22 (status: To Do / `K vypolneniyu`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
@@ -103,6 +103,7 @@ Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk
 - agile/tasks/DTM-18_quality-report-local-artifacts.md
 - agile/tasks/DTM-19_stage2-layer-boundary-inventory.md
 - agile/tasks/DTM-20_stage2-domain-scaffold.md
+- agile/tasks/DTM-21_stage2-application-usecases.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -135,3 +136,5 @@ Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk
 - 2026-02-27: DTM-19 completed (Stage 2 layer boundary inventory + dependency map in `doc/10_stage2_layer_inventory.md`; Jira `Gotovo`).
 - 2026-02-27: DTM-20 moved to `V rabote` for Stage 2 scaffold (`S2-SLICE-01`: planner dependency construction boundary extraction).
 - 2026-02-27: DTM-20 completed (bootstrap dependency-construction boundary via `core/bootstrap.py`; smoke-check; Jira `Gotovo`).
+- 2026-02-27: DTM-21 moved to `V rabote` for Stage 2 application use-case orchestration extraction.
+- 2026-02-27: DTM-21 completed (orchestration extracted to `core/use_cases.py`; smoke-check; Jira `Gotovo`).

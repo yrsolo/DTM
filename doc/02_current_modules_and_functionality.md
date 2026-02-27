@@ -5,6 +5,7 @@
 ## `main.py`
 - Определяет режим запуска (`timer`, `morning`, `test`) по event/trigger.
 - Создает bootstrap-зависимости планировщика через `core/bootstrap.py` и передает их в `GoogleSheetPlanner`.
+- Делегирует orchestration flow в application use-cases (`core/use_cases.py`).
 - В режиме `timer/test`:
   - обновляет данные;
   - перерисовывает листы `Задачи`, `Календарь`, `Дизайнеры`.
@@ -83,6 +84,11 @@
 - Stage 2 scaffold-модуль для сборки зависимостей планировщика (`build_planner_dependencies`).
 - Централизует wiring `GoogleSheetsService` / managers / repository / reminder stack вне `GoogleSheetPlanner`.
 
+## `core/use_cases.py`
+- Stage 2 application-layer use-cases:
+  - `resolve_run_mode(...)` для определения режима выполнения из аргументов/event;
+  - `run_planner_use_case(...)` для orchestration веток sync/reminder и сборки quality report.
+
 ## Инфраструктура и утилиты
 
 ## `utils/service.py`
@@ -126,3 +132,4 @@
 - `GoogleSheetPlanner.build_quality_report()` now surfaces structured Stage 1 diagnostics; `main.py` prints quality summary and `local_run.py --quality-report-file` can persist JSON artifacts.
 - Added reminder external-call mock controls for test runs: `main.py` auto-enables `mock_external` for `mode=test`, `local_run.py` supports explicit `--mock-external`, and reminder flow skips real OpenAI/Telegram calls in this mode.
 - Stage 2 scaffold: planner dependency construction moved into explicit bootstrap boundary (`core/bootstrap.py`), and `main.py` now uses injected dependencies when constructing `GoogleSheetPlanner`.
+- Stage 2 application use-case extraction: orchestration ветки выполнения вынесены из `main.py` в `core/use_cases.py`.

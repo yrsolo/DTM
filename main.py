@@ -2,11 +2,10 @@
 
 import asyncio
 
-import pandas as pd
-
 from config import KEY_JSON, SHEET_INFO, TRIGGERS
 from core.bootstrap import build_planner_dependencies
 from core.planner import GoogleSheetPlanner
+from core.use_cases import resolve_run_mode, run_planner_use_case
 
 
 def _print_quality_report(report):
@@ -26,22 +25,11 @@ async def main(**kwargs):
         kwargs: Параметры запуска.
     """
     # ????????????? ????????????
-    mode = kwargs.get("mode", None)
-    event = kwargs.get("event", None)
+    mode = kwargs.get("mode")
+    event = kwargs.get("event")
     dry_run = kwargs.get("dry_run", False)
     mock_external = kwargs.get("mock_external")
-    if mode:
-        pass
-    elif event:
-        print(f"{event=}")
-        if event == "morning":
-            mode = "morning"
-        else:
-            trigger_id = event["messages"][0]["details"]["trigger_id"]
-            mode = TRIGGERS.get(trigger_id, "test")
-            print(f"{trigger_id=}")
-    else:
-        mode = "test"
+    mode = resolve_run_mode(mode=mode, event=event, triggers=TRIGGERS)
     if mock_external is None:
         mock_external = mode == "test"
     print(f"{mode=} {dry_run=} {mock_external=}")
@@ -61,25 +49,7 @@ async def main(**kwargs):
         dependencies=dependencies,
     )
 
-    if mode in {"timer", "test", "sync-only"}:
-        start_time = pd.Timestamp.now()
-        planner.update()
-        planner.task_to_calendar()  # Генерация и запись календаря задач
-        planner.designer_task_to_calendar()  # Генерация и запись календаря дизайнеров
-        planner.task_to_table()  # Запись задач в лист "Дизайнеры"
-        run_time = pd.Timestamp.now() - start_time
-        print(f"Table update runtime: {run_time}")
-
-    if mode in {"morning", "test", "reminders-only"}:
-        start_time = pd.Timestamp.now()
-        now = pd.Timestamp.now(tz="Europe/Moscow")
-        dow = now.dayofweek
-        if dow in {0, 1, 2, 3, 4} or mode == "test":
-            await planner.send_reminders()
-        run_time = pd.Timestamp.now() - start_time
-        print(f"Reminder runtime: {run_time}")
-
-    quality_report = planner.build_quality_report()
+    quality_report = await run_planner_use_case(planner, mode)
     _print_quality_report(quality_report)
     return quality_report
 
