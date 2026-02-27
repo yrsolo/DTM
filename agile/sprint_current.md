@@ -11,8 +11,8 @@ Start Stage 6 preparation for visualization platform migration with explicit rea
 
 ## Stage 6 Estimate (Dynamic)
 - Baseline estimate: 8 tasks
-- Done: 2
-- Remaining: 6
+- Done: 3
+- Remaining: 5
 - Rule: estimate is adjusted during execution when scope clarifies; done/remaining is updated after each task completion.
 
 ## Done
@@ -74,14 +74,15 @@ Start Stage 6 preparation for visualization platform migration with explicit rea
 - [DONE] DTM-54 / TSK-057 Stage 5 follow-up: owner notify fallback wording check for alert evaluator dry-run output
 - [DONE] DTM-55 / TSK-058 Stage 6 kickoff: dynamic estimate tracker and completion-notify process rule
 - [DONE] DTM-56 / TSK-059 Stage 6 slice: read-model JSON contract definition (entities fields versioning)
+- [DONE] DTM-57 / TSK-060 Stage 6 slice: read-model builder from current planner artifacts
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 6 slice: read-model builder from current planner artifacts
 - [TODO] Stage 6 slice: publication path for read-model artifacts without impact on existing runtime
 - [TODO] Stage 6 slice: UI view-spec baseline over read-model (filters/timeline/history)
+- [TODO] Stage 6 slice: read-model builder contract tests and compatibility checks
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -192,6 +193,8 @@ Start Stage 6 preparation for visualization platform migration with explicit rea
   - Jira: DTM-55 (status: Done / `Gotovo`)
 - TSK-059 - Stage 6 slice: read-model JSON contract definition (entities fields versioning)
   - Jira: DTM-56 (status: Done / `Gotovo`)
+- TSK-060 - Stage 6 slice: read-model builder from current planner artifacts
+  - Jira: DTM-57 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -250,6 +253,7 @@ Start Stage 6 preparation for visualization platform migration with explicit rea
 - agile/tasks/DTM-54_stage5-owner-notify-fallback-wording-check-evaluator-dry-run.md
 - agile/tasks/DTM-55_stage6-kickoff-dynamic-estimate-and-completion-notify.md
 - agile/tasks/DTM-56_stage6-read-model-json-contract-definition.md
+- agile/tasks/DTM-57_stage6-read-model-builder-from-current-planner-artifacts.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -355,3 +359,5 @@ Start Stage 6 preparation for visualization platform migration with explicit rea
 - 2026-02-27: DTM-55 completed (Stage 6 dynamic estimate tracker initialized: baseline 8, done 1, remaining 7; completion Telegram notify rule formalized; Jira `Gotovo`).
 - 2026-02-27: DTM-56 moved to `V rabote` for Stage 6 read-model JSON contract definition (entities, fields, metadata, versioning).
 - 2026-02-27: DTM-56 completed (canonical Stage 6 read-model JSON contract added in `doc/11_stage6_read_model_contract.md`; Stage 6 estimate updated to done 2 / remaining 6; Jira `Gotovo`).
+- 2026-02-27: DTM-57 moved to `V rabote` for Stage 6 read-model builder implementation from current planner artifacts.
+- 2026-02-27: DTM-57 completed (`core/read_model.py` builder + `agent/read_model_builder_smoke.py`; Stage 6 estimate updated to done 3 / remaining 5; Jira `Gotovo`).

@@ -4,7 +4,7 @@
 Define a canonical JSON read-model for downstream UI/API consumers without changing current production runtime behavior.
 
 ## Scope
-- Producer in Stage 6: runtime artifact builder (future task).
+- Producer in Stage 6: runtime artifact builder (`core/read_model.py`).
 - Consumers: web UI, API adapters, review tooling.
 - Source systems in current state: planner outputs, quality report summary/counters, alert evaluation artifacts.
 
@@ -99,7 +99,8 @@ Runtime quality and delivery counters consumed by dashboards.
 ## Mapping Notes (Current Runtime -> Read-Model)
 - `quality_summary` maps from `GoogleSheetPlanner.build_quality_report()['summary']`.
 - `alerts[]` maps from alert evaluator outputs (`alert_evaluation.json` / evaluator CLI output).
-- `board.*` and `task_details[]` map from planner manager projections and task repository records (builder task in next slice).
+- `board.*` and `task_details[]` are currently emitted as empty arrays and will be filled from planner manager projections in the next Stage 6 slices.
+- Current implementation entrypoint: `core.read_model.build_read_model(quality_report, alert_evaluation, build_id=None)`.
 
 ## Versioning Policy
 - Backward-compatible field additions: bump minor (`1.0.0` -> `1.1.0`).
@@ -110,3 +111,6 @@ Runtime quality and delivery counters consumed by dashboards.
 - Unknown fields are allowed for forward compatibility.
 - Required fields must always be present, even when value is `null`.
 - Date strings must be normalized to `YYYY-MM-DD` where applicable.
+
+## Smoke Coverage
+- Deterministic builder contract smoke: `agent/read_model_builder_smoke.py`.
