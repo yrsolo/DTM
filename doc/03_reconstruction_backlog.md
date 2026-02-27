@@ -199,6 +199,7 @@
 - Stage 5 follow-up increment completed: routine ops cadence checklist formalized for threshold tuning governance (`DTM-48`).
 - Stage 5 follow-up increment completed: retry taxonomy metrics checklist formalized in runbook and baseline checklist flow (`DTM-49`).
 - Stage 5 follow-up increment completed: owner notify templates hardened with RU-only payload validation guard (`DTM-50`).
+- Stage 5 follow-up increment completed: CI wrapper command standardized for evaluator gate (`run_alert_eval_ci.cmd` with `--fail-profile ci`) in routine checks (`DTM-51`).
 
 ---
 

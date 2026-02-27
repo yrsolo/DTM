@@ -67,7 +67,7 @@ Use this cadence to keep threshold tuning reproducible and avoid ad-hoc policy d
 ### Weekly
 - Review the latest 3+ baseline bundles and check for repeated false-positive/false-negative patterns.
 - Verify evaluator gate profile usage is consistent:
-  - CI checks use `--fail-profile ci`.
+  - CI checks use `run_alert_eval_ci.cmd`.
   - local review stays non-blocking with `--alert-fail-profile local` unless explicitly overridden.
 - Review retry taxonomy mix:
   - `transient` dominates only during temporary incidents,

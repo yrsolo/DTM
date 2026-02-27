@@ -53,6 +53,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Quality report summary now also includes derived reminder SLI metrics: attemptable deliveries, attempted sends, delivery rate, and failure rate.
 - Automated threshold evaluator (latest artifact auto-discovery):
   - `.venv\Scripts\python.exe agent\reminder_alert_evaluator.py --format text --fail-profile ci`
+  - `run_alert_eval_ci.cmd` (CI wrapper command with `--fail-profile ci`)
 - Local review wiring options:
   - `--evaluate-alerts` prints evaluator result from current run quality report.
   - `--alert-evaluation-file <path>` saves evaluator JSON artifact.
