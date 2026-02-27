@@ -7,6 +7,9 @@ Deploy a new Cloud Function version automatically on every `push` to `main`.
 - File: `.github/workflows/deploy_yc_function_main.yml`
 - Trigger: `push` to `main`
 - Deploy action: `yc-actions/yc-sls-function@v4`
+- Pre-deploy contract gate in CI:
+  - `agent/read_model_contract_compat_smoke.py`
+  - `agent/schema_snapshot_smoke.py`
 - Default runtime contour:
   - `runtime=python311`
   - `entrypoint=index.handler`
@@ -36,11 +39,13 @@ Optional overrides:
 
 ## Smoke check after first deploy
 1. Push a tiny commit to `main`.
-2. Verify GitHub Actions job `Deploy Yandex Cloud Function (main)` is green.
+2. Verify GitHub Actions job `Deploy Yandex Cloud Function (main)` is green (contract smoke checks + deploy step).
 3. Verify new function version appears in Yandex Cloud console.
 4. Trigger function once and confirm runtime logs are healthy.
 5. Optional scripted HTTP invoke smoke:
    - `.venv\Scripts\python.exe agent\invoke_function_smoke.py --url <function_url> --healthcheck`
+6. Use full checklist for regular operations:
+   - `doc/ops/stage9_deployment_smoke_checklist.md`
 
 ## Notes
 - Current workflow packages source from repository (Python modules and docs) and excludes secrets, artifacts, notebooks, and local virtualenv.

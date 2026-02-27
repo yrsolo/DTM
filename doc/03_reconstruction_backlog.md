@@ -15,7 +15,7 @@ Safe, incremental migration of DTM from legacy tightly coupled automation to mai
 | 6 | read-model contract and publication path | done | `doc/stages/11_stage6_read_model_contract.md`, `doc/stages/12_stage6_ui_view_spec.md`, `doc/stages/13_stage6_closeout_and_handoff.md` |
 | 7 | frontend migration prep (schema/fixture/policy/checklists) | done | `doc/stages/14_stage7_execution_plan.md` ... `doc/stages/18_stage7_closeout_and_stage8_handoff.md` |
 | 8 | static web prototype and shadow-run evidence package | done | `doc/stages/19_stage8_execution_plan.md`, `doc/stages/20_stage8_closeout_and_stage9_handoff.md` |
-| 9 | serverless deploy contour and cloud runtime wiring | in progress | `doc/ops/stage9_main_autodeploy_setup.md`, `agile/sprint_current.md` |
+| 9 | serverless deploy contour and cloud runtime wiring | done | `doc/ops/stage9_main_autodeploy_setup.md`, `doc/ops/stage9_deployment_smoke_checklist.md`, `agile/sprint_current.md` |
 
 ## Stage 9 Progress
 Completed:
@@ -33,11 +33,13 @@ Completed:
 
 Completed:
 - `DTM-84`: serverless startup/runtime hotfix (lazy Telegram init + safe import path + HTTP body parsing for invoke payload); deploy run `22501249449`; endpoint healthcheck `!HEALTHY!`.
+- `DTM-85`: deployment smoke checklist for Yandex Cloud Function profile (`healthcheck`, `timer dry-run`, `timer live`) with failure triage map.
+- `DTM-86`: cloud shadow-run gate with explicit required `PROTOTYPE_*_S3_KEY` pass/fail behavior.
+- `DTM-87`: deploy pipeline contract-regression smoke checks before function deployment.
 
 Planned next:
-- Cloud-profile shadow-run with explicit `PROTOTYPE_*_S3_KEY` pass criteria.
-- Deploy-pipeline consumer contract-regression checks.
-- Deployment smoke checklist for Yandex Cloud Function profile.
+- Stage 10 kickoff and baseline estimate.
+- Stage 10 first execution slice grooming.
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).

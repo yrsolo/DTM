@@ -7,12 +7,12 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 1 active task (strict WIP=1).
 
 ## Now
-- [BLOCKED] Stage 9 next slice grooming (post DTM-84 closeout): waiting explicit local-mode waiver or task-system access restore.
+- [IN_PROGRESS] Stage 9 closeout summary and Stage 10 handoff prep.
 
 ## Stage 9 Estimate (Dynamic)
-- Baseline estimate: 9 tasks (adjusted after serverless runtime hotfix slice).
-- Done: 8
-- Remaining: 1
+- Baseline estimate: 11 tasks (expanded with operational closeout slices after runtime incidents).
+- Done: 11
+- Remaining: 0
 - Rule: update `Done/Remaining` after each completed Stage 9 task.
 
 ## Done
@@ -24,17 +24,19 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 - [DONE] DTM-82 / TSK-084 - doc folder restructuring by purpose (`core/ops/governance/stages/archive`).
 - [DONE] DTM-83 / TSK-085 - owner-approved main deploy trigger + credential fallback; deploy run `22500598734` successful.
 - [DONE] DTM-84 / TSK-086 - import/runtime Telegram crash fixed for serverless startup; HTTP-body parsing + healthcheck invoke path; deploy run `22501249449` successful, endpoint returns `!HEALTHY!`.
+- [DONE] DTM-85 / TSK-087 - deployment smoke checklist published and validated (`healthcheck` + `timer dry-run` evidence), Jira moved to `Готово`.
+- [DONE] DTM-86 / TSK-088 - shadow-run cloud gate now supports required `PROTOTYPE_*_S3_KEY` mode with smoke coverage and ops checklist update.
+- [DONE] DTM-87 / TSK-089 - deploy workflow now enforces consumer contract-regression smoke checks before cloud deploy.
 
 ## Blocked
-- [BLOCKED] Stage 9 execution is paused by process gate (task-system lifecycle unavailable in current runtime); owner escalation sent via `agent/notify_owner.py` on 2026-02-27.
+- [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 9: cloud-profile shadow-run with explicit `PROTOTYPE_*_S3_KEY` pass criteria.
-- [TODO] Stage 9: deploy-pipeline consumer contract-regression checks.
-- [TODO] Stage 9: deployment smoke checklist for Yandex Cloud Function profile.
+- [TODO] Stage 10: kickoff and baseline estimate.
+- [TODO] Stage 10: first execution slice grooming.
 
 ## Active Task Files
-- `agile/tasks/DTM-84_stage9-serverless-import-token-crash-fix.md`
+- none (Stage 9 execution queue complete)
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`

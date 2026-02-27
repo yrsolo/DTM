@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import subprocess
 
@@ -59,6 +60,22 @@ def main() -> int:
     run = subprocess.run(cmd, check=False, capture_output=True, text=True, encoding="utf-8")
     if run.returncode != 0:
         raise RuntimeError(f"shadow_evidence_builder_failed: {run.stdout}\n{run.stderr}")
+
+    require_cloud_cmd = cmd + ["--require-cloud-keys"]
+    env = os.environ.copy()
+    env.pop("PROTOTYPE_READ_MODEL_S3_KEY", None)
+    env.pop("PROTOTYPE_SCHEMA_SNAPSHOT_S3_KEY", None)
+    env.pop("PROTOTYPE_FIXTURE_BUNDLE_S3_KEY", None)
+    require_run = subprocess.run(
+        require_cloud_cmd,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=env,
+    )
+    if require_run.returncode == 0:
+        raise RuntimeError("shadow_run_require_cloud_keys_expected_failure_missing")
 
     evidence_dir = _latest_evidence_dir(out_root)
     summary_file = evidence_dir / "shadow_run_evidence.json"

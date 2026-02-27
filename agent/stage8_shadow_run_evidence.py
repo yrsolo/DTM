@@ -46,6 +46,11 @@ def parse_args() -> argparse.Namespace:
         default="stage8_shadow_run",
         help="Label suffix for evidence directory (default: stage8_shadow_run).",
     )
+    parser.add_argument(
+        "--require-cloud-keys",
+        action="store_true",
+        help="Fail run when cloud profile S3 keys are not provided.",
+    )
     return parser.parse_args()
 
 
@@ -115,7 +120,8 @@ def main() -> int:
     commands["assets_smoke"] = _run([py, "agent/web_prototype_assets_smoke.py"])
 
     cloud_result: dict[str, object]
-    if _has_cloud_keys():
+    cloud_keys_present = _has_cloud_keys()
+    if cloud_keys_present:
         cloud_result = _run(
             [
                 py,
@@ -154,9 +160,11 @@ def main() -> int:
         "empty_state_render_contract_present": commands["assets_smoke"]["returncode"] == 0,
         "cloud_profile_fetch_validated": (
             commands["load_object_storage"].get("returncode") == 0
-            if _has_cloud_keys()
+            if cloud_keys_present
             else "skipped_missing_s3_keys"
         ),
+        "cloud_keys_required_mode": bool(args.require_cloud_keys),
+        "cloud_keys_present": bool(cloud_keys_present),
     }
     evidence = {
         "artifact": "stage8_shadow_run_evidence",
@@ -175,12 +183,15 @@ def main() -> int:
         for name in ("load_filesystem", "prepare_filesystem", "loader_schema_smoke", "assets_smoke")
         if commands[name]["returncode"] != 0
     ]
-    if _has_cloud_keys() and commands["load_object_storage"].get("returncode") != 0:
+    if cloud_keys_present and commands["load_object_storage"].get("returncode") != 0:
         failed.append("load_object_storage")
+    if args.require_cloud_keys and not cloud_keys_present:
+        failed.append("missing_required_cloud_keys")
 
     print(f"shadow_run_evidence_file={summary_file}")
     print(f"shadow_run_baseline_dir={baseline_dir}")
-    print(f"shadow_run_cloud_check={'enabled' if _has_cloud_keys() else 'skipped_missing_s3_keys'}")
+    print(f"shadow_run_cloud_check={'enabled' if cloud_keys_present else 'skipped_missing_s3_keys'}")
+    print(f"shadow_run_require_cloud_keys={args.require_cloud_keys}")
     if failed:
         print(f"shadow_run_failed_checks={','.join(failed)}")
         return 2
