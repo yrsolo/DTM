@@ -1,7 +1,7 @@
 # Sprint Current
 
 ## Sprint Goal
-Keep delivery steady with low-risk, reversible steps toward reconstruction backlog Stage 0.
+Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk extraction sequence.
 
 ## Capacity
 1 active task (WIP), 3 tasks queued for this short sprint cycle.
@@ -30,12 +30,15 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - [DONE] DTM-17 / TSK-020 Stage 1 timing parse diagnostics and non-fatal error accounting.
 - [DONE] DTM-18 / TSK-021 Stage 1 quality report surfacing in local run artifacts.
 - [DONE] DTM-15 / TSK-018 Reminder tests: mock OpenAI and Telegram delivery paths.
+- [DONE] DTM-19 / TSK-022 Stage 2 layer boundary inventory and dependency map.
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- none (Stage 1 completion gate)
+- [TODO] DTM-20 / TSK-023 Stage 2 domain module extraction scaffold
+- [TODO] DTM-21 / TSK-024 Stage 2 application use-case orchestration extraction
+- [TODO] DTM-22 / TSK-025 Stage 2 infrastructure adapter boundary for external services
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -70,6 +73,14 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
   - Jira: DTM-17 (status: Done / `Gotovo`)
 - TSK-021 - Stage 1 quality report surfacing in local run artifacts
   - Jira: DTM-18 (status: Done / `Gotovo`)
+- TSK-022 - Stage 2 layer boundary inventory and dependency map
+  - Jira: DTM-19 (status: Done / `Gotovo`)
+- TSK-023 - Stage 2 domain module extraction scaffold
+  - Jira: DTM-20 (status: To Do / `K vypolneniyu`)
+- TSK-024 - Stage 2 application use-case orchestration extraction
+  - Jira: DTM-21 (status: To Do / `K vypolneniyu`)
+- TSK-025 - Stage 2 infrastructure adapter boundary for external services
+  - Jira: DTM-22 (status: To Do / `K vypolneniyu`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -90,6 +101,7 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - agile/tasks/DTM-16_row-level-validation-policy.md
 - agile/tasks/DTM-17_timing-parse-diagnostics.md
 - agile/tasks/DTM-18_quality-report-local-artifacts.md
+- agile/tasks/DTM-19_stage2-layer-boundary-inventory.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -118,3 +130,5 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - 2026-02-27: DTM-18 completed (quality report surfaced in local runs and baseline artifacts, smoke-check, Jira `Gotovo`).
 - 2026-02-27: DTM-15 moved to `V rabote` for reminder test mocks (OpenAI/Telegram external calls disabled in test mode).
 - 2026-02-27: DTM-15 completed (mock external reminder mode via `--mock-external`/`mode=test` default, smoke-check, Jira `Gotovo`).
+- 2026-02-27: Stage 2 kickoff created in Jira (`DTM-19..DTM-22`); `DTM-19` moved to `V rabote` as single active execution task.
+- 2026-02-27: DTM-19 completed (Stage 2 layer boundary inventory + dependency map in `doc/10_stage2_layer_inventory.md`; Jira `Gotovo`).

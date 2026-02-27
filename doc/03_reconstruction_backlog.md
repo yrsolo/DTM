@@ -137,6 +137,9 @@
 Критерий готовности:
 - основная бизнес-логика тестируется без внешних API.
 
+Статус:
+- Stage 2 kickoff started: layer boundary inventory and dependency map completed (`doc/10_stage2_layer_inventory.md`, DTM-19).
+
 ---
 
 ## Этап 3. Рефакторинг календарей и визуализации в Sheets
