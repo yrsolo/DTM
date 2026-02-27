@@ -45,11 +45,7 @@ Stage 10 kickoff:
 - `DTM-91`: owner quickstart checklist published for daily and weekly serverless operations.
 
 Planned next:
-- Stage 10 cloud shadow-run evidence run in required-keys mode with stored artifact.
 - Stage 10 closeout and Stage 11 handoff package.
-
-Blocked now:
-- `DTM-92`: cloud shadow-run required-mode run failed (`missing_required_cloud_keys`); waiting runtime contour keys.
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).

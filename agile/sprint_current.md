@@ -7,12 +7,12 @@ Kick off Stage 10 with explicit execution baseline and reproducible serverless o
 1 active task (strict WIP=1).
 
 ## Now
-- [BLOCKED] DTM-92 / TSK-092 - cloud shadow-run evidence run in required-keys mode is blocked by missing cloud keys in runtime contour.
+- [IN_PROGRESS] Stage 10 final slice - closeout and Stage 11 handoff package.
 
 ## Stage 10 Estimate (Dynamic)
 - Baseline estimate: 6 tasks.
-- Done: 4
-- Remaining: 2
+- Done: 5
+- Remaining: 1
 - Rule: update `Done/Remaining` after each completed Stage 10 task.
 
 ## Done
@@ -31,16 +31,16 @@ Kick off Stage 10 with explicit execution baseline and reproducible serverless o
 - [DONE] DTM-89 / TSK-091 - rollback drill and recovery notes published for function profile incidents.
 - [DONE] DTM-90 / TSK-093 - normalized deploy run evidence report script and smoke check added.
 - [DONE] DTM-91 / TSK-094 - owner quickstart checklist published for daily/weekly serverless operations.
+- [DONE] DTM-92 / TSK-092 - cloud shadow-run required-mode run succeeded with stored evidence artifact.
 
 ## Blocked
-- [BLOCKED] DTM-92 - missing required cloud keys for shadow-run (`missing_required_cloud_keys`); owner escalation sent via `agent/notify_owner.py` on 2026-02-27.
+- [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 10: cloud shadow-run evidence run in required keys mode with stored artifact.
 - [TODO] Stage 10: closeout and Stage 11 handoff package.
 
 ## Active Task Files
-- `agile/tasks/DTM-92_stage10-cloud-shadow-run-required-keys.md`
+- none (next task key to be assigned)
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`

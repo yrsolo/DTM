@@ -10,6 +10,8 @@ from pathlib import Path
 import subprocess
 import time
 
+from dotenv import load_dotenv
+
 
 def _utc_stamp() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -78,6 +80,7 @@ def _has_cloud_keys() -> bool:
 
 
 def main() -> int:
+    load_dotenv(".env")
     args = parse_args()
     run_id = f"{_utc_stamp()}_{args.label}"
     out_dir = args.evidence_root / run_id

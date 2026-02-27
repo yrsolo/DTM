@@ -18,17 +18,19 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-92`) and moved to `В работе`.
-- [ ] Required keys are present. (blocked)
-- [ ] Cloud shadow-run command succeeded in required mode. (blocked)
-- [ ] Evidence artifact path recorded.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `Готово`.
-- [ ] Telegram completion sent.
+- [x] Required keys are present.
+- [x] Cloud shadow-run command succeeded in required mode.
+- [x] Evidence artifact path recorded.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-27: Created Jira issue `DTM-92`, moved to `В работе`.
 - 2026-02-27: Executed required-mode command; result `shadow_run_failed_checks=missing_required_cloud_keys`.
 - 2026-02-27: Added Jira evidence comment about blocker and sent owner escalation via `agent/notify_owner.py`.
+- 2026-02-27: Uploaded baseline artifacts to Object Storage, configured `PROTOTYPE_*_S3_KEY`, reran required-mode shadow run successfully.
+- 2026-02-27: Evidence artifact: `artifacts/shadow_run_stage8/20260227T215711Z_stage8_shadow_run/shadow_run_evidence.json`.
 
 ## Links
 - Jira: DTM-92
