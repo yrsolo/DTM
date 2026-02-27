@@ -51,6 +51,8 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Reminder run summary now includes delivery counters (`sent`, `skipped_*`, `send_errors`) and quality report summary includes reminder send/error counts.
 - Quality report summary also includes retry counters: `reminder_send_retry_attempt_count` and `reminder_send_retry_exhausted_count`.
 - Quality report summary now also includes derived reminder SLI metrics: attemptable deliveries, attempted sends, delivery rate, and failure rate.
+- Automated threshold evaluator (latest artifact auto-discovery):
+  - `.venv\Scripts\python.exe agent\reminder_alert_evaluator.py --format text --fail-on none`
 
 ## Baseline validation flow (Stage 0.4)
 - Capture artifact bundle:

@@ -98,6 +98,7 @@
 
 ### Escalation sequence
 1. Generate quality report after each run and evaluate thresholds.
+   - baseline automation helper: `python agent/reminder_alert_evaluator.py` (latest artifact auto-discovery).
 2. On `WARN`: create/update Jira incident follow-up task and post evidence comment with metrics snapshot.
 3. On `CRITICAL`: immediately notify owner via `python agent/notify_owner.py` with Russian text and explicit next action options.
 4. Keep affected sprint item in `agile/sprint_current.md` under `Blocked` until owner decision is received.

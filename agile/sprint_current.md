@@ -53,15 +53,16 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - [DONE] DTM-39 / TSK-042 Stage 5 alerting thresholds and escalation policy for reminder delivery metrics
 - [DONE] DTM-40 / TSK-043 Stage 5 persist SLI trend snapshots across runs
 - [DONE] DTM-41 / TSK-044 Stage 5 retry/backoff policy for reminder transient failures
+- [DONE] DTM-42 / TSK-045 Stage 5 automate threshold evaluation from latest quality report artifact
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 5 follow-up: automate threshold evaluation from latest quality report artifact
-- [TODO] Stage 5 follow-up: wire persisted SLI trend snapshots into alert-review workflow
+- [TODO] Stage 5 follow-up: wire threshold evaluator output into alert-review workflow
 - [TODO] Stage 5 follow-up: runbook and thresholds tuning after retry rollout
 - [TODO] Stage 5 follow-up: transient failure taxonomy tuning for Telegram retries
+- [TODO] Stage 5 follow-up: trigger owner-notify helper from evaluator output in controlled mode
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -142,6 +143,8 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
   - Jira: DTM-40 (status: Done / `Gotovo`)
 - TSK-044 - Stage 5 follow-up: retry/backoff policy for reminder transient failures
   - Jira: DTM-41 (status: Done / `Gotovo`)
+- TSK-045 - Stage 5 follow-up: automate threshold evaluation from latest quality report artifact
+  - Jira: DTM-42 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -185,6 +188,7 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - agile/tasks/DTM-39_stage5-alerting-thresholds-escalation-policy.md
 - agile/tasks/DTM-40_stage5-persist-sli-trend-snapshots.md
 - agile/tasks/DTM-41_stage5-retry-backoff-reminder-transient-failures.md
+- agile/tasks/DTM-42_stage5-automate-threshold-evaluation-quality-artifact.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -259,3 +263,5 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - 2026-02-27: DTM-40 completed (rolling SLI trend snapshot persistence in local run artifacts + deterministic trend smoke + reminders-only mock dry-run; Jira `Gotovo`).
 - 2026-02-27: DTM-41 moved to `V rabote` for Stage 5 retry/backoff policy on transient reminder delivery failures.
 - 2026-02-27: DTM-41 completed (bounded transient retry/backoff in reminder send path + retry observability counters + deterministic retry smoke + reminders-only mock dry-run; Jira `Gotovo`).
+- 2026-02-27: DTM-42 moved to `V rabote` for Stage 5 automated threshold evaluation from latest quality report artifact.
+- 2026-02-27: DTM-42 completed (automated evaluator for latest quality_report artifact + deterministic evaluator smoke + reminders-only mock dry-run; Jira `Gotovo`).

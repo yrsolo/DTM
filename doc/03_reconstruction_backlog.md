@@ -190,6 +190,7 @@
 - Stage 5 kickoff increment completed: explicit reminder SLI alert thresholds and escalation policy documented with owner notification flow alignment (`DTM-39`).
 - Stage 5 follow-up increment completed: rolling reminder SLI trend snapshots persisted across runs via local artifact flow (`DTM-40`).
 - Stage 5 follow-up increment completed: bounded retry/backoff policy added for transient Telegram reminder delivery failures with retry observability counters (`DTM-41`).
+- Stage 5 follow-up increment completed: automated threshold evaluator added for latest quality report artifact (`INFO_ONLY/WARN/CRITICAL`) with deterministic smoke coverage (`DTM-42`).
 
 ---
 
