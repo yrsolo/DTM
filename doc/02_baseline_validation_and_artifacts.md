@@ -35,6 +35,7 @@ Files:
 - `alert_evaluation.json` - evaluator result (`level`, `reason`, summary metrics, thresholds).
 - `read_model.json` - canonical Stage 6 read-model artifact for UI/API planning flow.
 - `schema_snapshot.json` - Stage 7 schema snapshot for frontend compatibility checks.
+- `fixture_bundle.json` - reduced frontend-ready sample payload from baseline artifacts.
 - `meta.json` - command, git sha, timestamp, exit code.
 - `CHECKLIST.md` - validation checklist to compare with previous baseline.
 
@@ -53,7 +54,7 @@ Cloud note:
 ## TeamLead Process
 1. Capture baseline before change set.
 2. Capture baseline after change set.
-3. Compare artifact bundles (`quality_report.json`, `alert_evaluation.json`, `read_model.json`, `schema_snapshot.json`) and mark checklist items.
+3. Compare artifact bundles (`quality_report.json`, `alert_evaluation.json`, `read_model.json`, `schema_snapshot.json`, `fixture_bundle.json`) and mark checklist items.
 4. If alert level changed unexpectedly, create/update risk follow-up item in sprint notes before merge.
 5. Post short evidence summary in Jira and task work log.
 
@@ -61,7 +62,7 @@ Cloud note:
 Use this cadence to keep threshold tuning reproducible and avoid ad-hoc policy drift.
 
 ### Per run
-- Execute baseline helper and confirm `quality_report.json`, `alert_evaluation.json`, `read_model.json`, and `schema_snapshot.json` exist.
+- Execute baseline helper and confirm `quality_report.json`, `alert_evaluation.json`, `read_model.json`, `schema_snapshot.json`, and `fixture_bundle.json` exist.
 - Record evaluated level (`INFO_ONLY/WARN/CRITICAL/OK`) and core metrics in Jira evidence comment.
 - If level is `WARN` or `CRITICAL`, apply escalation policy from `doc/05_risk_register.md`.
 - Verify retry taxonomy metrics in `quality_report.summary`:

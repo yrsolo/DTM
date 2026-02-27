@@ -5,12 +5,16 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Sequence
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from core.fixture_bundle import build_fixture_bundle
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
@@ -104,6 +108,7 @@ def main() -> int:
     alert_evaluation_file = out_dir / "alert_evaluation.json"
     read_model_file = out_dir / "read_model.json"
     schema_snapshot_file = out_dir / "schema_snapshot.json"
+    fixture_bundle_file = out_dir / "fixture_bundle.json"
     cmd = [
         python_bin,
         "local_run.py",
@@ -144,6 +149,20 @@ def main() -> int:
         encoding="utf-8",
     )
 
+    if run.returncode == 0 and read_model_file.exists() and schema_snapshot_file.exists():
+        read_model = json.loads(read_model_file.read_text(encoding="utf-8"))
+        schema_snapshot = json.loads(schema_snapshot_file.read_text(encoding="utf-8"))
+        fixture_bundle = build_fixture_bundle(
+            read_model=read_model,
+            schema_snapshot=schema_snapshot,
+            bundle_id=f"baseline-{label}",
+            item_limit=20,
+        )
+        fixture_bundle_file.write_text(
+            json.dumps(fixture_bundle, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
     git_sha = _run(["git", "rev-parse", "--short", "HEAD"], repo)
     meta = {
         "captured_at_utc": now.isoformat(),
@@ -157,6 +176,7 @@ def main() -> int:
             "quality_report.json contains structured Stage 1 diagnostics snapshot",
             "read_model.json contains canonical Stage 6 read-model projection for UI/API planning",
             "schema_snapshot.json contains consumer-facing read-model schema snapshot for Stage 7 checks",
+            "fixture_bundle.json contains reduced frontend-ready sample payload for integration checks",
         ],
     }
     (out_dir / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
@@ -169,6 +189,7 @@ def main() -> int:
 - [ ] alert_evaluation.json exists and contains level/reason fields.
 - [ ] read_model.json exists and passes basic contract validation checks.
 - [ ] schema_snapshot.json exists and has `schema_version` + `schema` fields.
+- [ ] fixture_bundle.json exists and contains sampled `timeline` / `task_details` / `by_designer`.
 - [ ] Retry taxonomy summary fields are present (`reminder_send_retry_attempt_count`, `reminder_send_retry_exhausted_count`, `reminder_send_error_transient_count`, `reminder_send_error_permanent_count`, `reminder_send_error_unknown_count`).
 - [ ] If `reminder_send_error_unknown_count > 0`, create follow-up taxonomy task and link it in Jira evidence.
 - [ ] Compare row/column counts in target sheets against previous baseline.

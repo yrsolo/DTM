@@ -55,3 +55,5 @@ Define stable consumer rules for read-model usage and artifact storage in server
 ## Runtime flags (current)
 - `local_run.py --schema-snapshot-file <path>`: write local schema snapshot artifact.
 - `local_run.py --schema-snapshot-s3-key <key>`: upload schema snapshot to Object Storage (requires S3 env credentials and bucket).
+- `agent/build_fixture_bundle.py --baseline-root artifacts/baseline`: build frontend fixture bundle from latest baseline.
+- `agent/build_fixture_bundle.py --s3-key <key>`: upload fixture bundle to Object Storage.

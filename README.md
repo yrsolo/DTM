@@ -77,9 +77,12 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `.venv\Scripts\python.exe agent\capture_baseline.py --label pre_change`
 - Baseline bundle now includes `alert_evaluation.json` from wired evaluator flow and `read_model.json` from Stage 6 publication path.
 - Baseline bundle now also includes `schema_snapshot.json` for frontend compatibility checks.
+- Baseline bundle now also includes `fixture_bundle.json` with reduced frontend-ready sample payload.
 - Bundle output location:
   - `artifacts/baseline/<UTC_TIMESTAMP>_<label>/`
 - In serverless runtime, use Object Storage as primary artifact location (local `artifacts/...` is dev-only).
+- Fixture bundle helper:
+  - `.venv\Scripts\python.exe agent\build_fixture_bundle.py --baseline-root artifacts\baseline`
 - Detailed process and checklist:
   - `doc/02_baseline_validation_and_artifacts.md`
 - Routine Stage 5 cadence checklist (per-run/weekly/monthly):

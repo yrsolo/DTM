@@ -11,8 +11,8 @@ Start Stage 7 delivery with explicit execution plan for visualization migration 
 
 ## Stage 7 Estimate (Dynamic)
 - Baseline estimate: 7 tasks
-- Done: 3
-- Remaining: 4
+- Done: 4
+- Remaining: 3
 - Rule: estimate is adjusted during execution when scope clarifies; done/remaining is updated after each task completion.
 
 ## Done
@@ -83,12 +83,12 @@ Start Stage 7 delivery with explicit execution plan for visualization migration 
 - [DONE] DTM-63 / TSK-066 Stage 7 kickoff: visualization migration execution plan and estimate
 - [DONE] DTM-64 / TSK-067 Stage 7: read-model consumer compatibility policy and serverless artifact storage contour
 - [DONE] DTM-65 / TSK-068 Stage 7: schema snapshot artifact export for frontend checks (Object Storage cloud profile)
+- [DONE] DTM-66 / TSK-069 Stage 7: frontend fixture bundle from baseline captures (Object Storage cloud profile)
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] TSK-069 Stage 7: frontend-friendly static fixture bundle from baseline capture output (Object Storage in cloud profile).
 - [TODO] TSK-070 Stage 7: UI migration spike scope and acceptance checklist for first web prototype.
 - [TODO] TSK-071 Stage 7: shadow-run readiness checklist for visualization data consumer.
 
@@ -219,6 +219,8 @@ Start Stage 7 delivery with explicit execution plan for visualization migration 
   - Jira: DTM-64 (status: Done / `Gotovo`)
 - TSK-068 - Stage 7: schema snapshot artifact export for frontend integration checks
   - Jira: DTM-65 (status: Done / `Gotovo`)
+- TSK-069 - Stage 7: frontend fixture bundle from baseline captures
+  - Jira: DTM-66 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -406,3 +408,5 @@ Start Stage 7 delivery with explicit execution plan for visualization migration 
 - 2026-02-27: DTM-64 completed (`doc/15_stage7_read_model_consumer_policy.md`, docs alignment); Stage 7 estimate updated to done 2 / remaining 5; Jira `Gotovo`.
 - 2026-02-27: DTM-65 moved to `V rabote` for Stage 7 schema snapshot artifact export with cloud Object Storage profile.
 - 2026-02-27: DTM-65 completed (schema snapshot builder + local/cloud export path + baseline integration docs); Stage 7 estimate updated to done 3 / remaining 4; Jira `Gotovo`.
+- 2026-02-27: DTM-66 moved to `V rabote` for Stage 7 fixture bundle generation from baseline captures with cloud Object Storage profile.
+- 2026-02-27: DTM-66 completed (fixture bundle builder/script + baseline integration docs); Stage 7 estimate updated to done 4 / remaining 3; Jira `Gotovo`.

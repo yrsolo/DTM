@@ -6,13 +6,13 @@ Start implementation-ready migration planning after Stage 6, so the first web vi
 ## Baseline
 - Stage 7 estimate baseline: 7 tasks.
 - Dynamic tracking rule: after each completed task update `Done` and `Remaining` in `agile/sprint_current.md`.
-- Current counter: done `3`, remaining `4`.
+- Current counter: done `4`, remaining `3`.
 
 ## Stage 7 slices (initial)
 1. TSK-066 (DTM-63): kickoff and estimate baseline.
 2. TSK-067 (DTM-64): read-model consumer compatibility policy + serverless artifact storage contour (Object Storage primary).
 3. TSK-068 (DTM-65): exported schema snapshot artifact for frontend integration checks (Object Storage in cloud profile).
-4. TSK-069: frontend-friendly static fixture bundle from baseline captures (Object Storage in cloud profile).
+4. TSK-069 (DTM-66): frontend-friendly static fixture bundle from baseline captures (Object Storage in cloud profile).
 5. TSK-070: UI migration spike scope and acceptance checklist.
 6. TSK-071: shadow-run readiness checklist for visualization data consumer.
 7. TSK-072: Stage 7 closeout and Stage 8 handoff package.
