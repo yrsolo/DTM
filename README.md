@@ -117,9 +117,10 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Workflow: `.github/workflows/deploy_yc_function_main.yml`
 - Trigger: `push` to `main`
 - Required GitHub repository variables:
-  - `YC_FOLDER_ID`
-  - `YC_SERVICE_ACCOUNT_ID`
-  - `YC_CLOUD_FUNCTION_NAME`
+- `YC_FOLDER_ID`
+- `YC_SERVICE_ACCOUNT_ID`
+- `YC_CLOUD_FUNCTION_NAME`
+- `YC_LOCKBOX_SECRET_ID`
 - Full setup guide:
   - `doc/ops/stage9_main_autodeploy_setup.md`
 - Direct cloud endpoint smoke invoke:
