@@ -89,6 +89,13 @@
   - `resolve_run_mode(...)` для определения режима выполнения из аргументов/event;
   - `run_planner_use_case(...)` для orchestration веток sync/reminder и сборки quality report.
 
+## `core/adapters.py`
+- Stage 2 adapter boundary контракты для внешних интеграций:
+  - `ChatAdapter` (LLM/OpenAI),
+  - `MessageAdapter` (Telegram),
+  - `LoggerAdapter`,
+  - `NullLogger` (без side effects).
+
 ## Инфраструктура и утилиты
 
 ## `utils/service.py`
@@ -133,3 +140,4 @@
 - Added reminder external-call mock controls for test runs: `main.py` auto-enables `mock_external` for `mode=test`, `local_run.py` supports explicit `--mock-external`, and reminder flow skips real OpenAI/Telegram calls in this mode.
 - Stage 2 scaffold: planner dependency construction moved into explicit bootstrap boundary (`core/bootstrap.py`), and `main.py` now uses injected dependencies when constructing `GoogleSheetPlanner`.
 - Stage 2 application use-case extraction: orchestration ветки выполнения вынесены из `main.py` в `core/use_cases.py`.
+- Stage 2 infra adapter extraction: reminder/bootstrap flow uses explicit external adapter contracts (`core/adapters.py`) with injected Telegram/OpenAI implementations.

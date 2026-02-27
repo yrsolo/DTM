@@ -141,6 +141,7 @@
 - Stage 2 kickoff started: layer boundary inventory and dependency map completed (`doc/10_stage2_layer_inventory.md`, DTM-19).
 - выполнен Stage 2 scaffold-инкремент `S2-SLICE-01`: выделен bootstrap boundary для сборки зависимостей планировщика (`core/bootstrap.py`) и подключена dependency injection инициализация в `main.py`/`core/planner.py` (DTM-20).
 - выполнен Stage 2 application-инкремент: orchestration use-cases (`resolve_run_mode`, pipeline branches) вынесены из `main.py` в `core/use_cases.py` с сохранением run-mode поведения (DTM-21).
+- выполнен Stage 2 infrastructure-инкремент: добавлены adapter contracts (`core/adapters.py`) и явная инъекция Telegram/OpenAI адаптеров в reminder/bootstrap wiring (DTM-22).
 
 ---
 

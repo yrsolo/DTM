@@ -9,6 +9,7 @@ import pandas as pd
 import pytz
 from telegram.ext import Application
 
+from core.adapters import ChatAdapter, LoggerAdapter, MessageAdapter, NullLogger
 from utils.func import filter_stages
 from openai import AsyncOpenAI
 from config import TG, DEFAULT_CHAT_ID
@@ -86,7 +87,7 @@ class TelegramNotifier(object):
 class AsyncOpenAIChatAgent(object):
     """Агент для чатов с OpenAI."""
 
-    def __init__(self, api_key, proxies=None, model=None, organization=None, logger=TelegramNotifier()):
+    def __init__(self, api_key, proxies=None, model=None, organization=None, logger: LoggerAdapter = None):
         """Инициализация агента для чатов с OpenAI.
 
         Args:
@@ -101,7 +102,7 @@ class AsyncOpenAIChatAgent(object):
         self.proxies = dict(proxies or {})
         self.endpoint = 'https://api.openai.com/v1/chat/completions'
         self.model = model
-        self.logger = logger
+        self.logger = logger or NullLogger()
 
 
     async def chat(self, messages, model=None):
@@ -180,12 +181,13 @@ class Reminder(object):
     def __init__(
             self,
             task_repository,
-            openai_agent,
+            openai_agent: ChatAdapter,
             helper_character,
             tg_bot_token=None,
             people_manager=None,
             mock_openai=False,
             mock_telegram=False,
+            telegram_adapter: MessageAdapter = None,
     ):
         """Инициализация напоминаний о задачах.
 
@@ -200,7 +202,10 @@ class Reminder(object):
         self.openai_agent = openai_agent
         self.mock_openai = bool(mock_openai)
         self.mock_telegram = bool(mock_telegram)
-        self.tg_bot = None if self.mock_telegram else TelegramNotifier(tg_bot_token)
+        if self.mock_telegram:
+            self.tg_bot = None
+        else:
+            self.tg_bot = telegram_adapter or TelegramNotifier(tg_bot_token)
         self.helper_character = helper_character
         self.draft_messages = {}
         self.enhanced_messages = {}

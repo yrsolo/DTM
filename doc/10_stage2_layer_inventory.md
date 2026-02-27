@@ -86,3 +86,4 @@ Document the current module boundaries for Stage 2 decomposition and identify th
 - This inventory intentionally reflects current mixed boundaries; it is a staging artifact for incremental extraction, not target architecture.
 - 2026-02-27: `S2-SLICE-01` scaffold executed in DTM-20 (`core/bootstrap.py` + wiring through `main.py` and dependency injection in `core/planner.py`).
 - 2026-02-27: Stage 2 application use-case extraction executed in DTM-21 (`core/use_cases.py`), `main.py` became thinner interface delegating orchestration.
+- 2026-02-27: Stage 2 infrastructure adapter boundary executed in DTM-22 (`core/adapters.py` + injected Telegram/OpenAI adapters in reminder/bootstrap flow).

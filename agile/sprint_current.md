@@ -33,12 +33,13 @@ Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk
 - [DONE] DTM-19 / TSK-022 Stage 2 layer boundary inventory and dependency map.
 - [DONE] DTM-20 / TSK-023 Stage 2 domain module extraction scaffold.
 - [DONE] DTM-21 / TSK-024 Stage 2 application use-case orchestration extraction.
+- [DONE] DTM-22 / TSK-025 Stage 2 infrastructure adapter boundary for external services.
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-22 / TSK-025 Stage 2 infrastructure adapter boundary for external services
+- none (Stage 2 completion gate)
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -80,7 +81,7 @@ Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk
 - TSK-024 - Stage 2 application use-case orchestration extraction
   - Jira: DTM-21 (status: Done / `Gotovo`)
 - TSK-025 - Stage 2 infrastructure adapter boundary for external services
-  - Jira: DTM-22 (status: To Do / `K vypolneniyu`)
+  - Jira: DTM-22 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -104,6 +105,7 @@ Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk
 - agile/tasks/DTM-19_stage2-layer-boundary-inventory.md
 - agile/tasks/DTM-20_stage2-domain-scaffold.md
 - agile/tasks/DTM-21_stage2-application-usecases.md
+- agile/tasks/DTM-22_stage2-infra-adapter-boundary.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -138,3 +140,5 @@ Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk
 - 2026-02-27: DTM-20 completed (bootstrap dependency-construction boundary via `core/bootstrap.py`; smoke-check; Jira `Gotovo`).
 - 2026-02-27: DTM-21 moved to `V rabote` for Stage 2 application use-case orchestration extraction.
 - 2026-02-27: DTM-21 completed (orchestration extracted to `core/use_cases.py`; smoke-check; Jira `Gotovo`).
+- 2026-02-27: DTM-22 moved to `V rabote` for Stage 2 infrastructure adapter boundary extraction.
+- 2026-02-27: DTM-22 completed (adapter contracts + injected Telegram/OpenAI integration wiring; smoke-check; Jira `Gotovo`).

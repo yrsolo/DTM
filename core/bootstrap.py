@@ -3,9 +3,10 @@
 from dataclasses import dataclass
 
 from config import HELPER_CHARACTER, MODEL, OPENAI, ORG, PROXIES, SOURCE_SHEET_INFO, TG
+from core.adapters import ChatAdapter, MessageAdapter
 from core.manager import CalendarManager, TaskCalendarManager, TaskManager, TaskTimingProcessor
 from core.people import PeopleManager
-from core.reminder import AsyncOpenAIChatAgent, MockOpenAIChatAgent, Reminder
+from core.reminder import AsyncOpenAIChatAgent, MockOpenAIChatAgent, Reminder, TelegramNotifier
 from core.repository import GoogleSheetsTaskRepository
 from utils.service import GoogleSheetInfo, GoogleSheetsService
 
@@ -18,7 +19,8 @@ class PlannerDependencies:
     task_manager: TaskManager
     calendar_manager: CalendarManager
     task_calendar_manager: TaskCalendarManager
-    openai_agent: object
+    openai_agent: ChatAdapter
+    telegram_adapter: MessageAdapter | None
     people_manager: PeopleManager
     reminder: Reminder
 
@@ -43,7 +45,7 @@ def build_planner_dependencies(
     calendar_manager = CalendarManager(sheet_info, service, task_repository)
     task_calendar_manager = TaskCalendarManager(sheet_info, service, task_repository)
 
-    openai_agent = (
+    openai_agent: ChatAdapter = (
         MockOpenAIChatAgent()
         if mock_external
         else AsyncOpenAIChatAgent(
@@ -53,6 +55,7 @@ def build_planner_dependencies(
             model=MODEL,
         )
     )
+    telegram_adapter: MessageAdapter | None = None if mock_external else TelegramNotifier(TG)
     people_manager = PeopleManager(service=service, sheet_info=source_sheet_info)
     reminder = Reminder(
         task_repository,
@@ -62,6 +65,7 @@ def build_planner_dependencies(
         people_manager=people_manager,
         mock_openai=mock_external,
         mock_telegram=mock_external,
+        telegram_adapter=telegram_adapter,
     )
 
     return PlannerDependencies(
@@ -72,6 +76,7 @@ def build_planner_dependencies(
         calendar_manager=calendar_manager,
         task_calendar_manager=task_calendar_manager,
         openai_agent=openai_agent,
+        telegram_adapter=telegram_adapter,
         people_manager=people_manager,
         reminder=reminder,
     )
