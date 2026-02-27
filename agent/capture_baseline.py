@@ -65,6 +65,17 @@ def parse_args() -> argparse.Namespace:
         help="Run mode for capture (default: sync-only).",
     )
     parser.add_argument(
+        "--alert-fail-profile",
+        choices=("local", "ci"),
+        default="local",
+        help="Alert exit profile passed to local_run (default: local).",
+    )
+    parser.add_argument(
+        "--alert-fail-on",
+        choices=("none", "warn", "critical"),
+        help="Optional explicit alert exit severity override passed to local_run.",
+    )
+    parser.add_argument(
         "--notify-owner-on",
         choices=("none", "warn", "critical"),
         default="none",
@@ -98,13 +109,15 @@ def main() -> int:
         args.mode,
         "--dry-run",
         "--evaluate-alerts",
-        "--alert-fail-on",
-        "none",
+        "--alert-fail-profile",
+        args.alert_fail_profile,
         "--alert-evaluation-file",
         str(alert_evaluation_file),
         "--quality-report-file",
         str(quality_report_file),
     ]
+    if args.alert_fail_on is not None:
+        cmd.extend(["--alert-fail-on", args.alert_fail_on])
     if args.notify_owner_on != "none":
         cmd.extend(
             [

@@ -52,11 +52,12 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Quality report summary also includes retry counters: `reminder_send_retry_attempt_count` and `reminder_send_retry_exhausted_count`.
 - Quality report summary now also includes derived reminder SLI metrics: attemptable deliveries, attempted sends, delivery rate, and failure rate.
 - Automated threshold evaluator (latest artifact auto-discovery):
-  - `.venv\Scripts\python.exe agent\reminder_alert_evaluator.py --format text --fail-on none`
+  - `.venv\Scripts\python.exe agent\reminder_alert_evaluator.py --format text --fail-profile ci`
 - Local review wiring options:
   - `--evaluate-alerts` prints evaluator result from current run quality report.
   - `--alert-evaluation-file <path>` saves evaluator JSON artifact.
-  - `--alert-fail-on none|warn|critical` controls exit policy from evaluator level.
+  - `--alert-fail-profile local|ci` controls preset exit policy (`local=none`, `ci=warn`).
+  - `--alert-fail-on none|warn|critical` explicitly overrides preset exit policy.
   - `--notify-owner-on none|warn|critical` enables controlled owner-notify trigger from evaluator output (default: `none`).
   - `--notify-owner-context "<text>"` passes explicit context to notify helper.
   - `--notify-owner-dry-run` prints notify command without sending Telegram message.

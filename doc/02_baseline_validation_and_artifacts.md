@@ -13,8 +13,10 @@ Run from repository root:
 Default command executed by helper:
 
 ```powershell
-.venv\Scripts\python.exe local_run.py --mode sync-only --dry-run --evaluate-alerts --alert-fail-on none --alert-evaluation-file artifacts\baseline\<...>\alert_evaluation.json --quality-report-file artifacts\baseline\<...>\quality_report.json
+.venv\Scripts\python.exe local_run.py --mode sync-only --dry-run --evaluate-alerts --alert-fail-profile local --alert-evaluation-file artifacts\baseline\<...>\alert_evaluation.json --quality-report-file artifacts\baseline\<...>\quality_report.json
 ```
+
+By default helper uses local-safe alert gate profile (`--alert-fail-profile local`, effective fail gate `none`).
 
 Optional controlled notify trigger (explicit opt-in only):
 

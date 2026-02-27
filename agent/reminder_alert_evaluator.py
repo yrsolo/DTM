@@ -10,6 +10,12 @@ from pathlib import Path
 from typing import Any
 
 
+FAIL_PROFILES = {
+    "local": "none",
+    "ci": "warn",
+}
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Evaluate reminder alert thresholds from quality_report artifacts."
@@ -56,10 +62,16 @@ def parse_args() -> argparse.Namespace:
         help="Output format.",
     )
     parser.add_argument(
+        "--fail-profile",
+        choices=tuple(FAIL_PROFILES.keys()),
+        default="ci",
+        help="Exit profile preset: local=none, ci=warn (default: ci).",
+    )
+    parser.add_argument(
         "--fail-on",
         choices=("none", "warn", "critical"),
-        default="critical",
-        help="Exit non-zero when level meets/exceeds configured severity.",
+        default=None,
+        help="Explicit severity gate override (default: use --fail-profile preset).",
     )
     parser.add_argument(
         "--notify-owner-on",
@@ -145,6 +157,12 @@ def should_fail(level: str, fail_on: str) -> bool:
     if fail_on == "critical":
         return level == "CRITICAL"
     return level in {"WARN", "CRITICAL"}
+
+
+def resolve_fail_on(fail_profile: str, fail_on_override: str | None) -> str:
+    if fail_on_override is not None:
+        return fail_on_override
+    return FAIL_PROFILES.get(fail_profile, "none")
 
 
 def should_notify(level: str, notify_on: str) -> bool:
@@ -265,7 +283,9 @@ def main() -> int:
         notify_dry_run=args.notify_owner_dry_run,
     )
 
-    return 2 if should_fail(result["level"], args.fail_on) else 0
+    effective_fail_on = resolve_fail_on(args.fail_profile, args.fail_on)
+    print(f"alert_fail_policy profile={args.fail_profile} effective_fail_on={effective_fail_on}")
+    return 2 if should_fail(result["level"], effective_fail_on) else 0
 
 
 if __name__ == "__main__":

@@ -6,7 +6,12 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from agent.reminder_alert_evaluator import evaluate_thresholds, maybe_notify_owner, should_fail
+from agent.reminder_alert_evaluator import (
+    evaluate_thresholds,
+    maybe_notify_owner,
+    resolve_fail_on,
+    should_fail,
+)
 from main import main
 
 
@@ -76,10 +81,16 @@ def parse_args():
         help="Optional path to write alert evaluation JSON.",
     )
     parser.add_argument(
+        "--alert-fail-profile",
+        choices=("local", "ci"),
+        default="local",
+        help="Alert exit profile preset: local=none, ci=warn (default: local).",
+    )
+    parser.add_argument(
         "--alert-fail-on",
         choices=("none", "warn", "critical"),
-        default="none",
-        help="Exit non-zero when evaluated level meets/exceeds severity (default: none).",
+        default=None,
+        help="Explicit alert exit severity override (default: use --alert-fail-profile).",
     )
     parser.add_argument(
         "--notify-owner-on",
@@ -188,7 +199,15 @@ if __name__ == "__main__":
         )
         print(f"sli_trend_file={args.sli_trend_file} snapshots={snapshot_count}")
     alert_evaluation = None
-    if args.evaluate_alerts or args.alert_evaluation_file or args.notify_owner_on != "none":
+    effective_fail_on = resolve_fail_on(args.alert_fail_profile, args.alert_fail_on)
+    should_eval_alerts = (
+        args.evaluate_alerts
+        or args.alert_evaluation_file
+        or args.notify_owner_on != "none"
+        or args.alert_fail_profile != "local"
+        or args.alert_fail_on is not None
+    )
+    if should_eval_alerts:
         alert_evaluation = build_alert_evaluation(quality_report)
         print(
             "alert_eval "
@@ -198,6 +217,10 @@ if __name__ == "__main__":
             f"send_errors={alert_evaluation['summary']['reminder_send_error_count']}"
         )
         print(f"alert_reason={alert_evaluation['reason']}")
+        print(
+            "alert_fail_policy "
+            f"profile={args.alert_fail_profile} effective_fail_on={effective_fail_on}"
+        )
         maybe_notify_owner(
             alert_evaluation=alert_evaluation,
             notify_on=args.notify_owner_on,
@@ -207,5 +230,5 @@ if __name__ == "__main__":
     if args.alert_evaluation_file and alert_evaluation is not None:
         persist_alert_evaluation(alert_evaluation, args.alert_evaluation_file)
         print(f"alert_evaluation_file={args.alert_evaluation_file}")
-    if alert_evaluation is not None and should_fail(alert_evaluation["level"], args.alert_fail_on):
+    if alert_evaluation is not None and should_fail(alert_evaluation["level"], effective_fail_on):
         raise SystemExit(2)

@@ -98,7 +98,8 @@
 
 ### Escalation sequence
 1. Generate quality report after each run and evaluate thresholds.
-   - baseline automation helper: `python agent/reminder_alert_evaluator.py` (latest artifact auto-discovery).
+   - baseline automation helper: `python agent/reminder_alert_evaluator.py --fail-profile ci` (latest artifact auto-discovery, CI gate).
+   - local review default should stay non-blocking via `local_run.py --alert-fail-profile local` unless explicit override is needed.
 2. On `WARN`: create/update Jira incident follow-up task and post evidence comment with metrics snapshot.
 3. On `CRITICAL`: immediately notify owner via `python agent/notify_owner.py` with Russian text and explicit next action options.
    - controlled runtime trigger: use evaluator/local-run flag `--notify-owner-on critical` (default remains `none`).

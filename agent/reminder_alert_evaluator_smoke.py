@@ -16,6 +16,8 @@ from agent.reminder_alert_evaluator import (
     evaluate_thresholds,
     find_latest_quality_report,
     maybe_notify_owner,
+    resolve_fail_on,
+    should_fail,
     should_notify,
 )
 
@@ -59,6 +61,11 @@ def run() -> None:
     assert should_notify("WARN", "warn") is True
     assert should_notify("CRITICAL", "critical") is True
     assert should_notify("WARN", "critical") is False
+    assert resolve_fail_on("local", None) == "none"
+    assert resolve_fail_on("ci", None) == "warn"
+    assert resolve_fail_on("ci", "critical") == "critical"
+    assert should_fail("WARN", resolve_fail_on("ci", None)) is True
+    assert should_fail("CRITICAL", resolve_fail_on("local", None)) is False
 
     dry_run_notified = maybe_notify_owner(
         alert_evaluation={
