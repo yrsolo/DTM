@@ -243,6 +243,9 @@ class Reminder(object):
             "send_errors": 0,
             "send_retry_attempts": 0,
             "send_retry_exhausted": 0,
+            "send_error_transient": 0,
+            "send_error_permanent": 0,
+            "send_error_unknown": 0,
         }
 
     def _inc_delivery_counter(self, key, value=1):
@@ -474,7 +477,9 @@ class Reminder(object):
                 self._inc_delivery_counter("sent")
                 return
             except Exception as e:
-                transient = self._is_transient_send_error(e)
+                classification = self._classify_send_error(e)
+                transient = classification["is_transient"]
+                error_kind = classification["kind"]
                 can_retry = transient and attempt < self.send_retry_attempts
                 if can_retry:
                     self._inc_delivery_counter("send_retry_attempts")
@@ -482,7 +487,7 @@ class Reminder(object):
                     _safe_print(
                         "reminder_send_retry: "
                         f"{designer_name} chat_id={chat_id} attempt={attempt + 1}/{self.send_retry_attempts} "
-                        f"delay_seconds={delay} error={e}"
+                        f"delay_seconds={delay} error_kind={error_kind} error={e}"
                     )
                     await self._sleep(delay)
                     continue
@@ -492,8 +497,9 @@ class Reminder(object):
                 _safe_print(
                     "reminder_send_error: "
                     f"{designer_name} chat_id={chat_id} attempt={attempt}/{self.send_retry_attempts} "
-                    f"transient={transient} error={e}"
+                    f"transient={transient} error_kind={error_kind} error={e}"
                 )
+                self._track_send_error_kind(classification)
                 self._inc_delivery_counter("send_errors")
                 return
 
@@ -501,11 +507,68 @@ class Reminder(object):
         return self.send_retry_backoff_seconds * (self.send_retry_backoff_multiplier ** (failed_attempt - 1))
 
     @staticmethod
-    def _is_transient_send_error(error):
+    def _classify_send_error(error):
         if isinstance(error, (asyncio.TimeoutError, TimeoutError, aiohttp.ClientError, httpx.TransportError)):
-            return True
+            return {"is_transient": True, "kind": "timeout_or_transport"}
         error_name = type(error).__name__
-        return error_name in {"TimedOut", "NetworkError", "RetryAfter"}
+        if error_name in {"TimedOut", "NetworkError"}:
+            return {"is_transient": True, "kind": "network_error_name"}
+        if error_name == "RetryAfter":
+            return {"is_transient": True, "kind": "rate_limit_name"}
+
+        retry_after = getattr(error, "retry_after", None)
+        if retry_after is not None:
+            return {"is_transient": True, "kind": "rate_limit_attr"}
+
+        status_code = getattr(error, "status_code", None)
+        response = getattr(error, "response", None)
+        if status_code is None and response is not None:
+            status_code = getattr(response, "status_code", None)
+
+        if status_code in {408, 425, 429, 500, 502, 503, 504}:
+            return {"is_transient": True, "kind": f"http_{status_code}"}
+        if status_code in {400, 401, 403, 404}:
+            return {"is_transient": False, "kind": f"http_{status_code}"}
+
+        error_text = str(error).lower()
+        transient_markers = (
+            "timeout",
+            "timed out",
+            "temporary",
+            "temporarily",
+            "rate limit",
+            "too many requests",
+            "connection reset",
+            "connection aborted",
+            "connection refused",
+            "bad gateway",
+            "service unavailable",
+            "gateway timeout",
+        )
+        if any(marker in error_text for marker in transient_markers):
+            return {"is_transient": True, "kind": "message_transient"}
+
+        permanent_markers = (
+            "chat not found",
+            "bot was blocked",
+            "forbidden",
+            "bad request",
+            "can't parse entities",
+            "message is too long",
+        )
+        if any(marker in error_text for marker in permanent_markers):
+            return {"is_transient": False, "kind": "message_permanent"}
+
+        return {"is_transient": False, "kind": "unknown"}
+
+    def _track_send_error_kind(self, classification):
+        if classification["is_transient"]:
+            self._inc_delivery_counter("send_error_transient")
+            return
+        if classification["kind"] == "unknown":
+            self._inc_delivery_counter("send_error_unknown")
+            return
+        self._inc_delivery_counter("send_error_permanent")
 
     async def send_reminders(self, mode='test'):
         """Отправить напоминания.

@@ -50,6 +50,16 @@ async def noop_sleep(seconds):
     return None
 
 
+class RetryAfter(Exception):
+    def __init__(self, message, retry_after=1):
+        super().__init__(message)
+        self.retry_after = retry_after
+
+
+class BadRequest(Exception):
+    pass
+
+
 async def run_transient_success_case():
     tg = SequencedTelegramAdapter(
         outcomes=[asyncio.TimeoutError("t1"), asyncio.TimeoutError("t2"), {"ok": True}]
@@ -74,11 +84,14 @@ async def run_transient_success_case():
     assert counters["send_errors"] == 0, counters
     assert counters["send_retry_attempts"] == 2, counters
     assert counters["send_retry_exhausted"] == 0, counters
+    assert counters["send_error_transient"] == 0, counters
+    assert counters["send_error_permanent"] == 0, counters
+    assert counters["send_error_unknown"] == 0, counters
 
 
 async def run_transient_exhausted_case():
     tg = SequencedTelegramAdapter(
-        outcomes=[asyncio.TimeoutError("t1"), asyncio.TimeoutError("t2"), asyncio.TimeoutError("t3")]
+        outcomes=[RetryAfter("rate limit"), RetryAfter("rate limit"), RetryAfter("rate limit")]
     )
     reminder = Reminder(
         task_repository=FakeTaskRepository(),
@@ -100,10 +113,13 @@ async def run_transient_exhausted_case():
     assert counters["send_errors"] == 1, counters
     assert counters["send_retry_attempts"] == 2, counters
     assert counters["send_retry_exhausted"] == 1, counters
+    assert counters["send_error_transient"] == 1, counters
+    assert counters["send_error_permanent"] == 0, counters
+    assert counters["send_error_unknown"] == 0, counters
 
 
-async def run_non_transient_case():
-    tg = SequencedTelegramAdapter(outcomes=[ValueError("bad request"), {"ok": True}])
+async def run_permanent_case():
+    tg = SequencedTelegramAdapter(outcomes=[BadRequest("chat not found"), {"ok": True}])
     reminder = Reminder(
         task_repository=FakeTaskRepository(),
         openai_agent=EchoChatAgent(),
@@ -124,12 +140,43 @@ async def run_non_transient_case():
     assert counters["send_errors"] == 1, counters
     assert counters["send_retry_attempts"] == 0, counters
     assert counters["send_retry_exhausted"] == 0, counters
+    assert counters["send_error_transient"] == 0, counters
+    assert counters["send_error_permanent"] == 1, counters
+    assert counters["send_error_unknown"] == 0, counters
+
+
+async def run_unknown_case():
+    tg = SequencedTelegramAdapter(outcomes=[RuntimeError("boom"), {"ok": True}])
+    reminder = Reminder(
+        task_repository=FakeTaskRepository(),
+        openai_agent=EchoChatAgent(),
+        helper_character="helper",
+        tg_bot_token="dummy",
+        people_manager=FakePeopleManager(),
+        telegram_adapter=tg,
+        send_retry_attempts=3,
+        send_retry_backoff_seconds=0,
+        sleep_func=noop_sleep,
+    )
+    reminder.enhanced_messages = {"Alice": "hello"}
+    await reminder.send_reminders(mode="morning")
+    counters = reminder.get_delivery_counters()
+
+    assert tg.call_count == 1, tg.call_count
+    assert counters["sent"] == 0, counters
+    assert counters["send_errors"] == 1, counters
+    assert counters["send_retry_attempts"] == 0, counters
+    assert counters["send_retry_exhausted"] == 0, counters
+    assert counters["send_error_transient"] == 0, counters
+    assert counters["send_error_permanent"] == 0, counters
+    assert counters["send_error_unknown"] == 1, counters
 
 
 async def run():
     await run_transient_success_case()
     await run_transient_exhausted_case()
-    await run_non_transient_case()
+    await run_permanent_case()
+    await run_unknown_case()
     print("reminder_retry_backoff_smoke_ok")
 
 

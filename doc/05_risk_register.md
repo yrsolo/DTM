@@ -72,7 +72,7 @@
 - mitigation: bounded retry/backoff policy for transient send failures with retry/exhausted counters in quality report.
 - owner: backend
 - status: watch
-- notes: implemented in Stage 5 (`DTM-41`); monitor retry exhaustion rate and tune limits.
+- notes: implemented in Stage 5 (`DTM-41`) and transient/permanent/unknown send-error taxonomy tuned in `DTM-45`; monitor retry exhaustion rate and taxonomy drift.
 
 8. `R-008`
 - risk: insufficient operational visibility for reminder incidents.
