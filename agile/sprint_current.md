@@ -11,8 +11,8 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
 
 ## Stage 8 Estimate (Dynamic)
 - Baseline estimate: 6 tasks
-- Done: 5
-- Remaining: 1
+- Done: 6
+- Remaining: 0
 - Rule: estimate is adjusted during execution when scope clarifies; done/remaining is updated after each task completion.
 
 ## Done
@@ -92,12 +92,13 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
 - [DONE] DTM-72 / TSK-075 Stage 8: static web prototype views and filters over fixture payload
 - [DONE] DTM-73 / TSK-076 Stage 8: local/cloud source switch wiring for prototype consumer
 - [DONE] DTM-74 / TSK-077 Stage 8: shadow-run execution evidence package for prototype consumer
+- [DONE] DTM-75 / TSK-078 Stage 8 closeout: readiness gate and handoff package
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] TSK-078 Stage 8 closeout: readiness gate and handoff package.
+- [TODO] Stage 9 kickoff: serverless prototype serving contour and task decomposition baseline.
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -244,6 +245,8 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
   - Jira: DTM-73 (status: Done / `Gotovo`)
 - TSK-077 - Stage 8: shadow-run execution evidence package for prototype consumer
   - Jira: DTM-74 (status: Done / `Gotovo`)
+- TSK-078 - Stage 8 closeout: readiness gate and handoff package
+  - Jira: DTM-75 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -450,3 +453,5 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
 - 2026-02-27: DTM-74 moved to `V rabote` for Stage 8 shadow-run execution evidence package.
 - 2026-02-27: DTM-74 completed (`agent/stage8_shadow_run_evidence.py` + smoke + evidence artifact bundle); Stage 8 estimate updated to done 5 / remaining 1; Jira `Gotovo`.
 - 2026-02-27: Stage 8 shadow-run evidence artifact: `artifacts/shadow_run_stage8/20260227T161720Z_dtm74_final/shadow_run_evidence.json` (cloud fetch check skipped in this run due absent `PROTOTYPE_*_S3_KEY` values in shell env).
+- 2026-02-27: DTM-75 moved to `V rabote` for Stage 8 closeout and next-stage handoff package.
+- 2026-02-27: DTM-75 completed (`doc/20_stage8_closeout_and_stage9_handoff.md` + sprint/backlog/context sync); Stage 8 estimate updated to done 6 / remaining 0; Jira `Gotovo`.

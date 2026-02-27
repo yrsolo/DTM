@@ -305,4 +305,5 @@ Status:
 - Stage 8 implementation slice completed: static web prototype views and filters over fixture payload (`DTM-72`).
 - Stage 8 implementation slice completed: local/cloud source switch wiring for prototype payload preparation (`DTM-73`).
 - Stage 8 implementation slice completed: shadow-run execution evidence package builder with reproducible command logs/checklist artifact (`DTM-74`).
+- Stage 8 closeout completed: readiness gate and Stage 9 handoff package published (`doc/20_stage8_closeout_and_stage9_handoff.md`, `DTM-75`).
 
