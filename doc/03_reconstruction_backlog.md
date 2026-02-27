@@ -1,313 +1,44 @@
-# Backlog реконструкции (подробный план)
+# Reconstruction Backlog (Concise)
 
-## Цели реконструкции
-- Сохранить 100% текущей функциональности.
-- Убрать архитектурную связанность и сделать систему расширяемой.
-- Создать безопасный контур разработки на тестовой таблице.
-- Подготовить базу для переноса визуализации из Google Sheets в отдельный интерфейс.
-- Целевая модель описана в: `doc/04_target_architecture.md`.
-- Риск-реестр: `doc/05_risk_register.md`.
-- ADR-реестр: `doc/06_adrs.md`.
-- Security-аудит публикации: `doc/07_publication_security_audit.md`.
-- Runbook публикации: `doc/08_public_repo_bootstrap.md`.
-- Git workflow: `doc/09_git_workflow.md`.
+## Purpose
+Safe, incremental migration of DTM from legacy tightly coupled automation to maintainable architecture and serverless-ready delivery.
 
-## Принцип выполнения
-- Только поэтапная миграция (strangler pattern), без "big bang rewrite".
-- Каждый этап завершать валидацией на реальных данных.
-- Новую логику включать через флаги/режимы, а не заменять одномоментно.
-- На каждый этап обязателен rollback-сценарий (откат не более 5-10 минут).
+## Current Stage Status
+| stage | focus | status | evidence docs |
+|---|---|---|---|
+| 0 | runtime safety contour, dry-run, baseline, secret gate | done | `doc/02_baseline_validation_and_artifacts.md` |
+| 1 | input contracts and data quality stabilization | done | `doc/02_current_modules_and_functionality.md` |
+| 2 | layer decomposition (`domain/application/infrastructure`) | done | `doc/10_stage2_layer_inventory.md` |
+| 3 | rendering adapter boundary and legacy path cleanup | done | `doc/10_stage2_layer_inventory.md` + Stage 3 task files |
+| 4 | reminder fallback/idempotency/parallelism | done | Stage 4 task files in `agile/tasks` |
+| 5 | observability, SLI, alert evaluator, runbook cadence | done | `doc/05_risk_register.md`, `doc/02_baseline_validation_and_artifacts.md` |
+| 6 | read-model contract and publication path | done | `doc/11`, `doc/12`, `doc/13` |
+| 7 | frontend migration prep (schema/fixture/policy/checklists) | done | `doc/14`..`doc/18` |
+| 8 | static web prototype and shadow-run evidence package | done | `doc/19`, `doc/20` |
+| 9 | serverless deploy contour and cloud runtime wiring | in progress | `doc/21`, `agile/sprint_current.md` |
 
-## Definition of Done (для каждого спринта)
-- Код + миграции (если есть) + обновленная документация.
-- Демо-сценарий прогона на тестовой среде.
-- Артефакты сравнения baseline/new (таблицы, diff, логи).
-- Метрики качества этапа (ошибки, latency, стабильность).
+## Stage 9 Progress
+Completed:
+- `DTM-76`: main-branch auto-deploy workflow for Yandex Cloud Function.
+- `DTM-77`: `.env` to Lockbox sync automation and Google key runtime source.
+- `DTM-78`: Lockbox env mapping bound to function, cloud invoke smoke.
+- `DTM-80`: agile/process hygiene cleanup and archive normalization.
 
-## SLO/SLI (эксплуатационный минимум)
-- SLI `sync_success_rate`: доля успешных прогонов синка.
-- SLI `reminder_delivery_rate`: доля успешных доставок сообщений.
-- SLI `pipeline_duration_p95`: p95 времени полного прогона.
-- SLO стартово:
-  - `sync_success_rate >= 99%`
-  - `reminder_delivery_rate >= 98%`
-  - `pipeline_duration_p95 <= 10 min`
+Completed:
+- `DTM-81`: documentation readability refactor (`doc` map + concise backlog shape).
 
-## Decision log (ADR)
-- Ключевые архитектурные решения фиксируются в ADR:
-  - выбор архитектурного стиля;
-  - выбор хранилища;
-  - стратегия миграции Sheets -> DB/UI;
-  - стратегия idempotency и retry.
+Planned next:
+- Cloud-profile shadow-run with explicit `PROTOTYPE_*_S3_KEY` pass criteria.
+- Deploy-pipeline consumer contract-regression checks.
+- Deployment smoke checklist for Yandex Cloud Function profile.
 
----
+## Operating Principles
+- One active execution task at a time (WIP=1).
+- Jira is mandatory lifecycle control plane for each execution task.
+- Text docs are hypotheses until freshness/trust check is recorded in `agile/context_registry.md`.
+- Historical verbose logs are archived; active docs stay short and readable.
 
-## Этап 0. Организация локальной тестовой системы (первый приоритет)
-
-## 0.1. Явно зафиксировать тестовый контур
-- Подтвердить использование `SOURCE_SHEET_NAME`/`TARGET_SHEET_NAME` как дефолтного dev-контура.
-- Ввести `ENV=dev/test/prod`.
-- Вынести настройки окружений в отдельные секции/файлы (`.env.dev`, `.env.prod`).
-
-Критерий готовности:
-- локальный запуск не может писать в боевую таблицу при `ENV=dev`.
-
-## 0.2. Разделить таблицу чтения и таблицу записи
-- Добавить 2 конфигурации:
-  - `SOURCE_SHEET_NAME` (откуда читать задачи/людей),
-  - `TARGET_SHEET_NAME` (куда писать `Дизайнеры/Календарь/Задачи`).
-- На dev-среде включить сценарий:
-  - чтение из актуальной рабочей таблицы;
-  - запись только в тестовую таблицу.
-- Обновить `GoogleSheetInfo`/планировщик так, чтобы read/write таблицы могли различаться без хака в коде.
-
-Критерий готовности:
-- один запуск формирует выходные листы в `TARGET`, не изменяя `SOURCE`.
-
-Статус:
-- реализовано в текущем коде (`GoogleSheetPlanner` + `SOURCE_SHEET_INFO`/`SHEET_INFO`).
-
-## 0.3. Режимы прогона и dry-run
-- Добавить режим:
-  - `--mode sync-only` (без Telegram),
-  - `--mode reminders-only`,
-  - `--dry-run` (без записи в Google API, только лог diff).
-
-Критерий готовности:
-- можно локально проверить итог без фактической записи.
-
-## 0.4. Базовая валидация результата "как есть"
-- Снять baseline-скрин/экспорт целевых листов после текущего кода.
-- После каждого изменения сравнивать:
-  - количество строк/столбцов;
-  - значения ключевых ячеек;
-  - наличие заметок и цветов.
-
-Критерий готовности:
-- есть повторяемый чеклист "ничего не сломали".
-
-Статус:
-- реализован базовый artifact flow: `agent/capture_baseline.py` + `doc/02_baseline_validation_and_artifacts.md`.
-
-## 0.5. Gate публикации и безопасность репозитория
-- Ввести pre-commit проверку на секреты (`detect-secrets` или `gitleaks`).
-- Провести sanitation репозитория (ключи, токены, прокси-креды, личные данные).
-- Добавить security-checklist перед публикацией.
-
-Критерий готовности:
-- репозиторий проходит secret-scan без критичных находок.
-
-Статус:
-- gate активен через pre-commit `detect-secrets` + baseline `.secrets.baseline`, подтверждается smoke-командой `pre-commit run detect-secrets --all-files`.
-
----
-
-## Этап 1. Стабилизация данных и контрактов
-- Ввести модели данных (Pydantic/dataclass) для:
-  - `TaskRaw`, `TaskParsed`, `Person`, `ReminderMessage`.
-- Валидировать обязательные колонки и типы при чтении листов.
-- Явно обрабатывать ошибки данных (пустые даты, кривые тайминги, нет chat_id).
-
-Критерий готовности:
-- ошибки входных данных не приводят к падению всего пайплайна.
-
-Статус:
-- стартован инкремент Stage 1: добавлена валидация обязательных колонок задач в `core/repository.py` (DTM-8).
-- выполнен следующий инкремент Stage 1: hardening `TimingParser.parse` для null/non-string payload и нормализация nullable текстовых полей `Task` (DTM-9).
-- выполнен инкремент Stage 1 по people-контрактам: null-safe нормализация `Person`, безопасный mapping `PeopleManager`, исправление `get_designers` (DTM-10).
-- выполнен runtime-фикс reminder-контура: совместимый `httpx` proxy setup + unicode-safe logging для dry-run напоминаний (DTM-11).
-- выполнен контрактный scaffold Stage 1: typed row-контракты для Task/Person (`core/contracts.py`) и перевод row mapping в `repository/people` на эти контракты (DTM-12).
-- выполнен guardrail-инкремент Stage 1: required-header валидация tasks/people через метаданные typed contracts + fail-fast ошибки с контекстом листа (DTM-13).
-- выполнен инкремент Stage 1 по taxonomy ошибок качества данных: добавлены typed исключения (`DataQualityError`, `MissingRequiredColumnsError`) и унифицирована диагностика missing-header для task/people загрузчиков (DTM-14).
-- выполнен инкремент Stage 1 по row-level policy: malformed task/person rows обрабатываются fail-soft (skip + `RowValidationIssue` диагностика) без падения всего пайплайна (DTM-16).
-- выполнен инкремент Stage 1 по timing diagnostics: ошибки парсинга тайминга учитываются структурированно (`TimingParseIssue`) и отражаются в row-level accounting без фатальной остановки пайплайна (DTM-17).
-- выполнен инкремент Stage 1 по quality artifact surfacing: локальные прогоны и baseline capture формируют структурированный `quality_report.json` с агрегированными Stage 1 diagnostics (DTM-18).
-- выполнен инкремент Stage 1 по test-safe reminder execution: для тестового контура добавлен mock external mode (`OpenAI` + `Telegram`) без внешних side effects (DTM-15).
-
----
-
-## Этап 2. Декомпозиция по слоям
-- Выделить слои:
-  - `domain` (чистые правила),
-  - `application` (use-cases),
-  - `infrastructure` (Google/Telegram/OpenAI),
-  - `interfaces` (CLI/Cloud handler).
-- Убрать прямые вызовы Google API из доменных классов.
-
-Критерий готовности:
-- основная бизнес-логика тестируется без внешних API.
-
-Статус:
-- Stage 2 kickoff started: layer boundary inventory and dependency map completed (`doc/10_stage2_layer_inventory.md`, DTM-19).
-- выполнен Stage 2 scaffold-инкремент `S2-SLICE-01`: выделен bootstrap boundary для сборки зависимостей планировщика (`core/bootstrap.py`) и подключена dependency injection инициализация в `main.py`/`core/planner.py` (DTM-20).
-- выполнен Stage 2 application-инкремент: orchestration use-cases (`resolve_run_mode`, pipeline branches) вынесены из `main.py` в `core/use_cases.py` с сохранением run-mode поведения (DTM-21).
-- выполнен Stage 2 infrastructure-инкремент: добавлены adapter contracts (`core/adapters.py`) и явная инъекция Telegram/OpenAI адаптеров в reminder/bootstrap wiring (DTM-22).
-
----
-
-## Этап 3. Рефакторинг календарей и визуализации в Sheets
-- Унифицировать генерацию структур для `Календарь` и `Задачи`.
-- Вынести "рендер в таблицу" в отдельный адаптер.
-- Сделать единые правила цветов/подписей/нотов.
-
-Статус:
-- Stage 3 started: shared render cell-contract scaffold introduced (`core/render_contracts.py`) and integrated into `TaskCalendarManager` rendering flow (`DTM-23`).
-- Stage 3 alignment increment completed: task-calendar renderer payload/style branches normalized through helper methods over shared render contract (`DTM-24`).
-- Stage 3 adapter extraction increment completed: sheet write operations of `TaskCalendarManager` moved behind `SheetRenderAdapter` boundary with `ServiceSheetRenderAdapter` and bootstrap DI wiring (`DTM-25`).
-- Stage 3 adapter extraction continued: `CalendarManager` write path moved behind `SheetRenderAdapter` boundary with bootstrap DI wiring (`DTM-26`).
-- Stage 3 parity increment completed: `CalendarManager` header/date/body payload assembly normalized through helper methods over `RenderCell` (`DTM-27`).
-- Stage 3 harness increment completed: adapter dry-run assertion script added (`agent/render_adapter_smoke.py`, `DTM-28`).
-- Stage 3 close-out increment completed: `TaskManager` designers-sheet write path moved to `SheetRenderAdapter` + `RenderCell` with bootstrap DI renderer wiring (`DTM-29`).
-- Stage 3 close-out coverage increment completed: manager-level adapter-path assertions added to `agent/render_adapter_smoke.py` for active `TaskManager` and `CalendarManager` flows (`DTM-30`).
-- Stage 3 legacy disposition increment completed: unused `TaskCalendarManagerOld` path and obsolete global `write_cur_time` helper removed from `core/manager.py` (`DTM-31`).
-
-Критерий готовности:
-- обе визуализации строятся через единый промежуточный формат.
-
----
-
-## Этап 4. Рефакторинг reminder-пайплайна
-- Разделить:
-  - генератор фактов по задачам,
-  - генератор черновика,
-  - LLM-enhancer,
-  - отправщик в Telegram.
-- Добавить fallback:
-  - если OpenAI недоступен, отправлять валидный черновик.
-- Добавить защиту от дублей отправки.
-
-Критерий готовности:
-- напоминания отправляются стабильно даже при деградации внешних сервисов.
-
-Статус:
-- Stage 4 kickoff started: fallback hardening for empty/unavailable OpenAI enhancer response with draft-message delivery preservation (`DTM-32`).
-- Stage 4 idempotency increment completed: in-run duplicate-delivery guard added for reminder sends with deterministic smoke verification (`DTM-33`).
-- Stage 4 decomposition increment completed: reminder pipeline split into explicit internal steps (context/draft-enhance/delivery) with preserved behavior and deterministic smoke verification (`DTM-34`).
-- Stage 4 parallel enhancement increment completed: OpenAI reminder enhancer path now runs in parallel fan-out with bounded concurrency and reusable client, with deterministic parallel smoke verification (`DTM-35`).
-- Stage 4 observability increment completed: reminder delivery outcome counters integrated into runtime logs and planner quality report with deterministic counters smoke verification (`DTM-36`).
-- Stage 5 kickoff increment completed: derived reminder SLI metrics (`delivery_rate`, `failure_rate`, attemptable/attempted counters) integrated into quality report summary with deterministic formula smoke verification (`DTM-37`).
-- Stage 5 kickoff increment completed: risk register aligned to implemented reminder/API mitigations with explicit retry-policy stance and ownership (`DTM-38`).
-- Stage 5 kickoff increment completed: explicit reminder SLI alert thresholds and escalation policy documented with owner notification flow alignment (`DTM-39`).
-- Stage 5 follow-up increment completed: rolling reminder SLI trend snapshots persisted across runs via local artifact flow (`DTM-40`).
-- Stage 5 follow-up increment completed: bounded retry/backoff policy added for transient Telegram reminder delivery failures with retry observability counters (`DTM-41`).
-- Stage 5 follow-up increment completed: automated threshold evaluator added for latest quality report artifact (`INFO_ONLY/WARN/CRITICAL`) with deterministic smoke coverage (`DTM-42`).
-- Stage 5 follow-up increment completed: evaluator output wired into local/baseline alert-review workflow artifacts (`alert_evaluation.json`) without automatic external side effects (`DTM-43`).
-- Stage 5 follow-up increment completed: runbook and threshold tuning loop aligned to evaluator-wired artifact workflow (`DTM-44`).
-- Stage 5 follow-up increment completed: transient failure taxonomy tuned for Telegram retry classifier with taxonomy counters and smoke coverage (`DTM-45`).
-- Stage 5 follow-up increment completed: controlled owner-notify trigger added for evaluator output with explicit opt-in flags (`DTM-46`).
-- Stage 5 follow-up increment completed: evaluator severity gate policy formalized via explicit CI/local fail profiles with override precedence (`DTM-47`).
-- Stage 5 follow-up increment completed: routine ops cadence checklist formalized for threshold tuning governance (`DTM-48`).
-- Stage 5 follow-up increment completed: retry taxonomy metrics checklist formalized in runbook and baseline checklist flow (`DTM-49`).
-- Stage 5 follow-up increment completed: owner notify templates hardened with RU-only payload validation guard (`DTM-50`).
-- Stage 5 follow-up increment completed: CI wrapper command standardized for evaluator gate (`run_alert_eval_ci.cmd` with `--fail-profile ci`) in routine checks (`DTM-51`).
-- Stage 5 follow-up increment completed: sprint ceremony template now includes monthly alert-threshold drift review checkpoint (`DTM-52`).
-- Stage 5 follow-up increment completed: weekly ops review now includes retry taxonomy trend threshold triggers (`DTM-53`).
-- Stage 5 follow-up increment completed: owner-notify dry-run output now preserves readable RU payload wording and normalized local fallback context for no-mode runs (`DTM-54`).
-- Stage 6 kickoff planning increment started: baseline estimate fixed at 8 tasks with dynamic `done/remaining` tracking in sprint board; owner completion Telegram update rule added to operating flow (`DTM-55`).
-- Stage 6 slice completed: canonical read-model JSON contract document added (`doc/11_stage6_read_model_contract.md`) with entities, required fields, metadata, and schema versioning policy (`DTM-56`).
-- Stage 6 slice completed: read-model builder module implemented (`core/read_model.py`) from current artifacts (`quality_report` + optional alert evaluation) with deterministic smoke coverage (`DTM-57`).
-- Stage 6 slice completed: local launcher publication path added for read-model artifacts (`local_run.py --read-model-file`) with deterministic publication smoke (`DTM-58`).
-- Stage 6 slice completed: read-model contract compatibility guard added (`validate_read_model_contract`) with deterministic compatibility smoke (`DTM-59`).
-- Stage 6 slice completed: baseline UI view-spec over read-model documented (`doc/12_stage6_ui_view_spec.md`) for filters, timeline/gantt, and history surfaces (`DTM-60`).
-- Stage 6 slice completed: baseline capture flow extended to include `read_model.json` artifact for Stage 6 verification workflow (`DTM-61`).
-- Stage 6 closeout completed: formal readiness gate and handoff checklist added (`doc/13_stage6_closeout_and_handoff.md`) with Stage 6 artifact inventory and next-stage order (`DTM-62`).
-
----
-
-## Этап 5. Наблюдаемость и эксплуатация
-- Структурные логи по каждому шагу пайплайна.
-- Метрики:
-  - число обработанных задач,
-  - число отправленных сообщений,
-  - число ошибок по интеграциям.
-- Уведомления о критических сбоях в отдельный тех-чат.
-
-Критерий готовности:
-- можно быстро понять "что сломалось и где".
-
----
-
-## Этап 5.1. Риск-реестр и mitigation
-- Вести risk register:
-  - риск;
-  - вероятность;
-  - влияние;
-  - mitigation;
-  - owner.
-- Отдельно контролировать риски:
-  - квоты Google API;
-  - timezone/календарные ошибки;
-  - дубли отправки Telegram;
-  - деградация OpenAI.
-
-Критерий готовности:
-- по каждому high-risk есть конкретный mitigation и owner.
-
----
-
-## Этап 6. Подготовка к новой платформе визуализации
-- Ввести read-model API (единый JSON-слепок задач/этапов/дедлайнов).
-- Оставить Google Sheets как "витрину", но не как единственный формат.
-- Спроектировать новую UI-витрину (web):
-  - фильтры по дизайнеру/бренду/статусу;
-  - timeline/gantt;
-  - история изменений и комментарии.
-
-Критерий готовности:
-- данные пригодны для фронтенда без повторного парсинга таблиц.
-
----
-
-## Предлагаемая очередность спринтов
-1. Спринт 1: Этап 0.1-0.2 (dev-контур + read/write split).
-2. Спринт 2: Этап 0.3-0.5 (режимы прогонов + baseline + security gate).
-3. Спринт 3: Этап 1 (контракты данных).
-4. Спринт 4: Этап 2 (слоистая архитектура + ADR для ключевых решений).
-5. Спринт 5: Этап 3 (рефакторинг календарей + contract tests адаптеров).
-6. Спринт 6: Этап 4 (refactor reminders + idempotency).
-7. Спринт 7: Этап 5-5.1 (observability + risk register + SLO/SLI).
-8. Спринт 8: Этап 6 (подготовка UI миграции и read-model API).
-
-## Стратегия cutover
-- Шаг 1: shadow-run (новый пайплайн без влияния на боевой результат).
-- Шаг 2: ограниченный запуск (10%).
-- Шаг 3: частичный запуск (50%).
-- Шаг 4: полный запуск (100%).
-- На каждом шаге есть стоп-критерии и rollback.
-
-## Что делать сразу после утверждения backlog
-1. Зафиксировать и протестировать текущую реализацию `SOURCE_SHEET_NAME`/`TARGET_SHEET_NAME` на smoke-тестах.
-2. Прогнать локально: read из рабочей, write в `Спонсорские ТНТ ТЕСТ`.
-3. Зафиксировать baseline результата и дифф.
-4. Подключить сканер секретов и прогнать sanitation репозитория.
-5. Создать demo-dataset без персональных данных для портфолио.
-
----
-
-## Stage 7 (execution contour for visualization migration)
-- Formalize consumer-facing read-model policy (change policy, compatibility rules, version discipline).
-- Prepare frontend-ready artifacts (schema snapshot + fixture bundle from baseline capture flow).
-- Define first UI migration spike scope and shadow-run readiness checklist.
-
-Done criterion:
-- Stage 7 handoff package is complete and sufficient to start Stage 8 prototype implementation without data-format clarifications.
-
-Status:
-- Stage 7 kickoff started and documented in `doc/14_stage7_execution_plan.md` (`DTM-63`).
-- Stage 7 policy slice completed: read-model consumer compatibility policy and serverless artifact storage contour (Object Storage primary) documented in `doc/15_stage7_read_model_consumer_policy.md` (`DTM-64`).
-- Stage 7 artifact slice completed: schema snapshot export for frontend compatibility checks (`schema_snapshot.json`) with cloud Object Storage profile path (`DTM-65`).
-- Stage 7 artifact slice completed: frontend fixture bundle generation from baseline captures (`fixture_bundle.json`) with optional cloud Object Storage export path (`DTM-66`).
-- Stage 7 planning slice completed: UI migration Spike-1 scope and acceptance checklist documented (`doc/16_stage7_ui_spike_scope_and_acceptance.md`, `DTM-67`).
-- Stage 7 readiness slice completed: shadow-run checklist for visualization consumer documented (`doc/17_stage7_shadow_run_readiness_checklist.md`, `DTM-68`).
-- Stage 7 closeout completed: handoff package for Stage 8 published (`doc/18_stage7_closeout_and_stage8_handoff.md`, `DTM-69`).
-- Stage 8 kickoff started: execution plan and dynamic estimate baseline documented (`doc/19_stage8_execution_plan.md`, `DTM-70`).
-- Stage 8 implementation slice completed: prototype artifact loader with schema gate for local/cloud profiles (`DTM-71`).
-- Stage 8 implementation slice completed: static web prototype views and filters over fixture payload (`DTM-72`).
-- Stage 8 implementation slice completed: local/cloud source switch wiring for prototype payload preparation (`DTM-73`).
-- Stage 8 implementation slice completed: shadow-run execution evidence package builder with reproducible command logs/checklist artifact (`DTM-74`).
-- Stage 8 closeout completed: readiness gate and Stage 9 handoff package published (`doc/20_stage8_closeout_and_stage9_handoff.md`, `DTM-75`).
-- Stage 9 kickoff slice completed: main-branch auto-deploy workflow for Yandex Cloud Function published (`.github/workflows/deploy_yc_function_main.yml`) with setup guide (`doc/21_stage9_main_autodeploy_setup.md`, `DTM-76`).
-- Stage 9 security/config slice completed: automated `.env` to Lockbox sync utility and Google key secret-text runtime sourcing (`agent/sync_lockbox_from_env.py`, `config/constants.py`, `DTM-77`).
-- Stage 9 cloud-binding slice completed: Lockbox `DTM` payload bound into function env via secret mappings and runtime SA access binding; invoke smoke executed (`DTM-78`).
-- Stage 9 process hygiene slice completed: agile docs normalized to operational board + trust registry with archival history contour (`DTM-80`).
-
+## References
+- Documentation map: `doc/00_documentation_map.md`
+- Current sprint board: `agile/sprint_current.md`
+- Historical full backlog snapshot: `doc/archive/03_reconstruction_backlog_2026-02-27.pre_readability.md`

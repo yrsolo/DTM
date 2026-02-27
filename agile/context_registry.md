@@ -12,9 +12,10 @@ Purpose: track freshness and trust of planning sources before execution tasking.
 |---|---|---|---|---|---|
 | `agile/sprint_current.md` | 2026-02-27 | TeamLead | verified and normalized board to operational format with WIP=1 and explicit Stage 9 counters | high | current sprint control plane in repo |
 | `agile/context_registry.md` | 2026-02-27 | TeamLead | trust entries refreshed after `git status --short --branch` and recent history checks on sprint/context/backlog docs | high | compact active registry; historical evidence moved to archive |
-| `doc/03_reconstruction_backlog.md` | 2026-02-27 | TeamLead | checked against latest commits (`DTM-76..DTM-78`) and Stage 9 scope continuity | medium | strategic backlog source; execution state tracked in sprint/Jira |
+| `doc/03_reconstruction_backlog.md` | 2026-02-27 | TeamLead | rewritten to concise stage status and active queue format; historical verbose snapshot moved to `doc/archive/03_reconstruction_backlog_2026-02-27.pre_readability.md` | high | now suitable as fast planning source |
+| `doc/00_documentation_map.md` | 2026-02-27 | TeamLead | new navigation entrypoint linking read order, core docs, stage docs, and archives | high | primary onboarding path for docs readability |
 | `doc/21_stage9_main_autodeploy_setup.md` | 2026-02-27 | TeamLead | aligned with latest cloud/deploy commits and Stage 9 delivery objective | high | primary Stage 9 setup reference |
-| `agent/OPERATING_CONTRACT.md` + `AGENTS.md` + `agent/teamlead.md` | 2026-02-27 | TeamLead | runtime gate re-read this session (`CONTRACT CHECK: OK`) and Jira lifecycle enforced for DTM-80 | high | process source of truth |
+| `agent/OPERATING_CONTRACT.md` + `AGENTS.md` + `agent/teamlead.md` | 2026-02-27 | TeamLead | runtime gate re-read this session (`CONTRACT CHECK: OK`) and Jira lifecycle enforced for DTM-81 | high | process source of truth |
 
 ## Archive
 - Historical detailed evidence log preserved at `agile/archive/context_registry_2026-02-27.pre_hygiene.md`.

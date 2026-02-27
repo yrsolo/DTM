@@ -16,6 +16,9 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Demonstrate safe migration approach: preserve business behavior while improving code quality.
 - Build a foundation for moving from Google Sheets visualization to a dedicated frontend.
 
+## Documentation entrypoint
+- Start with `doc/00_documentation_map.md` for readable navigation and recommended read order.
+
 ## Tech stack
 - Python
 - Google Sheets / Drive API
