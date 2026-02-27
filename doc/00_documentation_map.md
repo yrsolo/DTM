@@ -32,6 +32,9 @@ This file explains where to read first and where to go for details.
 - Stage 7: `doc/stages/14_stage7_execution_plan.md` ... `doc/stages/18_stage7_closeout_and_stage8_handoff.md`
 - Stage 8: `doc/stages/19_stage8_execution_plan.md`, `doc/stages/20_stage8_closeout_and_stage9_handoff.md`
 - Stage 9 setup: `doc/ops/stage9_main_autodeploy_setup.md`
+- Stage 10: `doc/stages/21_stage9_closeout_and_stage10_handoff.md`, `doc/stages/22_stage10_execution_plan.md`
+- Stage 10 ops drill: `doc/ops/stage10_function_rollback_drill.md`
+- Stage 10 owner quickstart: `doc/ops/stage10_owner_quickstart_checklist.md`
 
 ## Historical Archives
 - Old detailed backlog snapshot:

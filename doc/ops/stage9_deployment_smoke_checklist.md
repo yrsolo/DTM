@@ -36,3 +36,5 @@ Fast post-deploy verification for serverless runtime profile after each `main` a
 - Smoke command 2 result: `<status/body>`
 - Smoke command 3 result: `<status/body>`
 - Notes: `<observed warnings/errors>`
+- Normalized run evidence report:
+  - `.venv\Scripts\python.exe agent\deploy_run_evidence_report.py --per-page 1 --output-file artifacts/tmp/deploy_run_evidence.json`

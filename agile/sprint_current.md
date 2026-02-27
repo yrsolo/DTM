@@ -1,19 +1,19 @@
 # Sprint Current
 
 ## Sprint Goal
-Stabilize Stage 9 serverless delivery and keep process/documentation concise and operational.
+Kick off Stage 10 with explicit execution baseline and reproducible serverless operations evidence flow.
 
 ## Capacity
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] Stage 9 closeout summary and Stage 10 handoff prep.
+- [BLOCKED] DTM-92 / TSK-092 - cloud shadow-run evidence run in required-keys mode is blocked by missing cloud keys in runtime contour.
 
-## Stage 9 Estimate (Dynamic)
-- Baseline estimate: 11 tasks (expanded with operational closeout slices after runtime incidents).
-- Done: 11
-- Remaining: 0
-- Rule: update `Done/Remaining` after each completed Stage 9 task.
+## Stage 10 Estimate (Dynamic)
+- Baseline estimate: 6 tasks.
+- Done: 4
+- Remaining: 2
+- Rule: update `Done/Remaining` after each completed Stage 10 task.
 
 ## Done
 - [DONE] DTM-76 / TSK-079 - main-branch auto-deploy workflow for Yandex Cloud Function.
@@ -27,16 +27,20 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 - [DONE] DTM-85 / TSK-087 - deployment smoke checklist published and validated (`healthcheck` + `timer dry-run` evidence), Jira moved to `Готово`.
 - [DONE] DTM-86 / TSK-088 - shadow-run cloud gate now supports required `PROTOTYPE_*_S3_KEY` mode with smoke coverage and ops checklist update.
 - [DONE] DTM-87 / TSK-089 - deploy workflow now enforces consumer contract-regression smoke checks before cloud deploy.
+- [DONE] DTM-88 / TSK-090 - Stage 9 closeout package published and Stage 10 kickoff baseline initialized.
+- [DONE] DTM-89 / TSK-091 - rollback drill and recovery notes published for function profile incidents.
+- [DONE] DTM-90 / TSK-093 - normalized deploy run evidence report script and smoke check added.
+- [DONE] DTM-91 / TSK-094 - owner quickstart checklist published for daily/weekly serverless operations.
 
 ## Blocked
-- [BLOCKED] none.
+- [BLOCKED] DTM-92 - missing required cloud keys for shadow-run (`missing_required_cloud_keys`); owner escalation sent via `agent/notify_owner.py` on 2026-02-27.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 10: kickoff and baseline estimate.
-- [TODO] Stage 10: first execution slice grooming.
+- [TODO] Stage 10: cloud shadow-run evidence run in required keys mode with stored artifact.
+- [TODO] Stage 10: closeout and Stage 11 handoff package.
 
 ## Active Task Files
-- none (Stage 9 execution queue complete)
+- `agile/tasks/DTM-92_stage10-cloud-shadow-run-required-keys.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`
