@@ -1,7 +1,7 @@
 # Sprint Current
 
 ## Sprint Goal
-Start Stage 7 delivery with explicit execution plan for visualization migration over Stage 6 read-model artifacts.
+Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/cloud source switching.
 
 ## Capacity
 1 active task (WIP), 3-5 tasks queued for this short sprint cycle.
@@ -9,10 +9,10 @@ Start Stage 7 delivery with explicit execution plan for visualization migration 
 ## Now
 - [IN_PROGRESS] none
 
-## Stage 7 Estimate (Dynamic)
-- Baseline estimate: 7 tasks
-- Done: 7
-- Remaining: 0
+## Stage 8 Estimate (Dynamic)
+- Baseline estimate: 6 tasks
+- Done: 1
+- Remaining: 5
 - Rule: estimate is adjusted during execution when scope clarifies; done/remaining is updated after each task completion.
 
 ## Done
@@ -87,12 +87,17 @@ Start Stage 7 delivery with explicit execution plan for visualization migration 
 - [DONE] DTM-67 / TSK-070 Stage 7: UI migration spike scope and acceptance checklist
 - [DONE] DTM-68 / TSK-071 Stage 7: shadow-run readiness checklist for visualization consumer
 - [DONE] DTM-69 / TSK-072 Stage 7 closeout: handoff package for Stage 8
+- [DONE] DTM-70 / TSK-073 Stage 8 kickoff: web prototype execution plan and dynamic estimate baseline
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] none (Stage 7 completed)
+- [TODO] TSK-074 Stage 8: prototype data loader + schema gate over read-model artifacts.
+- [TODO] TSK-075 Stage 8: static web prototype views (timeline/by-designer/task-details) with filters.
+- [TODO] TSK-076 Stage 8: local/cloud source switch for prototype data loader (filesystem/Object Storage).
+- [TODO] TSK-077 Stage 8: shadow-run execution evidence package for prototype consumer.
+- [TODO] TSK-078 Stage 8 closeout: readiness gate and handoff package.
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -229,6 +234,8 @@ Start Stage 7 delivery with explicit execution plan for visualization migration 
   - Jira: DTM-68 (status: Done / `Gotovo`)
 - TSK-072 - Stage 7 closeout: handoff package for Stage 8
   - Jira: DTM-69 (status: Done / `Gotovo`)
+- TSK-073 - Stage 8 kickoff: web prototype execution plan and dynamic estimate baseline
+  - Jira: DTM-70 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -424,3 +431,5 @@ Start Stage 7 delivery with explicit execution plan for visualization migration 
 - 2026-02-27: DTM-68 completed (`doc/17_stage7_shadow_run_readiness_checklist.md` + docs alignment); Stage 7 estimate updated to done 6 / remaining 1; Jira `Gotovo`.
 - 2026-02-27: DTM-69 moved to `V rabote` for Stage 7 closeout and Stage 8 handoff package.
 - 2026-02-27: DTM-69 completed (`doc/18_stage7_closeout_and_stage8_handoff.md` + docs alignment); Stage 7 estimate updated to done 7 / remaining 0; Jira `Gotovo`.
+- 2026-02-27: DTM-70 moved to `V rabote` for Stage 8 kickoff planning (execution plan + estimate baseline).
+- 2026-02-27: DTM-70 completed (`doc/19_stage8_execution_plan.md` + sprint/backlog/context sync); Stage 8 estimate initialized to done 1 / remaining 5; Jira `Gotovo`.
