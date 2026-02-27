@@ -101,7 +101,7 @@ def parse_args():
     parser.add_argument(
         "--notify-owner-context",
         default="",
-        help="Optional context for owner notify helper.",
+        help="Optional context for owner notify helper (Russian text).",
     )
     parser.add_argument(
         "--notify-owner-dry-run",
@@ -224,7 +224,7 @@ if __name__ == "__main__":
         maybe_notify_owner(
             alert_evaluation=alert_evaluation,
             notify_on=args.notify_owner_on,
-            notify_context=args.notify_owner_context or f"local_run mode={args.mode}",
+            notify_context=args.notify_owner_context or f"локальный запуск: режим {args.mode}",
             notify_dry_run=args.notify_owner_dry_run,
         )
     if args.alert_evaluation_file and alert_evaluation is not None:

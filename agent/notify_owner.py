@@ -8,12 +8,16 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import sys
 import urllib.parse
 import urllib.request
 from urllib.error import HTTPError
 
 from dotenv import load_dotenv
+
+CyrillicPattern = re.compile(r"[А-Яа-яЁё]")
+LatinPattern = re.compile(r"[A-Za-z]")
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -31,6 +35,32 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Optional context: branch/task/file or other useful pointers",
     )
     return parser
+
+
+def _safe_print(text: str) -> None:
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        print(str(text).encode("unicode_escape").decode("ascii"))
+
+
+def _validate_ru_field(name: str, value: str, required: bool = True) -> None:
+    text = (value or "").strip()
+    if required and not text:
+        raise ValueError(f"Поле '{name}' не может быть пустым")
+    if not text:
+        return
+    if LatinPattern.search(text):
+        raise ValueError(f"Поле '{name}' должно содержать только русский текст (без латиницы)")
+    if not CyrillicPattern.search(text):
+        raise ValueError(f"Поле '{name}' должно содержать русский текст")
+
+
+def _validate_ru_payload(args: argparse.Namespace) -> None:
+    _validate_ru_field("title", args.title, required=True)
+    _validate_ru_field("details", args.details, required=True)
+    _validate_ru_field("options", args.options, required=False)
+    _validate_ru_field("context", args.context, required=False)
 
 
 def _require_env(name: str) -> str:
@@ -69,30 +99,32 @@ def main() -> int:
     args = _build_parser().parse_args()
 
     try:
+        _validate_ru_payload(args)
+    except ValueError as exc:
+        _safe_print(f"Ошибка валидации payload: {exc}")
+        return 2
+
+    try:
         token = _require_env("TG_AGENT_TOKEN")
         chat_id = _require_env("MY_CHAT_ID")
     except RuntimeError as exc:
-        print(str(exc))
+        _safe_print(str(exc))
         return 2
 
-    lines = [
-        "DTM Agent requires owner decision",
-        f"Title: {args.title}",
-        f"Details: {args.details}",
-    ]
+    lines = ["DTM агент: требуется решение владельца", f"Заголовок: {args.title}", f"Детали: {args.details}"]
     if args.options:
-        lines.append(f"Options: {args.options}")
+        lines.append(f"Варианты: {args.options}")
     if args.context:
-        lines.append(f"Context: {args.context}")
+        lines.append(f"Контекст: {args.context}")
     message = "\n".join(lines)
 
     try:
         _send_message(token=token, chat_id=chat_id, message=message)
     except Exception as exc:  # noqa: BLE001
-        print(f"Failed to send Telegram notification: {exc}")
+        _safe_print(f"Failed to send Telegram notification: {exc}")
         return 1
 
-    print("Owner notification sent.")
+    _safe_print("Уведомление владельцу отправлено.")
     return 0
 
 

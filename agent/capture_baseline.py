@@ -124,7 +124,7 @@ def main() -> int:
                 "--notify-owner-on",
                 args.notify_owner_on,
                 "--notify-owner-context",
-                f"baseline_capture label={label}",
+                f"базовый прогон: метка {label}",
             ]
         )
     if args.notify_owner_dry_run:

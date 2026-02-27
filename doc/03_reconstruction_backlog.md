@@ -198,6 +198,7 @@
 - Stage 5 follow-up increment completed: evaluator severity gate policy formalized via explicit CI/local fail profiles with override precedence (`DTM-47`).
 - Stage 5 follow-up increment completed: routine ops cadence checklist formalized for threshold tuning governance (`DTM-48`).
 - Stage 5 follow-up increment completed: retry taxonomy metrics checklist formalized in runbook and baseline checklist flow (`DTM-49`).
+- Stage 5 follow-up increment completed: owner notify templates hardened with RU-only payload validation guard (`DTM-50`).
 
 ---
 

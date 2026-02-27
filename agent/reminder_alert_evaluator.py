@@ -1,4 +1,4 @@
-"""Evaluate reminder alert level from quality report artifacts."""
+﻿"""Evaluate reminder alert level from quality report artifacts."""
 
 from __future__ import annotations
 
@@ -13,6 +13,14 @@ from typing import Any
 FAIL_PROFILES = {
     "local": "none",
     "ci": "warn",
+}
+
+LEVEL_RU = {
+    "CRITICAL": "критический",
+    "WARN": "предупреждение",
+    "INFO_ONLY": "информационный",
+    "OK": "норма",
+    "UNKNOWN": "неизвестно",
 }
 
 
@@ -82,7 +90,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--notify-owner-context",
         default="",
-        help="Optional context passed to owner notify helper.",
+        help="Optional context passed to owner notify helper (Russian text).",
     )
     parser.add_argument(
         "--notify-owner-dry-run",
@@ -179,29 +187,35 @@ def _build_notify_payload(alert_evaluation: dict[str, Any], context: str = "") -
     attemptable = summary.get("reminder_delivery_attemptable_count")
     delivery_rate = summary.get("reminder_delivery_rate")
     send_errors = summary.get("reminder_send_error_count")
-    reason = str(alert_evaluation.get("reason", "no_reason"))
-    source_file = str(alert_evaluation.get("source_file", "n/a"))
+    level_ru = LEVEL_RU.get(level, LEVEL_RU["UNKNOWN"])
 
     if level == "CRITICAL":
-        title = "🚨 CRITICAL: SLI напоминаний"
+        title = "🚨 Критический уровень: напоминания"
+        reason_ru = "Превышен критический порог качества отправки."
     elif level == "WARN":
-        title = "❓ WARN: SLI напоминаний"
+        title = "❓ Предупреждение: напоминания"
+        reason_ru = "Достигнут предупреждающий порог качества отправки."
+    elif level == "INFO_ONLY":
+        title = "✅ Информация: напоминания"
+        reason_ru = "Недостаточно данных для строгой оценки."
     else:
-        title = "✅ INFO: SLI напоминаний"
+        title = "✅ Норма: напоминания"
+        reason_ru = "Показатели в допустимых границах."
 
     details = (
-        f"Уровень={level}; attemptable={attemptable}; delivery_rate={delivery_rate}; "
-        f"send_errors={send_errors}. Причина: {reason}. Источник: {source_file}"
+        f"Уровень: {level_ru}. Проверяемых отправок: {attemptable}. "
+        f"Доля доставок: {delivery_rate}. Ошибок отправки: {send_errors}. "
+        f"Причина: {reason_ru}."
     )
     options = (
-        "1) создать новый чат для инцидента и mitigation-задачи; "
-        "2) ответить TeamLead и продолжить текущий чат с выбранным вариантом"
+        "1) создать новый чат для инцидента и задачи исправления; "
+        "2) ответить тимлиду и продолжить текущий чат с выбранным вариантом"
     )
     return {
         "title": title,
         "details": details,
         "options": options,
-        "context": context or f"alert_eval level={level}",
+        "context": context or f"оценка оповещения: уровень {level_ru}",
     }
 
 

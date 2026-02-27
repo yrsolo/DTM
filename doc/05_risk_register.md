@@ -103,6 +103,7 @@
 2. On `WARN`: create/update Jira incident follow-up task and post evidence comment with metrics snapshot.
 3. On `CRITICAL`: immediately notify owner via `python agent/notify_owner.py` with Russian text and explicit next action options.
    - controlled runtime trigger: use evaluator/local-run flag `--notify-owner-on critical` (default remains `none`).
+   - RU-only payload validation is enforced by `agent/notify_owner.py` for title/details/options/context.
 4. Keep affected sprint item in `agile/sprint_current.md` under `Blocked` until owner decision is received.
 
 ### Owner next action template (for notify message)
