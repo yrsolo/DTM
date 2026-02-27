@@ -14,11 +14,12 @@ from utils.service import GoogleSheetInfo, GoogleSheetsService
 
 
 class GoogleSheetPlanner:
-    def __init__(self, key_json, sheet_info_data, mode="test"):
+    def __init__(self, key_json, sheet_info_data, mode="test", dry_run=False):
         self.mode = mode
+        self.dry_run = dry_run
         self.sheet_info = GoogleSheetInfo(**sheet_info_data)
         self.source_sheet_info = GoogleSheetInfo(**SOURCE_SHEET_INFO)
-        self.service = GoogleSheetsService(key_json)
+        self.service = GoogleSheetsService(key_json, dry_run=dry_run)
         self.timing_processor = TaskTimingProcessor()
         self.task_repository = GoogleSheetsTaskRepository(
             self.sheet_info,

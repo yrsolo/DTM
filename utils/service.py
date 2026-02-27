@@ -43,7 +43,7 @@ class GoogleSheetInfo:
 class GoogleSheetsService:
     """Service for working with Google Sheets."""
 
-    def __init__(self, credentials_path: str):
+    def __init__(self, credentials_path: str, dry_run: bool = False):
         """Service for working with Google Sheets.
 
         Args:
@@ -53,10 +53,23 @@ class GoogleSheetsService:
         self.sheets_service = build("sheets", "v4", credentials=credentials)
         self.drive_service = build("drive", "v3", credentials=credentials)
         self.requests = []
+        self.dry_run = dry_run
+        self._dry_run_counters = {}
         self.sheet_id_cache = {}
         self.get_spreadsheet_id_cache = {}
         self.spreadsheet_name = None
         self.worksheet_name = None
+
+    def _dry_run_log(self, action: str, details: str = ""):
+        if self.dry_run:
+            count = self._dry_run_counters.get(action, 0) + 1
+            self._dry_run_counters[action] = count
+            if action in {"update_cell", "update_borders"} and count > 5 and count % 500 != 0:
+                return
+            safe_details = details.encode("ascii", "backslashreplace").decode("ascii")
+            count_info = f" count={count}"
+            suffix = f"{count_info} | {safe_details}" if safe_details else count_info
+            print(f"[DRY-RUN] GoogleSheetsService::{action}{suffix}")
 
     def set_spreadsheet_and_worksheet(self, spreadsheet_name, worksheet_name):
         self.spreadsheet_name = spreadsheet_name
@@ -226,6 +239,9 @@ class GoogleSheetsService:
             cell_data: Cell data.
             **kwargs: Cell data.
         """
+        if self.dry_run:
+            self._dry_run_log("update_borders", f"sheet={sheet_name or self.worksheet_name}")
+            return
         # disable clearing main table sheet
         if spreadsheet_name is None:
             spreadsheet_name = self.spreadsheet_name
@@ -281,6 +297,9 @@ class GoogleSheetsService:
             cell_data: Cell data.
             **kwargs: Cell data.
         """
+        if self.dry_run:
+            self._dry_run_log("update_cell", f"sheet={sheet_name or self.worksheet_name}")
+            return
         # disable clearing main table sheet
         if spreadsheet_name is None:
             spreadsheet_name = self.spreadsheet_name
@@ -387,6 +406,15 @@ class GoogleSheetsService:
         else:
             req_list = requests
 
+        if self.dry_run:
+            self._dry_run_log(
+                "execute_updates",
+                f"spreadsheet={spreadsheet_name} requests={len(req_list)}",
+            )
+            if requests is None:
+                self.requests = [req for req in self.requests if req[0] != spreadsheet_name]
+            return
+
         spreadsheet_id = self.get_spreadsheet_id_by_name(spreadsheet_name)
 
         try:
@@ -411,6 +439,10 @@ class GoogleSheetsService:
             spreadsheet_name = self.spreadsheet_name
         if sheet_name is None:
             sheet_name = self.worksheet_name
+
+        if self.dry_run:
+            self._dry_run_log("clear_cells", f"sheet={sheet_name} range={range_}")
+            return
 
         # запрещаем очишать лист с главной таблицей
         if sheet_name == SHEET_NAMES["tasks"]:

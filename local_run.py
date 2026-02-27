@@ -25,8 +25,13 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Run planner locally")
     parser.add_argument(
         "--mode",
-        choices=("timer", "morning", "test"),
+        choices=("timer", "morning", "test", "sync-only", "reminders-only"),
         help="Direct mode override (recommended for local runs).",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Disable Google Sheets write operations (read-only verification run).",
     )
     parser.add_argument(
         "--event-file",
@@ -51,4 +56,4 @@ def load_event(args):
 if __name__ == "__main__":
     args = parse_args()
     event = load_event(args)
-    asyncio.run(main(mode=args.mode, event=event))
+    asyncio.run(main(mode=args.mode, event=event, dry_run=args.dry_run))

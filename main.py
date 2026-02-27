@@ -17,6 +17,7 @@ async def main(**kwargs):
     # ????????????? ????????????
     mode = kwargs.get("mode", None)
     event = kwargs.get("event", None)
+    dry_run = kwargs.get("dry_run", False)
     if mode:
         pass
     elif event:
@@ -29,11 +30,11 @@ async def main(**kwargs):
             print(f"{trigger_id=}")
     else:
         mode = "test"
-    print(f"{mode=}")
+    print(f"{mode=} {dry_run=}")
 
-    planner = GoogleSheetPlanner(KEY_JSON, SHEET_INFO, mode=mode)
+    planner = GoogleSheetPlanner(KEY_JSON, SHEET_INFO, mode=mode, dry_run=dry_run)
 
-    if mode in {"timer", "test"}:
+    if mode in {"timer", "test", "sync-only"}:
         start_time = pd.Timestamp.now()
         planner.update()
         planner.task_to_calendar()  # Генерация и запись календаря задач
@@ -42,7 +43,7 @@ async def main(**kwargs):
         run_time = pd.Timestamp.now() - start_time
         print(f"Table update runtime: {run_time}")
 
-    if mode in {"morning", "test"}:
+    if mode in {"morning", "test", "reminders-only"}:
         start_time = pd.Timestamp.now()
         now = pd.Timestamp.now(tz="Europe/Moscow")
         dow = now.dayofweek

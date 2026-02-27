@@ -34,6 +34,13 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 ## Local run (current)
 - Preferred: `run_timer.cmd` (uses project virtualenv and runs timer mode).
 - Direct CLI: `.venv\Scripts\python.exe local_run.py --mode timer`
+- Available run modes:
+  - `timer`: sync pipeline only (legacy behavior).
+  - `morning`: reminders only on weekdays (legacy behavior).
+  - `test`: sync + reminders (legacy behavior).
+  - `sync-only`: explicit sync-only run (no reminders).
+  - `reminders-only`: explicit reminders-only run (no sheet sync path).
+- Safe verification mode: add `--dry-run` to disable Google Sheets write operations while keeping read flow and dry-run logs.
 
 ## Environment contour
 - Runtime env selector: `ENV` with allowed values `dev`, `test`, `prod`.
