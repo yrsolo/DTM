@@ -20,6 +20,7 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - [DONE] DTM-6 / TSK-007 Baseline validation checklist and artifact capture flow.
 - [DONE] DTM-7 / TSK-008 Secret scan pre-commit gate hardening and verification.
 - [DONE] DTM-8 / TSK-011 Stage 1 required-column validation in repository.
+- [DONE] DTM-9 / TSK-012 Stage 1 timing/null input normalization and parser hardening.
 
 ## Blocked
 - [BLOCKED] none
@@ -40,6 +41,8 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
   - Jira: DTM-7 (status: Done / `Gotovo`)
 - TSK-011 - Stage 1 required task-column validation
   - Jira: DTM-8 (status: Done / `Gotovo`)
+- TSK-012 - Stage 1 timing/null input normalization and parser hardening
+  - Jira: DTM-9 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -50,6 +53,7 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - agile/tasks/DTM-6_baseline-validation-checklist.md
 - agile/tasks/DTM-7_secret-scan-gate.md
 - agile/tasks/DTM-8_required-column-validation.md
+- agile/tasks/DTM-9_timing-parser-hardening.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -65,3 +69,4 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - 2026-02-27: DTM-7 completed (full-repo detect-secrets smoke, docs sync, Jira `Gotovo`).
 - 2026-02-27: DTM-8 created and moved to `V rabote` as first incremental Stage 1 execution block.
 - 2026-02-27: DTM-8 completed (required-column validation + safe row mapping, smoke-check, Jira `Gotovo`).
+- 2026-02-27: DTM-9 completed (timing parser null/type hardening + task text normalization, smoke-check, Jira `Gotovo`).

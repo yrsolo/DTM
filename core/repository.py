@@ -20,6 +20,32 @@ from core.reminder import TelegramNotifier
 from utils.service import GoogleSheetInfo, GoogleSheetsService
 
 
+def _is_nullish(value) -> bool:
+    """Return True for None/NaN-like values without crashing on list-like payloads."""
+    if value is None:
+        return True
+    try:
+        result = pd.isna(value)
+    except (TypeError, ValueError):
+        return False
+    if isinstance(result, (list, tuple)):
+        return all(result)
+    if hasattr(result, "all"):
+        try:
+            return bool(result.all())
+        except Exception:
+            return False
+    return bool(result)
+
+
+def _normalize_text(value, strip: bool = True) -> str:
+    """Convert nullable mixed payloads to a predictable text value."""
+    if _is_nullish(value):
+        return ""
+    text = value if isinstance(value, str) else str(value)
+    return text.strip() if strip else text
+
+
 class TimingParser:
     """Парсер тайминга задач."""
 
@@ -45,10 +71,12 @@ class TimingParser:
             next_task_date = pd.Timestamp.now()
         timings = defaultdict(list)
 
-        # Разбиваем строку на отдельные строки по переносам
-        if timing_str is None or (not isinstance(timing_str, str) and pd.isna(timing_str)):
+        # Разбиваем строку на отдельные строки по переносам.
+        if _is_nullish(timing_str):
             return timings
         timing_str = str(timing_str)
+        if not timing_str.strip():
+            return timings
         lines = timing_str.strip().split("\n")
 
         for line in lines:
@@ -61,7 +89,7 @@ class TimingParser:
 
             date_str = match.group(1)
             stage = line[len(date_str) :].strip().strip("-").strip()
-            if not pd.isna(stage):
+            if stage:
                 # Преобразуем строку даты в объект pandas.Timestamp
                 # year = datetime.datetime.now().year
                 year = next_task_date.year
@@ -111,17 +139,17 @@ class Task:
         parser=None,
         next_task_date=None,
     ):
-        self.brand = brand
-        self.format_ = format_
-        self.project_name = project_name
-        self.customer = customer
-        self.designer = designer
-        self.raw_timing = raw_timing
+        self.brand = _normalize_text(brand)
+        self.format_ = _normalize_text(format_)
+        self.project_name = _normalize_text(project_name)
+        self.customer = _normalize_text(customer)
+        self.designer = _normalize_text(designer)
+        self.raw_timing = _normalize_text(raw_timing, strip=False)
         self.timing_cache = None
-        self.status = status
+        self.status = _normalize_text(status)
         self.color = color
-        self.color_status = color_status
-        self.name = name
+        self.color_status = _normalize_text(color_status)
+        self.name = _normalize_text(name)
         self.id = task_id
         self.parser = parser or TimingParser()
         self.next_task_date = next_task_date

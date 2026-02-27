@@ -108,3 +108,5 @@
 ## 2026-02-27 update
 - `GoogleSheetsTaskRepository` now validates required task columns before mapping rows to `Task` objects.
 - If required headers are missing, repository raises explicit `ValueError` with column names and sheet reference.
+- `TimingParser.parse` now handles nullable/non-string timing payloads safely and exits early on empty input.
+- `Task` now normalizes nullable text fields (`brand`, `format_`, `project_name`, `customer`, `designer`, `status`, `color_status`, `name`, `raw_timing`) before downstream usage.
