@@ -159,6 +159,7 @@
 - Stage 3 harness increment completed: adapter dry-run assertion script added (`agent/render_adapter_smoke.py`, `DTM-28`).
 - Stage 3 close-out increment completed: `TaskManager` designers-sheet write path moved to `SheetRenderAdapter` + `RenderCell` with bootstrap DI renderer wiring (`DTM-29`).
 - Stage 3 close-out coverage increment completed: manager-level adapter-path assertions added to `agent/render_adapter_smoke.py` for active `TaskManager` and `CalendarManager` flows (`DTM-30`).
+- Stage 3 legacy disposition increment completed: unused `TaskCalendarManagerOld` path and obsolete global `write_cur_time` helper removed from `core/manager.py` (`DTM-31`).
 
 Критерий готовности:
 - обе визуализации строятся через единый промежуточный формат.

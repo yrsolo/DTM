@@ -9,7 +9,6 @@ Manager.py
 
 """
 
-import datetime
 from collections import defaultdict
 from typing import Dict, List
 
@@ -301,10 +300,6 @@ class CalendarManager:
             col=col_num,
             row=row_num,
         ).to_cell_data()
-def write_cur_time(service, spreadsheet_name, sheet_name, cell="A1"):
-    cur_time = pd.Timestamp.now(tz="Europe/Moscow").strftime("%H:%M %B %d")
-    row, col = cell_to_indices(cell)
-    service.update_cell(spreadsheet_name, sheet_name, row + 1, col + 1, value=cur_time)
 
 
 class TaskCalendarManager:
@@ -507,149 +502,5 @@ class TaskCalendarManager:
         self.renderer.update_borders(border_data=border_data)
         self.write_cur_time()
         self.write()
-
-
-class TaskCalendarManagerOld(CalendarManager):
-    def create_task_calendar_structure(self, task_timings):
-        calendar = defaultdict(lambda: defaultdict(list))
-        for task in task_timings["timings"]:
-            task_id = task["id"]
-            for timing in task["timings"]:
-                date = timing["date"]
-                stage = timing["stage"]
-                calendar[date][task_id].append(stage)
-        return calendar
-
-    def task_calendar_to_dataframe(self, calendar):
-        # Преобразуем словарь в DataFrame
-        calendar = pd.DataFrame(calendar).T
-
-        calendar.index.name = "Date"
-        date_range = [dict(), dict()]
-
-        notes = defaultdict(lambda: defaultdict(str))
-        calendar = calendar.sort_index()
-        for task_id, col in calendar.items():
-            date_range[0][task_id] = col.dropna().index.min()
-            date_range[1][task_id] = col.dropna().index.max()
-            for date, stages in col.items():
-                if isinstance(stages, (list, tuple)):
-                    pass
-                elif pd.isna(stages):
-                    continue
-                main_stage = stages[0][0][0:3]
-                s = ["\n".join(s) for s in stages]
-                notes[pd.to_datetime(date)][task_id] = "\n".join(s)
-                calendar.loc[date, task_id] = main_stage.upper() if main_stage != "отв" else "ответ"
-
-        # Добавляем пропущенные даты
-        min_date = calendar.index.min()
-        max_date = calendar.index.max()
-        full_date_range = pd.date_range(min_date, max_date)
-        calendar = calendar.reindex(full_date_range).fillna("")
-
-        sort_tasks = sorted(
-            calendar.columns,
-            key=lambda x: date_range[1][x] if date_range[1][x] else datetime.date.max,
-            reverse=True,
-        )
-        self.calendar = calendar.reindex(sort_tasks, axis=1).T
-        return self.calendar, notes, date_range
-
-    def write_task_calendar_to_sheet(self, calendar, min_date="1W"):
-        spreadsheet_name = self.sheet_info.spreadsheet_name
-        sheet_name = self.sheet_info.get_sheet_name("task_calendar")
-
-        calendar, notes, date_range = self.task_calendar_to_dataframe(calendar)
-        if min_date:
-            now = pd.Timestamp.now()
-            min_date = now - pd.Timedelta(min_date)
-            calendar = calendar.T[calendar.T.index >= min_date].T
-
-        # Очищаем лист
-        if sheet_name:
-            self.service.clear_cells(spreadsheet_name, sheet_name)
-
-        # Записываем имена проектов (заголовок таблицы)
-        for row_num, (task_id, _) in enumerate(calendar.iterrows(), start=2):
-            task = self.repository.tasks[task_id]
-            task_note = "Designer: {}\nCustomer: {}\nStatus: {}".format(
-                task.designer, task.customer, task.status
-            )
-            if task.color_status == "wait":
-                color = COLORS["gray"]
-            else:
-                color = COLORS["white"]
-
-            self.service.update_cell(
-                spreadsheet_name,
-                sheet_name,
-                row_num,
-                1,
-                value=task.name,
-                note=task_note,
-                color=color,
-            )
-
-        # Записываем данные в Google Таблицу
-        for col_num, (date, col) in enumerate(calendar.items(), start=2):
-            # Записываем дату слева от этапов
-            if date.weekday() >= 5:  # проверяем на выходные дни
-                color = COLORS["med_gray"]
-            else:
-                color = COLORS["gray"]
-
-            self.service.update_cell(
-                spreadsheet_name,
-                sheet_name,
-                1,
-                col_num,
-                value=date.strftime("%d.%m"),
-                color=color,
-            )
-            now = pd.Timestamp.now().normalize()
-
-            for row_num, (task_id, stage) in enumerate(col.items(), start=2):
-                task = self.repository.tasks[task_id]
-
-                if date <= date_range[1][task_id]:
-                    if task.color_status == "wait":
-                        if date.weekday() >= 5:
-                            color = COLORS["med_gray"]
-                        else:
-                            color = COLORS["gray"]
-                    else:
-                        color = COLORS["light_green"]
-                    pass
-                else:
-                    if date.weekday() >= 5:  # проверяем на выходные дни
-                        color = COLORS["gray"]
-                    else:
-                        color = COLORS["white"]
-
-                text_color = None
-
-                if date == now:
-                    color = COLORS["green"]
-
-                if pd.isna(stage):
-                    value = ""
-                    note = ""
-                else:
-                    value = stage
-                    note = notes[date][task_id]
-                self.service.update_cell(
-                    spreadsheet_name,
-                    sheet_name,
-                    row_num,
-                    col_num,
-                    value=value,
-                    color=color,
-                    text_color=text_color,
-                    note=note,
-                )
-
-        write_cur_time(self.service, spreadsheet_name, sheet_name, cell="A1")
-        self.service.execute_updates(spreadsheet_name)
 
 
