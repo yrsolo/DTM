@@ -79,12 +79,18 @@ def main() -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     quality_report_file = out_dir / "quality_report.json"
+    alert_evaluation_file = out_dir / "alert_evaluation.json"
     cmd = [
         python_bin,
         "local_run.py",
         "--mode",
         args.mode,
         "--dry-run",
+        "--evaluate-alerts",
+        "--alert-fail-on",
+        "none",
+        "--alert-evaluation-file",
+        str(alert_evaluation_file),
         "--quality-report-file",
         str(quality_report_file),
     ]
@@ -115,6 +121,7 @@ def main() -> int:
 - [ ] Dry-run command exited with code 0.
 - [ ] Log contains `[DRY-RUN] GoogleSheetsService::execute_updates` entries only (no real writes).
 - [ ] quality_report.json exists and summary counts look expected.
+- [ ] alert_evaluation.json exists and contains level/reason fields.
 - [ ] Compare row/column counts in target sheets against previous baseline.
 - [ ] Compare key milestone cells against previous baseline.
 - [ ] Compare presence of notes/colors in sampled cells.

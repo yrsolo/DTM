@@ -53,10 +53,15 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Quality report summary now also includes derived reminder SLI metrics: attemptable deliveries, attempted sends, delivery rate, and failure rate.
 - Automated threshold evaluator (latest artifact auto-discovery):
   - `.venv\Scripts\python.exe agent\reminder_alert_evaluator.py --format text --fail-on none`
+- Local review wiring options:
+  - `--evaluate-alerts` prints evaluator result from current run quality report.
+  - `--alert-evaluation-file <path>` saves evaluator JSON artifact.
+  - `--alert-fail-on none|warn|critical` controls exit policy from evaluator level.
 
 ## Baseline validation flow (Stage 0.4)
 - Capture artifact bundle:
   - `.venv\Scripts\python.exe agent\capture_baseline.py --label pre_change`
+- Baseline bundle now includes `alert_evaluation.json` from wired evaluator flow.
 - Bundle output location:
   - `artifacts/baseline/<UTC_TIMESTAMP>_<label>/`
 - Detailed process and checklist:

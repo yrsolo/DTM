@@ -6,6 +6,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from agent.reminder_alert_evaluator import evaluate_thresholds, should_fail
 from main import main
 
 
@@ -64,6 +65,22 @@ def parse_args():
         action="store_true",
         help="Disable OpenAI and Telegram external calls in reminder flow.",
     )
+    parser.add_argument(
+        "--evaluate-alerts",
+        action="store_true",
+        help="Evaluate reminder alert thresholds from current quality report.",
+    )
+    parser.add_argument(
+        "--alert-evaluation-file",
+        type=Path,
+        help="Optional path to write alert evaluation JSON.",
+    )
+    parser.add_argument(
+        "--alert-fail-on",
+        choices=("none", "warn", "critical"),
+        default="none",
+        help="Exit non-zero when evaluated level meets/exceeds severity (default: none).",
+    )
     return parser.parse_args()
 
 
@@ -108,6 +125,19 @@ def persist_sli_trend_snapshot(quality_report, trend_file, limit=200):
     return len(snapshots)
 
 
+def build_alert_evaluation(quality_report):
+    return evaluate_thresholds(quality_report=quality_report)
+
+
+def persist_alert_evaluation(alert_evaluation, out_file):
+    out_file = Path(out_file)
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    out_file.write_text(
+        json.dumps(alert_evaluation, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
 def load_event(args):
     if args.event_file:
         return json.loads(args.event_file.read_text(encoding="utf-8"))
@@ -141,3 +171,19 @@ if __name__ == "__main__":
             limit=args.sli_trend_limit,
         )
         print(f"sli_trend_file={args.sli_trend_file} snapshots={snapshot_count}")
+    alert_evaluation = None
+    if args.evaluate_alerts or args.alert_evaluation_file:
+        alert_evaluation = build_alert_evaluation(quality_report)
+        print(
+            "alert_eval "
+            f"level={alert_evaluation['level']} "
+            f"attemptable={alert_evaluation['summary']['reminder_delivery_attemptable_count']} "
+            f"delivery_rate={alert_evaluation['summary']['reminder_delivery_rate']} "
+            f"send_errors={alert_evaluation['summary']['reminder_send_error_count']}"
+        )
+        print(f"alert_reason={alert_evaluation['reason']}")
+    if args.alert_evaluation_file and alert_evaluation is not None:
+        persist_alert_evaluation(alert_evaluation, args.alert_evaluation_file)
+        print(f"alert_evaluation_file={args.alert_evaluation_file}")
+    if alert_evaluation is not None and should_fail(alert_evaluation["level"], args.alert_fail_on):
+        raise SystemExit(2)
