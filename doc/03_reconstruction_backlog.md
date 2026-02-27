@@ -297,4 +297,5 @@ Status:
 - Stage 7 policy slice completed: read-model consumer compatibility policy and serverless artifact storage contour (Object Storage primary) documented in `doc/15_stage7_read_model_consumer_policy.md` (`DTM-64`).
 - Stage 7 artifact slice completed: schema snapshot export for frontend compatibility checks (`schema_snapshot.json`) with cloud Object Storage profile path (`DTM-65`).
 - Stage 7 artifact slice completed: frontend fixture bundle generation from baseline captures (`fixture_bundle.json`) with optional cloud Object Storage export path (`DTM-66`).
+- Stage 7 planning slice completed: UI migration Spike-1 scope and acceptance checklist documented (`doc/16_stage7_ui_spike_scope_and_acceptance.md`, `DTM-67`).
 

@@ -39,6 +39,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Stage 6 closeout and handoff checklist is documented in `doc/13_stage6_closeout_and_handoff.md`.
 - Stage 7 execution plan and dynamic estimate baseline are documented in `doc/14_stage7_execution_plan.md`.
 - Stage 7 consumer/storage policy is documented in `doc/15_stage7_read_model_consumer_policy.md` (Object Storage primary for serverless runtime).
+- Stage 7 UI migration spike scope and acceptance checklist are documented in `doc/16_stage7_ui_spike_scope_and_acceptance.md`.
 
 ## Local run (current)
 - Preferred: `run_timer.cmd` (uses project virtualenv and runs timer mode).
