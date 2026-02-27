@@ -294,4 +294,5 @@ Done criterion:
 
 Status:
 - Stage 7 kickoff started and documented in `doc/14_stage7_execution_plan.md` (`DTM-63`).
+- Stage 7 policy slice completed: read-model consumer compatibility policy and serverless artifact storage contour (Object Storage primary) documented in `doc/15_stage7_read_model_consumer_policy.md` (`DTM-64`).
 

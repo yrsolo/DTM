@@ -38,6 +38,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Stage 6 UI baseline view specification is documented in `doc/12_stage6_ui_view_spec.md`.
 - Stage 6 closeout and handoff checklist is documented in `doc/13_stage6_closeout_and_handoff.md`.
 - Stage 7 execution plan and dynamic estimate baseline are documented in `doc/14_stage7_execution_plan.md`.
+- Stage 7 consumer/storage policy is documented in `doc/15_stage7_read_model_consumer_policy.md` (Object Storage primary for serverless runtime).
 
 ## Local run (current)
 - Preferred: `run_timer.cmd` (uses project virtualenv and runs timer mode).
@@ -75,6 +76,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Baseline bundle now includes `alert_evaluation.json` from wired evaluator flow and `read_model.json` from Stage 6 publication path.
 - Bundle output location:
   - `artifacts/baseline/<UTC_TIMESTAMP>_<label>/`
+- In serverless runtime, use Object Storage as primary artifact location (local `artifacts/...` is dev-only).
 - Detailed process and checklist:
   - `doc/02_baseline_validation_and_artifacts.md`
 - Routine Stage 5 cadence checklist (per-run/weekly/monthly):

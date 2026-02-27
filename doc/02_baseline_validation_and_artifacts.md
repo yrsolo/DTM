@@ -37,6 +37,11 @@ Files:
 - `meta.json` - command, git sha, timestamp, exit code.
 - `CHECKLIST.md` - validation checklist to compare with previous baseline.
 
+Cloud note:
+- For serverless runtime (Yandex Cloud function), baseline artifact files in local filesystem are dev-only.
+- Cloud-profile artifacts should be uploaded to Yandex Object Storage (S3-compatible) as primary storage.
+- Policy reference: `doc/15_stage7_read_model_consumer_policy.md`.
+
 ## Mandatory Comparison Points
 - Row/column counts in target sheets.
 - Values of key milestone cells.
