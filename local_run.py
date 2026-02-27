@@ -13,6 +13,7 @@ from agent.reminder_alert_evaluator import (
     should_fail,
 )
 from core.read_model import build_read_model
+from core.schema_snapshot import build_schema_snapshot
 from main import main
 
 
@@ -119,6 +120,16 @@ def parse_args():
         default="",
         help="Optional build identifier embedded into read-model source metadata.",
     )
+    parser.add_argument(
+        "--schema-snapshot-file",
+        type=Path,
+        help="Optional path to write read-model schema snapshot JSON artifact.",
+    )
+    parser.add_argument(
+        "--schema-snapshot-s3-key",
+        default="",
+        help="Optional Object Storage key for schema snapshot upload (serverless profile).",
+    )
     return parser.parse_args()
 
 
@@ -181,6 +192,15 @@ def persist_read_model(read_model, out_file):
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(
         json.dumps(read_model, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def persist_schema_snapshot(schema_snapshot, out_file):
+    out_file = Path(out_file)
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    out_file.write_text(
+        json.dumps(schema_snapshot, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
 
@@ -255,13 +275,32 @@ if __name__ == "__main__":
     if args.alert_evaluation_file and alert_evaluation is not None:
         persist_alert_evaluation(alert_evaluation, args.alert_evaluation_file)
         print(f"alert_evaluation_file={args.alert_evaluation_file}")
-    if args.read_model_file:
+    should_build_read_model = bool(
+        args.read_model_file or args.schema_snapshot_file or args.schema_snapshot_s3_key
+    )
+    if should_build_read_model:
         read_model = build_read_model(
             quality_report=quality_report,
             alert_evaluation=alert_evaluation,
             build_id=(args.read_model_build_id or None),
         )
-        persist_read_model(read_model, args.read_model_file)
-        print(f"read_model_file={args.read_model_file}")
+        if args.read_model_file:
+            persist_read_model(read_model, args.read_model_file)
+            print(f"read_model_file={args.read_model_file}")
+        schema_snapshot = None
+        if args.schema_snapshot_file or args.schema_snapshot_s3_key:
+            schema_snapshot = build_schema_snapshot(
+                read_model=read_model,
+                build_id=(args.read_model_build_id or None),
+            )
+        if args.schema_snapshot_file and schema_snapshot is not None:
+            persist_schema_snapshot(schema_snapshot, args.schema_snapshot_file)
+            print(f"schema_snapshot_file={args.schema_snapshot_file}")
+        if args.schema_snapshot_s3_key and schema_snapshot is not None:
+            from utils.storage import S3SnapshotStorage
+
+            storage = S3SnapshotStorage()
+            storage.upload_json(args.schema_snapshot_s3_key, schema_snapshot)
+            print(f"schema_snapshot_s3_key={args.schema_snapshot_s3_key}")
     if alert_evaluation is not None and should_fail(alert_evaluation["level"], effective_fail_on):
         raise SystemExit(2)

@@ -51,3 +51,7 @@ Define stable consumer rules for read-model usage and artifact storage in server
 - Consumer prototype must use read-model only through this policy.
 - Artifact location must be environment-driven (`local` vs `object_storage`) with no hardcoded local path in cloud runtime.
 - Schema and fixture artifacts must be reproducible from the same run id.
+
+## Runtime flags (current)
+- `local_run.py --schema-snapshot-file <path>`: write local schema snapshot artifact.
+- `local_run.py --schema-snapshot-s3-key <key>`: upload schema snapshot to Object Storage (requires S3 env credentials and bucket).

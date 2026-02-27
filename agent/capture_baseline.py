@@ -103,6 +103,7 @@ def main() -> int:
     quality_report_file = out_dir / "quality_report.json"
     alert_evaluation_file = out_dir / "alert_evaluation.json"
     read_model_file = out_dir / "read_model.json"
+    schema_snapshot_file = out_dir / "schema_snapshot.json"
     cmd = [
         python_bin,
         "local_run.py",
@@ -120,6 +121,8 @@ def main() -> int:
         str(read_model_file),
         "--read-model-build-id",
         f"baseline-{label}",
+        "--schema-snapshot-file",
+        str(schema_snapshot_file),
     ]
     if args.alert_fail_on is not None:
         cmd.extend(["--alert-fail-on", args.alert_fail_on])
@@ -153,6 +156,7 @@ def main() -> int:
             "compare this bundle with previous baseline bundle for regressions",
             "quality_report.json contains structured Stage 1 diagnostics snapshot",
             "read_model.json contains canonical Stage 6 read-model projection for UI/API planning",
+            "schema_snapshot.json contains consumer-facing read-model schema snapshot for Stage 7 checks",
         ],
     }
     (out_dir / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
@@ -164,6 +168,7 @@ def main() -> int:
 - [ ] quality_report.json exists and summary counts look expected.
 - [ ] alert_evaluation.json exists and contains level/reason fields.
 - [ ] read_model.json exists and passes basic contract validation checks.
+- [ ] schema_snapshot.json exists and has `schema_version` + `schema` fields.
 - [ ] Retry taxonomy summary fields are present (`reminder_send_retry_attempt_count`, `reminder_send_retry_exhausted_count`, `reminder_send_error_transient_count`, `reminder_send_error_permanent_count`, `reminder_send_error_unknown_count`).
 - [ ] If `reminder_send_error_unknown_count > 0`, create follow-up taxonomy task and link it in Jira evidence.
 - [ ] Compare row/column counts in target sheets against previous baseline.

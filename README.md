@@ -55,6 +55,8 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Optional artifact export: `--quality-report-file <path>` writes structured diagnostics snapshot (`task/people row issues`, `timing parse errors`) as JSON.
 - Optional trend persistence: `--sli-trend-file <path>` appends rolling reminder SLI snapshots across runs (use `--sli-trend-limit <N>` to cap history length, default `200`).
 - Optional Stage 6 artifact publication: `--read-model-file <path>` writes canonical read-model JSON from current run artifacts (`--read-model-build-id <id>` sets source build marker).
+- Optional Stage 7 schema snapshot publication: `--schema-snapshot-file <path>` writes read-model schema snapshot JSON.
+- Optional cloud export for schema snapshot: `--schema-snapshot-s3-key <key>` uploads schema snapshot to Object Storage (requires `S3_BUCKET` and S3 credentials envs).
 - Reminder run summary now includes delivery counters (`sent`, `skipped_*`, `send_errors`) and quality report summary includes reminder send/error counts.
 - Quality report summary also includes retry counters: `reminder_send_retry_attempt_count` and `reminder_send_retry_exhausted_count`.
 - Quality report summary now also includes derived reminder SLI metrics: attemptable deliveries, attempted sends, delivery rate, and failure rate.
@@ -74,6 +76,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Capture artifact bundle:
   - `.venv\Scripts\python.exe agent\capture_baseline.py --label pre_change`
 - Baseline bundle now includes `alert_evaluation.json` from wired evaluator flow and `read_model.json` from Stage 6 publication path.
+- Baseline bundle now also includes `schema_snapshot.json` for frontend compatibility checks.
 - Bundle output location:
   - `artifacts/baseline/<UTC_TIMESTAMP>_<label>/`
 - In serverless runtime, use Object Storage as primary artifact location (local `artifacts/...` is dev-only).

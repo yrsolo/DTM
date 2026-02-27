@@ -1,15 +1,11 @@
 """S3 storage helpers for JSON snapshots."""
 
+from __future__ import annotations
+
 import json
+import os
 
 import boto3
-
-from config import (
-    AWS_ACCESS_KEY_ID,
-    AWS_SECRET_ACCESS_KEY,
-    S3_BUCKET,
-    S3_ENDPOINT_URL,
-)
 
 
 class S3SnapshotStorage:
@@ -17,17 +13,19 @@ class S3SnapshotStorage:
 
     def __init__(
         self,
-        bucket=S3_BUCKET,
-        endpoint_url=S3_ENDPOINT_URL,
-        aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        bucket=None,
+        endpoint_url=None,
+        aws_access_key_id=None,
+        aws_secret_access_key=None,
     ):
-        self.bucket = bucket
+        self.bucket = bucket or os.environ.get("S3_BUCKET", "")
+        if not self.bucket:
+            raise ValueError("S3_BUCKET is required for Object Storage artifact upload")
         self.client = boto3.client(
             "s3",
-            endpoint_url=endpoint_url,
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
+            endpoint_url=endpoint_url or os.environ.get("S3_ENDPOINT_URL", ""),
+            aws_access_key_id=aws_access_key_id or os.environ.get("AWS_ACCESS_KEY_ID", ""),
+            aws_secret_access_key=aws_secret_access_key or os.environ.get("AWS_SECRET_ACCESS_KEY", ""),
         )
 
     def upload_json(self, key, payload):
