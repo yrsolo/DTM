@@ -275,9 +275,7 @@ class GoogleSheetsTaskRepository(TaskRepository):
         self._df_to_task(df)
 
     def _validate_required_columns(self, df, spreadsheet_name, sheet_name):
-        required_columns = {
-            col for col in TASK_FIELD_MAP.values() if col not in {"color", "color_status", "name", "id"}
-        }
+        required_columns = TaskRowContract.required_columns(TASK_FIELD_MAP)
         missing = sorted(col for col in required_columns if col not in df.columns)
         if missing:
             missing_str = ", ".join(missing)

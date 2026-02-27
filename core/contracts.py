@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any, ClassVar, Mapping
 
 import pandas as pd
 
@@ -42,6 +42,8 @@ class TaskRowContract:
     name: str
     task_id: Any
 
+    OPTIONAL_MAPPING_KEYS: ClassVar[set[str]] = {"color", "color_status", "name", "task_id"}
+
     @classmethod
     def from_mapping(cls, row: Mapping[str, Any], field_map: Mapping[str, str]) -> "TaskRowContract":
         return cls(
@@ -57,6 +59,10 @@ class TaskRowContract:
             name=normalize_text(row.get(field_map["name"])),
             task_id=row.get(field_map["task_id"], None),
         )
+
+    @classmethod
+    def required_columns(cls, field_map: Mapping[str, str]) -> set[str]:
+        return {mapped for key, mapped in field_map.items() if key not in cls.OPTIONAL_MAPPING_KEYS}
 
     def to_task_kwargs(self) -> dict[str, Any]:
         return {
@@ -85,6 +91,8 @@ class PersonRowContract:
     position: str
     vacation: str
 
+    OPTIONAL_MAPPING_KEYS: ClassVar[set[str]] = set()
+
     @classmethod
     def from_mapping(
         cls, row: Mapping[str, Any], field_map: Mapping[str, str]
@@ -99,6 +107,10 @@ class PersonRowContract:
             position=normalize_text(row.get(field_map["position"])).lower(),
             vacation=normalize_text(row.get(field_map["vacation"])).lower(),
         )
+
+    @classmethod
+    def required_columns(cls, field_map: Mapping[str, str]) -> set[str]:
+        return {mapped for key, mapped in field_map.items() if key not in cls.OPTIONAL_MAPPING_KEYS}
 
     def to_person_kwargs(self) -> dict[str, str]:
         return {

@@ -24,6 +24,7 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - [DONE] DTM-10 / TSK-013 Stage 1 people contract normalization and lookup hardening.
 - [DONE] DTM-11 / TSK-014 Reminder runtime compatibility fix (httpx proxy + unicode logging).
 - [DONE] DTM-12 / TSK-015 Stage 1 typed Task/Person row-contract scaffolding.
+- [DONE] DTM-13 / TSK-016 Stage 1 schema guardrails for task/people row contracts.
 
 ## Blocked
 - [BLOCKED] none
@@ -52,6 +53,8 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
   - Jira: DTM-11 (status: Done / `Gotovo`)
 - TSK-015 - Stage 1 typed Task/Person row-contract scaffolding
   - Jira: DTM-12 (status: Done / `Gotovo`)
+- TSK-016 - Stage 1 schema guardrails for task/people row contracts
+  - Jira: DTM-13 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -66,6 +69,7 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - agile/tasks/DTM-10_people-contract-hardening.md
 - agile/tasks/DTM-11_reminder-runtime-compat.md
 - agile/tasks/DTM-12_typed-row-contract-scaffolding.md
+- agile/tasks/DTM-13_schema-guardrails-row-contracts.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -86,3 +90,4 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - 2026-02-27: `local_run.py --mode reminders-only --dry-run` still fails in pre-existing reminder path (`httpx.AsyncClient(proxies=...)` + console unicode encoding); tracked for next increment (DTM-11).
 - 2026-02-27: DTM-11 completed (`httpx` proxy compatibility + unicode-safe reminder logging); `local_run.py --mode reminders-only --dry-run` passes.
 - 2026-02-27: DTM-12 completed (typed row-contract scaffold for task/person mapping via `core/contracts.py`; timer/reminder dry-run smoke passed).
+- 2026-02-27: DTM-13 completed (contract-driven required-header guardrails for tasks/people, smoke-check, Jira `Gotovo`).

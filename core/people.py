@@ -57,11 +57,22 @@ class PeopleManager:
         spreadsheet_name = self.sheet_info.spreadsheet_name
         sheet_name = self.sheet_info.get_sheet_name('people')
         self.df = self.service.get_dataframe(spreadsheet_name, sheet_name, worksheet_range='A1:Z100')
+        self._validate_required_columns(self.df, spreadsheet_name, sheet_name)
         for i, row in self.df.iterrows():
             person = row.to_dict()
             person = self._create_person(person)
             self.people[person.id] = person
         return self.people
+
+    def _validate_required_columns(self, df, spreadsheet_name, sheet_name):
+        required_columns = PersonRowContract.required_columns(PEOPLE_FIELD_MAP)
+        missing = sorted(col for col in required_columns if col not in df.columns)
+        if missing:
+            missing_str = ", ".join(missing)
+            raise ValueError(
+                f"Missing required people columns in '{spreadsheet_name}/{sheet_name}': {missing_str}. "
+                "Check source sheet headers against config.PEOPLE_FIELD_MAP."
+            )
 
     def _create_person(self, person):
         contract = PersonRowContract.from_mapping(person, PEOPLE_FIELD_MAP)

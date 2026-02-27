@@ -113,3 +113,4 @@
 - `Person`/`PeopleManager` now normalize nullable people fields and use safer mapping (`core/people.py`), including fixed preloaded people map and corrected `get_designers()` return type.
 - `core/reminder.py` reminder runtime path is updated for current `httpx` compatibility (`proxy=` with sanitized URL) and unicode-safe console logging.
 - Added `core/contracts.py` typed row contracts (`TaskRowContract`, `PersonRowContract`) and switched repository/people row mapping through these non-breaking contract objects.
+- Required-sheet-header validation now derives from contract metadata (`required_columns`) for both tasks and people, with fail-fast `ValueError` including sheet context.
