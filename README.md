@@ -42,6 +42,14 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `reminders-only`: explicit reminders-only run (no sheet sync path).
 - Safe verification mode: add `--dry-run` to disable Google Sheets write operations while keeping read flow and dry-run logs.
 
+## Baseline validation flow (Stage 0.4)
+- Capture artifact bundle:
+  - `.venv\Scripts\python.exe agent\capture_baseline.py --label pre_change`
+- Bundle output location:
+  - `artifacts/baseline/<UTC_TIMESTAMP>_<label>/`
+- Detailed process and checklist:
+  - `doc/02_baseline_validation_and_artifacts.md`
+
 ## Environment contour
 - Runtime env selector: `ENV` with allowed values `dev`, `test`, `prod`.
 - Base variables are loaded from `.env`.

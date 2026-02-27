@@ -19,3 +19,5 @@
 /.ruff_cache/
 /.ipynb_checkpoints/
 /key/*.json
+/artifacts/*
+!/artifacts/.gitkeep

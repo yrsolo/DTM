@@ -86,6 +86,9 @@
 Критерий готовности:
 - есть повторяемый чеклист "ничего не сломали".
 
+Статус:
+- реализован базовый artifact flow: `agent/capture_baseline.py` + `doc/02_baseline_validation_and_artifacts.md`.
+
 ## 0.5. Gate публикации и безопасность репозитория
 - Ввести pre-commit проверку на секреты (`detect-secrets` или `gitleaks`).
 - Провести sanitation репозитория (ключи, токены, прокси-креды, личные данные).
