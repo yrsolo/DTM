@@ -16,7 +16,9 @@ Safe, incremental migration of DTM from legacy tightly coupled automation to mai
 | 7 | frontend migration prep (schema/fixture/policy/checklists) | done | `doc/stages/14_stage7_execution_plan.md` ... `doc/stages/18_stage7_closeout_and_stage8_handoff.md` |
 | 8 | static web prototype and shadow-run evidence package | done | `doc/stages/19_stage8_execution_plan.md`, `doc/stages/20_stage8_closeout_and_stage9_handoff.md` |
 | 9 | serverless deploy contour and cloud runtime wiring | done | `doc/ops/stage9_main_autodeploy_setup.md`, `doc/ops/stage9_deployment_smoke_checklist.md`, `agile/sprint_current.md` |
-| 10 | operations hardening and evidence normalization | in progress | `doc/stages/21_stage9_closeout_and_stage10_handoff.md`, `doc/stages/22_stage10_execution_plan.md`, `agile/sprint_current.md` |
+| 10 | operations hardening and evidence normalization | done | `doc/stages/21_stage9_closeout_and_stage10_handoff.md`, `doc/stages/22_stage10_execution_plan.md`, `doc/stages/23_stage10_closeout_and_stage11_handoff.md` |
+| 11 | detailed retrospective and corrective backlog | done | `doc/stages/24_stage11_retrospective_execution_plan.md`, `doc/stages/30_stage11_closeout_and_stage12_handoff.md`, `agile/retro.md` |
+| 12 | corrective implementation execution | in progress | `agile/sprint_current.md`, `doc/stages/30_stage11_closeout_and_stage12_handoff.md` |
 
 ## Stage 9 Progress
 Completed:
@@ -45,7 +47,8 @@ Stage 10 kickoff:
 - `DTM-91`: owner quickstart checklist published for daily and weekly serverless operations.
 
 Planned next:
-- Stage 10 closeout and Stage 11 handoff package.
+- Stage 12 kickoff and baseline estimate.
+- Stage 12 Priority A runtime contour hardening implementation.
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).
