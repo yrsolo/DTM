@@ -8,6 +8,16 @@ from config import KEY_JSON, SHEET_INFO, TRIGGERS
 from core.planner import GoogleSheetPlanner
 
 
+def _print_quality_report(report):
+    summary = report.get("summary", {})
+    print(
+        "quality_report_summary="
+        f"task_row_issues={summary.get('task_row_issue_count', 0)} "
+        f"people_row_issues={summary.get('people_row_issue_count', 0)} "
+        f"timing_parse_errors={summary.get('timing_parse_error_count', 0)}"
+    )
+
+
 async def main(**kwargs):
     """Основная функция для запуска планировщика задач.
 
@@ -51,6 +61,10 @@ async def main(**kwargs):
             await planner.send_reminders()
         run_time = pd.Timestamp.now() - start_time
         print(f"Reminder runtime: {run_time}")
+
+    quality_report = planner.build_quality_report()
+    _print_quality_report(quality_report)
+    return quality_report
 
 
 if __name__ == "__main__":

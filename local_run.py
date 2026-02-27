@@ -42,6 +42,11 @@ def parse_args():
         "--trigger-id",
         help="Synthetic trigger_id for event emulation.",
     )
+    parser.add_argument(
+        "--quality-report-file",
+        type=Path,
+        help="Optional path to write quality report JSON.",
+    )
     return parser.parse_args()
 
 
@@ -56,4 +61,11 @@ def load_event(args):
 if __name__ == "__main__":
     args = parse_args()
     event = load_event(args)
-    asyncio.run(main(mode=args.mode, event=event, dry_run=args.dry_run))
+    quality_report = asyncio.run(main(mode=args.mode, event=event, dry_run=args.dry_run))
+    if args.quality_report_file:
+        args.quality_report_file.parent.mkdir(parents=True, exist_ok=True)
+        args.quality_report_file.write_text(
+            json.dumps(quality_report, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        print(f"quality_report_file={args.quality_report_file}")

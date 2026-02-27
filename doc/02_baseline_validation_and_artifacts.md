@@ -13,7 +13,7 @@ Run from repository root:
 Default command executed by helper:
 
 ```powershell
-.venv\Scripts\python.exe local_run.py --mode sync-only --dry-run
+.venv\Scripts\python.exe local_run.py --mode sync-only --dry-run --quality-report-file artifacts\baseline\<...>\quality_report.json
 ```
 
 ## Artifact Structure
@@ -23,6 +23,7 @@ Helper stores output in:
 
 Files:
 - `sync_dry_run.log` - stdout/stderr from dry-run execution.
+- `quality_report.json` - structured quality diagnostics snapshot from runtime.
 - `meta.json` - command, git sha, timestamp, exit code.
 - `CHECKLIST.md` - validation checklist to compare with previous baseline.
 

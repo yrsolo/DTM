@@ -78,7 +78,16 @@ def main() -> int:
     out_dir = repo / "artifacts" / "baseline" / f"{stamp}_{label}"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    cmd = [python_bin, "local_run.py", "--mode", args.mode, "--dry-run"]
+    quality_report_file = out_dir / "quality_report.json"
+    cmd = [
+        python_bin,
+        "local_run.py",
+        "--mode",
+        args.mode,
+        "--dry-run",
+        "--quality-report-file",
+        str(quality_report_file),
+    ]
     run = _run(cmd, repo)
 
     (out_dir / "sync_dry_run.log").write_text(
@@ -96,6 +105,7 @@ def main() -> int:
         "notes": [
             "dry-run mode is expected to avoid Google Sheets write requests",
             "compare this bundle with previous baseline bundle for regressions",
+            "quality_report.json contains structured Stage 1 diagnostics snapshot",
         ],
     }
     (out_dir / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
@@ -104,6 +114,7 @@ def main() -> int:
 
 - [ ] Dry-run command exited with code 0.
 - [ ] Log contains `[DRY-RUN] GoogleSheetsService::execute_updates` entries only (no real writes).
+- [ ] quality_report.json exists and summary counts look expected.
 - [ ] Compare row/column counts in target sheets against previous baseline.
 - [ ] Compare key milestone cells against previous baseline.
 - [ ] Compare presence of notes/colors in sampled cells.

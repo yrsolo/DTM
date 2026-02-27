@@ -65,3 +65,26 @@ class GoogleSheetPlanner:
     async def send_reminders(self):
         await self.reminder.get_reminders()
         await self.reminder.send_reminders(mode=self.mode)
+
+    def build_quality_report(self):
+        task_row_issues = [str(issue) for issue in getattr(self.task_repository, "row_issues", [])]
+        people_row_issues = [str(issue) for issue in getattr(self.people_manager, "row_issues", [])]
+        timing_parse_issues = [
+            str(issue) for issue in getattr(self.task_repository.timing_parser, "parse_issues", [])
+        ]
+        timing_parse_error_count = int(
+            getattr(self.task_repository.timing_parser, "total_parse_errors", 0)
+        )
+
+        return {
+            "mode": self.mode,
+            "dry_run": bool(self.dry_run),
+            "summary": {
+                "task_row_issue_count": len(task_row_issues),
+                "people_row_issue_count": len(people_row_issues),
+                "timing_parse_error_count": timing_parse_error_count,
+            },
+            "task_row_issues": task_row_issues,
+            "people_row_issues": people_row_issues,
+            "timing_parse_issues": timing_parse_issues,
+        }
