@@ -106,3 +106,13 @@
 ### Owner next action template (for notify message)
 - `1) create a new chat for incident mitigation task`
 - `2) reply to TeamLead to continue current chat with selected option`
+
+### Threshold tuning loop (Stage 5 ops)
+1. Collect at least 3 recent baseline bundles with both `quality_report.json` and `alert_evaluation.json`.
+2. Track distribution of `reminder_delivery_attemptable_count`, `reminder_delivery_rate`, `reminder_send_error_count`, and evaluated `level`.
+3. Propose threshold adjustment only when false-positive or false-negative pattern is observed in at least 2 consecutive runs.
+4. For each proposed tuning change:
+   - document rationale and before/after examples in task file and Jira comment,
+   - update this policy section and `agile/sprint_current.md` notes,
+   - run evaluator smoke and one real dry-run sanity command.
+5. Do not change thresholds and notifier behavior in the same iteration; split policy tuning and runtime behavior changes into separate tasks.

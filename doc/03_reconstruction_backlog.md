@@ -192,6 +192,7 @@
 - Stage 5 follow-up increment completed: bounded retry/backoff policy added for transient Telegram reminder delivery failures with retry observability counters (`DTM-41`).
 - Stage 5 follow-up increment completed: automated threshold evaluator added for latest quality report artifact (`INFO_ONLY/WARN/CRITICAL`) with deterministic smoke coverage (`DTM-42`).
 - Stage 5 follow-up increment completed: evaluator output wired into local/baseline alert-review workflow artifacts (`alert_evaluation.json`) without automatic external side effects (`DTM-43`).
+- Stage 5 follow-up increment completed: runbook and threshold tuning loop aligned to evaluator-wired artifact workflow (`DTM-44`).
 
 ---
 
