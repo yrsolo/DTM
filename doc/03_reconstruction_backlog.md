@@ -186,6 +186,7 @@
 - Stage 4 parallel enhancement increment completed: OpenAI reminder enhancer path now runs in parallel fan-out with bounded concurrency and reusable client, with deterministic parallel smoke verification (`DTM-35`).
 - Stage 4 observability increment completed: reminder delivery outcome counters integrated into runtime logs and planner quality report with deterministic counters smoke verification (`DTM-36`).
 - Stage 5 kickoff increment completed: derived reminder SLI metrics (`delivery_rate`, `failure_rate`, attemptable/attempted counters) integrated into quality report summary with deterministic formula smoke verification (`DTM-37`).
+- Stage 5 kickoff increment completed: risk register aligned to implemented reminder/API mitigations with explicit retry-policy stance and ownership (`DTM-38`).
 
 ---
 

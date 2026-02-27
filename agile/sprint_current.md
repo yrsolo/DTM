@@ -49,14 +49,15 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - [DONE] DTM-35 / TSK-038 Stage 4 parallel OpenAI reminder enhancement with bounded concurrency
 - [DONE] DTM-36 / TSK-039 Stage 4 reminder observability counters for send outcomes
 - [DONE] DTM-37 / TSK-040 Stage 5 kickoff derived SLI counters for reminder delivery/failure rates
+- [DONE] DTM-38 / TSK-041 Stage 5 kickoff risk-register update for reminder/API degradation and retry policy
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 5 kickoff: risk-register update for reminder/API degradation and retry policy
 - [TODO] Stage 5 kickoff: alerting thresholds and escalation policy for reminder delivery metrics
 - [TODO] Stage 5 follow-up: persist SLI trend snapshots across runs
+- [TODO] Stage 5 follow-up: implement explicit retry/backoff policy for reminder delivery transient failures
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -129,6 +130,8 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
   - Jira: DTM-36 (status: Done / `Gotovo`)
 - TSK-040 - Stage 5 kickoff: derived SLI counters for reminder delivery/failure rates
   - Jira: DTM-37 (status: Done / `Gotovo`)
+- TSK-041 - Stage 5 kickoff: risk-register update for reminder/API degradation and retry policy
+  - Jira: DTM-38 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -168,6 +171,7 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - agile/tasks/DTM-35_stage4-parallel-openai-reminder-enhancement.md
 - agile/tasks/DTM-36_stage4-reminder-observability-counters.md
 - agile/tasks/DTM-37_stage5-derived-sli-reminder-delivery-rates.md
+- agile/tasks/DTM-38_stage5-risk-register-reminder-api-retry-policy.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -234,3 +238,5 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - 2026-02-27: DTM-36 completed (structured reminder delivery counters + planner quality-report integration + counters smoke; Jira `Gotovo`).
 - 2026-02-27: DTM-37 moved to `V rabote` for Stage 5 kickoff derived reminder SLI counters.
 - 2026-02-27: DTM-37 completed (derived reminder SLI summary metrics in quality report + SLI smoke; Jira `Gotovo`).
+- 2026-02-27: DTM-38 moved to `V rabote` for Stage 5 risk-register update (reminder/API degradation + retry policy).
+- 2026-02-27: DTM-38 completed (risk-register aligned to Stage 4/5 controls + explicit retry-policy stance + reminders-only dry-run sanity-check; Jira `Gotovo`).
