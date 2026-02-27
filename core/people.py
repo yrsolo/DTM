@@ -5,6 +5,13 @@ from core.contracts import PersonRowContract, normalize_text
 from core.errors import MissingRequiredColumnsError, RowValidationIssue
 
 
+def _safe_print(text: str) -> None:
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        print(str(text).encode("ascii", "replace").decode("ascii"))
+
+
 class Person:
     """ Человек"""
 
@@ -109,7 +116,7 @@ class PeopleManager:
             row_id=row_id,
         )
         self.row_issues.append(issue)
-        print(str(issue))
+        _safe_print(str(issue))
 
     def get_person(self, name):
         self._load()

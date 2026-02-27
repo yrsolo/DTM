@@ -117,3 +117,4 @@
 - Added `core/errors.py` typed data-quality taxonomy (`DataQualityError`, `MissingRequiredColumnsError`) for sheet-contract failures.
 - Task/people required-header checks now raise `MissingRequiredColumnsError` (ValueError-compatible) with unified diagnostics format and sheet context.
 - Row-level fail-soft policy added for malformed task/people rows: loaders skip invalid rows and record `RowValidationIssue` diagnostics (`row_issues`) instead of failing whole load.
+- `TimingParser` now keeps structured diagnostics (`TimingParseIssue`, `parse_issues`, `total_parse_errors`), and task loader records timing-parse error counts into row-level issues without stopping the pipeline.

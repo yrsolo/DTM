@@ -17,7 +17,7 @@ import pandas as pd
 
 from config import COLOR_STATUS, REPLACE_NAMES, TASK_FIELD_MAP
 from core.contracts import TaskRowContract, is_nullish, normalize_text
-from core.errors import MissingRequiredColumnsError, RowValidationIssue
+from core.errors import MissingRequiredColumnsError, RowValidationIssue, TimingParseIssue
 from core.reminder import TelegramNotifier
 from utils.service import GoogleSheetInfo, GoogleSheetsService
 
@@ -32,6 +32,13 @@ def _normalize_text(value, strip: bool = True) -> str:
     return normalize_text(value, strip=strip)
 
 
+def _safe_print(text: str) -> None:
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        print(str(text).encode("ascii", "replace").decode("ascii"))
+
+
 class TimingParser:
     """Парсер тайминга задач."""
 
@@ -39,9 +46,20 @@ class TimingParser:
         """Инициализация парсера тайминга."""
         self.date_pattern = re.compile(r"(\d{2}\.\d{2})")
         self.logger = TelegramNotifier()
+        self.parse_issues: List[TimingParseIssue] = []
+        self.total_parse_errors = 0
+
+    def reset_diagnostics(self):
+        self.parse_issues = []
+        self.total_parse_errors = 0
+
+    def issues_since(self, start_index: int) -> List[TimingParseIssue]:
+        if start_index < 0:
+            start_index = 0
+        return self.parse_issues[start_index:]
 
     def parse(
-        self, timing_str: str, next_task_date: pd.Timestamp = None
+        self, timing_str: str, next_task_date: pd.Timestamp = None, row_number: int = 0
     ) -> Dict[pd.Timestamp, List[str]]:
         """Преобразует строку тайминга в словарь, где ключи - даты, значения - списки этапов задач.
 
@@ -94,9 +112,17 @@ class TimingParser:
 Подробности ошибки: {e}
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 """
-                    print(err_text)
+                    _safe_print(err_text)
                     if month != "02" or day != "29":
-                        self.logger.log(err_text)
+                        _safe_print("Timing parse Telegram log skipped in sync context")
+                    issue = TimingParseIssue(
+                        row_number=row_number,
+                        timing_line=line,
+                        normalized_date=formatted_date_str,
+                        error=str(e),
+                    )
+                    self.parse_issues.append(issue)
+                    self.total_parse_errors += 1
                     date = pd.Timestamp.now()
 
                 if date < (next_task_date - pd.DateOffset(months=5)):
@@ -124,6 +150,7 @@ class Task:
         task_id,
         parser=None,
         next_task_date=None,
+        source_row_number=0,
     ):
         self.brand = _normalize_text(brand)
         self.format_ = _normalize_text(format_)
@@ -139,6 +166,7 @@ class Task:
         self.id = task_id
         self.parser = parser or TimingParser()
         self.next_task_date = next_task_date
+        self.source_row_number = int(source_row_number or 0)
 
     def __repr__(self):
         return f"{self.id} {self.name}"
@@ -148,7 +176,11 @@ class Task:
         if self.timing_cache:
             return self.timing_cache
         else:
-            self.timing_cache = self.parser.parse(self.raw_timing, self.next_task_date)
+            self.timing_cache = self.parser.parse(
+                self.raw_timing,
+                self.next_task_date,
+                row_number=self.source_row_number,
+            )
             return self.timing_cache
 
     @property
@@ -308,6 +340,8 @@ class GoogleSheetsTaskRepository(TaskRepository):
     def _df_to_task(self, df):
         """Преобразовать DataFrame в список задач"""
         self.row_issues = []
+        self.tasks = dict()
+        self.timing_parser.reset_diagnostics()
         tasks_list = []
         next_task_date = None
         for idx, row in df.iterrows():
@@ -318,6 +352,7 @@ class GoogleSheetsTaskRepository(TaskRepository):
                     **contract.to_task_kwargs(),
                     parser=self.timing_parser,
                     next_task_date=next_task_date,
+                    source_row_number=row_number,
                 )
             except (TypeError, ValueError, KeyError) as exc:
                 self._record_row_issue("task", row_number, f"mapping failure: {exc}")
@@ -330,7 +365,16 @@ class GoogleSheetsTaskRepository(TaskRepository):
                 continue
             tasks_list.append(task)
             self.tasks[task.id] = task
+            issue_cursor = len(self.timing_parser.parse_issues)
             mean_date = pd.Series(task.timing.keys()).mean()
+            new_issues = self.timing_parser.issues_since(issue_cursor)
+            if new_issues:
+                self._record_row_issue(
+                    "task",
+                    row_number,
+                    f"timing parse errors: {len(new_issues)}",
+                    row_id=str(task.id),
+                )
             if not pd.isna(mean_date):
                 next_task_date = mean_date
         return tasks_list
@@ -343,7 +387,7 @@ class GoogleSheetsTaskRepository(TaskRepository):
             row_id=row_id,
         )
         self.row_issues.append(issue)
-        print(str(issue))
+        _safe_print(str(issue))
 
     def _filter(self, column_name, value):
         """Отфильтровать DataFrame по значению в колонке"""

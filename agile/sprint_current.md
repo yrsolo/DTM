@@ -27,12 +27,12 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - [DONE] DTM-13 / TSK-016 Stage 1 schema guardrails for task/people row contracts.
 - [DONE] DTM-14 / TSK-017 Stage 1 typed data-quality error taxonomy and reporting.
 - [DONE] DTM-16 / TSK-019 Stage 1 row-level validation policy for malformed task/person rows.
+- [DONE] DTM-17 / TSK-020 Stage 1 timing parse diagnostics and non-fatal error accounting.
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- DTM-17 - Stage 1 timing parse diagnostics and non-fatal error accounting
 - DTM-18 - Stage 1 quality report surfacing in local run artifacts
 - DTM-15 - TSK-018 Reminder tests: mock OpenAI and Telegram delivery paths (low priority)
 
@@ -65,6 +65,8 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
   - Jira: DTM-15 (status: To Do / `K vypolneniyu`)
 - TSK-019 - Stage 1 row-level validation policy for malformed task/person rows
   - Jira: DTM-16 (status: Done / `Gotovo`)
+- TSK-020 - Stage 1 timing parse diagnostics and non-fatal error accounting
+  - Jira: DTM-17 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -83,6 +85,7 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - agile/tasks/DTM-14_typed-data-quality-error-taxonomy.md
 - agile/tasks/DTM-15_reminder-tests-mock-openai-telegram.md
 - agile/tasks/DTM-16_row-level-validation-policy.md
+- agile/tasks/DTM-17_timing-parse-diagnostics.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -107,3 +110,4 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - 2026-02-27: DTM-14 completed (typed data-quality error taxonomy + unified missing-header diagnostics in task/people loaders, smoke-check, Jira `Gotovo`).
 - 2026-02-27: DTM-15 created as non-urgent backlog task to mock OpenAI/Telegram side effects in reminder tests.
 - 2026-02-27: DTM-16 completed (row-level malformed-row fail-soft policy + `row_issues` diagnostics in task/people loaders, smoke-check, Jira `Gotovo`).
+- 2026-02-27: DTM-17 completed (structured timing parse diagnostics + non-fatal row-level accounting, smoke-check, Jira `Gotovo`).

@@ -120,6 +120,7 @@
 - выполнен guardrail-инкремент Stage 1: required-header валидация tasks/people через метаданные typed contracts + fail-fast ошибки с контекстом листа (DTM-13).
 - выполнен инкремент Stage 1 по taxonomy ошибок качества данных: добавлены typed исключения (`DataQualityError`, `MissingRequiredColumnsError`) и унифицирована диагностика missing-header для task/people загрузчиков (DTM-14).
 - выполнен инкремент Stage 1 по row-level policy: malformed task/person rows обрабатываются fail-soft (skip + `RowValidationIssue` диагностика) без падения всего пайплайна (DTM-16).
+- выполнен инкремент Stage 1 по timing diagnostics: ошибки парсинга тайминга учитываются структурированно (`TimingParseIssue`) и отражаются в row-level accounting без фатальной остановки пайплайна (DTM-17).
 
 ---
 

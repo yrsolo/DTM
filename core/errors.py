@@ -34,3 +34,17 @@ class RowValidationIssue:
     def __str__(self) -> str:
         suffix = f" [row_id={self.row_id}]" if self.row_id else ""
         return f"Skipped malformed {self.entity_name} row {self.row_number}: {self.reason}{suffix}"
+
+
+@dataclass(frozen=True)
+class TimingParseIssue:
+    row_number: int
+    timing_line: str
+    normalized_date: str
+    error: str
+
+    def __str__(self) -> str:
+        return (
+            f"Timing parse issue at row {self.row_number}: "
+            f"date='{self.normalized_date}', line='{self.timing_line}', error='{self.error}'"
+        )
