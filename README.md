@@ -57,6 +57,9 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `--evaluate-alerts` prints evaluator result from current run quality report.
   - `--alert-evaluation-file <path>` saves evaluator JSON artifact.
   - `--alert-fail-on none|warn|critical` controls exit policy from evaluator level.
+  - `--notify-owner-on none|warn|critical` enables controlled owner-notify trigger from evaluator output (default: `none`).
+  - `--notify-owner-context "<text>"` passes explicit context to notify helper.
+  - `--notify-owner-dry-run` prints notify command without sending Telegram message.
 
 ## Baseline validation flow (Stage 0.4)
 - Capture artifact bundle:

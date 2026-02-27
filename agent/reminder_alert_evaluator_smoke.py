@@ -12,7 +12,12 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from agent.reminder_alert_evaluator import evaluate_thresholds, find_latest_quality_report
+from agent.reminder_alert_evaluator import (
+    evaluate_thresholds,
+    find_latest_quality_report,
+    maybe_notify_owner,
+    should_notify,
+)
 
 
 def _write_quality_report(path: Path, attemptable: int, delivery_rate, send_errors: int) -> None:
@@ -51,6 +56,26 @@ def run() -> None:
         {"summary": {"reminder_delivery_attemptable_count": 10, "reminder_delivery_rate": 0.99, "reminder_send_error_count": 0}}
     )
     assert ok["level"] == "OK", ok
+    assert should_notify("WARN", "warn") is True
+    assert should_notify("CRITICAL", "critical") is True
+    assert should_notify("WARN", "critical") is False
+
+    dry_run_notified = maybe_notify_owner(
+        alert_evaluation={
+            "level": "CRITICAL",
+            "reason": "smoke",
+            "source_file": "tmp/quality_report.json",
+            "summary": {
+                "reminder_delivery_attemptable_count": 10,
+                "reminder_delivery_rate": 0.9,
+                "reminder_send_error_count": 4,
+            },
+        },
+        notify_on="critical",
+        notify_context="smoke",
+        notify_dry_run=True,
+    )
+    assert dry_run_notified is True
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         root = Path(tmp_dir)

@@ -194,6 +194,7 @@
 - Stage 5 follow-up increment completed: evaluator output wired into local/baseline alert-review workflow artifacts (`alert_evaluation.json`) without automatic external side effects (`DTM-43`).
 - Stage 5 follow-up increment completed: runbook and threshold tuning loop aligned to evaluator-wired artifact workflow (`DTM-44`).
 - Stage 5 follow-up increment completed: transient failure taxonomy tuned for Telegram retry classifier with taxonomy counters and smoke coverage (`DTM-45`).
+- Stage 5 follow-up increment completed: controlled owner-notify trigger added for evaluator output with explicit opt-in flags (`DTM-46`).
 
 ---
 

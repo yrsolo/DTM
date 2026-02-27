@@ -64,6 +64,17 @@ def parse_args() -> argparse.Namespace:
         choices=("sync-only", "timer", "test"),
         help="Run mode for capture (default: sync-only).",
     )
+    parser.add_argument(
+        "--notify-owner-on",
+        choices=("none", "warn", "critical"),
+        default="none",
+        help="Optional owner-notify severity gate for alert evaluation (default: none).",
+    )
+    parser.add_argument(
+        "--notify-owner-dry-run",
+        action="store_true",
+        help="Print notify command without sending Telegram message.",
+    )
     return parser.parse_args()
 
 
@@ -94,6 +105,17 @@ def main() -> int:
         "--quality-report-file",
         str(quality_report_file),
     ]
+    if args.notify_owner_on != "none":
+        cmd.extend(
+            [
+                "--notify-owner-on",
+                args.notify_owner_on,
+                "--notify-owner-context",
+                f"baseline_capture label={label}",
+            ]
+        )
+    if args.notify_owner_dry_run:
+        cmd.append("--notify-owner-dry-run")
     run = _run(cmd, repo)
 
     (out_dir / "sync_dry_run.log").write_text(

@@ -57,15 +57,16 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - [DONE] DTM-43 / TSK-046 Stage 5 wire threshold evaluator output into alert-review workflow
 - [DONE] DTM-44 / TSK-047 Stage 5 runbook and thresholds tuning after evaluator wiring rollout
 - [DONE] DTM-45 / TSK-048 Stage 5 transient failure taxonomy tuning for Telegram retries
+- [DONE] DTM-46 / TSK-049 Stage 5 controlled owner-notify trigger from evaluator output
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 5 follow-up: trigger owner-notify helper from evaluator output in controlled mode
 - [TODO] Stage 5 follow-up: gate policy for evaluator severity -> CI/local exit behavior
 - [TODO] Stage 5 follow-up: encode threshold tuning cadence into routine ops checklist
 - [TODO] Stage 5 follow-up: formalize retry taxonomy metrics into runbook checklist
+- [TODO] Stage 5 follow-up: controlled owner notify message template hardening (RU-only payload validation)
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -154,6 +155,8 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
   - Jira: DTM-44 (status: Done / `Gotovo`)
 - TSK-048 - Stage 5 follow-up: transient failure taxonomy tuning for Telegram retries
   - Jira: DTM-45 (status: Done / `Gotovo`)
+- TSK-049 - Stage 5 follow-up: controlled owner-notify trigger from evaluator output
+  - Jira: DTM-46 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -201,6 +204,7 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - agile/tasks/DTM-43_stage5-wire-evaluator-output-alert-review-workflow.md
 - agile/tasks/DTM-44_stage5-runbook-thresholds-tuning-after-wiring.md
 - agile/tasks/DTM-45_stage5-transient-failure-taxonomy-tuning.md
+- agile/tasks/DTM-46_stage5-controlled-owner-notify-from-evaluator.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -283,3 +287,5 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - 2026-02-27: DTM-44 completed (runbook aligned with evaluator-wired baseline artifacts + explicit threshold tuning loop + baseline capture smoke; Jira `Gotovo`).
 - 2026-02-27: DTM-45 moved to `V rabote` for Stage 5 transient failure taxonomy tuning in Telegram retry classifier.
 - 2026-02-27: DTM-45 completed (retry classifier taxonomy refinement + taxonomy counters + retry smoke extension + reminders-only mock dry-run; Jira `Gotovo`).
+- 2026-02-27: DTM-46 moved to `V rabote` for Stage 5 controlled owner-notify trigger from evaluator output.
+- 2026-02-27: DTM-46 completed (controlled evaluator notify gate + local/baseline passthrough + notify dry-run smoke; Jira `Gotovo`).

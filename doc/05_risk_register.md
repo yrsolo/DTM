@@ -101,6 +101,7 @@
    - baseline automation helper: `python agent/reminder_alert_evaluator.py` (latest artifact auto-discovery).
 2. On `WARN`: create/update Jira incident follow-up task and post evidence comment with metrics snapshot.
 3. On `CRITICAL`: immediately notify owner via `python agent/notify_owner.py` with Russian text and explicit next action options.
+   - controlled runtime trigger: use evaluator/local-run flag `--notify-owner-on critical` (default remains `none`).
 4. Keep affected sprint item in `agile/sprint_current.md` under `Blocked` until owner decision is received.
 
 ### Owner next action template (for notify message)

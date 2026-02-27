@@ -16,6 +16,12 @@ Default command executed by helper:
 .venv\Scripts\python.exe local_run.py --mode sync-only --dry-run --evaluate-alerts --alert-fail-on none --alert-evaluation-file artifacts\baseline\<...>\alert_evaluation.json --quality-report-file artifacts\baseline\<...>\quality_report.json
 ```
 
+Optional controlled notify trigger (explicit opt-in only):
+
+```powershell
+.venv\Scripts\python.exe agent\capture_baseline.py --label pre_change --notify-owner-on critical
+```
+
 ## Artifact Structure
 Helper stores output in:
 

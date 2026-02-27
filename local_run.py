@@ -6,7 +6,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from agent.reminder_alert_evaluator import evaluate_thresholds, should_fail
+from agent.reminder_alert_evaluator import evaluate_thresholds, maybe_notify_owner, should_fail
 from main import main
 
 
@@ -80,6 +80,22 @@ def parse_args():
         choices=("none", "warn", "critical"),
         default="none",
         help="Exit non-zero when evaluated level meets/exceeds severity (default: none).",
+    )
+    parser.add_argument(
+        "--notify-owner-on",
+        choices=("none", "warn", "critical"),
+        default="none",
+        help="Trigger owner-notify helper from alert evaluation (default: none).",
+    )
+    parser.add_argument(
+        "--notify-owner-context",
+        default="",
+        help="Optional context for owner notify helper.",
+    )
+    parser.add_argument(
+        "--notify-owner-dry-run",
+        action="store_true",
+        help="Print owner notify command without sending Telegram message.",
     )
     return parser.parse_args()
 
@@ -172,7 +188,7 @@ if __name__ == "__main__":
         )
         print(f"sli_trend_file={args.sli_trend_file} snapshots={snapshot_count}")
     alert_evaluation = None
-    if args.evaluate_alerts or args.alert_evaluation_file:
+    if args.evaluate_alerts or args.alert_evaluation_file or args.notify_owner_on != "none":
         alert_evaluation = build_alert_evaluation(quality_report)
         print(
             "alert_eval "
@@ -182,6 +198,12 @@ if __name__ == "__main__":
             f"send_errors={alert_evaluation['summary']['reminder_send_error_count']}"
         )
         print(f"alert_reason={alert_evaluation['reason']}")
+        maybe_notify_owner(
+            alert_evaluation=alert_evaluation,
+            notify_on=args.notify_owner_on,
+            notify_context=args.notify_owner_context or f"local_run mode={args.mode}",
+            notify_dry_run=args.notify_owner_dry_run,
+        )
     if args.alert_evaluation_file and alert_evaluation is not None:
         persist_alert_evaluation(alert_evaluation, args.alert_evaluation_file)
         print(f"alert_evaluation_file={args.alert_evaluation_file}")

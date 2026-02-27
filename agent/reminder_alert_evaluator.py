@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -58,6 +60,22 @@ def parse_args() -> argparse.Namespace:
         choices=("none", "warn", "critical"),
         default="critical",
         help="Exit non-zero when level meets/exceeds configured severity.",
+    )
+    parser.add_argument(
+        "--notify-owner-on",
+        choices=("none", "warn", "critical"),
+        default="none",
+        help="Trigger owner notify helper when level meets/exceeds severity (default: none).",
+    )
+    parser.add_argument(
+        "--notify-owner-context",
+        default="",
+        help="Optional context passed to owner notify helper.",
+    )
+    parser.add_argument(
+        "--notify-owner-dry-run",
+        action="store_true",
+        help="Print notify command without sending Telegram message.",
     )
     return parser.parse_args()
 
@@ -129,6 +147,91 @@ def should_fail(level: str, fail_on: str) -> bool:
     return level in {"WARN", "CRITICAL"}
 
 
+def should_notify(level: str, notify_on: str) -> bool:
+    if notify_on == "none":
+        return False
+    if notify_on == "critical":
+        return level == "CRITICAL"
+    return level in {"WARN", "CRITICAL"}
+
+
+def _build_notify_payload(alert_evaluation: dict[str, Any], context: str = "") -> dict[str, str]:
+    level = str(alert_evaluation.get("level", "UNKNOWN"))
+    summary = dict(alert_evaluation.get("summary", {}))
+    attemptable = summary.get("reminder_delivery_attemptable_count")
+    delivery_rate = summary.get("reminder_delivery_rate")
+    send_errors = summary.get("reminder_send_error_count")
+    reason = str(alert_evaluation.get("reason", "no_reason"))
+    source_file = str(alert_evaluation.get("source_file", "n/a"))
+
+    if level == "CRITICAL":
+        title = "🚨 CRITICAL: SLI напоминаний"
+    elif level == "WARN":
+        title = "❓ WARN: SLI напоминаний"
+    else:
+        title = "✅ INFO: SLI напоминаний"
+
+    details = (
+        f"Уровень={level}; attemptable={attemptable}; delivery_rate={delivery_rate}; "
+        f"send_errors={send_errors}. Причина: {reason}. Источник: {source_file}"
+    )
+    options = (
+        "1) создать новый чат для инцидента и mitigation-задачи; "
+        "2) ответить TeamLead и продолжить текущий чат с выбранным вариантом"
+    )
+    return {
+        "title": title,
+        "details": details,
+        "options": options,
+        "context": context or f"alert_eval level={level}",
+    }
+
+
+def maybe_notify_owner(
+    alert_evaluation: dict[str, Any],
+    notify_on: str = "none",
+    notify_context: str = "",
+    notify_dry_run: bool = False,
+) -> bool:
+    level = str(alert_evaluation.get("level", "UNKNOWN"))
+    if not should_notify(level, notify_on):
+        return False
+
+    payload = _build_notify_payload(alert_evaluation, context=notify_context)
+    cmd = [
+        sys.executable,
+        "agent/notify_owner.py",
+        "--title",
+        payload["title"],
+        "--details",
+        payload["details"],
+        "--options",
+        payload["options"],
+        "--context",
+        payload["context"],
+    ]
+    if notify_dry_run:
+        print("owner_notify_dry_run command=" + json.dumps(cmd, ensure_ascii=True))
+        return True
+
+    run = subprocess.run(
+        cmd,
+        text=True,
+        capture_output=True,
+        check=False,
+        encoding="utf-8",
+        errors="replace",
+    )
+    if run.returncode != 0:
+        stdout = (run.stdout or "").strip()
+        stderr = (run.stderr or "").strip()
+        raise RuntimeError(
+            f"owner_notify_failed rc={run.returncode} stdout={stdout} stderr={stderr}"
+        )
+    print(f"owner_notify_sent level={level}")
+    return True
+
+
 def main() -> int:
     args = parse_args()
     source_file = args.quality_report_file or find_latest_quality_report(args.search_root)
@@ -154,6 +257,13 @@ def main() -> int:
             f"source={source_file}"
         )
         print(f"reason={result['reason']}")
+
+    maybe_notify_owner(
+        alert_evaluation=result,
+        notify_on=args.notify_owner_on,
+        notify_context=args.notify_owner_context,
+        notify_dry_run=args.notify_owner_dry_run,
+    )
 
     return 2 if should_fail(result["level"], args.fail_on) else 0
 
