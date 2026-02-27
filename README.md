@@ -35,6 +35,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Legacy snapshot is kept in `old/` for controlled comparison during migration.
 - Stage 6 read-model JSON contract draft is documented in `doc/11_stage6_read_model_contract.md`.
 - Stage 6 read-model builder is available in `core/read_model.py` (from current runtime artifacts).
+- Stage 6 UI baseline view specification is documented in `doc/12_stage6_ui_view_spec.md`.
 
 ## Local run (current)
 - Preferred: `run_timer.cmd` (uses project virtualenv and runs timer mode).
