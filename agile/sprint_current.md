@@ -47,14 +47,15 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - [DONE] DTM-33 / TSK-036 Stage 4 idempotency: prevent duplicate reminder sends in same run
 - [DONE] DTM-34 / TSK-037 Stage 4 reminder pipeline decomposition (facts/draft/enhancer/sender)
 - [DONE] DTM-35 / TSK-038 Stage 4 parallel OpenAI reminder enhancement with bounded concurrency
+- [DONE] DTM-36 / TSK-039 Stage 4 reminder observability counters for send outcomes
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 4 follow-up: reminder observability counters for send outcomes
 - [TODO] Stage 5 kickoff: structured SLI counters for reminder delivery and failures
 - [TODO] Stage 5 kickoff: risk-register update for reminder/API degradation and retry policy
+- [TODO] Stage 5 kickoff: alerting thresholds and escalation policy for reminder delivery metrics
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -123,6 +124,8 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
   - Jira: DTM-34 (status: Done / `Gotovo`)
 - TSK-038 - Stage 4 parallel OpenAI reminder enhancement with bounded concurrency
   - Jira: DTM-35 (status: Done / `Gotovo`)
+- TSK-039 - Stage 4 reminder observability counters for send outcomes
+  - Jira: DTM-36 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -160,6 +163,7 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - agile/tasks/DTM-33_stage4-idempotent-reminder-delivery-guard.md
 - agile/tasks/DTM-34_stage4-reminder-pipeline-decomposition.md
 - agile/tasks/DTM-35_stage4-parallel-openai-reminder-enhancement.md
+- agile/tasks/DTM-36_stage4-reminder-observability-counters.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -222,3 +226,5 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - 2026-02-27: DTM-34 completed (reminder pipeline decomposition helpers + fallback/idempotency behavior preserved + smoke-checks; Jira `Gotovo`).
 - 2026-02-27: DTM-35 moved to `V rabote` for Stage 4 parallel OpenAI reminder enhancement (bounded concurrency).
 - 2026-02-27: DTM-35 completed (parallel enhancer fan-out + bounded concurrency + reusable OpenAI client + deterministic parallel smoke; Jira `Gotovo`).
+- 2026-02-27: DTM-36 moved to `V rabote` for Stage 4 reminder observability counters.
+- 2026-02-27: DTM-36 completed (structured reminder delivery counters + planner quality-report integration + counters smoke; Jira `Gotovo`).

@@ -219,6 +219,27 @@ class Reminder(object):
         self.people_manager = people_manager
         self.enhance_concurrency = max(1, int(enhance_concurrency))
         self.enhance_semaphore = asyncio.Semaphore(self.enhance_concurrency)
+        self.delivery_counters = {}
+        self.reset_delivery_counters()
+
+    def reset_delivery_counters(self):
+        self.delivery_counters = {
+            "candidates_total": 0,
+            "sent": 0,
+            "skipped_no_message": 0,
+            "skipped_no_person": 0,
+            "skipped_no_chat_id": 0,
+            "skipped_vacation": 0,
+            "skipped_mock": 0,
+            "skipped_duplicate": 0,
+            "send_errors": 0,
+        }
+
+    def _inc_delivery_counter(self, key, value=1):
+        self.delivery_counters[key] = int(self.delivery_counters.get(key, 0)) + int(value)
+
+    def get_delivery_counters(self):
+        return dict(self.delivery_counters)
 
     def _build_reminder_context(self):
         today, next_work_day = self.calculate_dates()
@@ -410,25 +431,39 @@ class Reminder(object):
             return fallback_message
 
         _safe_print(f"empty_message_skip: no draft for {designer_name}")
+        self._inc_delivery_counter("skipped_no_message")
         return None
 
     def _resolve_delivery_target(self, designer_name, mode):
         designer = self.people_manager.get_person(designer_name)
         if not designer:
-            return None, None, None
+            self._inc_delivery_counter("skipped_no_person")
+            return None, None, False
         test_chat_id = 91864013
         test = mode == 'test'
         chat_id = test_chat_id if test else designer.chat_id
-        can_send = bool(chat_id) and bool(self.tg_bot) and (designer.vacation != '\u0434\u0430')
+        if not chat_id:
+            self._inc_delivery_counter("skipped_no_chat_id")
+            return designer, chat_id, False
+        if designer.vacation == '\u0434\u0430':
+            self._inc_delivery_counter("skipped_vacation")
+            return designer, chat_id, False
+        can_send = bool(self.tg_bot)
         return designer, chat_id, can_send
 
     async def _deliver_message(self, designer_name, chat_id, message):
         delivery_key = self._build_delivery_key(designer_name, chat_id, message)
         if delivery_key in self.sent_delivery_keys:
             _safe_print(f"duplicate_reminder_skip: {designer_name} chat_id={chat_id}")
+            self._inc_delivery_counter("skipped_duplicate")
             return
-        await self.tg_bot.send_message(chat_id, message)
-        self.sent_delivery_keys.add(delivery_key)
+        try:
+            await self.tg_bot.send_message(chat_id, message)
+            self.sent_delivery_keys.add(delivery_key)
+            self._inc_delivery_counter("sent")
+        except Exception as e:
+            _safe_print(f"reminder_send_error: {designer_name} chat_id={chat_id} error={e}")
+            self._inc_delivery_counter("send_errors")
 
     async def send_reminders(self, mode='test'):
         """Отправить напоминания.
@@ -436,18 +471,23 @@ class Reminder(object):
         Args:
             mode (str): Режим работы.
         """
+        self.reset_delivery_counters()
+        self._inc_delivery_counter("candidates_total", len(self.enhanced_messages))
+
         for designer_name, message in self.enhanced_messages.items():
             resolved_message = self._resolve_delivery_message(designer_name, message)
             if not resolved_message:
                 continue
 
+            if self.mock_telegram:
+                _safe_print(f'mock_telegram_send: skipped for {designer_name} to chat_id=None')
+                self._inc_delivery_counter("skipped_mock")
+                continue
             _, chat_id, can_send = self._resolve_delivery_target(designer_name, mode)
             _safe_print(f'{mode=} {designer_name=} {chat_id=} {resolved_message=}')
-            if self.mock_telegram:
-                _safe_print(f'mock_telegram_send: skipped for {designer_name} to chat_id={chat_id}')
-                continue
             if can_send:
                 await self._deliver_message(designer_name, chat_id, resolved_message)
+        _safe_print(f"reminder_delivery_counters={json.dumps(self.delivery_counters, ensure_ascii=False, sort_keys=True)}")
 
     def _build_delivery_key(self, designer_name, chat_id, message):
         normalized_day = (

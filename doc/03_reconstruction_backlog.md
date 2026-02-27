@@ -184,6 +184,7 @@
 - Stage 4 idempotency increment completed: in-run duplicate-delivery guard added for reminder sends with deterministic smoke verification (`DTM-33`).
 - Stage 4 decomposition increment completed: reminder pipeline split into explicit internal steps (context/draft-enhance/delivery) with preserved behavior and deterministic smoke verification (`DTM-34`).
 - Stage 4 parallel enhancement increment completed: OpenAI reminder enhancer path now runs in parallel fan-out with bounded concurrency and reusable client, with deterministic parallel smoke verification (`DTM-35`).
+- Stage 4 observability increment completed: reminder delivery outcome counters integrated into runtime logs and planner quality report with deterministic counters smoke verification (`DTM-36`).
 
 ---
 

@@ -14,7 +14,9 @@ def _print_quality_report(report):
         "quality_report_summary="
         f"task_row_issues={summary.get('task_row_issue_count', 0)} "
         f"people_row_issues={summary.get('people_row_issue_count', 0)} "
-        f"timing_parse_errors={summary.get('timing_parse_error_count', 0)}"
+        f"timing_parse_errors={summary.get('timing_parse_error_count', 0)} "
+        f"reminder_sent={summary.get('reminder_sent_count', 0)} "
+        f"reminder_send_errors={summary.get('reminder_send_error_count', 0)}"
     )
 
 

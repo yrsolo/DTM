@@ -67,6 +67,7 @@ class GoogleSheetPlanner:
     def build_quality_report(self):
         task_row_issues = [str(issue) for issue in getattr(self.task_repository, "row_issues", [])]
         people_row_issues = [str(issue) for issue in getattr(self.people_manager, "row_issues", [])]
+        reminder_delivery_counters = getattr(self.reminder, "get_delivery_counters", lambda: {})()
         timing_parse_issues = [
             str(issue) for issue in getattr(self.task_repository.timing_parser, "parse_issues", [])
         ]
@@ -81,8 +82,11 @@ class GoogleSheetPlanner:
                 "task_row_issue_count": len(task_row_issues),
                 "people_row_issue_count": len(people_row_issues),
                 "timing_parse_error_count": timing_parse_error_count,
+                "reminder_sent_count": int(reminder_delivery_counters.get("sent", 0)),
+                "reminder_send_error_count": int(reminder_delivery_counters.get("send_errors", 0)),
             },
             "task_row_issues": task_row_issues,
             "people_row_issues": people_row_issues,
             "timing_parse_issues": timing_parse_issues,
+            "reminder_delivery_counters": reminder_delivery_counters,
         }
