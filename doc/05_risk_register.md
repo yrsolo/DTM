@@ -124,3 +124,15 @@
 - `Weekly`: review latest 3+ bundles and decide `no tuning` vs `tuning proposed`.
 - `Monthly`: run threshold drift review and create dedicated Jira task for any threshold update.
 - Operational checklist source of truth: `doc/02_baseline_validation_and_artifacts.md` (Routine Ops Cadence Checklist).
+
+### Retry taxonomy metrics checklist
+- Metrics to review from `quality_report.summary`:
+  - `reminder_send_retry_attempt_count`
+  - `reminder_send_retry_exhausted_count`
+  - `reminder_send_error_transient_count`
+  - `reminder_send_error_permanent_count`
+  - `reminder_send_error_unknown_count`
+- Interpretation rules:
+  - sustained growth of `retry_exhausted` means transient incident is not recovering and requires mitigation task,
+  - high `permanent` share points to data/contact quality issues (chat_id/access),
+  - any non-zero `unknown` requires taxonomy follow-up and classifier review task.

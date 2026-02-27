@@ -57,12 +57,22 @@ Use this cadence to keep threshold tuning reproducible and avoid ad-hoc policy d
 - Execute baseline helper and confirm `quality_report.json` + `alert_evaluation.json` exist.
 - Record evaluated level (`INFO_ONLY/WARN/CRITICAL/OK`) and core metrics in Jira evidence comment.
 - If level is `WARN` or `CRITICAL`, apply escalation policy from `doc/05_risk_register.md`.
+- Verify retry taxonomy metrics in `quality_report.summary`:
+  - `reminder_send_retry_attempt_count`
+  - `reminder_send_retry_exhausted_count`
+  - `reminder_send_error_transient_count`
+  - `reminder_send_error_permanent_count`
+  - `reminder_send_error_unknown_count`
 
 ### Weekly
 - Review the latest 3+ baseline bundles and check for repeated false-positive/false-negative patterns.
 - Verify evaluator gate profile usage is consistent:
   - CI checks use `--fail-profile ci`.
   - local review stays non-blocking with `--alert-fail-profile local` unless explicitly overridden.
+- Review retry taxonomy mix:
+  - `transient` dominates only during temporary incidents,
+  - `permanent` spikes indicate data/chat-id issues,
+  - `unknown` > 0 requires classifier follow-up task.
 - Update `agile/sprint_current.md` notes with summary decision (`no tuning` or `tuning proposed`).
 
 ### Monthly

@@ -157,6 +157,8 @@ def main() -> int:
 - [ ] Log contains `[DRY-RUN] GoogleSheetsService::execute_updates` entries only (no real writes).
 - [ ] quality_report.json exists and summary counts look expected.
 - [ ] alert_evaluation.json exists and contains level/reason fields.
+- [ ] Retry taxonomy summary fields are present (`reminder_send_retry_attempt_count`, `reminder_send_retry_exhausted_count`, `reminder_send_error_transient_count`, `reminder_send_error_permanent_count`, `reminder_send_error_unknown_count`).
+- [ ] If `reminder_send_error_unknown_count > 0`, create follow-up taxonomy task and link it in Jira evidence.
 - [ ] Compare row/column counts in target sheets against previous baseline.
 - [ ] Compare key milestone cells against previous baseline.
 - [ ] Compare presence of notes/colors in sampled cells.

@@ -60,15 +60,16 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - [DONE] DTM-46 / TSK-049 Stage 5 controlled owner-notify trigger from evaluator output
 - [DONE] DTM-47 / TSK-050 Stage 5 evaluator severity gate policy for CI/local exit behavior
 - [DONE] DTM-48 / TSK-051 Stage 5 follow-up: encode threshold tuning cadence into routine ops checklist
+- [DONE] DTM-49 / TSK-052 Stage 5 follow-up: formalize retry taxonomy metrics into runbook checklist
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 5 follow-up: formalize retry taxonomy metrics into runbook checklist
 - [TODO] Stage 5 follow-up: controlled owner notify message template hardening (RU-only payload validation)
 - [TODO] Stage 5 follow-up: CI wrapper command for evaluator (`--fail-profile ci`) in routine checks
 - [TODO] Stage 5 follow-up: monthly alert-threshold drift review note in sprint ceremony template
+- [TODO] Stage 5 follow-up: retry taxonomy trend threshold note for weekly ops review
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -163,6 +164,8 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
   - Jira: DTM-47 (status: Done / `Gotovo`)
 - TSK-051 - Stage 5 follow-up: encode threshold tuning cadence into routine ops checklist
   - Jira: DTM-48 (status: Done / `Gotovo`)
+- TSK-052 - Stage 5 follow-up: formalize retry taxonomy metrics into runbook checklist
+  - Jira: DTM-49 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -213,6 +216,7 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - agile/tasks/DTM-46_stage5-controlled-owner-notify-from-evaluator.md
 - agile/tasks/DTM-47_stage5-evaluator-severity-gate-policy-ci-local.md
 - agile/tasks/DTM-48_stage5-threshold-tuning-cadence-routine-ops-checklist.md
+- agile/tasks/DTM-49_stage5-retry-taxonomy-metrics-runbook-checklist.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -301,3 +305,5 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - 2026-02-27: DTM-47 completed (explicit `local|ci` severity gate profiles with override precedence in evaluator/local launcher + baseline helper passthrough + smoke checks; Jira `Gotovo`).
 - 2026-02-27: DTM-48 moved to `V rabote` for Stage 5 routine ops checklist cadence formalization for threshold tuning workflow.
 - 2026-02-27: DTM-48 completed (explicit per-run/weekly/monthly routine cadence checklist for threshold tuning operations + risk-register alignment + CLI help smoke checks; Jira `Gotovo`).
+- 2026-02-27: DTM-49 moved to `V rabote` for Stage 5 retry taxonomy metrics checklist formalization in routine ops docs.
+- 2026-02-27: DTM-49 completed (retry taxonomy metrics checklist formalized in runbook + baseline helper checklist template updated + retry smoke and CLI checks passed; Jira `Gotovo`).
