@@ -40,6 +40,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Stage 7 execution plan and dynamic estimate baseline are documented in `doc/14_stage7_execution_plan.md`.
 - Stage 7 consumer/storage policy is documented in `doc/15_stage7_read_model_consumer_policy.md` (Object Storage primary for serverless runtime).
 - Stage 7 UI migration spike scope and acceptance checklist are documented in `doc/16_stage7_ui_spike_scope_and_acceptance.md`.
+- Stage 7 shadow-run readiness checklist is documented in `doc/17_stage7_shadow_run_readiness_checklist.md`.
 
 ## Local run (current)
 - Preferred: `run_timer.cmd` (uses project virtualenv and runs timer mode).

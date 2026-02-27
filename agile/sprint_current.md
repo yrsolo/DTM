@@ -11,8 +11,8 @@ Start Stage 7 delivery with explicit execution plan for visualization migration 
 
 ## Stage 7 Estimate (Dynamic)
 - Baseline estimate: 7 tasks
-- Done: 5
-- Remaining: 2
+- Done: 6
+- Remaining: 1
 - Rule: estimate is adjusted during execution when scope clarifies; done/remaining is updated after each task completion.
 
 ## Done
@@ -85,12 +85,12 @@ Start Stage 7 delivery with explicit execution plan for visualization migration 
 - [DONE] DTM-65 / TSK-068 Stage 7: schema snapshot artifact export for frontend checks (Object Storage cloud profile)
 - [DONE] DTM-66 / TSK-069 Stage 7: frontend fixture bundle from baseline captures (Object Storage cloud profile)
 - [DONE] DTM-67 / TSK-070 Stage 7: UI migration spike scope and acceptance checklist
+- [DONE] DTM-68 / TSK-071 Stage 7: shadow-run readiness checklist for visualization consumer
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] TSK-071 Stage 7: shadow-run readiness checklist for visualization data consumer.
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -223,6 +223,8 @@ Start Stage 7 delivery with explicit execution plan for visualization migration 
   - Jira: DTM-66 (status: Done / `Gotovo`)
 - TSK-070 - Stage 7: UI migration spike scope and acceptance checklist
   - Jira: DTM-67 (status: Done / `Gotovo`)
+- TSK-071 - Stage 7: shadow-run readiness checklist for visualization consumer
+  - Jira: DTM-68 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -414,3 +416,5 @@ Start Stage 7 delivery with explicit execution plan for visualization migration 
 - 2026-02-27: DTM-66 completed (fixture bundle builder/script + baseline integration docs); Stage 7 estimate updated to done 4 / remaining 3; Jira `Gotovo`.
 - 2026-02-27: DTM-67 moved to `V rabote` for Stage 7 UI migration spike scope and acceptance checklist.
 - 2026-02-27: DTM-67 completed (`doc/16_stage7_ui_spike_scope_and_acceptance.md` + docs alignment); Stage 7 estimate updated to done 5 / remaining 2; Jira `Gotovo`.
+- 2026-02-27: DTM-68 moved to `V rabote` for Stage 7 shadow-run readiness checklist.
+- 2026-02-27: DTM-68 completed (`doc/17_stage7_shadow_run_readiness_checklist.md` + docs alignment); Stage 7 estimate updated to done 6 / remaining 1; Jira `Gotovo`.
