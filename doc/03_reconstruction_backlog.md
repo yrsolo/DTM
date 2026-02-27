@@ -114,6 +114,7 @@
 Статус:
 - стартован инкремент Stage 1: добавлена валидация обязательных колонок задач в `core/repository.py` (DTM-8).
 - выполнен следующий инкремент Stage 1: hardening `TimingParser.parse` для null/non-string payload и нормализация nullable текстовых полей `Task` (DTM-9).
+- выполнен инкремент Stage 1 по people-контрактам: null-safe нормализация `Person`, безопасный mapping `PeopleManager`, исправление `get_designers` (DTM-10).
 
 ---
 

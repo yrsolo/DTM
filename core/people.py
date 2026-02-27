@@ -1,21 +1,44 @@
 from typing import List
+import pandas as pd
 from utils.service import GoogleSheetsService, GoogleSheetInfo
 from config import PEOPLE_FIELD_MAP
+
+
+def _is_nullish(value) -> bool:
+    if value is None:
+        return True
+    try:
+        result = pd.isna(value)
+    except (TypeError, ValueError):
+        return False
+    if hasattr(result, "all"):
+        try:
+            return bool(result.all())
+        except Exception:
+            return False
+    return bool(result)
+
+
+def _normalize_text(value, strip: bool = True) -> str:
+    if _is_nullish(value):
+        return ""
+    text = value if isinstance(value, str) else str(value)
+    return text.strip() if strip else text
 
 
 class Person:
     """ Человек"""
 
     def __init__(self, person_id, name, email, position, telegram_id, chat_id, info, vacation, tg_bot=None, **kwargs):
-        self.id = person_id
-        self.name = name
-        self.email = email
-        self.telegram_id = telegram_id
-        self.chat_id = chat_id
+        self.id = _normalize_text(person_id)
+        self.name = _normalize_text(name)
+        self.email = _normalize_text(email)
+        self.telegram_id = _normalize_text(telegram_id)
+        self.chat_id = _normalize_text(chat_id)
         self.tg_bot = tg_bot
-        self.info = info
-        self.position = position
-        self.vacation = vacation
+        self.info = _normalize_text(info, strip=False)
+        self.position = _normalize_text(position).lower()
+        self.vacation = _normalize_text(vacation).lower()
         self.tasks = []
 
     def __repr__(self):
@@ -42,7 +65,7 @@ class PeopleManager:
                  sheet_info: GoogleSheetInfo = None):
         self.people = dict()
         if people:
-            self.people = {person.id: self.people[person.id] for person in people}
+            self.people = {person.id: person for person in people if person.id}
 
         self.service = service
         self.sheet_info = sheet_info
@@ -63,8 +86,8 @@ class PeopleManager:
         return self.people
 
     def _create_person(self, person):
-        person = {key: person[value] for key, value in PEOPLE_FIELD_MAP.items()}
-        if person['position'] == 'дизайнер':
+        person = {key: person.get(value, None) for key, value in PEOPLE_FIELD_MAP.items()}
+        if _normalize_text(person.get('position')).lower() == 'дизайнер':
             person = Designer(**person)
         else:
             person = Person(**person)
@@ -77,4 +100,4 @@ class PeopleManager:
 
     def get_designers(self):
         self._load()
-        return [person for person in self.people if isinstance(person, Designer)]
+        return [person for person in self.people.values() if isinstance(person, Designer)]
