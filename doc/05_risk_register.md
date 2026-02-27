@@ -122,7 +122,10 @@
 
 ### Routine cadence enforcement
 - `Per run`: execute baseline/evaluator flow, log evaluated level and metrics in Jira evidence.
-- `Weekly`: review latest 3+ bundles and decide `no tuning` vs `tuning proposed`.
+- `Weekly`: review latest 3+ bundles and decide `no tuning` vs `tuning proposed`; apply retry taxonomy trend thresholds:
+  - `reminder_send_retry_exhausted_count >= 3` -> mitigation follow-up task.
+  - `reminder_send_error_unknown_count >= 1` in two consecutive weekly reviews -> classifier tuning task.
+  - `reminder_send_error_permanent_count >= 3` with `permanent >= transient` -> data quality follow-up task.
 - `Monthly`: run threshold drift review and create dedicated Jira task for any threshold update.
 - Operational checklist source of truth: `doc/02_baseline_validation_and_artifacts.md` (Routine Ops Cadence Checklist).
 
@@ -137,3 +140,5 @@
   - sustained growth of `retry_exhausted` means transient incident is not recovering and requires mitigation task,
   - high `permanent` share points to data/contact quality issues (chat_id/access),
   - any non-zero `unknown` requires taxonomy follow-up and classifier review task.
+- Weekly threshold note:
+  - use explicit weekly trigger values from `Routine cadence enforcement` before deciding `tuning proposed`.

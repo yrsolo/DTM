@@ -73,6 +73,10 @@ Use this cadence to keep threshold tuning reproducible and avoid ad-hoc policy d
   - `transient` dominates only during temporary incidents,
   - `permanent` spikes indicate data/chat-id issues,
   - `unknown` > 0 requires classifier follow-up task.
+- Apply weekly trend thresholds for retry taxonomy:
+  - `reminder_send_retry_exhausted_count >= 3` for the week -> create mitigation task.
+  - `reminder_send_error_unknown_count >= 1` in two consecutive weekly reviews -> create classifier tuning task.
+  - `reminder_send_error_permanent_count >= 3` and `permanent >= transient` -> create data quality follow-up task.
 - Update `agile/sprint_current.md` notes with summary decision (`no tuning` or `tuning proposed`).
 
 ### Monthly

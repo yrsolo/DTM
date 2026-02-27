@@ -75,6 +75,8 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `doc/02_baseline_validation_and_artifacts.md` (`Routine Ops Cadence Checklist`)
 - Retry taxonomy metrics checklist (retry/exhausted/transient/permanent/unknown):
   - `doc/05_risk_register.md` (`Retry taxonomy metrics checklist`)
+- Weekly retry taxonomy trend thresholds for ops review:
+  - `doc/05_risk_register.md` (`Routine cadence enforcement`)
 
 ## Secret scan gate (Stage 0.5)
 - Pre-commit gate: `detect-secrets` with `.secrets.baseline`.
