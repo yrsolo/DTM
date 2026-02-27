@@ -18,12 +18,16 @@ Set these in `Settings -> Secrets and variables -> Actions -> Variables`:
 - `YC_FOLDER_ID`
 - `YC_SERVICE_ACCOUNT_ID`
 - `YC_CLOUD_FUNCTION_NAME`
+- `YC_LOCKBOX_SECRET_ID` (Lockbox secret id with runtime keys, e.g. `DTM`)
 
 Optional overrides:
 - `YC_FUNCTION_ENTRYPOINT` (default: `index.handler`)
 - `YC_FUNCTION_RUNTIME` (default: `python311`)
 - `YC_FUNCTION_MEMORY` (default: `512Mb`)
 - `YC_FUNCTION_TIMEOUT` (default: `60s`)
+- `YC_RUNTIME_SERVICE_ACCOUNT_ID` (runtime SA; falls back to `YC_SERVICE_ACCOUNT_ID`)
+- `ENV` (default `prod`)
+- `SOURCE_SHEET_NAME`, `TARGET_SHEET_NAME`, `STRICT_ENV_GUARD`
 
 ## One-time setup in Yandex Cloud
 1. Create/choose service account for GitHub deploys.
@@ -40,7 +44,7 @@ Optional overrides:
 
 ## Notes
 - Current workflow packages source from repository (Python modules and docs) and excludes secrets, artifacts, notebooks, and local virtualenv.
-- If runtime requires additional environment variables in function configuration, keep them managed in Yandex Cloud function settings (or add controlled CI wiring as next task).
+- Runtime env and minimum Lockbox secret mappings are now wired in CI deploy step. Function version should no longer be published "bare".
 - For non-manual secret refresh from local contour, use:
   - `.venv\Scripts\python.exe agent\sync_lockbox_from_env.py --secret-name DTM`
   This command syncs all non-empty `.env` keys and also updates `GOOGLE_KEY_JSON` from local key file as text payload entry.

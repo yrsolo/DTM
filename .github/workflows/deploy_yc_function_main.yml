@@ -29,6 +29,19 @@ jobs:
           memory: ${{ vars.YC_FUNCTION_MEMORY || '512Mb' }}
           execution-timeout: ${{ vars.YC_FUNCTION_TIMEOUT || '60s' }}
           entrypoint: ${{ vars.YC_FUNCTION_ENTRYPOINT || 'index.handler' }}
+          service-account: ${{ vars.YC_RUNTIME_SERVICE_ACCOUNT_ID || vars.YC_SERVICE_ACCOUNT_ID }}
+          environment: |
+            ENV=${{ vars.ENV || 'prod' }}
+            SOURCE_SHEET_NAME=${{ vars.SOURCE_SHEET_NAME || 'Спонсорские ТНТ' }}
+            TARGET_SHEET_NAME=${{ vars.TARGET_SHEET_NAME || 'Спонсорские ТНТ ТЕСТ' }}
+            STRICT_ENV_GUARD=${{ vars.STRICT_ENV_GUARD || '1' }}
+          secrets: |
+            TG_TOKEN=${{ vars.YC_LOCKBOX_SECRET_ID }}/latest/TG_TOKEN
+            OPENAI_TOKEN=${{ vars.YC_LOCKBOX_SECRET_ID }}/latest/OPENAI_TOKEN
+            ORG_TOKEN=${{ vars.YC_LOCKBOX_SECRET_ID }}/latest/ORG_TOKEN
+            PROXY_URL=${{ vars.YC_LOCKBOX_SECRET_ID }}/latest/PROXY_URL
+            GOOGLE_KEY_JSON=${{ vars.YC_LOCKBOX_SECRET_ID }}/latest/GOOGLE_KEY_JSON
+            DEFAULT_CHAT_ID=${{ vars.YC_LOCKBOX_SECRET_ID }}/latest/DEFAULT_CHAT_ID
           include: |
             **/*.py
             requirements.txt
