@@ -63,12 +63,12 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - [DONE] DTM-49 / TSK-052 Stage 5 follow-up: formalize retry taxonomy metrics into runbook checklist
 - [DONE] DTM-50 / TSK-053 Stage 5 follow-up: controlled owner notify message template hardening (RU-only payload validation)
 - [DONE] DTM-51 / TSK-054 Stage 5 follow-up: CI wrapper command for evaluator (`--fail-profile ci`) in routine checks
+- [DONE] DTM-52 / TSK-055 Stage 5 follow-up: monthly alert-threshold drift review note in sprint ceremony template
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 5 follow-up: monthly alert-threshold drift review note in sprint ceremony template
 - [TODO] Stage 5 follow-up: retry taxonomy trend threshold note for weekly ops review
 - [TODO] Stage 5 follow-up: owner notify fallback wording check for alert evaluator dry-run output
 
@@ -171,6 +171,8 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
   - Jira: DTM-50 (status: Done / `Gotovo`)
 - TSK-054 - Stage 5 follow-up: CI wrapper command for evaluator (`--fail-profile ci`) in routine checks
   - Jira: DTM-51 (status: Done / `Gotovo`)
+- TSK-055 - Stage 5 follow-up: monthly alert-threshold drift review note in sprint ceremony template
+  - Jira: DTM-52 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -224,6 +226,7 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - agile/tasks/DTM-49_stage5-retry-taxonomy-metrics-runbook-checklist.md
 - agile/tasks/DTM-50_stage5-owner-notify-ru-template-hardening.md
 - agile/tasks/DTM-51_stage5-ci-wrapper-command-evaluator-fail-profile-ci.md
+- agile/tasks/DTM-52_stage5-monthly-alert-threshold-drift-review-note-in-ceremony-template.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -318,3 +321,5 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - 2026-02-27: DTM-50 completed (RU-only payload validation in notify helper + Russian notify templates/contexts alignment + notify/evaluator/reminder smoke checks; Jira `Gotovo`).
 - 2026-02-27: DTM-51 moved to `V rabote` for Stage 5 CI wrapper command (`run_alert_eval_ci.cmd`) around evaluator `--fail-profile ci`.
 - 2026-02-27: DTM-51 completed (added `run_alert_eval_ci.cmd`, docs aligned to wrapper usage, wrapper/evaluator smoke checks passed; Jira `Gotovo`).
+- 2026-02-27: DTM-52 moved to `V rabote` for Stage 5 ceremony template update with monthly alert-threshold drift review note.
+- 2026-02-27: DTM-52 completed (monthly drift review checkpoint added to `agile/retro.md` ceremony template; Jira `Gotovo`).
