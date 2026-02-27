@@ -1,18 +1,18 @@
 # Sprint Current
 
 ## Sprint Goal
-Complete Stage 6 preparation for visualization platform migration with explicit read-model planning and delivery tracking.
+Start Stage 7 delivery with explicit execution plan for visualization migration over Stage 6 read-model artifacts.
 
 ## Capacity
-1 active task (WIP), 3 tasks queued for this short sprint cycle.
+1 active task (WIP), 3-5 tasks queued for this short sprint cycle.
 
 ## Now
 - [IN_PROGRESS] none
 
-## Stage 6 Estimate (Dynamic)
-- Baseline estimate: 8 tasks
-- Done: 8
-- Remaining: 0
+## Stage 7 Estimate (Dynamic)
+- Baseline estimate: 7 tasks
+- Done: 1
+- Remaining: 6
 - Rule: estimate is adjusted during execution when scope clarifies; done/remaining is updated after each task completion.
 
 ## Done
@@ -80,12 +80,16 @@ Complete Stage 6 preparation for visualization platform migration with explicit 
 - [DONE] DTM-60 / TSK-063 Stage 6 slice: UI view-spec baseline over read-model (filters timeline history)
 - [DONE] DTM-61 / TSK-064 Stage 6 slice: include read-model artifact in baseline capture flow
 - [DONE] DTM-62 / TSK-065 Stage 6 closeout: readiness gate and handoff checklist
+- [DONE] DTM-63 / TSK-066 Stage 7 kickoff: visualization migration execution plan and estimate
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] none (Stage 6 completed)
+- [TODO] TSK-067 Stage 7: read-model API change-policy and consumer compatibility contract.
+- [TODO] TSK-068 Stage 7: exported schema snapshot artifact for frontend integration checks.
+- [TODO] TSK-069 Stage 7: frontend-friendly static fixture bundle from baseline capture output.
+- [TODO] TSK-070 Stage 7: UI migration spike scope and acceptance checklist for first web prototype.
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -208,6 +212,8 @@ Complete Stage 6 preparation for visualization platform migration with explicit 
   - Jira: DTM-61 (status: Done / `Gotovo`)
 - TSK-065 - Stage 6 closeout: readiness gate and handoff checklist
   - Jira: DTM-62 (status: Done / `Gotovo`)
+- TSK-066 - Stage 7 kickoff: visualization migration execution plan and estimate
+  - Jira: DTM-63 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -389,3 +395,5 @@ Complete Stage 6 preparation for visualization platform migration with explicit 
 - 2026-02-27: DTM-61 completed (`agent/capture_baseline.py` now emits `read_model.json`; Stage 6 estimate updated to done 7 / remaining 1; Jira `Gotovo`).
 - 2026-02-27: DTM-62 moved to `V rabote` for Stage 6 formal closeout (readiness gate + handoff checklist).
 - 2026-02-27: DTM-62 completed (`doc/13_stage6_closeout_and_handoff.md` added; Stage 6 estimate updated to done 8 / remaining 0; Jira `Gotovo`).
+- 2026-02-27: DTM-63 moved to `V rabote` for Stage 7 kickoff (execution plan + dynamic estimate baseline).
+- 2026-02-27: DTM-63 completed (`doc/14_stage7_execution_plan.md` + Stage 7 backlog decomposition); Stage 7 estimate initialized to done 1 / remaining 6; Jira `Gotovo`.
