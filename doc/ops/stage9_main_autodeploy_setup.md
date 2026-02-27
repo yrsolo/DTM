@@ -36,7 +36,7 @@ Optional overrides:
 3. Verify new function version appears in Yandex Cloud console.
 4. Trigger function once and confirm runtime logs are healthy.
 5. Optional scripted HTTP invoke smoke:
-   - `.venv\Scripts\python.exe agent\invoke_function_smoke.py --url <function_url>`
+   - `.venv\Scripts\python.exe agent\invoke_function_smoke.py --url <function_url> --healthcheck`
 
 ## Notes
 - Current workflow packages source from repository (Python modules and docs) and excludes secrets, artifacts, notebooks, and local virtualenv.

@@ -32,6 +32,22 @@ def main() -> int:
         help="Optional path to JSON file used as request body",
     )
     parser.add_argument("--timeout", type=float, default=30.0, help="Request timeout in seconds")
+    parser.add_argument(
+        "--healthcheck",
+        action="store_true",
+        help="Send lightweight healthcheck payload and skip planner execution",
+    )
+    parser.add_argument(
+        "--mode",
+        default="",
+        help="Optional planner mode override for HTTP invoke (timer/morning/test/sync-only/reminders-only)",
+    )
+    parser.add_argument("--dry-run", action="store_true", help="Set dry_run=true in payload")
+    parser.add_argument(
+        "--mock-external",
+        action="store_true",
+        help="Set mock_external=true in payload",
+    )
     args = parser.parse_args()
 
     load_env()
@@ -43,6 +59,14 @@ def main() -> int:
     payload = {}
     if args.event_file:
         payload = json.loads(Path(args.event_file).read_text(encoding="utf-8"))
+    if args.healthcheck:
+        payload["healthcheck"] = True
+    if args.mode:
+        payload["mode"] = args.mode
+    if args.dry_run:
+        payload["dry_run"] = True
+    if args.mock_external:
+        payload["mock_external"] = True
 
     response = requests.post(url, json=payload, timeout=args.timeout)
     print(f"status_code={response.status_code}")
