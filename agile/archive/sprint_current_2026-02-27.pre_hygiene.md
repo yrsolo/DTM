@@ -1,0 +1,478 @@
+# Sprint Current
+
+## Sprint Goal
+Start Stage 9 serverless deployment contour for web prototype with main-branch auto-deploy.
+
+## Capacity
+1 active task (WIP), 3-5 tasks queued for this short sprint cycle.
+
+## Now
+- [IN_PROGRESS] none
+
+## Stage 9 Estimate (Dynamic)
+- Baseline estimate: 5 tasks
+- Done: 3
+- Remaining: 2
+- Rule: estimate is adjusted during execution when scope clarifies; done/remaining is updated after each task completion.
+
+## Done
+- [DONE] Initial git workflow policy added.
+- [DONE] Governance docs added (`AGENTS.md`, `CONTRIBUTING.md`, `SECURITY.md`).
+- [DONE] TSK-004 Sprint workspace normalization (`agile/sprint_current.md` structure, Jira keys sync, WIP discipline).
+- [DONE] DTM-2 / TSK-009 Source trust gate (`agile/context_registry.md` + pre-task freshness verification).
+- [DONE] DTM-3 / TSK-010 README/runtime alignment verification and trust-level upgrade.
+- [DONE] DTM-4 / TSK-005 Env contour formalization (`ENV`, `.env.<ENV>`, optional `STRICT_ENV_GUARD`).
+- [DONE] DTM-5 / TSK-006 Pipeline run modes and dry-run (`sync-only`, `reminders-only`, `--dry-run` write guard).
+- [DONE] DTM-6 / TSK-007 Baseline validation checklist and artifact capture flow.
+- [DONE] DTM-7 / TSK-008 Secret scan pre-commit gate hardening and verification.
+- [DONE] DTM-8 / TSK-011 Stage 1 required-column validation in repository.
+- [DONE] DTM-9 / TSK-012 Stage 1 timing/null input normalization and parser hardening.
+- [DONE] DTM-10 / TSK-013 Stage 1 people contract normalization and lookup hardening.
+- [DONE] DTM-11 / TSK-014 Reminder runtime compatibility fix (httpx proxy + unicode logging).
+- [DONE] DTM-12 / TSK-015 Stage 1 typed Task/Person row-contract scaffolding.
+- [DONE] DTM-13 / TSK-016 Stage 1 schema guardrails for task/people row contracts.
+- [DONE] DTM-14 / TSK-017 Stage 1 typed data-quality error taxonomy and reporting.
+- [DONE] DTM-16 / TSK-019 Stage 1 row-level validation policy for malformed task/person rows.
+- [DONE] DTM-17 / TSK-020 Stage 1 timing parse diagnostics and non-fatal error accounting.
+- [DONE] DTM-18 / TSK-021 Stage 1 quality report surfacing in local run artifacts.
+- [DONE] DTM-15 / TSK-018 Reminder tests: mock OpenAI and Telegram delivery paths.
+- [DONE] DTM-19 / TSK-022 Stage 2 layer boundary inventory and dependency map.
+- [DONE] DTM-20 / TSK-023 Stage 2 domain module extraction scaffold.
+- [DONE] DTM-21 / TSK-024 Stage 2 application use-case orchestration extraction.
+- [DONE] DTM-22 / TSK-025 Stage 2 infrastructure adapter boundary for external services.
+- [DONE] DTM-23 / TSK-026 Stage 3 calendar rendering shared cell-contract scaffold
+- [DONE] DTM-24 / TSK-027 Stage 3 task-calendar renderer alignment
+- [DONE] DTM-25 / TSK-028 Stage 3 sheet renderer adapter extraction
+- [DONE] DTM-26 / TSK-029 Stage 3 calendar renderer adapter boundary extraction
+- [DONE] DTM-27 / TSK-030 Stage 3 render contract parity for calendar header/date cells
+- [DONE] DTM-28 / TSK-031 Stage 3 render adapter test harness (dry-run request assertions)
+- [DONE] DTM-29 / TSK-032 Stage 3 close-out: TaskManager renderer adapter unification
+- [DONE] DTM-30 / TSK-033 Stage 3 close-out coverage: manager adapter smoke assertions
+- [DONE] DTM-31 / TSK-034 Stage 3 close-out: TaskCalendarManagerOld legacy path disposition
+- [DONE] DTM-32 / TSK-035 Stage 4 fallback: send draft when OpenAI enhancer unavailable
+- [DONE] DTM-33 / TSK-036 Stage 4 idempotency: prevent duplicate reminder sends in same run
+- [DONE] DTM-34 / TSK-037 Stage 4 reminder pipeline decomposition (facts/draft/enhancer/sender)
+- [DONE] DTM-35 / TSK-038 Stage 4 parallel OpenAI reminder enhancement with bounded concurrency
+- [DONE] DTM-36 / TSK-039 Stage 4 reminder observability counters for send outcomes
+- [DONE] DTM-37 / TSK-040 Stage 5 kickoff derived SLI counters for reminder delivery/failure rates
+- [DONE] DTM-38 / TSK-041 Stage 5 kickoff risk-register update for reminder/API degradation and retry policy
+- [DONE] DTM-39 / TSK-042 Stage 5 alerting thresholds and escalation policy for reminder delivery metrics
+- [DONE] DTM-40 / TSK-043 Stage 5 persist SLI trend snapshots across runs
+- [DONE] DTM-41 / TSK-044 Stage 5 retry/backoff policy for reminder transient failures
+- [DONE] DTM-42 / TSK-045 Stage 5 automate threshold evaluation from latest quality report artifact
+- [DONE] DTM-43 / TSK-046 Stage 5 wire threshold evaluator output into alert-review workflow
+- [DONE] DTM-44 / TSK-047 Stage 5 runbook and thresholds tuning after evaluator wiring rollout
+- [DONE] DTM-45 / TSK-048 Stage 5 transient failure taxonomy tuning for Telegram retries
+- [DONE] DTM-46 / TSK-049 Stage 5 controlled owner-notify trigger from evaluator output
+- [DONE] DTM-47 / TSK-050 Stage 5 evaluator severity gate policy for CI/local exit behavior
+- [DONE] DTM-48 / TSK-051 Stage 5 follow-up: encode threshold tuning cadence into routine ops checklist
+- [DONE] DTM-49 / TSK-052 Stage 5 follow-up: formalize retry taxonomy metrics into runbook checklist
+- [DONE] DTM-50 / TSK-053 Stage 5 follow-up: controlled owner notify message template hardening (RU-only payload validation)
+- [DONE] DTM-51 / TSK-054 Stage 5 follow-up: CI wrapper command for evaluator (`--fail-profile ci`) in routine checks
+- [DONE] DTM-52 / TSK-055 Stage 5 follow-up: monthly alert-threshold drift review note in sprint ceremony template
+- [DONE] DTM-53 / TSK-056 Stage 5 follow-up: retry taxonomy trend threshold note for weekly ops review
+- [DONE] DTM-54 / TSK-057 Stage 5 follow-up: owner notify fallback wording check for alert evaluator dry-run output
+- [DONE] DTM-55 / TSK-058 Stage 6 kickoff: dynamic estimate tracker and completion-notify process rule
+- [DONE] DTM-56 / TSK-059 Stage 6 slice: read-model JSON contract definition (entities fields versioning)
+- [DONE] DTM-57 / TSK-060 Stage 6 slice: read-model builder from current planner artifacts
+- [DONE] DTM-58 / TSK-061 Stage 6 slice: publication path for read-model artifacts without runtime impact
+- [DONE] DTM-59 / TSK-062 Stage 6 slice: read-model builder contract tests and compatibility checks
+- [DONE] DTM-60 / TSK-063 Stage 6 slice: UI view-spec baseline over read-model (filters timeline history)
+- [DONE] DTM-61 / TSK-064 Stage 6 slice: include read-model artifact in baseline capture flow
+- [DONE] DTM-62 / TSK-065 Stage 6 closeout: readiness gate and handoff checklist
+- [DONE] DTM-63 / TSK-066 Stage 7 kickoff: visualization migration execution plan and estimate
+- [DONE] DTM-64 / TSK-067 Stage 7: read-model consumer compatibility policy and serverless artifact storage contour
+- [DONE] DTM-65 / TSK-068 Stage 7: schema snapshot artifact export for frontend checks (Object Storage cloud profile)
+- [DONE] DTM-66 / TSK-069 Stage 7: frontend fixture bundle from baseline captures (Object Storage cloud profile)
+- [DONE] DTM-67 / TSK-070 Stage 7: UI migration spike scope and acceptance checklist
+- [DONE] DTM-68 / TSK-071 Stage 7: shadow-run readiness checklist for visualization consumer
+- [DONE] DTM-69 / TSK-072 Stage 7 closeout: handoff package for Stage 8
+- [DONE] DTM-70 / TSK-073 Stage 8 kickoff: web prototype execution plan and dynamic estimate baseline
+- [DONE] DTM-71 / TSK-074 Stage 8: prototype data loader + schema gate over Stage 7 artifacts
+- [DONE] DTM-72 / TSK-075 Stage 8: static web prototype views and filters over fixture payload
+- [DONE] DTM-73 / TSK-076 Stage 8: local/cloud source switch wiring for prototype consumer
+- [DONE] DTM-74 / TSK-077 Stage 8: shadow-run execution evidence package for prototype consumer
+- [DONE] DTM-75 / TSK-078 Stage 8 closeout: readiness gate and handoff package
+- [DONE] DTM-76 / TSK-079 Stage 9 kickoff: main-branch auto-deploy workflow for Yandex Cloud Function
+- [DONE] DTM-77 / TSK-080 Stage 9: automate `.env` to Lockbox sync and Google secret runtime source
+- [DONE] DTM-78 / TSK-081 Stage 9: bind Lockbox secret env to function and run invoke smoke
+
+## Blocked
+- [BLOCKED] none
+
+## Next 3-5 Tasks (Groomed)
+- [TODO] Stage 9: cloud-profile shadow-run with explicit `PROTOTYPE_*_S3_KEY` pass criteria.
+- [TODO] Stage 9: lightweight consumer contract-regression checks for deploy pipeline.
+- [TODO] Stage 9: UX hardening for empty/error/loading states with acceptance checks.
+- [TODO] Stage 9: deployment smoke checklist for Yandex Cloud Function profile.
+
+## Selected Work (Jira/Local)
+- TSK-004 - Sprint workspace normalization (status: Done)
+- DTM-2 - TSK-009 Source trust and freshness gate (status: Done / `Gotovo`)
+- TSK-005 - Env contour formalization
+  - Jira: DTM-4 (status: Done / `Gotovo`)
+- TSK-006 - Pipeline run modes and dry-run
+  - Jira: DTM-5 (status: Done / `Gotovo`)
+- TSK-007 - Baseline validation checklist
+  - Jira: DTM-6 (status: Done / `Gotovo`)
+- TSK-008 - Secret scan gate
+  - Jira: DTM-7 (status: Done / `Gotovo`)
+- TSK-011 - Stage 1 required task-column validation
+  - Jira: DTM-8 (status: Done / `Gotovo`)
+- TSK-012 - Stage 1 timing/null input normalization and parser hardening
+  - Jira: DTM-9 (status: Done / `Gotovo`)
+- TSK-013 - Stage 1 people contract normalization and lookup hardening
+  - Jira: DTM-10 (status: Done / `Gotovo`)
+- TSK-014 - Reminder runtime compatibility fix
+  - Jira: DTM-11 (status: Done / `Gotovo`)
+- TSK-015 - Stage 1 typed Task/Person row-contract scaffolding
+  - Jira: DTM-12 (status: Done / `Gotovo`)
+- TSK-016 - Stage 1 schema guardrails for task/people row contracts
+  - Jira: DTM-13 (status: Done / `Gotovo`)
+- TSK-017 - Stage 1 typed data-quality error taxonomy and reporting
+  - Jira: DTM-14 (status: Done / `Gotovo`)
+- TSK-018 - Reminder tests: mock OpenAI and Telegram delivery paths
+  - Jira: DTM-15 (status: Done / `Gotovo`)
+- TSK-019 - Stage 1 row-level validation policy for malformed task/person rows
+  - Jira: DTM-16 (status: Done / `Gotovo`)
+- TSK-020 - Stage 1 timing parse diagnostics and non-fatal error accounting
+  - Jira: DTM-17 (status: Done / `Gotovo`)
+- TSK-021 - Stage 1 quality report surfacing in local run artifacts
+  - Jira: DTM-18 (status: Done / `Gotovo`)
+- TSK-022 - Stage 2 layer boundary inventory and dependency map
+  - Jira: DTM-19 (status: Done / `Gotovo`)
+- TSK-023 - Stage 2 domain module extraction scaffold
+  - Jira: DTM-20 (status: Done / `Gotovo`)
+- TSK-024 - Stage 2 application use-case orchestration extraction
+  - Jira: DTM-21 (status: Done / `Gotovo`)
+- TSK-025 - Stage 2 infrastructure adapter boundary for external services
+  - Jira: DTM-22 (status: Done / `Gotovo`)
+- TSK-026 - Stage 3 calendar rendering shared cell-contract scaffold
+  - Jira: DTM-23 (status: Done / `Gotovo`)
+- TSK-027 - Stage 3 task-calendar renderer alignment
+  - Jira: DTM-24 (status: Done / `Gotovo`)
+- TSK-028 - Stage 3 sheet renderer adapter extraction
+  - Jira: DTM-25 (status: Done / `Gotovo`)
+- TSK-029 - Stage 3 calendar renderer adapter boundary extraction
+  - Jira: DTM-26 (status: Done / `Gotovo`)
+- TSK-030 - Stage 3 render contract parity for calendar header/date cells
+  - Jira: DTM-27 (status: Done / `Gotovo`)
+- TSK-031 - Stage 3 render adapter test harness (dry-run request assertions)
+  - Jira: DTM-28 (status: Done / `Gotovo`)
+- TSK-032 - Stage 3 close-out: TaskManager renderer adapter unification
+  - Jira: DTM-29 (status: Done / `Gotovo`)
+- TSK-033 - Stage 3 close-out coverage: manager adapter smoke assertions
+  - Jira: DTM-30 (status: Done / `Gotovo`)
+- TSK-034 - Stage 3 close-out: TaskCalendarManagerOld legacy path disposition
+  - Jira: DTM-31 (status: Done / `Gotovo`)
+- TSK-035 - Stage 4 fallback: send draft when OpenAI enhancer unavailable
+  - Jira: DTM-32 (status: Done / `Gotovo`)
+- TSK-036 - Stage 4 idempotency: prevent duplicate reminder sends in same run
+  - Jira: DTM-33 (status: Done / `Gotovo`)
+- TSK-037 - Stage 4 reminder pipeline decomposition (facts/draft/enhancer/sender)
+  - Jira: DTM-34 (status: Done / `Gotovo`)
+- TSK-038 - Stage 4 parallel OpenAI reminder enhancement with bounded concurrency
+  - Jira: DTM-35 (status: Done / `Gotovo`)
+- TSK-039 - Stage 4 reminder observability counters for send outcomes
+  - Jira: DTM-36 (status: Done / `Gotovo`)
+- TSK-040 - Stage 5 kickoff: derived SLI counters for reminder delivery/failure rates
+  - Jira: DTM-37 (status: Done / `Gotovo`)
+- TSK-041 - Stage 5 kickoff: risk-register update for reminder/API degradation and retry policy
+  - Jira: DTM-38 (status: Done / `Gotovo`)
+- TSK-042 - Stage 5 kickoff: alerting thresholds and escalation policy for reminder delivery metrics
+  - Jira: DTM-39 (status: Done / `Gotovo`)
+- TSK-043 - Stage 5 follow-up: persist SLI trend snapshots across runs
+  - Jira: DTM-40 (status: Done / `Gotovo`)
+- TSK-044 - Stage 5 follow-up: retry/backoff policy for reminder transient failures
+  - Jira: DTM-41 (status: Done / `Gotovo`)
+- TSK-045 - Stage 5 follow-up: automate threshold evaluation from latest quality report artifact
+  - Jira: DTM-42 (status: Done / `Gotovo`)
+- TSK-046 - Stage 5 follow-up: wire threshold evaluator output into alert-review workflow
+  - Jira: DTM-43 (status: Done / `Gotovo`)
+- TSK-047 - Stage 5 follow-up: runbook and thresholds tuning after evaluator wiring rollout
+  - Jira: DTM-44 (status: Done / `Gotovo`)
+- TSK-048 - Stage 5 follow-up: transient failure taxonomy tuning for Telegram retries
+  - Jira: DTM-45 (status: Done / `Gotovo`)
+- TSK-049 - Stage 5 follow-up: controlled owner-notify trigger from evaluator output
+  - Jira: DTM-46 (status: Done / `Gotovo`)
+- TSK-050 - Stage 5 follow-up: evaluator severity gate policy for CI/local exit behavior
+  - Jira: DTM-47 (status: Done / `Gotovo`)
+- TSK-051 - Stage 5 follow-up: encode threshold tuning cadence into routine ops checklist
+  - Jira: DTM-48 (status: Done / `Gotovo`)
+- TSK-052 - Stage 5 follow-up: formalize retry taxonomy metrics into runbook checklist
+  - Jira: DTM-49 (status: Done / `Gotovo`)
+- TSK-053 - Stage 5 follow-up: controlled owner notify message template hardening (RU-only payload validation)
+  - Jira: DTM-50 (status: Done / `Gotovo`)
+- TSK-054 - Stage 5 follow-up: CI wrapper command for evaluator (`--fail-profile ci`) in routine checks
+  - Jira: DTM-51 (status: Done / `Gotovo`)
+- TSK-055 - Stage 5 follow-up: monthly alert-threshold drift review note in sprint ceremony template
+  - Jira: DTM-52 (status: Done / `Gotovo`)
+- TSK-056 - Stage 5 follow-up: retry taxonomy trend threshold note for weekly ops review
+  - Jira: DTM-53 (status: Done / `Gotovo`)
+- TSK-057 - Stage 5 follow-up: owner notify fallback wording check for alert evaluator dry-run output
+  - Jira: DTM-54 (status: Done / `Gotovo`)
+- TSK-058 - Stage 6 kickoff: dynamic estimate tracker and completion-notify process rule
+  - Jira: DTM-55 (status: Done / `Gotovo`)
+- TSK-059 - Stage 6 slice: read-model JSON contract definition (entities fields versioning)
+  - Jira: DTM-56 (status: Done / `Gotovo`)
+- TSK-060 - Stage 6 slice: read-model builder from current planner artifacts
+  - Jira: DTM-57 (status: Done / `Gotovo`)
+- TSK-061 - Stage 6 slice: publication path for read-model artifacts without runtime impact
+  - Jira: DTM-58 (status: Done / `Gotovo`)
+- TSK-062 - Stage 6 slice: read-model builder contract tests and compatibility checks
+  - Jira: DTM-59 (status: Done / `Gotovo`)
+- TSK-063 - Stage 6 slice: UI view-spec baseline over read-model (filters timeline history)
+  - Jira: DTM-60 (status: Done / `Gotovo`)
+- TSK-064 - Stage 6 slice: include read-model artifact in baseline capture flow
+  - Jira: DTM-61 (status: Done / `Gotovo`)
+- TSK-065 - Stage 6 closeout: readiness gate and handoff checklist
+  - Jira: DTM-62 (status: Done / `Gotovo`)
+- TSK-066 - Stage 7 kickoff: visualization migration execution plan and estimate
+  - Jira: DTM-63 (status: Done / `Gotovo`)
+- TSK-067 - Stage 7: read-model consumer compatibility policy and serverless artifact storage contour
+  - Jira: DTM-64 (status: Done / `Gotovo`)
+- TSK-068 - Stage 7: schema snapshot artifact export for frontend integration checks
+  - Jira: DTM-65 (status: Done / `Gotovo`)
+- TSK-069 - Stage 7: frontend fixture bundle from baseline captures
+  - Jira: DTM-66 (status: Done / `Gotovo`)
+- TSK-070 - Stage 7: UI migration spike scope and acceptance checklist
+  - Jira: DTM-67 (status: Done / `Gotovo`)
+- TSK-071 - Stage 7: shadow-run readiness checklist for visualization consumer
+  - Jira: DTM-68 (status: Done / `Gotovo`)
+- TSK-072 - Stage 7 closeout: handoff package for Stage 8
+  - Jira: DTM-69 (status: Done / `Gotovo`)
+- TSK-073 - Stage 8 kickoff: web prototype execution plan and dynamic estimate baseline
+  - Jira: DTM-70 (status: Done / `Gotovo`)
+- TSK-074 - Stage 8: prototype data loader + schema gate over Stage 7 artifacts
+  - Jira: DTM-71 (status: Done / `Gotovo`)
+- TSK-075 - Stage 8: static web prototype views and filters
+  - Jira: DTM-72 (status: Done / `Gotovo`)
+- TSK-076 - Stage 8: local/cloud source switch wiring for prototype consumer
+  - Jira: DTM-73 (status: Done / `Gotovo`)
+- TSK-077 - Stage 8: shadow-run execution evidence package for prototype consumer
+  - Jira: DTM-74 (status: Done / `Gotovo`)
+- TSK-078 - Stage 8 closeout: readiness gate and handoff package
+  - Jira: DTM-75 (status: Done / `Gotovo`)
+- TSK-079 - Stage 9 kickoff: main-branch auto-deploy workflow for Yandex Cloud Function
+  - Jira: DTM-76 (status: Done / `Gotovo`)
+- TSK-080 - Stage 9: automate `.env` to Lockbox sync and Google secret runtime source
+  - Jira: DTM-77 (status: Done / `Gotovo`)
+- TSK-081 - Stage 9: bind Lockbox secret env to function and run invoke smoke
+  - Jira: DTM-78 (status: Done / `Gotovo`)
+- DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
+
+## Active Task Files
+- agile/tasks/DTM-2_source-trust-gate.md
+- agile/tasks/DTM-3_readme-runtime-alignment.md
+- agile/tasks/DTM-4_env-contour-formalization.md
+- agile/tasks/DTM-5_run-modes-and-dry-run.md
+- agile/tasks/DTM-6_baseline-validation-checklist.md
+- agile/tasks/DTM-7_secret-scan-gate.md
+- agile/tasks/DTM-8_required-column-validation.md
+- agile/tasks/DTM-9_timing-parser-hardening.md
+- agile/tasks/DTM-10_people-contract-hardening.md
+- agile/tasks/DTM-11_reminder-runtime-compat.md
+- agile/tasks/DTM-12_typed-row-contract-scaffolding.md
+- agile/tasks/DTM-13_schema-guardrails-row-contracts.md
+- agile/tasks/DTM-14_typed-data-quality-error-taxonomy.md
+- agile/tasks/DTM-15_reminder-tests-mock-openai-telegram.md
+- agile/tasks/DTM-16_row-level-validation-policy.md
+- agile/tasks/DTM-17_timing-parse-diagnostics.md
+- agile/tasks/DTM-18_quality-report-local-artifacts.md
+- agile/tasks/DTM-19_stage2-layer-boundary-inventory.md
+- agile/tasks/DTM-20_stage2-domain-scaffold.md
+- agile/tasks/DTM-21_stage2-application-usecases.md
+- agile/tasks/DTM-22_stage2-infra-adapter-boundary.md
+- agile/tasks/DTM-23_stage3-render-cell-contract.md
+- agile/tasks/DTM-24_stage3-task-calendar-renderer-alignment.md
+- agile/tasks/DTM-25_stage3-sheet-renderer-adapter-extraction.md
+- agile/tasks/DTM-26_stage3-calendar-renderer-adapter-boundary.md
+- agile/tasks/DTM-27_stage3-render-contract-parity-calendar-cells.md
+- agile/tasks/DTM-28_stage3-render-adapter-test-harness.md
+- agile/tasks/DTM-29_stage3-taskmanager-renderer-adapter-unification.md
+- agile/tasks/DTM-30_stage3-closeout-coverage-manager-adapter-smoke.md
+- agile/tasks/DTM-31_stage3-legacy-path-disposition-taskcalendar-old.md
+- agile/tasks/DTM-32_stage4-reminder-fallback-draft-on-openai-unavailable.md
+- agile/tasks/DTM-33_stage4-idempotent-reminder-delivery-guard.md
+- agile/tasks/DTM-34_stage4-reminder-pipeline-decomposition.md
+- agile/tasks/DTM-35_stage4-parallel-openai-reminder-enhancement.md
+- agile/tasks/DTM-36_stage4-reminder-observability-counters.md
+- agile/tasks/DTM-37_stage5-derived-sli-reminder-delivery-rates.md
+- agile/tasks/DTM-38_stage5-risk-register-reminder-api-retry-policy.md
+- agile/tasks/DTM-39_stage5-alerting-thresholds-escalation-policy.md
+- agile/tasks/DTM-40_stage5-persist-sli-trend-snapshots.md
+- agile/tasks/DTM-41_stage5-retry-backoff-reminder-transient-failures.md
+- agile/tasks/DTM-42_stage5-automate-threshold-evaluation-quality-artifact.md
+- agile/tasks/DTM-43_stage5-wire-evaluator-output-alert-review-workflow.md
+- agile/tasks/DTM-44_stage5-runbook-thresholds-tuning-after-wiring.md
+- agile/tasks/DTM-45_stage5-transient-failure-taxonomy-tuning.md
+- agile/tasks/DTM-46_stage5-controlled-owner-notify-from-evaluator.md
+- agile/tasks/DTM-47_stage5-evaluator-severity-gate-policy-ci-local.md
+- agile/tasks/DTM-48_stage5-threshold-tuning-cadence-routine-ops-checklist.md
+- agile/tasks/DTM-49_stage5-retry-taxonomy-metrics-runbook-checklist.md
+- agile/tasks/DTM-50_stage5-owner-notify-ru-template-hardening.md
+- agile/tasks/DTM-51_stage5-ci-wrapper-command-evaluator-fail-profile-ci.md
+- agile/tasks/DTM-52_stage5-monthly-alert-threshold-drift-review-note-in-ceremony-template.md
+- agile/tasks/DTM-53_stage5-retry-taxonomy-trend-threshold-note-weekly-ops-review.md
+- agile/tasks/DTM-54_stage5-owner-notify-fallback-wording-check-evaluator-dry-run.md
+- agile/tasks/DTM-55_stage6-kickoff-dynamic-estimate-and-completion-notify.md
+- agile/tasks/DTM-56_stage6-read-model-json-contract-definition.md
+- agile/tasks/DTM-57_stage6-read-model-builder-from-current-planner-artifacts.md
+- agile/tasks/DTM-58_stage6-read-model-publication-path-local-launcher.md
+- agile/tasks/DTM-59_stage6-read-model-contract-compatibility-checks.md
+- agile/tasks/DTM-60_stage6-ui-view-spec-baseline-over-read-model.md
+- agile/tasks/DTM-61_stage6-read-model-artifact-in-baseline-capture-flow.md
+- agile/tasks/DTM-62_stage6-closeout-readiness-gate-and-handoff.md
+- agile/tasks/DTM-76_stage9-kickoff-main-autodeploy-yc-function.md
+- agile/tasks/DTM-77_stage9-automate-env-to-lockbox-sync-and-google-secret-runtime-source.md
+- agile/tasks/DTM-78_stage9-bind-lockbox-secret-env-to-function-and-invoke-smoke.md
+
+## Risks / Blockers
+- [BLOCKED] none
+
+## Notes / Decisions
+- Prioritize Stage 0 backlog tasks first (safe contour, validation, safety gates).
+- Keep WIP limit = 1 to reduce regression risk.
+- Before assigning execution tasks, verify source freshness and trust level in `agile/context_registry.md`.
+- Jira synchronization started: issues created/linked for TSK-009 and TSK-010, lifecycle managed in Jira first.
+- 2026-02-27: Jira runtime access verified from `.env` (REST `/myself` = 200); DTM-5 lifecycle moved `V rabote` -> `Gotovo` with evidence comments.
+- 2026-02-27: DTM-5 implemented and smoke-checked (`local_run.py --help`, `local_run.py --mode sync-only --dry-run`).
+- 2026-02-27: DTM-6 completed (`agent/capture_baseline.py`, baseline docs, smoke-check, Jira `Gotovo`).
+- 2026-02-27: DTM-7 completed (full-repo detect-secrets smoke, docs sync, Jira `Gotovo`).
+- 2026-02-27: DTM-8 created and moved to `V rabote` as first incremental Stage 1 execution block.
+- 2026-02-27: DTM-8 completed (required-column validation + safe row mapping, smoke-check, Jira `Gotovo`).
+- 2026-02-27: DTM-9 completed (timing parser null/type hardening + task text normalization, smoke-check, Jira `Gotovo`).
+- 2026-02-27: DTM-10 completed (people field normalization + manager lookup hardening, targeted smoke-check, Jira `Gotovo`).
+- 2026-02-27: `local_run.py --mode reminders-only --dry-run` still fails in pre-existing reminder path (`httpx.AsyncClient(proxies=...)` + console unicode encoding); tracked for next increment (DTM-11).
+- 2026-02-27: DTM-11 completed (`httpx` proxy compatibility + unicode-safe reminder logging); `local_run.py --mode reminders-only --dry-run` passes.
+- 2026-02-27: DTM-12 completed (typed row-contract scaffold for task/person mapping via `core/contracts.py`; timer/reminder dry-run smoke passed).
+- 2026-02-27: DTM-13 completed (contract-driven required-header guardrails for tasks/people, smoke-check, Jira `Gotovo`).
+- 2026-02-27: DTM-14 completed (typed data-quality error taxonomy + unified missing-header diagnostics in task/people loaders, smoke-check, Jira `Gotovo`).
+- 2026-02-27: DTM-15 created as non-urgent backlog task to mock OpenAI/Telegram side effects in reminder tests.
+- 2026-02-27: DTM-16 completed (row-level malformed-row fail-soft policy + `row_issues` diagnostics in task/people loaders, smoke-check, Jira `Gotovo`).
+- 2026-02-27: DTM-17 completed (structured timing parse diagnostics + non-fatal row-level accounting, smoke-check, Jira `Gotovo`).
+- 2026-02-27: DTM-18 completed (quality report surfaced in local runs and baseline artifacts, smoke-check, Jira `Gotovo`).
+- 2026-02-27: DTM-15 moved to `V rabote` for reminder test mocks (OpenAI/Telegram external calls disabled in test mode).
+- 2026-02-27: DTM-15 completed (mock external reminder mode via `--mock-external`/`mode=test` default, smoke-check, Jira `Gotovo`).
+- 2026-02-27: Stage 2 kickoff created in Jira (`DTM-19..DTM-22`); `DTM-19` moved to `V rabote` as single active execution task.
+- 2026-02-27: DTM-19 completed (Stage 2 layer boundary inventory + dependency map in `doc/10_stage2_layer_inventory.md`; Jira `Gotovo`).
+- 2026-02-27: DTM-20 moved to `V rabote` for Stage 2 scaffold (`S2-SLICE-01`: planner dependency construction boundary extraction).
+- 2026-02-27: DTM-20 completed (bootstrap dependency-construction boundary via `core/bootstrap.py`; smoke-check; Jira `Gotovo`).
+- 2026-02-27: DTM-21 moved to `V rabote` for Stage 2 application use-case orchestration extraction.
+- 2026-02-27: DTM-21 completed (orchestration extracted to `core/use_cases.py`; smoke-check; Jira `Gotovo`).
+- 2026-02-27: DTM-22 moved to `V rabote` for Stage 2 infrastructure adapter boundary extraction.
+- 2026-02-27: DTM-22 completed (adapter contracts + injected Telegram/OpenAI integration wiring; smoke-check; Jira `Gotovo`).
+- 2026-02-27: Stage 3 kickoff created in Jira (`DTM-23..DTM-25`); `DTM-23` moved to `V rabote` as active execution task.
+- 2026-02-27: DTM-23 completed (shared `RenderCell` scaffold + TaskCalendarManager contract adoption, sync dry-run smoke, Jira `Gotovo`).
+- 2026-02-27: DTM-24 moved to `V rabote` as next single active Stage 3 execution task.
+- 2026-02-27: DTM-24 completed (task-calendar renderer alignment into helper methods over shared `RenderCell`; sync dry-run smoke; Jira `Gotovo`).
+- 2026-02-27: DTM-25 moved to `V rabote` as next single active Stage 3 execution task.
+- 2026-02-27: DTM-25 completed (sheet renderer adapter boundary extraction + bootstrap DI wiring; sync dry-run smoke; Jira `Gotovo`).
+- 2026-02-27: Stage 3.1 follow-up kickoff created in Jira (`DTM-26..DTM-28`); `DTM-26` moved to `V rabote` as active execution task.
+- 2026-02-27: DTM-26 completed (CalendarManager adapter boundary + bootstrap DI wiring; sync dry-run smoke; Jira `Gotovo`).
+- 2026-02-27: DTM-27 moved to `V rabote` as next single active Stage 3 execution task.
+- 2026-02-27: DTM-27 completed (CalendarManager render payload parity helpers over `RenderCell`; sync dry-run smoke; Jira `Gotovo`).
+- 2026-02-27: DTM-28 moved to `V rabote` as next single active Stage 3 execution task.
+- 2026-02-27: DTM-28 completed (adapter dry-run harness assertions via `agent/render_adapter_smoke.py`; smoke checks; Jira `Gotovo`).
+- 2026-02-27: DTM-29 moved to `V rabote` as Stage 3 close-out slice for TaskManager renderer adapter unification.
+- 2026-02-27: DTM-29 completed (TaskManager adapter unification + bootstrap DI wiring; adapter smoke + sync dry-run; Jira `Gotovo`).
+- 2026-02-27: DTM-30 moved to `V rabote` for Stage 3 close-out coverage assertions at manager-level adapter paths.
+- 2026-02-27: DTM-30 completed (extended manager-level adapter smoke assertions + sync dry-run; Jira `Gotovo`).
+- 2026-02-27: DTM-31 moved to `V rabote` for Stage 3 legacy path disposition (`TaskCalendarManagerOld`).
+- 2026-02-27: DTM-31 completed (legacy `TaskCalendarManagerOld` and obsolete global helper removed; adapter smoke + sync dry-run; Jira `Gotovo`).
+- 2026-02-27: DTM-32 moved to `V rabote` as Stage 4 kickoff slice for reminder fallback when OpenAI enhancer is unavailable/empty.
+- 2026-02-27: DTM-32 completed (draft fallback enforced for empty/unavailable enhancer responses + deterministic fallback smoke; Jira `Gotovo`).
+- 2026-02-27: DTM-33 moved to `V rabote` for Stage 4 idempotent reminder delivery guard.
+- 2026-02-27: DTM-33 completed (in-run duplicate-send guard for reminders + deterministic idempotency smoke; Jira `Gotovo`).
+- 2026-02-27: DTM-34 moved to `V rabote` for Stage 4 reminder pipeline decomposition (facts/draft/enhancer/sender).
+- 2026-02-27: DTM-34 completed (reminder pipeline decomposition helpers + fallback/idempotency behavior preserved + smoke-checks; Jira `Gotovo`).
+- 2026-02-27: DTM-35 moved to `V rabote` for Stage 4 parallel OpenAI reminder enhancement (bounded concurrency).
+- 2026-02-27: DTM-35 completed (parallel enhancer fan-out + bounded concurrency + reusable OpenAI client + deterministic parallel smoke; Jira `Gotovo`).
+- 2026-02-27: DTM-36 moved to `V rabote` for Stage 4 reminder observability counters.
+- 2026-02-27: DTM-36 completed (structured reminder delivery counters + planner quality-report integration + counters smoke; Jira `Gotovo`).
+- 2026-02-27: DTM-37 moved to `V rabote` for Stage 5 kickoff derived reminder SLI counters.
+- 2026-02-27: DTM-37 completed (derived reminder SLI summary metrics in quality report + SLI smoke; Jira `Gotovo`).
+- 2026-02-27: DTM-38 moved to `V rabote` for Stage 5 risk-register update (reminder/API degradation + retry policy).
+- 2026-02-27: DTM-38 completed (risk-register aligned to Stage 4/5 controls + explicit retry-policy stance + reminders-only dry-run sanity-check; Jira `Gotovo`).
+- 2026-02-27: DTM-39 moved to `V rabote` for Stage 5 alerting thresholds and escalation policy for reminder delivery metrics.
+- 2026-02-27: DTM-39 completed (explicit reminder SLI alert thresholds + escalation sequence documented in risk register; reminders-only mock dry-run sanity-check; Jira `Gotovo`).
+- 2026-02-27: DTM-40 moved to `V rabote` for Stage 5 SLI trend snapshot persistence across runs.
+- 2026-02-27: DTM-40 completed (rolling SLI trend snapshot persistence in local run artifacts + deterministic trend smoke + reminders-only mock dry-run; Jira `Gotovo`).
+- 2026-02-27: DTM-41 moved to `V rabote` for Stage 5 retry/backoff policy on transient reminder delivery failures.
+- 2026-02-27: DTM-41 completed (bounded transient retry/backoff in reminder send path + retry observability counters + deterministic retry smoke + reminders-only mock dry-run; Jira `Gotovo`).
+- 2026-02-27: DTM-42 moved to `V rabote` for Stage 5 automated threshold evaluation from latest quality report artifact.
+- 2026-02-27: DTM-42 completed (automated evaluator for latest quality_report artifact + deterministic evaluator smoke + reminders-only mock dry-run; Jira `Gotovo`).
+- 2026-02-27: DTM-43 moved to `V rabote` for Stage 5 evaluator-output wiring into alert-review workflow artifacts.
+- 2026-02-27: DTM-43 completed (local/baseline alert-review wiring for evaluator output + deterministic review-flow smoke + baseline bundle sanity-check; Jira `Gotovo`).
+- 2026-02-27: DTM-44 moved to `V rabote` for Stage 5 runbook + thresholds tuning documentation after evaluator wiring rollout.
+- 2026-02-27: DTM-44 completed (runbook aligned with evaluator-wired baseline artifacts + explicit threshold tuning loop + baseline capture smoke; Jira `Gotovo`).
+- 2026-02-27: DTM-45 moved to `V rabote` for Stage 5 transient failure taxonomy tuning in Telegram retry classifier.
+- 2026-02-27: DTM-45 completed (retry classifier taxonomy refinement + taxonomy counters + retry smoke extension + reminders-only mock dry-run; Jira `Gotovo`).
+- 2026-02-27: DTM-46 moved to `V rabote` for Stage 5 controlled owner-notify trigger from evaluator output.
+- 2026-02-27: DTM-46 completed (controlled evaluator notify gate + local/baseline passthrough + notify dry-run smoke; Jira `Gotovo`).
+- 2026-02-27: DTM-47 moved to `V rabote` for Stage 5 evaluator severity gate policy (CI/local exit behavior).
+- 2026-02-27: DTM-47 completed (explicit `local|ci` severity gate profiles with override precedence in evaluator/local launcher + baseline helper passthrough + smoke checks; Jira `Gotovo`).
+- 2026-02-27: DTM-48 moved to `V rabote` for Stage 5 routine ops checklist cadence formalization for threshold tuning workflow.
+- 2026-02-27: DTM-48 completed (explicit per-run/weekly/monthly routine cadence checklist for threshold tuning operations + risk-register alignment + CLI help smoke checks; Jira `Gotovo`).
+- 2026-02-27: DTM-49 moved to `V rabote` for Stage 5 retry taxonomy metrics checklist formalization in routine ops docs.
+- 2026-02-27: DTM-49 completed (retry taxonomy metrics checklist formalized in runbook + baseline helper checklist template updated + retry smoke and CLI checks passed; Jira `Gotovo`).
+- 2026-02-27: DTM-50 moved to `V rabote` for Stage 5 owner-notify template hardening with RU-only payload validation.
+- 2026-02-27: DTM-50 completed (RU-only payload validation in notify helper + Russian notify templates/contexts alignment + notify/evaluator/reminder smoke checks; Jira `Gotovo`).
+- 2026-02-27: DTM-51 moved to `V rabote` for Stage 5 CI wrapper command (`run_alert_eval_ci.cmd`) around evaluator `--fail-profile ci`.
+- 2026-02-27: DTM-51 completed (added `run_alert_eval_ci.cmd`, docs aligned to wrapper usage, wrapper/evaluator smoke checks passed; Jira `Gotovo`).
+- 2026-02-27: DTM-52 moved to `V rabote` for Stage 5 ceremony template update with monthly alert-threshold drift review note.
+- 2026-02-27: DTM-52 completed (monthly drift review checkpoint added to `agile/retro.md` ceremony template; Jira `Gotovo`).
+- 2026-02-27: DTM-53 moved to `V rabote` for Stage 5 weekly ops note on retry taxonomy trend thresholds.
+- 2026-02-27: DTM-53 completed (weekly retry taxonomy trend threshold triggers added in `doc/02` and `doc/05`; Jira `Gotovo`).
+- 2026-02-27: DTM-54 moved to `V rabote` for Stage 5 owner-notify fallback wording consistency check in evaluator/local dry-run output.
+- 2026-02-27: DTM-54 completed (readable owner-notify dry-run command output + local notify fallback context normalization `авторежим`; evaluator/local smoke checks passed; Jira `Gotovo`).
+- 2026-02-27: DTM-55 moved to `V rabote` for Stage 6 kickoff on dynamic estimate tracking (`done/remaining`) and completion Telegram notify rule.
+- 2026-02-27: Owner directive accepted: always report Stage estimate as `done/remaining` and send Telegram update on each task completion.
+- 2026-02-27: DTM-55 completed (Stage 6 dynamic estimate tracker initialized: baseline 8, done 1, remaining 7; completion Telegram notify rule formalized; Jira `Gotovo`).
+- 2026-02-27: DTM-56 moved to `V rabote` for Stage 6 read-model JSON contract definition (entities, fields, metadata, versioning).
+- 2026-02-27: DTM-56 completed (canonical Stage 6 read-model JSON contract added in `doc/11_stage6_read_model_contract.md`; Stage 6 estimate updated to done 2 / remaining 6; Jira `Gotovo`).
+- 2026-02-27: DTM-57 moved to `V rabote` for Stage 6 read-model builder implementation from current planner artifacts.
+- 2026-02-27: DTM-57 completed (`core/read_model.py` builder + `agent/read_model_builder_smoke.py`; Stage 6 estimate updated to done 3 / remaining 5; Jira `Gotovo`).
+- 2026-02-27: DTM-58 moved to `V rabote` for Stage 6 read-model publication path in local launcher (artifact file output).
+- 2026-02-27: DTM-58 completed (`local_run.py --read-model-file` publication path + `agent/read_model_publication_smoke.py`; Stage 6 estimate updated to done 4 / remaining 4; Jira `Gotovo`).
+- 2026-02-27: DTM-59 moved to `V rabote` for Stage 6 contract compatibility checks for read-model payload.
+- 2026-02-27: DTM-59 completed (contract validator + compatibility smoke for read-model; Stage 6 estimate updated to done 5 / remaining 3; Jira `Gotovo`).
+- 2026-02-27: DTM-60 moved to `V rabote` for Stage 6 UI view-spec baseline over read-model.
+- 2026-02-27: DTM-60 completed (`doc/12_stage6_ui_view_spec.md` added and linked; Stage 6 estimate updated to done 6 / remaining 2; Jira `Gotovo`).
+- 2026-02-27: DTM-61 moved to `V rabote` for Stage 6 baseline capture integration of read-model artifact.
+- 2026-02-27: DTM-61 completed (`agent/capture_baseline.py` now emits `read_model.json`; Stage 6 estimate updated to done 7 / remaining 1; Jira `Gotovo`).
+- 2026-02-27: DTM-62 moved to `V rabote` for Stage 6 formal closeout (readiness gate + handoff checklist).
+- 2026-02-27: DTM-62 completed (`doc/13_stage6_closeout_and_handoff.md` added; Stage 6 estimate updated to done 8 / remaining 0; Jira `Gotovo`).
+- 2026-02-27: DTM-63 moved to `V rabote` for Stage 7 kickoff (execution plan + dynamic estimate baseline).
+- 2026-02-27: DTM-63 completed (`doc/14_stage7_execution_plan.md` + Stage 7 backlog decomposition); Stage 7 estimate initialized to done 1 / remaining 6; Jira `Gotovo`.
+- 2026-02-27: DTM-64 moved to `V rabote` for Stage 7 consumer compatibility policy and serverless artifact storage contour (Object Storage primary).
+- 2026-02-27: DTM-64 completed (`doc/15_stage7_read_model_consumer_policy.md`, docs alignment); Stage 7 estimate updated to done 2 / remaining 5; Jira `Gotovo`.
+- 2026-02-27: DTM-65 moved to `V rabote` for Stage 7 schema snapshot artifact export with cloud Object Storage profile.
+- 2026-02-27: DTM-65 completed (schema snapshot builder + local/cloud export path + baseline integration docs); Stage 7 estimate updated to done 3 / remaining 4; Jira `Gotovo`.
+- 2026-02-27: DTM-66 moved to `V rabote` for Stage 7 fixture bundle generation from baseline captures with cloud Object Storage profile.
+- 2026-02-27: DTM-66 completed (fixture bundle builder/script + baseline integration docs); Stage 7 estimate updated to done 4 / remaining 3; Jira `Gotovo`.
+- 2026-02-27: DTM-67 moved to `V rabote` for Stage 7 UI migration spike scope and acceptance checklist.
+- 2026-02-27: DTM-67 completed (`doc/16_stage7_ui_spike_scope_and_acceptance.md` + docs alignment); Stage 7 estimate updated to done 5 / remaining 2; Jira `Gotovo`.
+- 2026-02-27: DTM-68 moved to `V rabote` for Stage 7 shadow-run readiness checklist.
+- 2026-02-27: DTM-68 completed (`doc/17_stage7_shadow_run_readiness_checklist.md` + docs alignment); Stage 7 estimate updated to done 6 / remaining 1; Jira `Gotovo`.
+- 2026-02-27: DTM-69 moved to `V rabote` for Stage 7 closeout and Stage 8 handoff package.
+- 2026-02-27: DTM-69 completed (`doc/18_stage7_closeout_and_stage8_handoff.md` + docs alignment); Stage 7 estimate updated to done 7 / remaining 0; Jira `Gotovo`.
+- 2026-02-27: DTM-70 moved to `V rabote` for Stage 8 kickoff planning (execution plan + estimate baseline).
+- 2026-02-27: DTM-70 completed (`doc/19_stage8_execution_plan.md` + sprint/backlog/context sync); Stage 8 estimate initialized to done 1 / remaining 5; Jira `Gotovo`.
+- 2026-02-27: DTM-71 moved to `V rabote` for Stage 8 prototype loader and schema gate implementation.
+- 2026-02-27: DTM-71 completed (`web_prototype/loader.py`, `agent/load_prototype_payload.py`, smoke + docs sync); Stage 8 estimate updated to done 2 / remaining 4; Jira `Gotovo`.
+- 2026-02-27: DTM-72 moved to `V rabote` for Stage 8 static web prototype views and filters.
+- 2026-02-27: DTM-72 completed (`web_prototype/static` + local server helper + assets smoke); Stage 8 estimate updated to done 3 / remaining 3; Jira `Gotovo`.
+- 2026-02-27: DTM-73 moved to `V rabote` for Stage 8 local/cloud source switch wiring.
+- 2026-02-27: DTM-73 completed (`agent/prepare_web_prototype_payload.py` + UI autoload wiring + smoke); Stage 8 estimate updated to done 4 / remaining 2; Jira `Gotovo`.
+- 2026-02-27: DTM-74 moved to `V rabote` for Stage 8 shadow-run execution evidence package.
+- 2026-02-27: DTM-74 completed (`agent/stage8_shadow_run_evidence.py` + smoke + evidence artifact bundle); Stage 8 estimate updated to done 5 / remaining 1; Jira `Gotovo`.
+- 2026-02-27: Stage 8 shadow-run evidence artifact: `artifacts/shadow_run_stage8/20260227T161720Z_dtm74_final/shadow_run_evidence.json` (cloud fetch check skipped in this run due absent `PROTOTYPE_*_S3_KEY` values in shell env).
+- 2026-02-27: DTM-75 moved to `V rabote` for Stage 8 closeout and next-stage handoff package.
+- 2026-02-27: DTM-75 completed (`doc/20_stage8_closeout_and_stage9_handoff.md` + sprint/backlog/context sync); Stage 8 estimate updated to done 6 / remaining 0; Jira `Gotovo`.
+- 2026-02-27: DTM-76 moved to `V rabote` for Stage 9 kickoff main-branch auto-deploy workflow.
+- 2026-02-27: DTM-76 completed (`.github/workflows/deploy_yc_function_main.yml` + `doc/21_stage9_main_autodeploy_setup.md` + sprint/backlog/context sync); Stage 9 estimate updated to done 1 / remaining 4; Jira `Gotovo`.
+- 2026-02-27: DTM-77 moved to `V rabote` for Stage 9 automated Lockbox sync and Google secret text runtime sourcing.
+- 2026-02-27: DTM-77 completed (`agent/sync_lockbox_from_env.py` + `config/constants.py` secret-source fallback + Lockbox sync execution); Stage 9 estimate updated to done 2 / remaining 3; Jira `Gotovo`.
+- 2026-02-27: DTM-78 moved to `V rabote` for Stage 9 Lockbox-to-function env binding and cloud invoke smoke.
+- 2026-02-27: DTM-78 completed (new function version with 29 Lockbox mappings + invoke smoke); Stage 9 estimate updated to done 3 / remaining 2; Jira `Gotovo`.
