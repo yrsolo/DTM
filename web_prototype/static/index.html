@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DTM Stage 8 Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero">
+    <h1>DTM Web Prototype</h1>
+    <p>Stage 8 read-only preview over fixture artifacts</p>
+  </header>
+
+  <section class="panel controls">
+    <label for="fixtureFile">Fixture bundle</label>
+    <input id="fixtureFile" type="file" accept=".json">
+    <button id="loadFixtureBtn" type="button">Load Fixture</button>
+    <span id="loadStatus">no fixture loaded</span>
+  </section>
+
+  <section class="panel filters">
+    <h2>Filters</h2>
+    <div class="grid">
+      <label>Designer
+        <select id="designerFilter">
+          <option value="">all</option>
+        </select>
+      </label>
+      <label>Status
+        <select id="statusFilter">
+          <option value="">all</option>
+        </select>
+      </label>
+      <label>From date
+        <input id="dateFromFilter" type="date">
+      </label>
+      <label>To date
+        <input id="dateToFilter" type="date">
+      </label>
+    </div>
+  </section>
+
+  <section class="layout">
+    <article class="panel">
+      <h2>Timeline</h2>
+      <div id="timelineView" class="list"></div>
+    </article>
+    <article class="panel">
+      <h2>By Designer</h2>
+      <div id="designerView" class="list"></div>
+    </article>
+    <article class="panel">
+      <h2>Task Details</h2>
+      <div id="taskDetailsView" class="list"></div>
+    </article>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
