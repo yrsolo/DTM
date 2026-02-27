@@ -22,12 +22,13 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - [DONE] DTM-8 / TSK-011 Stage 1 required-column validation in repository.
 - [DONE] DTM-9 / TSK-012 Stage 1 timing/null input normalization and parser hardening.
 - [DONE] DTM-10 / TSK-013 Stage 1 people contract normalization and lookup hardening.
+- [DONE] DTM-11 / TSK-014 Reminder runtime compatibility fix (httpx proxy + unicode logging).
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- DTM-11 / TSK-014 Reminder runtime compatibility fix (`httpx` client proxy args + unicode-safe console logging)
+- none (prepare next Stage 1 increment)
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -46,6 +47,8 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
   - Jira: DTM-9 (status: Done / `Gotovo`)
 - TSK-013 - Stage 1 people contract normalization and lookup hardening
   - Jira: DTM-10 (status: Done / `Gotovo`)
+- TSK-014 - Reminder runtime compatibility fix
+  - Jira: DTM-11 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -58,6 +61,7 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - agile/tasks/DTM-8_required-column-validation.md
 - agile/tasks/DTM-9_timing-parser-hardening.md
 - agile/tasks/DTM-10_people-contract-hardening.md
+- agile/tasks/DTM-11_reminder-runtime-compat.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -76,3 +80,4 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - 2026-02-27: DTM-9 completed (timing parser null/type hardening + task text normalization, smoke-check, Jira `Gotovo`).
 - 2026-02-27: DTM-10 completed (people field normalization + manager lookup hardening, targeted smoke-check, Jira `Gotovo`).
 - 2026-02-27: `local_run.py --mode reminders-only --dry-run` still fails in pre-existing reminder path (`httpx.AsyncClient(proxies=...)` + console unicode encoding); tracked for next increment (DTM-11).
+- 2026-02-27: DTM-11 completed (`httpx` proxy compatibility + unicode-safe reminder logging); `local_run.py --mode reminders-only --dry-run` passes.

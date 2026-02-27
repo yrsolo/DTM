@@ -14,6 +14,19 @@ from openai import AsyncOpenAI
 from config import TG, DEFAULT_CHAT_ID
 
 
+def _safe_print(text):
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        print(str(text).encode("unicode_escape").decode("ascii"))
+
+
+def _sanitize_proxy_url(url):
+    if not url:
+        return None
+    return str(url).strip().strip('"').strip("'")
+
+
 class TelegramNotifier(object):
     """Интерфейс для отправки сообщений в Telegram."""
 
@@ -40,14 +53,14 @@ class TelegramNotifier(object):
         try:
             return await self.bot.send_message(chat_id=chat_id, text=text, parse_mode=parse_mode)
         except Exception as e:
-            print(f'Ошибка при отправке сообщения в Telegram: {e}')
-            print('Повторная попытка отправки сообщения в Telegram без разметки')
+            _safe_print(f'Ошибка при отправке сообщения в Telegram: {e}')
+            _safe_print('Повторная попытка отправки сообщения в Telegram без разметки')
             self.log(f'Ошибка при отправке сообщения в Telegram: {e} \n Сообщение: \n{text}')
             try:
                 return await self.bot.send_message(chat_id=chat_id, text=text, parse_mode=None)
             except Exception as e:
-                print(f'Ошибка при отправке сообщения в Telegram без разметки: {e}')
-                print(f'Сообщение: {text}')
+                _safe_print(f'Ошибка при отправке сообщения в Telegram без разметки: {e}')
+                _safe_print(f'Сообщение: {text}')
 
     def log(self, text):
         """Логирование сообщения в Telegram.
@@ -85,7 +98,7 @@ class AsyncOpenAIChatAgent(object):
 
         self.api_key = api_key
         self.organization = organization
-        self.proxies = dict(proxies)
+        self.proxies = dict(proxies or {})
         self.endpoint = 'https://api.openai.com/v1/chat/completions'
         self.model = model
         self.logger = logger
@@ -105,11 +118,17 @@ class AsyncOpenAIChatAgent(object):
             Exception: Если запрос к OpenAI не удался.
         """
 
-        print(self.proxies)
+        _safe_print(f"openai_proxies={self.proxies}")
+
+        proxy_url = _sanitize_proxy_url(self.proxies.get("https://") or self.proxies.get("http://"))
+        client_kwargs = {}
+        if proxy_url:
+            # httpx>=0.28 uses singular "proxy" argument.
+            client_kwargs["proxy"] = proxy_url
 
         client = AsyncOpenAI(
             api_key=self.api_key,
-            http_client=httpx.AsyncClient(proxies=self.proxies),
+            http_client=httpx.AsyncClient(**client_kwargs),
         )
 
         if isinstance(messages, str):
@@ -122,7 +141,7 @@ class AsyncOpenAIChatAgent(object):
         if not model:
             model = 'gpt-3.5-turbo'
 
-        print(messages)
+        _safe_print(f"openai_messages={messages}")
 
         try:
             completion = await client.chat.completions.create(
@@ -134,7 +153,7 @@ class AsyncOpenAIChatAgent(object):
             {e}
             {messages}
             """
-            print(e)
+            _safe_print(e)
             self.logger.log(error_text)
 
             return None
@@ -196,7 +215,7 @@ class Reminder(object):
                 return enhanced
             except Exception as e:
                 # В случае ошибки при обращении к серверу, вернуть исходное сообщение
-                print(f"Ошибка при обращении к серверу чата: {e}")
+                _safe_print(f"chat_enhancer_error: {e}")
                 self.enhanced_messages[designer] = draft
                 return draft
 
@@ -327,6 +346,6 @@ class Reminder(object):
                 test_chat_id = 91864013
                 test = mode == 'test'
                 chat_id = test_chat_id if test else designer.chat_id
-                print(f'{mode=} {designer_name=} {chat_id=} {message=}')
+                _safe_print(f'{mode=} {designer_name=} {chat_id=} {message=}')
                 if chat_id and self.tg_bot and vacation:
                     await self.tg_bot.send_message(chat_id, message)

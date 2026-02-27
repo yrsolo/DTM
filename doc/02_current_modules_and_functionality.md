@@ -111,3 +111,4 @@
 - `TimingParser.parse` now handles nullable/non-string timing payloads safely and exits early on empty input.
 - `Task` now normalizes nullable text fields (`brand`, `format_`, `project_name`, `customer`, `designer`, `status`, `color_status`, `name`, `raw_timing`) before downstream usage.
 - `Person`/`PeopleManager` now normalize nullable people fields and use safer mapping (`core/people.py`), including fixed preloaded people map and corrected `get_designers()` return type.
+- `core/reminder.py` reminder runtime path is updated for current `httpx` compatibility (`proxy=` with sanitized URL) and unicode-safe console logging.
