@@ -8,12 +8,13 @@
 
 ## Standard Flow
 1. Start from latest `dev`.
-2. Implement one logical change.
-3. Run relevant checks (at minimum, scenario-level smoke test).
-4. Commit with clear message.
-5. Merge into `dev`.
-6. Merge `dev -> main` only after approval and smoke verification.
-7. Push branches.
+2. For agent-led work, begin with `agent/OPERATING_CONTRACT.md` and explicit `CONTRACT CHECK: OK`.
+3. Implement one logical change.
+4. Run relevant checks (at minimum, scenario-level smoke test).
+5. Commit with clear message.
+6. Merge into `dev`.
+7. Merge `dev -> main` only after approval and smoke verification.
+8. Push branches.
 
 ## Commit Message Style
 - Imperative, short, specific.
@@ -27,6 +28,7 @@
 - No regressions in target output sheets.
 - No secrets in diff.
 - Docs are updated for behavior/config changes.
+- Explicit approval exists for `dev -> main`.
 
 ## Hotfix Flow
 1. Branch from `main`: `hotfix/<topic>`.

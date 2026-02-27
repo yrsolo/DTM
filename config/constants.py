@@ -1,11 +1,35 @@
 """Constants for the project."""
 
 import os
+from pathlib import Path
 from types import MappingProxyType as MapProxy
 
 from dotenv import load_dotenv
 
-load_dotenv()
+
+def _load_runtime_env() -> str:
+    """Load base .env and optional profile-specific file.
+
+    Profile file naming: .env.<env>, for example .env.dev or .env.prod.
+    """
+    load_dotenv()
+    runtime_env = os.environ.get("ENV", "dev").strip().lower() or "dev"
+    profile_path = Path(f".env.{runtime_env}")
+    if profile_path.exists():
+        load_dotenv(dotenv_path=profile_path, override=True)
+    if runtime_env not in {"dev", "test", "prod"}:
+        raise ValueError(
+            f"Unsupported ENV={runtime_env!r}. Allowed values: dev, test, prod."
+        )
+    return runtime_env
+
+
+RUNTIME_ENV = _load_runtime_env()
+STRICT_ENV_GUARD = os.environ.get("STRICT_ENV_GUARD", "0").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
 TG = os.environ.get("TG_TOKEN")
 OPENAI = os.environ.get("OPENAI_TOKEN")
@@ -19,6 +43,15 @@ DEFAULT_CHAT_ID = os.environ.get("DEFAULT_CHAT_ID", "-4083724311")
 
 SOURCE_SHEET_NAME = os.environ.get("SOURCE_SHEET_NAME", "Спонсорские ТНТ")
 TARGET_SHEET_NAME = os.environ.get("TARGET_SHEET_NAME", "Спонсорские ТНТ ТЕСТ")
+if (
+    STRICT_ENV_GUARD
+    and RUNTIME_ENV in {"dev", "test"}
+    and SOURCE_SHEET_NAME == TARGET_SHEET_NAME
+):
+    raise ValueError(
+        "Unsafe env contour: for ENV=dev/test SOURCE_SHEET_NAME and "
+        "TARGET_SHEET_NAME must be different when STRICT_ENV_GUARD=1."
+    )
 
 REPLACE_NAMES = MapProxy(
     {

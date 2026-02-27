@@ -30,3 +30,17 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Production workflow is active.
 - Architecture is under phased reconstruction.
 - Legacy snapshot is kept in `old/` for controlled comparison during migration.
+
+## Local run (current)
+- Preferred: `run_timer.cmd` (uses project virtualenv and runs timer mode).
+- Direct CLI: `.venv\Scripts\python.exe local_run.py --mode timer`
+
+## Environment contour
+- Runtime env selector: `ENV` with allowed values `dev`, `test`, `prod`.
+- Base variables are loaded from `.env`.
+- Optional profile override is auto-loaded from `.env.<ENV>` when file exists.
+- Optional safety guard: set `STRICT_ENV_GUARD=1` to enforce that for `ENV=dev/test` `SOURCE_SHEET_NAME` and `TARGET_SHEET_NAME` are different.
+- Templates:
+  - `.env.example` (base)
+  - `.env.dev.example` (safe local/dev contour)
+  - `.env.prod.example` (production contour)

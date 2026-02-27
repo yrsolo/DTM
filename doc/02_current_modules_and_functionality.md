@@ -20,10 +20,15 @@
 
 ## `config/constants.py`
 - Токены/секреты из `.env`.
+- Режим окружения:
+  - `ENV` (`dev`/`test`/`prod`);
+  - optional override из `.env.<ENV>` при наличии файла.
 - Разделение таблиц:
   - `SOURCE_SHEET_NAME` (чтение),
   - `TARGET_SHEET_NAME` (запись),
   - `SHEET_NAMES` (карта листов).
+- Guard безопасности:
+  - при `STRICT_ENV_GUARD=1` и `ENV=dev/test` `SOURCE_SHEET_NAME` и `TARGET_SHEET_NAME` обязаны различаться (fail-fast на старте).
 - Маппинги колонок задач и людей (`TASK_FIELD_MAP`, `PEOPLE_FIELD_MAP`).
 - Правила статуса по цвету (`COLOR_STATUS`).
 - Палитра цветов для записи в таблицы (`COLORS`).
