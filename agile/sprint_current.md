@@ -1,4 +1,4 @@
-# Sprint Current
+﻿# Sprint Current
 
 ## Sprint Goal
 Keep delivery steady with low-risk, reversible steps toward reconstruction backlog Stage 0.
@@ -18,26 +18,24 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - [DONE] DTM-4 / TSK-005 Env contour formalization (`ENV`, `.env.<ENV>`, optional `STRICT_ENV_GUARD`).
 
 ## Blocked
-- [BLOCKED] none
+- [BLOCKED] DTM-5 / TSK-006 Pipeline run modes and dry-run: Jira access is unavailable in current shell session (no `JIRA_*` env vars), execution cannot start without restore or explicit waiver `LOCAL_ONLY_MODE`.
 
 ## Next 3-5 Tasks (Groomed)
-- TSK-005 Document and enforce dev/test/prod environment contour (`ENV`, `.env.dev`, `.env.prod`) from backlog 0.1.
 - TSK-006 Add run modes `sync-only` / `reminders-only` and `--dry-run` from backlog 0.3.
 - TSK-007 Create baseline validation checklist and artifact capture flow from backlog 0.4.
 - TSK-008 Introduce secret scan pre-commit gate (`detect-secrets` or `gitleaks`) from backlog 0.5.
-- DTM-3 / TSK-010 Verify README/runtime alignment and raise trust level to medium/high.
+- TSK-011 Verification task: restore Jira control plane access or approve temporary waiver (`LOCAL_ONLY_MODE until <date>`).
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
-- DTM-2 - TSK-009 Source trust and freshness gate (status: Done / `Готово`)
+- DTM-2 - TSK-009 Source trust and freshness gate (status: Done / `Gotovo`)
 - TSK-005 - Env contour formalization
-  - Jira: DTM-4 (status: Done / `Готово`)
+  - Jira: DTM-4 (status: Done / `Gotovo`)
 - TSK-006 - Pipeline run modes and dry-run
-  - Jira: DTM-5 (status: To Do / `К выполнению`)
+  - Jira: DTM-5 (status: unverified now; Jira unavailable in shell, local board marked blocked)
 - TSK-007 - Baseline validation checklist
 - TSK-008 - Secret scan gate
-- DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Готово`)
-- DTM-5 - TSK-006 Pipeline run modes and dry-run (status: To Do / `К выполнению`)
+- DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
 - agile/tasks/DTM-2_source-trust-gate.md
@@ -46,12 +44,12 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - agile/tasks/DTM-5_run-modes-and-dry-run.md
 
 ## Risks / Blockers
-- [BLOCKED] none
+- [BLOCKED] Jira control plane unavailable in current environment (`JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, `JIRA_PROJECT_KEY` missing).
 
 ## Notes / Decisions
 - Prioritize Stage 0 backlog tasks first (safe contour, validation, safety gates).
 - Keep WIP limit = 1 to reduce regression risk.
 - Before assigning execution tasks, verify source freshness and trust level in `agile/context_registry.md`.
 - Jira synchronization started: issues created/linked for TSK-009 and TSK-010, lifecycle managed in Jira first.
-- Jira access validated and active; statuses maintained directly in Jira lifecycle.
-- Next handoff prepared: DTM-5 is staged for a new clean chat execution block.
+- 2026-02-27: Jira access is currently unavailable in this shell session; owner escalated via `python agent/notify_owner.py` (`🚨 Jira недоступна`).
+- Until Jira is restored or waiver is provided, execution tasks remain blocked by contract.

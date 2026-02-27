@@ -1,4 +1,4 @@
-# DTM-5: Add run modes `sync-only` / `reminders-only` and `--dry-run`
+﻿# DTM-5: Add run modes `sync-only` / `reminders-only` and `--dry-run`
 
 ## Context
 - Stage 0 backlog requires safer execution control for local verification.
@@ -31,6 +31,8 @@
 
 ## Work log
 - 2026-02-27: Task prepared by TeamLead for next sequential execution block.
+- 2026-02-27: Pre-task freshness check completed (`local_run.py`, `main.py`, `git log`, `git blame`).
+- 2026-02-27: Task moved to blocked in local sprint board because Jira control plane is unavailable in shell (`JIRA_*` env vars missing); owner escalation sent via `agent/notify_owner.py`.
 
 ## Links
 - Jira: DTM-5
