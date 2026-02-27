@@ -102,6 +102,7 @@ def main() -> int:
 
     quality_report_file = out_dir / "quality_report.json"
     alert_evaluation_file = out_dir / "alert_evaluation.json"
+    read_model_file = out_dir / "read_model.json"
     cmd = [
         python_bin,
         "local_run.py",
@@ -115,6 +116,10 @@ def main() -> int:
         str(alert_evaluation_file),
         "--quality-report-file",
         str(quality_report_file),
+        "--read-model-file",
+        str(read_model_file),
+        "--read-model-build-id",
+        f"baseline-{label}",
     ]
     if args.alert_fail_on is not None:
         cmd.extend(["--alert-fail-on", args.alert_fail_on])
@@ -147,6 +152,7 @@ def main() -> int:
             "dry-run mode is expected to avoid Google Sheets write requests",
             "compare this bundle with previous baseline bundle for regressions",
             "quality_report.json contains structured Stage 1 diagnostics snapshot",
+            "read_model.json contains canonical Stage 6 read-model projection for UI/API planning",
         ],
     }
     (out_dir / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
@@ -157,6 +163,7 @@ def main() -> int:
 - [ ] Log contains `[DRY-RUN] GoogleSheetsService::execute_updates` entries only (no real writes).
 - [ ] quality_report.json exists and summary counts look expected.
 - [ ] alert_evaluation.json exists and contains level/reason fields.
+- [ ] read_model.json exists and passes basic contract validation checks.
 - [ ] Retry taxonomy summary fields are present (`reminder_send_retry_attempt_count`, `reminder_send_retry_exhausted_count`, `reminder_send_error_transient_count`, `reminder_send_error_permanent_count`, `reminder_send_error_unknown_count`).
 - [ ] If `reminder_send_error_unknown_count > 0`, create follow-up taxonomy task and link it in Jira evidence.
 - [ ] Compare row/column counts in target sheets against previous baseline.

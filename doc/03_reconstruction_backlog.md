@@ -209,6 +209,7 @@
 - Stage 6 slice completed: local launcher publication path added for read-model artifacts (`local_run.py --read-model-file`) with deterministic publication smoke (`DTM-58`).
 - Stage 6 slice completed: read-model contract compatibility guard added (`validate_read_model_contract`) with deterministic compatibility smoke (`DTM-59`).
 - Stage 6 slice completed: baseline UI view-spec over read-model documented (`doc/12_stage6_ui_view_spec.md`) for filters, timeline/gantt, and history surfaces (`DTM-60`).
+- Stage 6 slice completed: baseline capture flow extended to include `read_model.json` artifact for Stage 6 verification workflow (`DTM-61`).
 
 ---
 

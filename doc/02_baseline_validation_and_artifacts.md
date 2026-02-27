@@ -13,7 +13,7 @@ Run from repository root:
 Default command executed by helper:
 
 ```powershell
-.venv\Scripts\python.exe local_run.py --mode sync-only --dry-run --evaluate-alerts --alert-fail-profile local --alert-evaluation-file artifacts\baseline\<...>\alert_evaluation.json --quality-report-file artifacts\baseline\<...>\quality_report.json
+.venv\Scripts\python.exe local_run.py --mode sync-only --dry-run --evaluate-alerts --alert-fail-profile local --alert-evaluation-file artifacts\baseline\<...>\alert_evaluation.json --quality-report-file artifacts\baseline\<...>\quality_report.json --read-model-file artifacts\baseline\<...>\read_model.json --read-model-build-id baseline-<label>
 ```
 
 By default helper uses local-safe alert gate profile (`--alert-fail-profile local`, effective fail gate `none`).
@@ -33,6 +33,7 @@ Files:
 - `sync_dry_run.log` - stdout/stderr from dry-run execution.
 - `quality_report.json` - structured quality diagnostics snapshot from runtime.
 - `alert_evaluation.json` - evaluator result (`level`, `reason`, summary metrics, thresholds).
+- `read_model.json` - canonical Stage 6 read-model artifact for UI/API planning flow.
 - `meta.json` - command, git sha, timestamp, exit code.
 - `CHECKLIST.md` - validation checklist to compare with previous baseline.
 
@@ -46,7 +47,7 @@ Files:
 ## TeamLead Process
 1. Capture baseline before change set.
 2. Capture baseline after change set.
-3. Compare artifact bundles (`quality_report.json` + `alert_evaluation.json`) and mark checklist items.
+3. Compare artifact bundles (`quality_report.json`, `alert_evaluation.json`, `read_model.json`) and mark checklist items.
 4. If alert level changed unexpectedly, create/update risk follow-up item in sprint notes before merge.
 5. Post short evidence summary in Jira and task work log.
 
@@ -54,7 +55,7 @@ Files:
 Use this cadence to keep threshold tuning reproducible and avoid ad-hoc policy drift.
 
 ### Per run
-- Execute baseline helper and confirm `quality_report.json` + `alert_evaluation.json` exist.
+- Execute baseline helper and confirm `quality_report.json`, `alert_evaluation.json`, and `read_model.json` exist.
 - Record evaluated level (`INFO_ONLY/WARN/CRITICAL/OK`) and core metrics in Jira evidence comment.
 - If level is `WARN` or `CRITICAL`, apply escalation policy from `doc/05_risk_register.md`.
 - Verify retry taxonomy metrics in `quality_report.summary`:

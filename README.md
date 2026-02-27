@@ -70,7 +70,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 ## Baseline validation flow (Stage 0.4)
 - Capture artifact bundle:
   - `.venv\Scripts\python.exe agent\capture_baseline.py --label pre_change`
-- Baseline bundle now includes `alert_evaluation.json` from wired evaluator flow.
+- Baseline bundle now includes `alert_evaluation.json` from wired evaluator flow and `read_model.json` from Stage 6 publication path.
 - Bundle output location:
   - `artifacts/baseline/<UTC_TIMESTAMP>_<label>/`
 - Detailed process and checklist:
