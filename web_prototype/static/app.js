@@ -144,7 +144,7 @@ async function onLoadFixture() {
   }
   try {
     const payload = await readJsonFile(file);
-    state.fixture = payload;
+    state.fixture = payload.fixture_bundle || payload;
     refs.loadStatus.textContent = `loaded: ${file.name}`;
     fillFilterOptions();
     refreshViews();
@@ -157,3 +157,19 @@ refs.loadBtn.addEventListener("click", onLoadFixture);
 [refs.designerFilter, refs.statusFilter, refs.dateFromFilter, refs.dateToFilter].forEach((el) =>
   el.addEventListener("change", refreshViews)
 );
+
+async function tryAutoLoadPrototypePayload() {
+  try {
+    const resp = await fetch("prototype_payload.json", { cache: "no-store" });
+    if (!resp.ok) return;
+    const payload = await resp.json();
+    state.fixture = payload.fixture_bundle || payload;
+    refs.loadStatus.textContent = `loaded: prototype_payload.json (${payload.source_mode || "filesystem"})`;
+    fillFilterOptions();
+    refreshViews();
+  } catch (_err) {
+    // manual file load remains available
+  }
+}
+
+tryAutoLoadPrototypePayload();

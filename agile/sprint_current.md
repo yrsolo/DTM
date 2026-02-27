@@ -11,8 +11,8 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
 
 ## Stage 8 Estimate (Dynamic)
 - Baseline estimate: 6 tasks
-- Done: 3
-- Remaining: 3
+- Done: 4
+- Remaining: 2
 - Rule: estimate is adjusted during execution when scope clarifies; done/remaining is updated after each task completion.
 
 ## Done
@@ -90,12 +90,12 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
 - [DONE] DTM-70 / TSK-073 Stage 8 kickoff: web prototype execution plan and dynamic estimate baseline
 - [DONE] DTM-71 / TSK-074 Stage 8: prototype data loader + schema gate over Stage 7 artifacts
 - [DONE] DTM-72 / TSK-075 Stage 8: static web prototype views and filters over fixture payload
+- [DONE] DTM-73 / TSK-076 Stage 8: local/cloud source switch wiring for prototype consumer
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] TSK-076 Stage 8: local/cloud source switch for prototype data loader (filesystem/Object Storage).
 - [TODO] TSK-077 Stage 8: shadow-run execution evidence package for prototype consumer.
 - [TODO] TSK-078 Stage 8 closeout: readiness gate and handoff package.
 
@@ -240,6 +240,8 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
   - Jira: DTM-71 (status: Done / `Gotovo`)
 - TSK-075 - Stage 8: static web prototype views and filters
   - Jira: DTM-72 (status: Done / `Gotovo`)
+- TSK-076 - Stage 8: local/cloud source switch wiring for prototype consumer
+  - Jira: DTM-73 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -441,3 +443,5 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
 - 2026-02-27: DTM-71 completed (`web_prototype/loader.py`, `agent/load_prototype_payload.py`, smoke + docs sync); Stage 8 estimate updated to done 2 / remaining 4; Jira `Gotovo`.
 - 2026-02-27: DTM-72 moved to `V rabote` for Stage 8 static web prototype views and filters.
 - 2026-02-27: DTM-72 completed (`web_prototype/static` + local server helper + assets smoke); Stage 8 estimate updated to done 3 / remaining 3; Jira `Gotovo`.
+- 2026-02-27: DTM-73 moved to `V rabote` for Stage 8 local/cloud source switch wiring.
+- 2026-02-27: DTM-73 completed (`agent/prepare_web_prototype_payload.py` + UI autoload wiring + smoke); Stage 8 estimate updated to done 4 / remaining 2; Jira `Gotovo`.
