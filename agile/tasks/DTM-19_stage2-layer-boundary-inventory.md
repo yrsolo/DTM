@@ -1,4 +1,4 @@
-# DTM-19: Stage 2 layer boundary inventory and dependency map
+﻿# DTM-19: Stage 2 layer boundary inventory and dependency map
 
 ## Context
 - Stage 1 stabilization is complete; current `core/*` modules still mix domain rules, orchestration, and infrastructure calls.
@@ -40,7 +40,7 @@
 
 ## Work log
 - 2026-02-27: Jira issue `DTM-19` created and moved to `V rabote`; execution started.
-- 2026-02-27: Added `doc/10_stage2_layer_inventory.md` with current module-to-layer mapping, cross-layer coupling points, and first low-risk extraction slice (`S2-SLICE-01`).
+- 2026-02-27: Added `doc/stages/10_stage2_layer_inventory.md` with current module-to-layer mapping, cross-layer coupling points, and first low-risk extraction slice (`S2-SLICE-01`).
 - 2026-02-27: Updated context registry trust evidence for Stage 2 sources and synchronized sprint/Jira lifecycle for DTM-19.
 
 ## Links

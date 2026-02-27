@@ -1,4 +1,4 @@
-# Baseline Validation And Artifacts (Stage 0.4)
+﻿# Baseline Validation And Artifacts (Stage 0.4)
 
 ## Purpose
 Define a repeatable baseline validation flow so behavior regressions are detected before merge.
@@ -42,7 +42,7 @@ Files:
 Cloud note:
 - For serverless runtime (Yandex Cloud function), baseline artifact files in local filesystem are dev-only.
 - Cloud-profile artifacts should be uploaded to Yandex Object Storage (S3-compatible) as primary storage.
-- Policy reference: `doc/15_stage7_read_model_consumer_policy.md`.
+- Policy reference: `doc/stages/15_stage7_read_model_consumer_policy.md`.
 
 ## Mandatory Comparison Points
 - Row/column counts in target sheets.

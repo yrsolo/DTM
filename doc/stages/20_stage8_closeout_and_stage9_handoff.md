@@ -1,11 +1,11 @@
-# Stage 8 Closeout And Stage 9 Handoff
+﻿# Stage 8 Closeout And Stage 9 Handoff
 
 ## Stage 8 Outcome
 Stage 8 is complete. Delivery goal achieved: a read-only web prototype consumer is now runnable over Stage 7 artifacts with schema gate, source switching, and shadow-run evidence packaging.
 
 ## Delivered Assets
 - Execution plan and dynamic estimate:
-  - `doc/19_stage8_execution_plan.md`
+  - `doc/stages/19_stage8_execution_plan.md`
 - Prototype data loader and schema gate:
   - `web_prototype/loader.py`
   - `agent/load_prototype_payload.py`

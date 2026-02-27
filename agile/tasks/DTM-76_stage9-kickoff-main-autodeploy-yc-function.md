@@ -1,4 +1,4 @@
-# DTM-76: TSK-079 Stage 9 kickoff main auto-deploy workflow for Yandex Cloud Function
+﻿# DTM-76: TSK-079 Stage 9 kickoff main auto-deploy workflow for Yandex Cloud Function
 
 ## Context
 - Stage 8 is closed (`done 6 / remaining 0`).
@@ -27,9 +27,9 @@
 
 ## Work log
 - 2026-02-27: DTM-76 created and moved to `V rabote`.
-- 2026-02-27: Added `deploy_yc_function_main.yml` and `doc/21_stage9_main_autodeploy_setup.md`.
+- 2026-02-27: Added `deploy_yc_function_main.yml` and `doc/ops/stage9_main_autodeploy_setup.md`.
 - 2026-02-27: Updated sprint/context/README/backlog links for Stage 9 kickoff.
 
 ## Links
 - Jira: DTM-76
-- Setup doc: `doc/21_stage9_main_autodeploy_setup.md`
+- Setup doc: `doc/ops/stage9_main_autodeploy_setup.md`

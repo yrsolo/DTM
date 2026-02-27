@@ -1,10 +1,10 @@
-# Stage 6 UI View-Spec Baseline (Read-Model Driven)
+﻿# Stage 6 UI View-Spec Baseline (Read-Model Driven)
 
 ## Purpose
 Define a baseline UI specification over Stage 6 read-model payload to align frontend scope before implementation.
 
 ## Inputs
-- Read-model contract: `doc/11_stage6_read_model_contract.md`.
+- Read-model contract: `doc/stages/11_stage6_read_model_contract.md`.
 - Target architecture direction: `doc/04_target_architecture.md`.
 
 ## Main Views

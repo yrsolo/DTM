@@ -1,7 +1,7 @@
-# DTM-20: Stage 2 domain module extraction scaffold
+﻿# DTM-20: Stage 2 domain module extraction scaffold
 
 ## Context
-- Stage 2 kickoff inventory (`doc/10_stage2_layer_inventory.md`) identified first low-risk slice `S2-SLICE-01`.
+- Stage 2 kickoff inventory (`doc/stages/10_stage2_layer_inventory.md`) identified first low-risk slice `S2-SLICE-01`.
 - Current `GoogleSheetPlanner` constructor directly builds infrastructure dependencies, coupling orchestration and wiring.
 
 ## Goal
@@ -46,4 +46,4 @@
 ## Links
 - Jira: DTM-20
 - Sprint: agile/sprint_current.md
-- Stage 2 inventory: doc/10_stage2_layer_inventory.md
+- Stage 2 inventory: doc/stages/10_stage2_layer_inventory.md

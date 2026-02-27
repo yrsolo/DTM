@@ -1,4 +1,4 @@
-# DTM-6: Baseline validation checklist and artifact capture flow
+﻿# DTM-6: Baseline validation checklist and artifact capture flow
 
 ## Context
 - Stage 0.4 requires repeatable baseline validation after each pipeline change.
@@ -38,13 +38,13 @@
 - [x] Jira lifecycle/status/comments updated with evidence.
 
 ## Work log
-- 2026-02-27: Task created in Jira as DTM-6 and moved to `В работе`.
+- 2026-02-27: Task created in Jira as DTM-6 and moved to `Ð’ Ñ€Ð°Ð±Ð¾Ñ‚Ðµ`.
 - 2026-02-27: TeamLead started implementation from clean sprint state after DTM-5 completion.
-- 2026-02-27: Added `agent/capture_baseline.py` and baseline process doc `doc/02_baseline_validation_and_artifacts.md`.
+- 2026-02-27: Added `agent/capture_baseline.py` and baseline process doc `doc/ops/baseline_validation_and_artifacts.md`.
 - 2026-02-27: Smoke-check passed:
   - `.venv\Scripts\python.exe agent\capture_baseline.py --help`
   - `.venv\Scripts\python.exe agent\capture_baseline.py --label tsk007_smoke`
-- 2026-02-27: Jira comment with evidence added; issue transitioned to `Готово`.
+- 2026-02-27: Jira comment with evidence added; issue transitioned to `Ð“Ð¾Ñ‚Ð¾Ð²Ð¾`.
 
 ## Links
 - Jira: DTM-6

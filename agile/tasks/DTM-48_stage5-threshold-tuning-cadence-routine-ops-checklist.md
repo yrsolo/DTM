@@ -1,4 +1,4 @@
-# DTM-48: TSK-051 Stage 5 follow-up: encode threshold tuning cadence into routine ops checklist
+﻿# DTM-48: TSK-051 Stage 5 follow-up: encode threshold tuning cadence into routine ops checklist
 
 ## Context
 - Stage 5 already has threshold policy and tuning loop, but recurring operational cadence is still implicit.
@@ -35,4 +35,4 @@
 
 ## Links
 - Jira: DTM-48
-- Sources: doc/02_baseline_validation_and_artifacts.md, doc/05_risk_register.md, README.md, agent/capture_baseline.py
+- Sources: doc/ops/baseline_validation_and_artifacts.md, doc/05_risk_register.md, README.md, agent/capture_baseline.py

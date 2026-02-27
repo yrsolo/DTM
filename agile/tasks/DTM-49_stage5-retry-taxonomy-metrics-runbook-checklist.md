@@ -1,4 +1,4 @@
-# DTM-49: TSK-052 Stage 5 follow-up: formalize retry taxonomy metrics into runbook checklist
+﻿# DTM-49: TSK-052 Stage 5 follow-up: formalize retry taxonomy metrics into runbook checklist
 
 ## Context
 - Retry/backoff and taxonomy counters are implemented (`DTM-41`, `DTM-45`) but routine review checklist for these metrics is not explicit.
@@ -35,4 +35,4 @@
 
 ## Links
 - Jira: DTM-49
-- Sources: core/reminder.py, core/planner.py, agent/reminder_retry_backoff_smoke.py, doc/02_baseline_validation_and_artifacts.md, doc/05_risk_register.md
+- Sources: core/reminder.py, core/planner.py, agent/reminder_retry_backoff_smoke.py, doc/ops/baseline_validation_and_artifacts.md, doc/05_risk_register.md

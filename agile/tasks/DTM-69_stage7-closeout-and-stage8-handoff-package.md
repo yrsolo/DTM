@@ -1,4 +1,4 @@
-# DTM-69: TSK-072 Stage 7 closeout and Stage 8 handoff package
+﻿# DTM-69: TSK-072 Stage 7 closeout and Stage 8 handoff package
 
 ## Context
 - Stage 7 execution slices are completed up to shadow-run readiness checklist.
@@ -25,9 +25,9 @@
 
 ## Work log
 - 2026-02-27: DTM-69 created and moved to `V rabote`.
-- 2026-02-27: Added `doc/18_stage7_closeout_and_stage8_handoff.md`.
+- 2026-02-27: Added `doc/stages/18_stage7_closeout_and_stage8_handoff.md`.
 - 2026-02-27: Updated Stage 7 counters to `done 7 / remaining 0` and synced docs.
 
 ## Links
 - Jira: DTM-69
-- Stage closeout: `doc/18_stage7_closeout_and_stage8_handoff.md`
+- Stage closeout: `doc/stages/18_stage7_closeout_and_stage8_handoff.md`

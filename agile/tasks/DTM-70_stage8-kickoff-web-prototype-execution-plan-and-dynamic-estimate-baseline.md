@@ -1,4 +1,4 @@
-# DTM-70: TSK-073 Stage 8 kickoff web prototype execution plan and dynamic estimate baseline
+﻿# DTM-70: TSK-073 Stage 8 kickoff web prototype execution plan and dynamic estimate baseline
 
 ## Context
 - Stage 7 is fully completed and closed (`done 7 / remaining 0`).
@@ -24,8 +24,8 @@
 
 ## Work log
 - 2026-02-27: DTM-70 created and moved to `V rabote`.
-- 2026-02-27: Added `doc/19_stage8_execution_plan.md` and synchronized sprint queue.
+- 2026-02-27: Added `doc/stages/19_stage8_execution_plan.md` and synchronized sprint queue.
 
 ## Links
 - Jira: DTM-70
-- Stage plan: `doc/19_stage8_execution_plan.md`
+- Stage plan: `doc/stages/19_stage8_execution_plan.md`

@@ -1,10 +1,10 @@
-# Stage 7 Read-Model Consumer Policy
+﻿# Stage 7 Read-Model Consumer Policy
 
 ## Purpose
 Define stable consumer rules for read-model usage and artifact storage in serverless runtime.
 
 ## 1) Compatibility Policy
-- Contract source of truth: `doc/11_stage6_read_model_contract.md`.
+- Contract source of truth: `doc/stages/11_stage6_read_model_contract.md`.
 - Mandatory top-level fields for consumers:
   - `schema_version`
   - `source`

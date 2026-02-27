@@ -1,4 +1,4 @@
-# DTM-72: TSK-075 Stage 8 static web prototype views and filters over fixture payload
+﻿# DTM-72: TSK-075 Stage 8 static web prototype views and filters over fixture payload
 
 ## Context
 - Stage 8 loader with schema gate is ready.
@@ -30,4 +30,4 @@
 
 ## Links
 - Jira: DTM-72
-- Stage plan: `doc/19_stage8_execution_plan.md`
+- Stage plan: `doc/stages/19_stage8_execution_plan.md`

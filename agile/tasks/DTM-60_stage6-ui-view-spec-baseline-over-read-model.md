@@ -1,4 +1,4 @@
-# DTM-60: TSK-063 Stage 6 slice: UI view-spec baseline over read-model (filters timeline history)
+﻿# DTM-60: TSK-063 Stage 6 slice: UI view-spec baseline over read-model (filters timeline history)
 
 ## Context
 - Stage 6 read-model contract is available and partially wired into local artifacts.
@@ -27,11 +27,11 @@
 - [x] Jira lifecycle complete.
 
 ## Work log
-- 2026-02-27: Jira `DTM-60` created and moved to `В работе`; start evidence comment posted.
-- 2026-02-27: Added `doc/12_stage6_ui_view_spec.md` with baseline view-spec for timeline/designer board/task details/alerts + global filters and history baseline.
+- 2026-02-27: Jira `DTM-60` created and moved to `Ð’ Ñ€Ð°Ð±Ð¾Ñ‚Ðµ`; start evidence comment posted.
+- 2026-02-27: Added `doc/stages/12_stage6_ui_view_spec.md` with baseline view-spec for timeline/designer board/task details/alerts + global filters and history baseline.
 - 2026-02-27: Smoke sanity-check passed (`.venv\Scripts\python.exe local_run.py --help`, `.venv\Scripts\python.exe agent\read_model_publication_smoke.py`).
 - 2026-02-27: Completion Telegram update sent to owner with Stage 6 tracker state (`done 6`, `remaining 2`).
 
 ## Links
 - Jira: DTM-60
-- Sources: doc/11_stage6_read_model_contract.md, doc/04_target_architecture.md, agile/sprint_current.md
+- Sources: doc/stages/11_stage6_read_model_contract.md, doc/04_target_architecture.md, agile/sprint_current.md

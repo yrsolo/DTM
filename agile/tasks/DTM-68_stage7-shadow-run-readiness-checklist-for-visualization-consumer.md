@@ -1,4 +1,4 @@
-# DTM-68: TSK-071 Stage 7 shadow-run readiness checklist for visualization consumer
+﻿# DTM-68: TSK-071 Stage 7 shadow-run readiness checklist for visualization consumer
 
 ## Context
 - Stage 7 artifacts and UI spike scope are already documented.
@@ -24,10 +24,10 @@
 
 ## Work log
 - 2026-02-27: DTM-68 created and moved to `V rabote`.
-- 2026-02-27: Added `doc/17_stage7_shadow_run_readiness_checklist.md`.
+- 2026-02-27: Added `doc/stages/17_stage7_shadow_run_readiness_checklist.md`.
 - 2026-02-27: Updated Stage 7 docs/counters and references.
 
 ## Links
 - Jira: DTM-68
-- Stage plan: `doc/14_stage7_execution_plan.md`
-- UI spike scope: `doc/16_stage7_ui_spike_scope_and_acceptance.md`
+- Stage plan: `doc/stages/14_stage7_execution_plan.md`
+- UI spike scope: `doc/stages/16_stage7_ui_spike_scope_and_acceptance.md`

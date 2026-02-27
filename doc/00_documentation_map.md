@@ -1,4 +1,4 @@
-# Documentation Map
+﻿# Documentation Map
 
 This file explains where to read first and where to go for details.
 
@@ -15,16 +15,23 @@ This file explains where to read first and where to go for details.
 - Plan and architecture:
   - `doc/03_reconstruction_backlog.md`
   - `doc/04_target_architecture.md`
-- Operational safety:
+- Risk and process:
   - `doc/05_risk_register.md`
-  - `doc/07_publication_security_audit.md`
   - `doc/09_git_workflow.md`
 
-## Stage Packages
-- Stage 6: `doc/11`, `doc/12`, `doc/13`
-- Stage 7: `doc/14`, `doc/15`, `doc/16`, `doc/17`, `doc/18`
-- Stage 8: `doc/19`, `doc/20`
-- Stage 9: `doc/21`
+## Folder Meaning
+- `doc/` (top level): only active strategic docs.
+- `doc/ops/`: operational runbooks and deployment setup.
+- `doc/governance/`: publication/governance/security records.
+- `doc/stages/`: stage packages and handoff documents.
+- `doc/archive/`: historical snapshots.
+
+## Stage Packages (`doc/stages`)
+- Stage 2: `doc/stages/10_stage2_layer_inventory.md`
+- Stage 6: `doc/stages/11_stage6_read_model_contract.md`, `doc/stages/12_stage6_ui_view_spec.md`, `doc/stages/13_stage6_closeout_and_handoff.md`
+- Stage 7: `doc/stages/14_stage7_execution_plan.md` ... `doc/stages/18_stage7_closeout_and_stage8_handoff.md`
+- Stage 8: `doc/stages/19_stage8_execution_plan.md`, `doc/stages/20_stage8_closeout_and_stage9_handoff.md`
+- Stage 9 setup: `doc/ops/stage9_main_autodeploy_setup.md`
 
 ## Historical Archives
 - Old detailed backlog snapshot:

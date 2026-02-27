@@ -1,4 +1,4 @@
-# DTM-53: TSK-056 Stage 5 follow-up: retry taxonomy trend threshold note for weekly ops review
+﻿# DTM-53: TSK-056 Stage 5 follow-up: retry taxonomy trend threshold note for weekly ops review
 
 ## Context
 - Retry taxonomy metrics checklist is already documented for per-run checks.
@@ -27,11 +27,11 @@
 - [x] Smoke checks passed for referenced command surfaces.
 
 ## Work log
-- 2026-02-27: Jira `DTM-53` created and moved to `В работе`; start evidence comment posted.
+- 2026-02-27: Jira `DTM-53` created and moved to `Ð’ Ñ€Ð°Ð±Ð¾Ñ‚Ðµ`; start evidence comment posted.
 - 2026-02-27: Freshness/trust check completed for weekly ops and retry taxonomy sources (`doc/02`, `doc/05`, `agile/sprint_current.md`).
-- 2026-02-27: Added explicit weekly retry taxonomy trend-threshold triggers to `doc/02_baseline_validation_and_artifacts.md` and `doc/05_risk_register.md`.
+- 2026-02-27: Added explicit weekly retry taxonomy trend-threshold triggers to `doc/ops/baseline_validation_and_artifacts.md` and `doc/05_risk_register.md`.
 - 2026-02-27: Smoke checks passed (`.venv\\Scripts\\python.exe agent\\capture_baseline.py --help`, `.venv\\Scripts\\python.exe agent\\reminder_retry_backoff_smoke.py`).
 
 ## Links
 - Jira: DTM-53
-- Sources: doc/02_baseline_validation_and_artifacts.md, doc/05_risk_register.md, agile/sprint_current.md, agile/context_registry.md
+- Sources: doc/ops/baseline_validation_and_artifacts.md, doc/05_risk_register.md, agile/sprint_current.md, agile/context_registry.md

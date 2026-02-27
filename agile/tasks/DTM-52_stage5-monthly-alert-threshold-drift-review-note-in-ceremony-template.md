@@ -1,4 +1,4 @@
-# DTM-52: TSK-055 Stage 5 follow-up: monthly alert-threshold drift review note in sprint ceremony template
+﻿# DTM-52: TSK-055 Stage 5 follow-up: monthly alert-threshold drift review note in sprint ceremony template
 
 ## Context
 - Stage 5 cadence already defines monthly threshold drift review in ops docs.
@@ -27,11 +27,11 @@
 - [x] Smoke checks for referenced command surfaces passed.
 
 ## Work log
-- 2026-02-27: Jira `DTM-52` created and moved to `В работе`; start evidence comment posted.
-- 2026-02-27: Freshness/trust check completed for `agile/retro.md`, `agile/sprint_current.md`, `doc/02_baseline_validation_and_artifacts.md`, and `doc/05_risk_register.md`.
+- 2026-02-27: Jira `DTM-52` created and moved to `Ð’ Ñ€Ð°Ð±Ð¾Ñ‚Ðµ`; start evidence comment posted.
+- 2026-02-27: Freshness/trust check completed for `agile/retro.md`, `agile/sprint_current.md`, `doc/ops/baseline_validation_and_artifacts.md`, and `doc/05_risk_register.md`.
 - 2026-02-27: Added monthly alert-threshold drift review checkpoint into `agile/retro.md` ceremony checklist template.
 - 2026-02-27: Smoke checks passed (`.venv\\Scripts\\python.exe agent\\capture_baseline.py --help`, `.venv\\Scripts\\python.exe agent\\reminder_alert_evaluator.py --help`).
 
 ## Links
 - Jira: DTM-52
-- Sources: agile/retro.md, agile/sprint_current.md, doc/02_baseline_validation_and_artifacts.md, doc/05_risk_register.md
+- Sources: agile/retro.md, agile/sprint_current.md, doc/ops/baseline_validation_and_artifacts.md, doc/05_risk_register.md

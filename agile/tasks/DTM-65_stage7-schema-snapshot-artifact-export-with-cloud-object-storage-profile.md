@@ -1,4 +1,4 @@
-# DTM-65: TSK-068 Stage 7 schema snapshot artifact export with cloud Object Storage profile
+﻿# DTM-65: TSK-068 Stage 7 schema snapshot artifact export with cloud Object Storage profile
 
 ## Context
 - Stage 7 policy (`doc/15`) sets Object Storage as primary artifact backend for serverless runtime.
@@ -34,5 +34,5 @@
 
 ## Links
 - Jira: DTM-65
-- Policy: `doc/15_stage7_read_model_consumer_policy.md`
-- Stage plan: `doc/14_stage7_execution_plan.md`
+- Policy: `doc/stages/15_stage7_read_model_consumer_policy.md`
+- Stage plan: `doc/stages/14_stage7_execution_plan.md`

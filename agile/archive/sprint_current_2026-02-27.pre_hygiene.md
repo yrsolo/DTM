@@ -1,4 +1,4 @@
-# Sprint Current
+﻿# Sprint Current
 
 ## Sprint Goal
 Start Stage 9 serverless deployment contour for web prototype with main-branch auto-deploy.
@@ -355,7 +355,7 @@ Start Stage 9 serverless deployment contour for web prototype with main-branch a
 - 2026-02-27: DTM-15 moved to `V rabote` for reminder test mocks (OpenAI/Telegram external calls disabled in test mode).
 - 2026-02-27: DTM-15 completed (mock external reminder mode via `--mock-external`/`mode=test` default, smoke-check, Jira `Gotovo`).
 - 2026-02-27: Stage 2 kickoff created in Jira (`DTM-19..DTM-22`); `DTM-19` moved to `V rabote` as single active execution task.
-- 2026-02-27: DTM-19 completed (Stage 2 layer boundary inventory + dependency map in `doc/10_stage2_layer_inventory.md`; Jira `Gotovo`).
+- 2026-02-27: DTM-19 completed (Stage 2 layer boundary inventory + dependency map in `doc/stages/10_stage2_layer_inventory.md`; Jira `Gotovo`).
 - 2026-02-27: DTM-20 moved to `V rabote` for Stage 2 scaffold (`S2-SLICE-01`: planner dependency construction boundary extraction).
 - 2026-02-27: DTM-20 completed (bootstrap dependency-construction boundary via `core/bootstrap.py`; smoke-check; Jira `Gotovo`).
 - 2026-02-27: DTM-21 moved to `V rabote` for Stage 2 application use-case orchestration extraction.
@@ -425,12 +425,12 @@ Start Stage 9 serverless deployment contour for web prototype with main-branch a
 - 2026-02-27: DTM-53 moved to `V rabote` for Stage 5 weekly ops note on retry taxonomy trend thresholds.
 - 2026-02-27: DTM-53 completed (weekly retry taxonomy trend threshold triggers added in `doc/02` and `doc/05`; Jira `Gotovo`).
 - 2026-02-27: DTM-54 moved to `V rabote` for Stage 5 owner-notify fallback wording consistency check in evaluator/local dry-run output.
-- 2026-02-27: DTM-54 completed (readable owner-notify dry-run command output + local notify fallback context normalization `авторежим`; evaluator/local smoke checks passed; Jira `Gotovo`).
+- 2026-02-27: DTM-54 completed (readable owner-notify dry-run command output + local notify fallback context normalization `Ð°Ð²Ñ‚Ð¾Ñ€ÐµÐ¶Ð¸Ð¼`; evaluator/local smoke checks passed; Jira `Gotovo`).
 - 2026-02-27: DTM-55 moved to `V rabote` for Stage 6 kickoff on dynamic estimate tracking (`done/remaining`) and completion Telegram notify rule.
 - 2026-02-27: Owner directive accepted: always report Stage estimate as `done/remaining` and send Telegram update on each task completion.
 - 2026-02-27: DTM-55 completed (Stage 6 dynamic estimate tracker initialized: baseline 8, done 1, remaining 7; completion Telegram notify rule formalized; Jira `Gotovo`).
 - 2026-02-27: DTM-56 moved to `V rabote` for Stage 6 read-model JSON contract definition (entities, fields, metadata, versioning).
-- 2026-02-27: DTM-56 completed (canonical Stage 6 read-model JSON contract added in `doc/11_stage6_read_model_contract.md`; Stage 6 estimate updated to done 2 / remaining 6; Jira `Gotovo`).
+- 2026-02-27: DTM-56 completed (canonical Stage 6 read-model JSON contract added in `doc/stages/11_stage6_read_model_contract.md`; Stage 6 estimate updated to done 2 / remaining 6; Jira `Gotovo`).
 - 2026-02-27: DTM-57 moved to `V rabote` for Stage 6 read-model builder implementation from current planner artifacts.
 - 2026-02-27: DTM-57 completed (`core/read_model.py` builder + `agent/read_model_builder_smoke.py`; Stage 6 estimate updated to done 3 / remaining 5; Jira `Gotovo`).
 - 2026-02-27: DTM-58 moved to `V rabote` for Stage 6 read-model publication path in local launcher (artifact file output).
@@ -438,27 +438,27 @@ Start Stage 9 serverless deployment contour for web prototype with main-branch a
 - 2026-02-27: DTM-59 moved to `V rabote` for Stage 6 contract compatibility checks for read-model payload.
 - 2026-02-27: DTM-59 completed (contract validator + compatibility smoke for read-model; Stage 6 estimate updated to done 5 / remaining 3; Jira `Gotovo`).
 - 2026-02-27: DTM-60 moved to `V rabote` for Stage 6 UI view-spec baseline over read-model.
-- 2026-02-27: DTM-60 completed (`doc/12_stage6_ui_view_spec.md` added and linked; Stage 6 estimate updated to done 6 / remaining 2; Jira `Gotovo`).
+- 2026-02-27: DTM-60 completed (`doc/stages/12_stage6_ui_view_spec.md` added and linked; Stage 6 estimate updated to done 6 / remaining 2; Jira `Gotovo`).
 - 2026-02-27: DTM-61 moved to `V rabote` for Stage 6 baseline capture integration of read-model artifact.
 - 2026-02-27: DTM-61 completed (`agent/capture_baseline.py` now emits `read_model.json`; Stage 6 estimate updated to done 7 / remaining 1; Jira `Gotovo`).
 - 2026-02-27: DTM-62 moved to `V rabote` for Stage 6 formal closeout (readiness gate + handoff checklist).
-- 2026-02-27: DTM-62 completed (`doc/13_stage6_closeout_and_handoff.md` added; Stage 6 estimate updated to done 8 / remaining 0; Jira `Gotovo`).
+- 2026-02-27: DTM-62 completed (`doc/stages/13_stage6_closeout_and_handoff.md` added; Stage 6 estimate updated to done 8 / remaining 0; Jira `Gotovo`).
 - 2026-02-27: DTM-63 moved to `V rabote` for Stage 7 kickoff (execution plan + dynamic estimate baseline).
-- 2026-02-27: DTM-63 completed (`doc/14_stage7_execution_plan.md` + Stage 7 backlog decomposition); Stage 7 estimate initialized to done 1 / remaining 6; Jira `Gotovo`.
+- 2026-02-27: DTM-63 completed (`doc/stages/14_stage7_execution_plan.md` + Stage 7 backlog decomposition); Stage 7 estimate initialized to done 1 / remaining 6; Jira `Gotovo`.
 - 2026-02-27: DTM-64 moved to `V rabote` for Stage 7 consumer compatibility policy and serverless artifact storage contour (Object Storage primary).
-- 2026-02-27: DTM-64 completed (`doc/15_stage7_read_model_consumer_policy.md`, docs alignment); Stage 7 estimate updated to done 2 / remaining 5; Jira `Gotovo`.
+- 2026-02-27: DTM-64 completed (`doc/stages/15_stage7_read_model_consumer_policy.md`, docs alignment); Stage 7 estimate updated to done 2 / remaining 5; Jira `Gotovo`.
 - 2026-02-27: DTM-65 moved to `V rabote` for Stage 7 schema snapshot artifact export with cloud Object Storage profile.
 - 2026-02-27: DTM-65 completed (schema snapshot builder + local/cloud export path + baseline integration docs); Stage 7 estimate updated to done 3 / remaining 4; Jira `Gotovo`.
 - 2026-02-27: DTM-66 moved to `V rabote` for Stage 7 fixture bundle generation from baseline captures with cloud Object Storage profile.
 - 2026-02-27: DTM-66 completed (fixture bundle builder/script + baseline integration docs); Stage 7 estimate updated to done 4 / remaining 3; Jira `Gotovo`.
 - 2026-02-27: DTM-67 moved to `V rabote` for Stage 7 UI migration spike scope and acceptance checklist.
-- 2026-02-27: DTM-67 completed (`doc/16_stage7_ui_spike_scope_and_acceptance.md` + docs alignment); Stage 7 estimate updated to done 5 / remaining 2; Jira `Gotovo`.
+- 2026-02-27: DTM-67 completed (`doc/stages/16_stage7_ui_spike_scope_and_acceptance.md` + docs alignment); Stage 7 estimate updated to done 5 / remaining 2; Jira `Gotovo`.
 - 2026-02-27: DTM-68 moved to `V rabote` for Stage 7 shadow-run readiness checklist.
-- 2026-02-27: DTM-68 completed (`doc/17_stage7_shadow_run_readiness_checklist.md` + docs alignment); Stage 7 estimate updated to done 6 / remaining 1; Jira `Gotovo`.
+- 2026-02-27: DTM-68 completed (`doc/stages/17_stage7_shadow_run_readiness_checklist.md` + docs alignment); Stage 7 estimate updated to done 6 / remaining 1; Jira `Gotovo`.
 - 2026-02-27: DTM-69 moved to `V rabote` for Stage 7 closeout and Stage 8 handoff package.
-- 2026-02-27: DTM-69 completed (`doc/18_stage7_closeout_and_stage8_handoff.md` + docs alignment); Stage 7 estimate updated to done 7 / remaining 0; Jira `Gotovo`.
+- 2026-02-27: DTM-69 completed (`doc/stages/18_stage7_closeout_and_stage8_handoff.md` + docs alignment); Stage 7 estimate updated to done 7 / remaining 0; Jira `Gotovo`.
 - 2026-02-27: DTM-70 moved to `V rabote` for Stage 8 kickoff planning (execution plan + estimate baseline).
-- 2026-02-27: DTM-70 completed (`doc/19_stage8_execution_plan.md` + sprint/backlog/context sync); Stage 8 estimate initialized to done 1 / remaining 5; Jira `Gotovo`.
+- 2026-02-27: DTM-70 completed (`doc/stages/19_stage8_execution_plan.md` + sprint/backlog/context sync); Stage 8 estimate initialized to done 1 / remaining 5; Jira `Gotovo`.
 - 2026-02-27: DTM-71 moved to `V rabote` for Stage 8 prototype loader and schema gate implementation.
 - 2026-02-27: DTM-71 completed (`web_prototype/loader.py`, `agent/load_prototype_payload.py`, smoke + docs sync); Stage 8 estimate updated to done 2 / remaining 4; Jira `Gotovo`.
 - 2026-02-27: DTM-72 moved to `V rabote` for Stage 8 static web prototype views and filters.
@@ -469,9 +469,9 @@ Start Stage 9 serverless deployment contour for web prototype with main-branch a
 - 2026-02-27: DTM-74 completed (`agent/stage8_shadow_run_evidence.py` + smoke + evidence artifact bundle); Stage 8 estimate updated to done 5 / remaining 1; Jira `Gotovo`.
 - 2026-02-27: Stage 8 shadow-run evidence artifact: `artifacts/shadow_run_stage8/20260227T161720Z_dtm74_final/shadow_run_evidence.json` (cloud fetch check skipped in this run due absent `PROTOTYPE_*_S3_KEY` values in shell env).
 - 2026-02-27: DTM-75 moved to `V rabote` for Stage 8 closeout and next-stage handoff package.
-- 2026-02-27: DTM-75 completed (`doc/20_stage8_closeout_and_stage9_handoff.md` + sprint/backlog/context sync); Stage 8 estimate updated to done 6 / remaining 0; Jira `Gotovo`.
+- 2026-02-27: DTM-75 completed (`doc/stages/20_stage8_closeout_and_stage9_handoff.md` + sprint/backlog/context sync); Stage 8 estimate updated to done 6 / remaining 0; Jira `Gotovo`.
 - 2026-02-27: DTM-76 moved to `V rabote` for Stage 9 kickoff main-branch auto-deploy workflow.
-- 2026-02-27: DTM-76 completed (`.github/workflows/deploy_yc_function_main.yml` + `doc/21_stage9_main_autodeploy_setup.md` + sprint/backlog/context sync); Stage 9 estimate updated to done 1 / remaining 4; Jira `Gotovo`.
+- 2026-02-27: DTM-76 completed (`.github/workflows/deploy_yc_function_main.yml` + `doc/ops/stage9_main_autodeploy_setup.md` + sprint/backlog/context sync); Stage 9 estimate updated to done 1 / remaining 4; Jira `Gotovo`.
 - 2026-02-27: DTM-77 moved to `V rabote` for Stage 9 automated Lockbox sync and Google secret text runtime sourcing.
 - 2026-02-27: DTM-77 completed (`agent/sync_lockbox_from_env.py` + `config/constants.py` secret-source fallback + Lockbox sync execution); Stage 9 estimate updated to done 2 / remaining 3; Jira `Gotovo`.
 - 2026-02-27: DTM-78 moved to `V rabote` for Stage 9 Lockbox-to-function env binding and cloud invoke smoke.

@@ -1,4 +1,4 @@
-# DTM-75: TSK-078 Stage 8 closeout and next-stage handoff package
+﻿# DTM-75: TSK-078 Stage 8 closeout and next-stage handoff package
 
 ## Context
 - Stage 8 execution slices `DTM-70..DTM-74` are completed.
@@ -26,9 +26,9 @@
 
 ## Work log
 - 2026-02-27: DTM-75 created and moved to `V rabote`.
-- 2026-02-27: Published `doc/20_stage8_closeout_and_stage9_handoff.md`.
+- 2026-02-27: Published `doc/stages/20_stage8_closeout_and_stage9_handoff.md`.
 - 2026-02-27: Synced sprint/backlog/context and prepared Jira closeout evidence.
 
 ## Links
 - Jira: DTM-75
-- Stage plan: `doc/19_stage8_execution_plan.md`
+- Stage plan: `doc/stages/19_stage8_execution_plan.md`

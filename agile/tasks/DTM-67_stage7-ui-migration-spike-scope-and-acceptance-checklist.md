@@ -1,4 +1,4 @@
-# DTM-67: TSK-070 Stage 7 UI migration spike scope and acceptance checklist
+﻿# DTM-67: TSK-070 Stage 7 UI migration spike scope and acceptance checklist
 
 ## Context
 - Stage 7 now provides read-model, schema snapshot, and fixture bundle artifacts.
@@ -25,10 +25,10 @@
 
 ## Work log
 - 2026-02-27: DTM-67 created and moved to `V rabote`.
-- 2026-02-27: Added `doc/16_stage7_ui_spike_scope_and_acceptance.md`.
+- 2026-02-27: Added `doc/stages/16_stage7_ui_spike_scope_and_acceptance.md`.
 - 2026-02-27: Updated Stage 7 docs/counters (`done 5 / remaining 2`).
 
 ## Links
 - Jira: DTM-67
-- Stage plan: `doc/14_stage7_execution_plan.md`
-- Policy: `doc/15_stage7_read_model_consumer_policy.md`
+- Stage plan: `doc/stages/14_stage7_execution_plan.md`
+- Policy: `doc/stages/15_stage7_read_model_consumer_policy.md`

@@ -1,7 +1,7 @@
-# DTM-57: TSK-060 Stage 6 slice: read-model builder from current planner artifacts
+﻿# DTM-57: TSK-060 Stage 6 slice: read-model builder from current planner artifacts
 
 ## Context
-- Stage 6 JSON contract is defined in `doc/11_stage6_read_model_contract.md`.
+- Stage 6 JSON contract is defined in `doc/stages/11_stage6_read_model_contract.md`.
 - Runtime already produces `quality_report` and optional `alert_evaluation` artifacts.
 - A deterministic builder is needed to convert current artifacts into canonical read-model payload.
 
@@ -24,10 +24,10 @@
 - [x] Builder module added and returns contract-aligned payload.
 - [x] Smoke check validates deterministic output shape.
 - [x] Sprint/context/backlog/task docs synchronized.
-- [x] Jira lifecycle complete (`В работе` -> evidence -> `Готово`).
+- [x] Jira lifecycle complete (`Ð’ Ñ€Ð°Ð±Ð¾Ñ‚Ðµ` -> evidence -> `Ð“Ð¾Ñ‚Ð¾Ð²Ð¾`).
 
 ## Work log
-- 2026-02-27: Jira `DTM-57` created and moved to `В работе`; start evidence comment posted.
+- 2026-02-27: Jira `DTM-57` created and moved to `Ð’ Ñ€Ð°Ð±Ð¾Ñ‚Ðµ`; start evidence comment posted.
 - 2026-02-27: Sprint/task synchronization started for Stage 6 builder slice.
 - 2026-02-27: Implemented `core/read_model.py` (`build_read_model`) and deterministic smoke `agent/read_model_builder_smoke.py`.
 - 2026-02-27: Smoke checks passed (`.venv\Scripts\python.exe -m py_compile core\read_model.py agent\read_model_builder_smoke.py core\planner.py local_run.py`, `.venv\Scripts\python.exe agent\read_model_builder_smoke.py`, `.venv\Scripts\python.exe agent\notify_owner.py --help`).
@@ -35,4 +35,4 @@
 
 ## Links
 - Jira: DTM-57
-- Sources: doc/11_stage6_read_model_contract.md, core/planner.py, local_run.py, agile/sprint_current.md, agile/context_registry.md
+- Sources: doc/stages/11_stage6_read_model_contract.md, core/planner.py, local_run.py, agile/sprint_current.md, agile/context_registry.md

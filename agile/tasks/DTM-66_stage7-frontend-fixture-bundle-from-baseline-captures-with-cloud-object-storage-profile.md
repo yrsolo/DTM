@@ -1,4 +1,4 @@
-# DTM-66: TSK-069 Stage 7 frontend fixture bundle from baseline captures with cloud Object Storage profile
+﻿# DTM-66: TSK-069 Stage 7 frontend fixture bundle from baseline captures with cloud Object Storage profile
 
 ## Context
 - Stage 7 already has `read_model.json` + `schema_snapshot.json`.
@@ -34,5 +34,5 @@
 
 ## Links
 - Jira: DTM-66
-- Stage plan: `doc/14_stage7_execution_plan.md`
-- Policy: `doc/15_stage7_read_model_consumer_policy.md`
+- Stage plan: `doc/stages/14_stage7_execution_plan.md`
+- Policy: `doc/stages/15_stage7_read_model_consumer_policy.md`

@@ -1,4 +1,4 @@
-# DTM-59: TSK-062 Stage 6 slice: read-model builder contract tests and compatibility checks
+﻿# DTM-59: TSK-062 Stage 6 slice: read-model builder contract tests and compatibility checks
 
 ## Context
 - Stage 6 read-model contract, builder, and publication path are in place.
@@ -25,7 +25,7 @@
 - [x] Jira lifecycle complete.
 
 ## Work log
-- 2026-02-27: Jira `DTM-59` created and moved to `В работе`; start evidence comment posted.
+- 2026-02-27: Jira `DTM-59` created and moved to `Ð’ Ñ€Ð°Ð±Ð¾Ñ‚Ðµ`; start evidence comment posted.
 - 2026-02-27: Sprint/task synchronization started.
 - 2026-02-27: Added contract validator `validate_read_model_contract` in `core/read_model.py`.
 - 2026-02-27: Added deterministic compatibility smoke `agent/read_model_contract_compat_smoke.py`.
@@ -34,4 +34,4 @@
 
 ## Links
 - Jira: DTM-59
-- Sources: core/read_model.py, doc/11_stage6_read_model_contract.md, local_run.py
+- Sources: core/read_model.py, doc/stages/11_stage6_read_model_contract.md, local_run.py

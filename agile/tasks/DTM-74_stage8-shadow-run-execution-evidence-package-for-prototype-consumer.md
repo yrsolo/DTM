@@ -1,4 +1,4 @@
-# DTM-74: TSK-077 Stage 8 shadow-run execution evidence package for prototype consumer
+﻿# DTM-74: TSK-077 Stage 8 shadow-run execution evidence package for prototype consumer
 
 ## Context
 - Stage 8 prototype loader/UI/source-switch are completed (`DTM-71..DTM-73`).
@@ -32,4 +32,4 @@
 
 ## Links
 - Jira: DTM-74
-- Stage plan: `doc/19_stage8_execution_plan.md`
+- Stage plan: `doc/stages/19_stage8_execution_plan.md`

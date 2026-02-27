@@ -1,4 +1,4 @@
-# DTM-73: TSK-076 Stage 8 local/cloud source switch wiring for prototype consumer
+﻿# DTM-73: TSK-076 Stage 8 local/cloud source switch wiring for prototype consumer
 
 ## Context
 - Stage 8 loader and static prototype are already in place.
@@ -33,4 +33,4 @@
 
 ## Links
 - Jira: DTM-73
-- Stage plan: `doc/19_stage8_execution_plan.md`
+- Stage plan: `doc/stages/19_stage8_execution_plan.md`

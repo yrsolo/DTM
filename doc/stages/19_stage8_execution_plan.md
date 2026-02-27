@@ -1,4 +1,4 @@
-# Stage 8 Execution Plan
+﻿# Stage 8 Execution Plan
 
 ## Objective
 Build the first read-only web prototype consumer over Stage 7 artifacts with deterministic schema gate and environment-aware artifact source switching.
@@ -25,4 +25,4 @@ Build the first read-only web prototype consumer over Stage 7 artifacts with det
 - Read-only prototype loads Stage 7 artifacts and passes schema gate.
 - Prototype supports both local and Object Storage artifact source profiles.
 - Shadow-run evidence package is complete and linked in sprint/Jira docs.
-- Stage 8 closeout package is published in `doc/20_stage8_closeout_and_stage9_handoff.md`.
+- Stage 8 closeout package is published in `doc/stages/20_stage8_closeout_and_stage9_handoff.md`.

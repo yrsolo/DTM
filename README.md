@@ -1,4 +1,4 @@
-# Designers Task Manager (DTM)
+﻿# Designers Task Manager (DTM)
 
 DTM is a real-world pet project built as a portfolio case about evolving legacy automation into a maintainable product architecture.
 
@@ -36,18 +36,18 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Production workflow is active.
 - Architecture is under phased reconstruction.
 - Legacy snapshot is kept in `old/` for controlled comparison during migration.
-- Stage 6 read-model JSON contract draft is documented in `doc/11_stage6_read_model_contract.md`.
+- Stage 6 read-model JSON contract draft is documented in `doc/stages/11_stage6_read_model_contract.md`.
 - Stage 6 read-model builder is available in `core/read_model.py` (from current runtime artifacts).
-- Stage 6 UI baseline view specification is documented in `doc/12_stage6_ui_view_spec.md`.
-- Stage 6 closeout and handoff checklist is documented in `doc/13_stage6_closeout_and_handoff.md`.
-- Stage 7 execution plan and dynamic estimate baseline are documented in `doc/14_stage7_execution_plan.md`.
-- Stage 7 consumer/storage policy is documented in `doc/15_stage7_read_model_consumer_policy.md` (Object Storage primary for serverless runtime).
-- Stage 7 UI migration spike scope and acceptance checklist are documented in `doc/16_stage7_ui_spike_scope_and_acceptance.md`.
-- Stage 7 shadow-run readiness checklist is documented in `doc/17_stage7_shadow_run_readiness_checklist.md`.
-- Stage 7 closeout and Stage 8 handoff package is documented in `doc/18_stage7_closeout_and_stage8_handoff.md`.
-- Stage 8 execution plan is documented in `doc/19_stage8_execution_plan.md`.
-- Stage 8 closeout and Stage 9 handoff package is documented in `doc/20_stage8_closeout_and_stage9_handoff.md`.
-- Stage 9 main auto-deploy setup for Yandex Cloud Function is documented in `doc/21_stage9_main_autodeploy_setup.md`.
+- Stage 6 UI baseline view specification is documented in `doc/stages/12_stage6_ui_view_spec.md`.
+- Stage 6 closeout and handoff checklist is documented in `doc/stages/13_stage6_closeout_and_handoff.md`.
+- Stage 7 execution plan and dynamic estimate baseline are documented in `doc/stages/14_stage7_execution_plan.md`.
+- Stage 7 consumer/storage policy is documented in `doc/stages/15_stage7_read_model_consumer_policy.md` (Object Storage primary for serverless runtime).
+- Stage 7 UI migration spike scope and acceptance checklist are documented in `doc/stages/16_stage7_ui_spike_scope_and_acceptance.md`.
+- Stage 7 shadow-run readiness checklist is documented in `doc/stages/17_stage7_shadow_run_readiness_checklist.md`.
+- Stage 7 closeout and Stage 8 handoff package is documented in `doc/stages/18_stage7_closeout_and_stage8_handoff.md`.
+- Stage 8 execution plan is documented in `doc/stages/19_stage8_execution_plan.md`.
+- Stage 8 closeout and Stage 9 handoff package is documented in `doc/stages/20_stage8_closeout_and_stage9_handoff.md`.
+- Stage 9 main auto-deploy setup for Yandex Cloud Function is documented in `doc/ops/stage9_main_autodeploy_setup.md`.
 - Stage 8 prototype loader utility: `agent/load_prototype_payload.py` (filesystem/Object Storage + schema gate).
 - Stage 8 static prototype assets: `web_prototype/static` (run local preview with `.venv\Scripts\python.exe agent\run_web_prototype_server.py`).
 - Stage 8 payload preparation helper: `.venv\Scripts\python.exe agent\prepare_web_prototype_payload.py --source-mode auto` (writes `web_prototype/static/prototype_payload.json`).
@@ -98,9 +98,9 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Fixture bundle helper:
   - `.venv\Scripts\python.exe agent\build_fixture_bundle.py --baseline-root artifacts\baseline`
 - Detailed process and checklist:
-  - `doc/02_baseline_validation_and_artifacts.md`
+  - `doc/ops/baseline_validation_and_artifacts.md`
 - Routine Stage 5 cadence checklist (per-run/weekly/monthly):
-  - `doc/02_baseline_validation_and_artifacts.md` (`Routine Ops Cadence Checklist`)
+  - `doc/ops/baseline_validation_and_artifacts.md` (`Routine Ops Cadence Checklist`)
 - Retry taxonomy metrics checklist (retry/exhausted/transient/permanent/unknown):
   - `doc/05_risk_register.md` (`Retry taxonomy metrics checklist`)
 - Weekly retry taxonomy trend thresholds for ops review:
@@ -111,7 +111,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Full-repo smoke command:
   - `.venv\Scripts\python.exe -m pre_commit run detect-secrets --all-files`
 - Security audit notes:
-  - `doc/07_publication_security_audit.md`
+  - `doc/governance/publication_security_audit.md`
 
 ## Main Auto-Deploy (Stage 9 kickoff)
 - Workflow: `.github/workflows/deploy_yc_function_main.yml`
@@ -121,7 +121,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `YC_SERVICE_ACCOUNT_ID`
   - `YC_CLOUD_FUNCTION_NAME`
 - Full setup guide:
-  - `doc/21_stage9_main_autodeploy_setup.md`
+  - `doc/ops/stage9_main_autodeploy_setup.md`
 - Lockbox sync helper for full `.env` payload:
   - `.venv\Scripts\python.exe agent\sync_lockbox_from_env.py --secret-name DTM`
 - Cloud-side follow-up: publish function version with Lockbox `--secret` mappings and grant runtime service account role `lockbox.payloadViewer` for secret `DTM`.

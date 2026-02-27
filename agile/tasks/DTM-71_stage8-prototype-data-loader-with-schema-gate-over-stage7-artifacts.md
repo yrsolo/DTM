@@ -1,4 +1,4 @@
-# DTM-71: TSK-074 Stage 8 prototype data loader with schema gate over Stage 7 artifacts
+﻿# DTM-71: TSK-074 Stage 8 prototype data loader with schema gate over Stage 7 artifacts
 
 ## Context
 - Stage 8 kickoff completed with execution plan and queue.
@@ -32,4 +32,4 @@
 
 ## Links
 - Jira: DTM-71
-- Stage plan: `doc/19_stage8_execution_plan.md`
+- Stage plan: `doc/stages/19_stage8_execution_plan.md`

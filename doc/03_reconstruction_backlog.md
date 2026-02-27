@@ -1,4 +1,4 @@
-# Reconstruction Backlog (Concise)
+﻿# Reconstruction Backlog (Concise)
 
 ## Purpose
 Safe, incremental migration of DTM from legacy tightly coupled automation to maintainable architecture and serverless-ready delivery.
@@ -6,16 +6,16 @@ Safe, incremental migration of DTM from legacy tightly coupled automation to mai
 ## Current Stage Status
 | stage | focus | status | evidence docs |
 |---|---|---|---|
-| 0 | runtime safety contour, dry-run, baseline, secret gate | done | `doc/02_baseline_validation_and_artifacts.md` |
+| 0 | runtime safety contour, dry-run, baseline, secret gate | done | `doc/ops/baseline_validation_and_artifacts.md` |
 | 1 | input contracts and data quality stabilization | done | `doc/02_current_modules_and_functionality.md` |
-| 2 | layer decomposition (`domain/application/infrastructure`) | done | `doc/10_stage2_layer_inventory.md` |
-| 3 | rendering adapter boundary and legacy path cleanup | done | `doc/10_stage2_layer_inventory.md` + Stage 3 task files |
+| 2 | layer decomposition (`domain/application/infrastructure`) | done | `doc/stages/10_stage2_layer_inventory.md` |
+| 3 | rendering adapter boundary and legacy path cleanup | done | `doc/stages/10_stage2_layer_inventory.md` + Stage 3 task files |
 | 4 | reminder fallback/idempotency/parallelism | done | Stage 4 task files in `agile/tasks` |
-| 5 | observability, SLI, alert evaluator, runbook cadence | done | `doc/05_risk_register.md`, `doc/02_baseline_validation_and_artifacts.md` |
-| 6 | read-model contract and publication path | done | `doc/11`, `doc/12`, `doc/13` |
-| 7 | frontend migration prep (schema/fixture/policy/checklists) | done | `doc/14`..`doc/18` |
-| 8 | static web prototype and shadow-run evidence package | done | `doc/19`, `doc/20` |
-| 9 | serverless deploy contour and cloud runtime wiring | in progress | `doc/21`, `agile/sprint_current.md` |
+| 5 | observability, SLI, alert evaluator, runbook cadence | done | `doc/05_risk_register.md`, `doc/ops/baseline_validation_and_artifacts.md` |
+| 6 | read-model contract and publication path | done | `doc/stages/11_stage6_read_model_contract.md`, `doc/stages/12_stage6_ui_view_spec.md`, `doc/stages/13_stage6_closeout_and_handoff.md` |
+| 7 | frontend migration prep (schema/fixture/policy/checklists) | done | `doc/stages/14_stage7_execution_plan.md` ... `doc/stages/18_stage7_closeout_and_stage8_handoff.md` |
+| 8 | static web prototype and shadow-run evidence package | done | `doc/stages/19_stage8_execution_plan.md`, `doc/stages/20_stage8_closeout_and_stage9_handoff.md` |
+| 9 | serverless deploy contour and cloud runtime wiring | in progress | `doc/ops/stage9_main_autodeploy_setup.md`, `agile/sprint_current.md` |
 
 ## Stage 9 Progress
 Completed:
@@ -26,6 +26,9 @@ Completed:
 
 Completed:
 - `DTM-81`: documentation readability refactor (`doc` map + concise backlog shape).
+
+Completed:
+- `DTM-82`: doc folder restructuring by purpose (`core/ops/governance/stages/archive`) and active-link cleanup.
 
 Planned next:
 - Cloud-profile shadow-run with explicit `PROTOTYPE_*_S3_KEY` pass criteria.

@@ -1,18 +1,18 @@
-# Stage 6 Closeout And Handoff
+﻿# Stage 6 Closeout And Handoff
 
 ## Stage 6 Readiness Gate
 Stage 6 is considered complete only if all checks are true:
-- Read-model contract exists and is versioned (`doc/11_stage6_read_model_contract.md`).
+- Read-model contract exists and is versioned (`doc/stages/11_stage6_read_model_contract.md`).
 - Builder implementation exists (`core/read_model.py`).
 - Compatibility guard exists (`validate_read_model_contract` + smoke).
 - Local publication path exists (`local_run.py --read-model-file`).
 - Baseline capture flow includes `read_model.json` (`agent/capture_baseline.py` + doc/02).
-- UI baseline view-spec is documented (`doc/12_stage6_ui_view_spec.md`).
+- UI baseline view-spec is documented (`doc/stages/12_stage6_ui_view_spec.md`).
 - Sprint/Jira/Context docs are synchronized.
 
 ## Delivered Artifacts
-- Contract: `doc/11_stage6_read_model_contract.md`
-- UI view-spec: `doc/12_stage6_ui_view_spec.md`
+- Contract: `doc/stages/11_stage6_read_model_contract.md`
+- UI view-spec: `doc/stages/12_stage6_ui_view_spec.md`
 - Builder: `core/read_model.py`
 - Publication smoke: `agent/read_model_publication_smoke.py`
 - Compatibility smoke: `agent/read_model_contract_compat_smoke.py`

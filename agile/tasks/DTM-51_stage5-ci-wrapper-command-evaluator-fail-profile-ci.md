@@ -1,4 +1,4 @@
-# DTM-51: TSK-054 Stage 5 follow-up: CI wrapper command for evaluator (`--fail-profile ci`)
+﻿# DTM-51: TSK-054 Stage 5 follow-up: CI wrapper command for evaluator (`--fail-profile ci`)
 
 ## Context
 - Reminder alert evaluator already supports profile-based severity gate (`local|ci`).
@@ -28,11 +28,11 @@
 - [x] Jira status/comments and agile docs are synchronized.
 
 ## Work log
-- 2026-02-27: Jira `DTM-51` created and moved to `В работе`; start evidence comment added.
-- 2026-02-27: Freshness/trust check completed for evaluator wrapper scope (`agent/reminder_alert_evaluator.py`, `run_timer.cmd`, `README.md`, `doc/02_baseline_validation_and_artifacts.md`).
+- 2026-02-27: Jira `DTM-51` created and moved to `Ð’ Ñ€Ð°Ð±Ð¾Ñ‚Ðµ`; start evidence comment added.
+- 2026-02-27: Freshness/trust check completed for evaluator wrapper scope (`agent/reminder_alert_evaluator.py`, `run_timer.cmd`, `README.md`, `doc/ops/baseline_validation_and_artifacts.md`).
 - 2026-02-27: Added `run_alert_eval_ci.cmd` wrapper and aligned routine docs to use wrapper command for CI gate.
 - 2026-02-27: Smoke checks passed (`run_alert_eval_ci.cmd --help`, INFO sample exit=0, WARN sample exit=2, `.venv\Scripts\python.exe agent\reminder_alert_evaluator_smoke.py`).
 
 ## Links
 - Jira: DTM-51
-- Sources: agent/reminder_alert_evaluator.py, run_timer.cmd, README.md, doc/02_baseline_validation_and_artifacts.md
+- Sources: agent/reminder_alert_evaluator.py, run_timer.cmd, README.md, doc/ops/baseline_validation_and_artifacts.md

@@ -1,4 +1,4 @@
-# DTM-58: TSK-061 Stage 6 slice: publication path for read-model artifacts without runtime impact
+﻿# DTM-58: TSK-061 Stage 6 slice: publication path for read-model artifacts without runtime impact
 
 ## Context
 - Stage 6 read-model contract and builder are already implemented.
@@ -24,10 +24,10 @@
 - [x] `local_run.py` supports optional read-model artifact output.
 - [x] Publication path smoke confirms valid artifact shape.
 - [x] Sprint/context/backlog/task docs synchronized.
-- [x] Jira lifecycle complete (`В работе` -> evidence -> `Готово`).
+- [x] Jira lifecycle complete (`Ð’ Ñ€Ð°Ð±Ð¾Ñ‚Ðµ` -> evidence -> `Ð“Ð¾Ñ‚Ð¾Ð²Ð¾`).
 
 ## Work log
-- 2026-02-27: Jira `DTM-58` created and moved to `В работе`; start evidence comment posted.
+- 2026-02-27: Jira `DTM-58` created and moved to `Ð’ Ñ€Ð°Ð±Ð¾Ñ‚Ðµ`; start evidence comment posted.
 - 2026-02-27: Sprint/task synchronization started for read-model publication slice.
 - 2026-02-27: Added local launcher options `--read-model-file` and `--read-model-build-id` with builder wiring through `core.read_model.build_read_model`.
 - 2026-02-27: Added deterministic smoke `agent/read_model_publication_smoke.py`.
@@ -36,4 +36,4 @@
 
 ## Links
 - Jira: DTM-58
-- Sources: local_run.py, core/read_model.py, doc/11_stage6_read_model_contract.md, agile/sprint_current.md
+- Sources: local_run.py, core/read_model.py, doc/stages/11_stage6_read_model_contract.md, agile/sprint_current.md

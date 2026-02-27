@@ -1,4 +1,4 @@
-# Stage 7 Execution Plan
+﻿# Stage 7 Execution Plan
 
 ## Objective
 Start implementation-ready migration planning after Stage 6, so the first web visualization prototype can consume stable read-model artifacts without ad-hoc parsing.
@@ -26,4 +26,4 @@ Start implementation-ready migration planning after Stage 6, so the first web vi
 - Stage 7 queue is fully documented and Jira-aligned.
 - Consumer-facing read-model integration policy is explicit and testable.
 - Artifacts needed for Stage 8 prototype work are reproducible from environment-aware flow (`local artifacts` for dev, `Object Storage` for serverless).
-- Stage 7 closeout package is published in `doc/18_stage7_closeout_and_stage8_handoff.md`.
+- Stage 7 closeout package is published in `doc/stages/18_stage7_closeout_and_stage8_handoff.md`.

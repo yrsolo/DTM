@@ -10,8 +10,8 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 - [IN_PROGRESS] none.
 
 ## Stage 9 Estimate (Dynamic)
-- Baseline estimate: 7 tasks (adjusted after explicit docs readability slice).
-- Done: 5
+- Baseline estimate: 8 tasks (adjusted after explicit doc-structure refactor slice).
+- Done: 6
 - Remaining: 2
 - Rule: update `Done/Remaining` after each completed Stage 9 task.
 
@@ -21,6 +21,7 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 - [DONE] DTM-78 / TSK-081 - bind Lockbox env mappings to function + cloud invoke smoke.
 - [DONE] DTM-80 / TSK-082 - docs/agile hygiene cleanup and archive normalization.
 - [DONE] DTM-81 / TSK-083 - documentation readability refactor (`doc` map + concise backlog format).
+- [DONE] DTM-82 / TSK-084 - doc folder restructuring by purpose (`core/ops/governance/stages/archive`).
 
 ## Blocked
 - [BLOCKED] none.
@@ -31,7 +32,7 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 - [TODO] Stage 9: deployment smoke checklist for Yandex Cloud Function profile.
 
 ## Active Task Files
-- `agile/tasks/DTM-81_docs-readability-refactor.md`
+- `agile/tasks/DTM-82_doc-folder-structure-refactor.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`
@@ -39,6 +40,6 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 - `doc/archive/03_reconstruction_backlog_2026-02-27.pre_readability.md`
 
 ## Notes / Decisions
-- Keep `agile/sprint_current.md` as operational board only.
-- Keep `doc/03_reconstruction_backlog.md` concise; move verbose history to `doc/archive/*`.
+- Keep top-level `doc/` minimal and strategy-first.
+- Move operational/history/stage-package docs into subfolders to remove numbered clutter.
 - Jira remains mandatory lifecycle control plane for all execution tasks.

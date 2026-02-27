@@ -1,4 +1,4 @@
-# DTM-56: TSK-059 Stage 6 slice: read-model JSON contract definition (entities fields versioning)
+﻿# DTM-56: TSK-059 Stage 6 slice: read-model JSON contract definition (entities fields versioning)
 
 ## Context
 - Stage 6 starts from preparing migration to visualization platform.
@@ -24,12 +24,12 @@
 - [x] Read-model JSON contract file added with versioning policy.
 - [x] Mapping from current runtime artifacts to read-model sections is documented.
 - [x] Sprint/context/backlog/task docs synchronized.
-- [x] Jira lifecycle complete (`В работе` -> evidence -> `Готово`).
+- [x] Jira lifecycle complete (`Ð’ Ñ€Ð°Ð±Ð¾Ñ‚Ðµ` -> evidence -> `Ð“Ð¾Ñ‚Ð¾Ð²Ð¾`).
 
 ## Work log
-- 2026-02-27: Jira `DTM-56` created and moved to `В работе`; start evidence comment posted.
+- 2026-02-27: Jira `DTM-56` created and moved to `Ð’ Ñ€Ð°Ð±Ð¾Ñ‚Ðµ`; start evidence comment posted.
 - 2026-02-27: Freshness/trust check started for Stage 6 contract sources.
-- 2026-02-27: Added `doc/11_stage6_read_model_contract.md` with canonical JSON shape, entities, mapping notes, and semantic versioning policy.
+- 2026-02-27: Added `doc/stages/11_stage6_read_model_contract.md` with canonical JSON shape, entities, mapping notes, and semantic versioning policy.
 - 2026-02-27: Smoke checks passed (`.venv\Scripts\python.exe -m py_compile core\planner.py local_run.py`, `.venv\Scripts\python.exe agent\reminder_alert_evaluator.py --help`, `.venv\Scripts\python.exe local_run.py --help`).
 - 2026-02-27: Completion Telegram update sent to owner with Stage 6 tracker state (`done 2`, `remaining 6`).
 
