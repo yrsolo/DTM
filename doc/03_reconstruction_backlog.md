@@ -281,3 +281,17 @@
 3. Зафиксировать baseline результата и дифф.
 4. Подключить сканер секретов и прогнать sanitation репозитория.
 5. Создать demo-dataset без персональных данных для портфолио.
+
+---
+
+## Stage 7 (execution contour for visualization migration)
+- Formalize consumer-facing read-model policy (change policy, compatibility rules, version discipline).
+- Prepare frontend-ready artifacts (schema snapshot + fixture bundle from baseline capture flow).
+- Define first UI migration spike scope and shadow-run readiness checklist.
+
+Done criterion:
+- Stage 7 handoff package is complete and sufficient to start Stage 8 prototype implementation without data-format clarifications.
+
+Status:
+- Stage 7 kickoff started and documented in `doc/14_stage7_execution_plan.md` (`DTM-63`).
+
