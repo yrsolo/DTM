@@ -19,6 +19,7 @@ class PlannerDependencies:
     task_repository: GoogleSheetsTaskRepository
     task_manager: TaskManager
     calendar_manager: CalendarManager
+    calendar_renderer: SheetRenderAdapter
     task_calendar_manager: TaskCalendarManager
     task_calendar_renderer: SheetRenderAdapter
     openai_agent: ChatAdapter
@@ -44,7 +45,17 @@ def build_planner_dependencies(
         source_sheet_info=source_sheet_info,
     )
     task_manager = TaskManager(task_repository)
-    calendar_manager = CalendarManager(sheet_info, service, task_repository)
+    calendar_renderer: SheetRenderAdapter = ServiceSheetRenderAdapter(
+        service=service,
+        spreadsheet_name=sheet_info.spreadsheet_name,
+        sheet_name=sheet_info.get_sheet_name("calendar"),
+    )
+    calendar_manager = CalendarManager(
+        sheet_info,
+        service,
+        task_repository,
+        renderer=calendar_renderer,
+    )
     task_calendar_renderer: SheetRenderAdapter = ServiceSheetRenderAdapter(
         service=service,
         spreadsheet_name=sheet_info.spreadsheet_name,
@@ -86,6 +97,7 @@ def build_planner_dependencies(
         task_repository=task_repository,
         task_manager=task_manager,
         calendar_manager=calendar_manager,
+        calendar_renderer=calendar_renderer,
         task_calendar_manager=task_calendar_manager,
         task_calendar_renderer=task_calendar_renderer,
         openai_agent=openai_agent,

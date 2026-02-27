@@ -37,12 +37,15 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - [DONE] DTM-23 / TSK-026 Stage 3 calendar rendering shared cell-contract scaffold
 - [DONE] DTM-24 / TSK-027 Stage 3 task-calendar renderer alignment
 - [DONE] DTM-25 / TSK-028 Stage 3 sheet renderer adapter extraction
+- [DONE] DTM-26 / TSK-029 Stage 3 calendar renderer adapter boundary extraction
+- [DONE] DTM-27 / TSK-030 Stage 3 render contract parity for calendar header/date cells
+- [DONE] DTM-28 / TSK-031 Stage 3 render adapter test harness (dry-run request assertions)
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 3 follow-up grooming (new Jira keys pending decomposition)
+- [TODO] Stage 3 close-out grooming (remaining renderer unification and coverage review)
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -91,6 +94,12 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
   - Jira: DTM-24 (status: Done / `Gotovo`)
 - TSK-028 - Stage 3 sheet renderer adapter extraction
   - Jira: DTM-25 (status: Done / `Gotovo`)
+- TSK-029 - Stage 3 calendar renderer adapter boundary extraction
+  - Jira: DTM-26 (status: Done / `Gotovo`)
+- TSK-030 - Stage 3 render contract parity for calendar header/date cells
+  - Jira: DTM-27 (status: Done / `Gotovo`)
+- TSK-031 - Stage 3 render adapter test harness (dry-run request assertions)
+  - Jira: DTM-28 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -118,6 +127,9 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - agile/tasks/DTM-23_stage3-render-cell-contract.md
 - agile/tasks/DTM-24_stage3-task-calendar-renderer-alignment.md
 - agile/tasks/DTM-25_stage3-sheet-renderer-adapter-extraction.md
+- agile/tasks/DTM-26_stage3-calendar-renderer-adapter-boundary.md
+- agile/tasks/DTM-27_stage3-render-contract-parity-calendar-cells.md
+- agile/tasks/DTM-28_stage3-render-adapter-test-harness.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -160,3 +172,9 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - 2026-02-27: DTM-24 completed (task-calendar renderer alignment into helper methods over shared `RenderCell`; sync dry-run smoke; Jira `Gotovo`).
 - 2026-02-27: DTM-25 moved to `V rabote` as next single active Stage 3 execution task.
 - 2026-02-27: DTM-25 completed (sheet renderer adapter boundary extraction + bootstrap DI wiring; sync dry-run smoke; Jira `Gotovo`).
+- 2026-02-27: Stage 3.1 follow-up kickoff created in Jira (`DTM-26..DTM-28`); `DTM-26` moved to `V rabote` as active execution task.
+- 2026-02-27: DTM-26 completed (CalendarManager adapter boundary + bootstrap DI wiring; sync dry-run smoke; Jira `Gotovo`).
+- 2026-02-27: DTM-27 moved to `V rabote` as next single active Stage 3 execution task.
+- 2026-02-27: DTM-27 completed (CalendarManager render payload parity helpers over `RenderCell`; sync dry-run smoke; Jira `Gotovo`).
+- 2026-02-27: DTM-28 moved to `V rabote` as next single active Stage 3 execution task.
+- 2026-02-27: DTM-28 completed (adapter dry-run harness assertions via `agent/render_adapter_smoke.py`; smoke checks; Jira `Gotovo`).

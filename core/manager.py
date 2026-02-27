@@ -133,12 +133,25 @@ class TaskTimingProcessor:
 
 
 class CalendarManager:
-    def __init__(self, sheet_info, service, repository):
+    def __init__(
+        self,
+        sheet_info,
+        service,
+        repository,
+        renderer: SheetRenderAdapter | None = None,
+    ):
         self.sheet_info = sheet_info
         self.service = service
         self.calendar = None
         self.repository = repository
+        self.spreadsheet_name = sheet_info.spreadsheet_name
+        self.sheet_name = sheet_info.get_sheet_name("calendar")
         self.get_color = GetColor()
+        self.renderer = renderer or ServiceSheetRenderAdapter(
+            service=service,
+            spreadsheet_name=self.spreadsheet_name,
+            sheet_name=self.sheet_name,
+        )
 
     def create_calendar_structure(self, task_timings, answer=False):
         calendar = defaultdict(lambda: defaultdict(list))
@@ -155,19 +168,15 @@ class CalendarManager:
                 if stage:
                     stage = "\n".join(stage)
                     calendar[date][designer].append(stage)
-                    # calendar[date] = task['id']
         return calendar
 
     def calendar_to_dataframe(self, calendar):
-        # Преобразуем словарь в DataFrame
         df = pd.DataFrame(calendar).T
         df.index.name = "Date"
-        # Добавляем пропущенные даты
         min_date = df.index.min()
         max_date = df.index.max()
         full_date_range = pd.date_range(min_date, max_date)
         df = df.reindex(full_date_range).fillna("")
-        # Преобразуем списки этапов в строки
         calendar = df.sort_index()
         self.calendar = calendar.reindex(sorted(calendar.columns), axis=1)
         return self.calendar
@@ -178,45 +187,21 @@ class CalendarManager:
             now = pd.Timestamp.now()
             min_date = now - pd.Timedelta(min_date)
             df = df[df.index >= min_date]
-        spreadsheet_name = self.sheet_info.spreadsheet_name
-        sheet_name = self.sheet_info.get_sheet_name("calendar")
 
-        # Очищаем лист
-        if sheet_name:
-            self.service.clear_cells(spreadsheet_name, sheet_name)
+        self.renderer.begin()
+        if self.sheet_name:
+            self.renderer.clear_cells()
 
-        # Записываем имена дизайнеров (заголовок таблицы)
         for col_num, designer in enumerate(df.columns, start=1):
-            cell_data = {
-                "value": designer,
-                "color": self.get_color("deep purple"),
-                "text_color": self.get_color("white"),
-                "col": col_num + 1,
-                "row": 1,
-                "bold": True,
-                # 'italic': True,
-                "font_size": 12,
-            }
-            self.service.update_cell(spreadsheet_name, sheet_name, cell_data=cell_data)
-
-        # Записываем данные в Google Таблицу
-        for row_num, (date, row) in enumerate(df.iterrows(), start=2):
-            # Записываем дату слева от этапов
-            if date.weekday() >= 5:  # проверяем на выходные дни
-                color = COLORS["med_gray"]
-            else:
-                color = COLORS["gray"]
-
-            self.service.update_cell(
-                spreadsheet_name,
-                sheet_name,
-                row_num,
-                1,
-                value=date.strftime("%d.%m"),
-                color=color,
+            self.renderer.update_cell(
+                cell_data=self._build_calendar_header_cell(col_num=col_num, designer=designer)
             )
+
+        for row_num, (date, row) in enumerate(df.iterrows(), start=2):
+            self.renderer.update_cell(cell_data=self._build_calendar_date_cell(row_num=row_num, date=date))
+
             now = pd.Timestamp.now().normalize()
-            if date.weekday() >= 5:  # проверяем на выходные дни
+            if date.weekday() >= 5:
                 color = COLORS["light_gray"]
             else:
                 color = COLORS["white"]
@@ -236,19 +221,61 @@ class CalendarManager:
                 else:
                     value = stage
 
-                self.service.update_cell(
-                    spreadsheet_name,
-                    sheet_name,
-                    row_num,
-                    col_num,
-                    value=value,
-                    color=color,
-                    text_color=text_color,
+                self.renderer.update_cell(
+                    cell_data=self._build_calendar_stage_cell(
+                        row_num=row_num,
+                        col_num=col_num,
+                        value=value,
+                        color=color,
+                        text_color=text_color,
+                    )
                 )
 
-        write_cur_time(self.service, spreadsheet_name, sheet_name, cell="A1")
-        self.service.execute_updates(spreadsheet_name)
+        self._write_cur_time(cell="A1")
+        self.renderer.execute_updates()
 
+    def _write_cur_time(self, cell="A1"):
+        cur_time = pd.Timestamp.now(tz="Europe/Moscow").strftime("%H:%M %B %d")
+        row, col = cell_to_indices(cell)
+        self.renderer.update_cell(
+            cell_data={
+                "row": row + 1,
+                "col": col + 1,
+                "value": cur_time,
+            }
+        )
+
+    def _build_calendar_header_cell(self, col_num, designer):
+        return RenderCell(
+            value=designer,
+            color=self.get_color("deep purple"),
+            text_color=self.get_color("white"),
+            col=col_num + 1,
+            row=1,
+            bold=True,
+            font_size=12,
+        ).to_cell_data()
+
+    def _build_calendar_date_cell(self, row_num, date):
+        if date.weekday() >= 5:
+            date_color = COLORS["med_gray"]
+        else:
+            date_color = COLORS["gray"]
+        return RenderCell(
+            value=date.strftime("%d.%m"),
+            color=date_color,
+            col=1,
+            row=row_num,
+        ).to_cell_data()
+
+    def _build_calendar_stage_cell(self, row_num, col_num, value, color, text_color):
+        return RenderCell(
+            value=value,
+            color=color,
+            text_color=text_color,
+            col=col_num,
+            row=row_num,
+        ).to_cell_data()
 def write_cur_time(service, spreadsheet_name, sheet_name, cell="A1"):
     cur_time = pd.Timestamp.now(tz="Europe/Moscow").strftime("%H:%M %B %d")
     row, col = cell_to_indices(cell)
@@ -599,4 +626,5 @@ class TaskCalendarManagerOld(CalendarManager):
 
         write_cur_time(self.service, spreadsheet_name, sheet_name, cell="A1")
         self.service.execute_updates(spreadsheet_name)
+
 
