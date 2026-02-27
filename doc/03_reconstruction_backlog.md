@@ -196,6 +196,7 @@
 - Stage 5 follow-up increment completed: transient failure taxonomy tuned for Telegram retry classifier with taxonomy counters and smoke coverage (`DTM-45`).
 - Stage 5 follow-up increment completed: controlled owner-notify trigger added for evaluator output with explicit opt-in flags (`DTM-46`).
 - Stage 5 follow-up increment completed: evaluator severity gate policy formalized via explicit CI/local fail profiles with override precedence (`DTM-47`).
+- Stage 5 follow-up increment completed: routine ops cadence checklist formalized for threshold tuning governance (`DTM-48`).
 
 ---
 

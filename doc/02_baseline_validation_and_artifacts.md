@@ -49,3 +49,23 @@ Files:
 3. Compare artifact bundles (`quality_report.json` + `alert_evaluation.json`) and mark checklist items.
 4. If alert level changed unexpectedly, create/update risk follow-up item in sprint notes before merge.
 5. Post short evidence summary in Jira and task work log.
+
+## Routine Ops Cadence Checklist (Stage 5)
+Use this cadence to keep threshold tuning reproducible and avoid ad-hoc policy drift.
+
+### Per run
+- Execute baseline helper and confirm `quality_report.json` + `alert_evaluation.json` exist.
+- Record evaluated level (`INFO_ONLY/WARN/CRITICAL/OK`) and core metrics in Jira evidence comment.
+- If level is `WARN` or `CRITICAL`, apply escalation policy from `doc/05_risk_register.md`.
+
+### Weekly
+- Review the latest 3+ baseline bundles and check for repeated false-positive/false-negative patterns.
+- Verify evaluator gate profile usage is consistent:
+  - CI checks use `--fail-profile ci`.
+  - local review stays non-blocking with `--alert-fail-profile local` unless explicitly overridden.
+- Update `agile/sprint_current.md` notes with summary decision (`no tuning` or `tuning proposed`).
+
+### Monthly
+- Run a threshold drift review with trend snapshots and baseline artifacts.
+- If tuning is needed, create a dedicated Jira task (separate from notifier-behavior changes).
+- Document rationale and before/after examples in task file + Jira before applying any threshold update.

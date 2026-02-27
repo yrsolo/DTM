@@ -70,6 +70,8 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `artifacts/baseline/<UTC_TIMESTAMP>_<label>/`
 - Detailed process and checklist:
   - `doc/02_baseline_validation_and_artifacts.md`
+- Routine Stage 5 cadence checklist (per-run/weekly/monthly):
+  - `doc/02_baseline_validation_and_artifacts.md` (`Routine Ops Cadence Checklist`)
 
 ## Secret scan gate (Stage 0.5)
 - Pre-commit gate: `detect-secrets` with `.secrets.baseline`.

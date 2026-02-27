@@ -118,3 +118,9 @@
    - update this policy section and `agile/sprint_current.md` notes,
    - run evaluator smoke and one real dry-run sanity command.
 5. Do not change thresholds and notifier behavior in the same iteration; split policy tuning and runtime behavior changes into separate tasks.
+
+### Routine cadence enforcement
+- `Per run`: execute baseline/evaluator flow, log evaluated level and metrics in Jira evidence.
+- `Weekly`: review latest 3+ bundles and decide `no tuning` vs `tuning proposed`.
+- `Monthly`: run threshold drift review and create dedicated Jira task for any threshold update.
+- Operational checklist source of truth: `doc/02_baseline_validation_and_artifacts.md` (Routine Ops Cadence Checklist).
