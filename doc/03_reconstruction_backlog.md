@@ -122,6 +122,7 @@
 - выполнен инкремент Stage 1 по row-level policy: malformed task/person rows обрабатываются fail-soft (skip + `RowValidationIssue` диагностика) без падения всего пайплайна (DTM-16).
 - выполнен инкремент Stage 1 по timing diagnostics: ошибки парсинга тайминга учитываются структурированно (`TimingParseIssue`) и отражаются в row-level accounting без фатальной остановки пайплайна (DTM-17).
 - выполнен инкремент Stage 1 по quality artifact surfacing: локальные прогоны и baseline capture формируют структурированный `quality_report.json` с агрегированными Stage 1 diagnostics (DTM-18).
+- выполнен инкремент Stage 1 по test-safe reminder execution: для тестового контура добавлен mock external mode (`OpenAI` + `Telegram`) без внешних side effects (DTM-15).
 
 ---
 

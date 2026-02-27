@@ -28,6 +28,7 @@ async def main(**kwargs):
     mode = kwargs.get("mode", None)
     event = kwargs.get("event", None)
     dry_run = kwargs.get("dry_run", False)
+    mock_external = kwargs.get("mock_external")
     if mode:
         pass
     elif event:
@@ -40,9 +41,17 @@ async def main(**kwargs):
             print(f"{trigger_id=}")
     else:
         mode = "test"
-    print(f"{mode=} {dry_run=}")
+    if mock_external is None:
+        mock_external = mode == "test"
+    print(f"{mode=} {dry_run=} {mock_external=}")
 
-    planner = GoogleSheetPlanner(KEY_JSON, SHEET_INFO, mode=mode, dry_run=dry_run)
+    planner = GoogleSheetPlanner(
+        KEY_JSON,
+        SHEET_INFO,
+        mode=mode,
+        dry_run=dry_run,
+        mock_external=mock_external,
+    )
 
     if mode in {"timer", "test", "sync-only"}:
         start_time = pd.Timestamp.now()

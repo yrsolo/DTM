@@ -47,6 +47,11 @@ def parse_args():
         type=Path,
         help="Optional path to write quality report JSON.",
     )
+    parser.add_argument(
+        "--mock-external",
+        action="store_true",
+        help="Disable OpenAI and Telegram external calls in reminder flow.",
+    )
     return parser.parse_args()
 
 
@@ -61,7 +66,14 @@ def load_event(args):
 if __name__ == "__main__":
     args = parse_args()
     event = load_event(args)
-    quality_report = asyncio.run(main(mode=args.mode, event=event, dry_run=args.dry_run))
+    quality_report = asyncio.run(
+        main(
+            mode=args.mode,
+            event=event,
+            dry_run=args.dry_run,
+            mock_external=args.mock_external,
+        )
+    )
     if args.quality_report_file:
         args.quality_report_file.parent.mkdir(parents=True, exist_ok=True)
         args.quality_report_file.write_text(

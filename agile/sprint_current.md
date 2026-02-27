@@ -29,12 +29,13 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - [DONE] DTM-16 / TSK-019 Stage 1 row-level validation policy for malformed task/person rows.
 - [DONE] DTM-17 / TSK-020 Stage 1 timing parse diagnostics and non-fatal error accounting.
 - [DONE] DTM-18 / TSK-021 Stage 1 quality report surfacing in local run artifacts.
+- [DONE] DTM-15 / TSK-018 Reminder tests: mock OpenAI and Telegram delivery paths.
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- DTM-15 - TSK-018 Reminder tests: mock OpenAI and Telegram delivery paths (low priority)
+- none (Stage 1 completion gate)
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -62,7 +63,7 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - TSK-017 - Stage 1 typed data-quality error taxonomy and reporting
   - Jira: DTM-14 (status: Done / `Gotovo`)
 - TSK-018 - Reminder tests: mock OpenAI and Telegram delivery paths
-  - Jira: DTM-15 (status: To Do / `K vypolneniyu`)
+  - Jira: DTM-15 (status: Done / `Gotovo`)
 - TSK-019 - Stage 1 row-level validation policy for malformed task/person rows
   - Jira: DTM-16 (status: Done / `Gotovo`)
 - TSK-020 - Stage 1 timing parse diagnostics and non-fatal error accounting
@@ -115,3 +116,5 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - 2026-02-27: DTM-16 completed (row-level malformed-row fail-soft policy + `row_issues` diagnostics in task/people loaders, smoke-check, Jira `Gotovo`).
 - 2026-02-27: DTM-17 completed (structured timing parse diagnostics + non-fatal row-level accounting, smoke-check, Jira `Gotovo`).
 - 2026-02-27: DTM-18 completed (quality report surfaced in local runs and baseline artifacts, smoke-check, Jira `Gotovo`).
+- 2026-02-27: DTM-15 moved to `V rabote` for reminder test mocks (OpenAI/Telegram external calls disabled in test mode).
+- 2026-02-27: DTM-15 completed (mock external reminder mode via `--mock-external`/`mode=test` default, smoke-check, Jira `Gotovo`).

@@ -77,6 +77,7 @@
   - сбор черновика;
   - улучшение текста через OpenAI;
   - отправка по chat_id сотрудника.
+  - test-safe режим: при `mock_external` используется `MockOpenAIChatAgent`, а Telegram-отправка пропускается без внешних вызовов.
 
 ## Инфраструктура и утилиты
 
@@ -119,3 +120,4 @@
 - Row-level fail-soft policy added for malformed task/people rows: loaders skip invalid rows and record `RowValidationIssue` diagnostics (`row_issues`) instead of failing whole load.
 - `TimingParser` now keeps structured diagnostics (`TimingParseIssue`, `parse_issues`, `total_parse_errors`), and task loader records timing-parse error counts into row-level issues without stopping the pipeline.
 - `GoogleSheetPlanner.build_quality_report()` now surfaces structured Stage 1 diagnostics; `main.py` prints quality summary and `local_run.py --quality-report-file` can persist JSON artifacts.
+- Added reminder external-call mock controls for test runs: `main.py` auto-enables `mock_external` for `mode=test`, `local_run.py` supports explicit `--mock-external`, and reminder flow skips real OpenAI/Telegram calls in this mode.

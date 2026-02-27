@@ -161,10 +161,32 @@ class AsyncOpenAIChatAgent(object):
         return completion.choices[0].message.content
 
 
+class MockOpenAIChatAgent(object):
+    """Mock агент для тестового режима без внешних вызовов OpenAI."""
+
+    async def chat(self, messages, model=None):
+        if isinstance(messages, str):
+            return messages
+        if isinstance(messages, list):
+            for message in reversed(messages):
+                if message.get("role") == "user":
+                    return message.get("content")
+        return None
+
+
 class Reminder(object):
     """Напоминания о задачах."""
 
-    def __init__(self, task_repository, openai_agent, helper_character, tg_bot_token=None, people_manager=None):
+    def __init__(
+            self,
+            task_repository,
+            openai_agent,
+            helper_character,
+            tg_bot_token=None,
+            people_manager=None,
+            mock_openai=False,
+            mock_telegram=False,
+    ):
         """Инициализация напоминаний о задачах.
 
         Args:
@@ -176,7 +198,9 @@ class Reminder(object):
         """
         self.task_repository = task_repository
         self.openai_agent = openai_agent
-        self.tg_bot = TelegramNotifier(tg_bot_token)
+        self.mock_openai = bool(mock_openai)
+        self.mock_telegram = bool(mock_telegram)
+        self.tg_bot = None if self.mock_telegram else TelegramNotifier(tg_bot_token)
         self.helper_character = helper_character
         self.draft_messages = {}
         self.enhanced_messages = {}
@@ -209,6 +233,9 @@ class Reminder(object):
         draft = self.generate_draft_message(designer, tasks_today, tasks_next_day)
         if draft:
             self.draft_messages[designer] = draft  # Сохраняем черновое сообщение
+            if self.mock_openai:
+                self.enhanced_messages[designer] = draft
+                return draft
             try:
                 enhanced = await self.enhance_message(draft)
                 self.enhanced_messages[designer] = enhanced  # Сохраняем улучшенное сообщение
@@ -347,5 +374,8 @@ class Reminder(object):
                 test = mode == 'test'
                 chat_id = test_chat_id if test else designer.chat_id
                 _safe_print(f'{mode=} {designer_name=} {chat_id=} {message=}')
+                if self.mock_telegram:
+                    _safe_print(f'mock_telegram_send: skipped for {designer_name} to chat_id={chat_id}')
+                    continue
                 if chat_id and self.tg_bot and vacation:
                     await self.tg_bot.send_message(chat_id, message)

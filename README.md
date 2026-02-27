@@ -41,6 +41,8 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `sync-only`: explicit sync-only run (no reminders).
   - `reminders-only`: explicit reminders-only run (no sheet sync path).
 - Safe verification mode: add `--dry-run` to disable Google Sheets write operations while keeping read flow and dry-run logs.
+- External side-effect guard for reminder tests: add `--mock-external` to disable OpenAI and Telegram calls in reminder flow.
+- `mode=test` now enables mock external mode by default in `main.py` unless explicitly overridden.
 - Optional artifact export: `--quality-report-file <path>` writes structured diagnostics snapshot (`task/people row issues`, `timing parse errors`) as JSON.
 
 ## Baseline validation flow (Stage 0.4)

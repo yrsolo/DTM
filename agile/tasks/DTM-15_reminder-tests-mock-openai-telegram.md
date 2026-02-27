@@ -14,7 +14,7 @@
 - No broad reminder pipeline refactor in this task.
 
 ## Mode
-- Plan mode (groomed backlog)
+- Execution mode
 
 ## Plan
 1) Locate integration boundaries in reminder path (`core/reminder.py`, run entrypoints).
@@ -32,13 +32,17 @@
 - Existing production mode keeps current behavior.
 
 ## Checklist (DoD)
-- [ ] Mock/stub strategy implemented for OpenAI + Telegram in reminder tests.
-- [ ] Tests verify no external calls in test mode.
-- [ ] Smoke-check confirms production mode still unchanged.
-- [ ] Docs/sprint/Jira synced.
+- [x] Mock/stub strategy implemented for OpenAI + Telegram in reminder tests.
+- [x] Tests verify no external calls in test mode.
+- [x] Smoke-check confirms production mode still unchanged.
+- [x] Docs/sprint/Jira synced.
 
 ## Work log
 - 2026-02-27: Jira issue created (DTM-15), kept in To Do as non-urgent owner request.
+- 2026-02-27: Jira moved to `V rabote`; execution started.
+- 2026-02-27: Added `MockOpenAIChatAgent` + reminder mock flags (`mock_openai`, `mock_telegram`) and threaded `mock_external` through planner/main/local_run (`--mock-external`).
+- 2026-02-27: Smoke passed: `.venv\Scripts\python.exe local_run.py --mode test --dry-run --mock-external` and `.venv\Scripts\python.exe local_run.py --mode reminders-only --dry-run --mock-external`; Telegram sends skipped via `mock_telegram_send` logs.
+- 2026-02-27: Docs synced (`README.md`, `doc/02_current_modules_and_functionality.md`, `doc/03_reconstruction_backlog.md`, sprint/context files) and Jira prepared for `Gotovo`.
 
 ## Links
 - Jira: DTM-15
