@@ -116,3 +116,4 @@
 - Required-sheet-header validation now derives from contract metadata (`required_columns`) for both tasks and people, with fail-fast typed data-quality errors including sheet context.
 - Added `core/errors.py` typed data-quality taxonomy (`DataQualityError`, `MissingRequiredColumnsError`) for sheet-contract failures.
 - Task/people required-header checks now raise `MissingRequiredColumnsError` (ValueError-compatible) with unified diagnostics format and sheet context.
+- Row-level fail-soft policy added for malformed task/people rows: loaders skip invalid rows and record `RowValidationIssue` diagnostics (`row_issues`) instead of failing whole load.

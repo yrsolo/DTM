@@ -22,3 +22,15 @@ class MissingRequiredColumnsError(DataQualityError):
             f"'{self.spreadsheet_name}/{self.sheet_name}': {missing_str}. "
             f"Check source sheet headers against config.{self.field_map_name}."
         )
+
+
+@dataclass(frozen=True)
+class RowValidationIssue:
+    entity_name: str
+    row_number: int
+    reason: str
+    row_id: str = ""
+
+    def __str__(self) -> str:
+        suffix = f" [row_id={self.row_id}]" if self.row_id else ""
+        return f"Skipped malformed {self.entity_name} row {self.row_number}: {self.reason}{suffix}"

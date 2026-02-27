@@ -17,7 +17,7 @@ import pandas as pd
 
 from config import COLOR_STATUS, REPLACE_NAMES, TASK_FIELD_MAP
 from core.contracts import TaskRowContract, is_nullish, normalize_text
-from core.errors import MissingRequiredColumnsError
+from core.errors import MissingRequiredColumnsError, RowValidationIssue
 from core.reminder import TelegramNotifier
 from utils.service import GoogleSheetInfo, GoogleSheetsService
 
@@ -208,6 +208,7 @@ class GoogleSheetsTaskRepository(TaskRepository):
         self.df = None
         self.replace_names = REPLACE_NAMES
         self.tasks = dict()
+        self.row_issues: List[RowValidationIssue] = []
         self.timing_parser = TimingParser()
         self.dop = {}
 
@@ -306,17 +307,43 @@ class GoogleSheetsTaskRepository(TaskRepository):
 
     def _df_to_task(self, df):
         """Преобразовать DataFrame в список задач"""
+        self.row_issues = []
         tasks_list = []
         next_task_date = None
         for idx, row in df.iterrows():
-            contract = TaskRowContract.from_mapping(row, TASK_FIELD_MAP)
-            task = Task(**contract.to_task_kwargs(), parser=self.timing_parser, next_task_date=next_task_date)
+            row_number = int(idx) + 2
+            try:
+                contract = TaskRowContract.from_mapping(row, TASK_FIELD_MAP)
+                task = Task(
+                    **contract.to_task_kwargs(),
+                    parser=self.timing_parser,
+                    next_task_date=next_task_date,
+                )
+            except (TypeError, ValueError, KeyError) as exc:
+                self._record_row_issue("task", row_number, f"mapping failure: {exc}")
+                continue
+            if _is_nullish(task.id):
+                self._record_row_issue("task", row_number, "missing task id")
+                continue
+            if task.id in self.tasks:
+                self._record_row_issue("task", row_number, "duplicate task id", row_id=str(task.id))
+                continue
             tasks_list.append(task)
             self.tasks[task.id] = task
             mean_date = pd.Series(task.timing.keys()).mean()
             if not pd.isna(mean_date):
                 next_task_date = mean_date
         return tasks_list
+
+    def _record_row_issue(self, entity_name: str, row_number: int, reason: str, row_id: str = ""):
+        issue = RowValidationIssue(
+            entity_name=entity_name,
+            row_number=row_number,
+            reason=reason,
+            row_id=row_id,
+        )
+        self.row_issues.append(issue)
+        print(str(issue))
 
     def _filter(self, column_name, value):
         """Отфильтровать DataFrame по значению в колонке"""

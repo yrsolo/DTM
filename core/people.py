@@ -2,7 +2,7 @@ from typing import List
 from utils.service import GoogleSheetsService, GoogleSheetInfo
 from config import PEOPLE_FIELD_MAP
 from core.contracts import PersonRowContract, normalize_text
-from core.errors import MissingRequiredColumnsError
+from core.errors import MissingRequiredColumnsError, RowValidationIssue
 
 
 class Person:
@@ -49,6 +49,7 @@ class PeopleManager:
         self.service = service
         self.sheet_info = sheet_info
         self.df = None
+        self.row_issues: List[RowValidationIssue] = []
 
     def _load(self):
         if self.people == {}:
@@ -59,9 +60,23 @@ class PeopleManager:
         sheet_name = self.sheet_info.get_sheet_name('people')
         self.df = self.service.get_dataframe(spreadsheet_name, sheet_name, worksheet_range='A1:Z100')
         self._validate_required_columns(self.df, spreadsheet_name, sheet_name)
+        self.row_issues = []
         for i, row in self.df.iterrows():
-            person = row.to_dict()
-            person = self._create_person(person)
+            row_number = int(i) + 2
+            try:
+                person = self._create_person(row.to_dict())
+            except (TypeError, ValueError, KeyError) as exc:
+                self._record_row_issue("people", row_number, f"mapping failure: {exc}")
+                continue
+            if not person.id:
+                self._record_row_issue("people", row_number, "missing person_id")
+                continue
+            if not person.name:
+                self._record_row_issue("people", row_number, "missing name", row_id=person.id)
+                continue
+            if person.id in self.people:
+                self._record_row_issue("people", row_number, "duplicate person_id", row_id=person.id)
+                continue
             self.people[person.id] = person
         return self.people
 
@@ -85,6 +100,16 @@ class PeopleManager:
         else:
             person = Person(**person_kwargs)
         return person
+
+    def _record_row_issue(self, entity_name: str, row_number: int, reason: str, row_id: str = ""):
+        issue = RowValidationIssue(
+            entity_name=entity_name,
+            row_number=row_number,
+            reason=reason,
+            row_id=row_id,
+        )
+        self.row_issues.append(issue)
+        print(str(issue))
 
     def get_person(self, name):
         self._load()
