@@ -203,6 +203,7 @@
 - Stage 5 follow-up increment completed: sprint ceremony template now includes monthly alert-threshold drift review checkpoint (`DTM-52`).
 - Stage 5 follow-up increment completed: weekly ops review now includes retry taxonomy trend threshold triggers (`DTM-53`).
 - Stage 5 follow-up increment completed: owner-notify dry-run output now preserves readable RU payload wording and normalized local fallback context for no-mode runs (`DTM-54`).
+- Stage 6 kickoff planning increment started: baseline estimate fixed at 8 tasks with dynamic `done/remaining` tracking in sprint board; owner completion Telegram update rule added to operating flow (`DTM-55`).
 
 ---
 

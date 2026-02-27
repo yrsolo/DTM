@@ -1,13 +1,19 @@
 # Sprint Current
 
 ## Sprint Goal
-Complete Stage 5 observability hardening for reminders with explicit SLI alert thresholds and escalation policy.
+Start Stage 6 preparation for visualization platform migration with explicit read-model planning and delivery tracking.
 
 ## Capacity
 1 active task (WIP), 3 tasks queued for this short sprint cycle.
 
 ## Now
 - [IN_PROGRESS] none
+
+## Stage 6 Estimate (Dynamic)
+- Baseline estimate: 8 tasks
+- Done: 1
+- Remaining: 7
+- Rule: estimate is adjusted during execution when scope clarifies; done/remaining is updated after each task completion.
 
 ## Done
 - [DONE] Initial git workflow policy added.
@@ -66,12 +72,15 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - [DONE] DTM-52 / TSK-055 Stage 5 follow-up: monthly alert-threshold drift review note in sprint ceremony template
 - [DONE] DTM-53 / TSK-056 Stage 5 follow-up: retry taxonomy trend threshold note for weekly ops review
 - [DONE] DTM-54 / TSK-057 Stage 5 follow-up: owner notify fallback wording check for alert evaluator dry-run output
+- [DONE] DTM-55 / TSK-058 Stage 6 kickoff: dynamic estimate tracker and completion-notify process rule
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] none
+- [TODO] Stage 6 slice: read-model JSON contract definition (entities/fields/versioning policy)
+- [TODO] Stage 6 slice: read-model builder from current planner artifacts
+- [TODO] Stage 6 slice: publication path for read-model artifacts without impact on existing runtime
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -178,6 +187,8 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
   - Jira: DTM-53 (status: Done / `Gotovo`)
 - TSK-057 - Stage 5 follow-up: owner notify fallback wording check for alert evaluator dry-run output
   - Jira: DTM-54 (status: Done / `Gotovo`)
+- TSK-058 - Stage 6 kickoff: dynamic estimate tracker and completion-notify process rule
+  - Jira: DTM-55 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -234,6 +245,7 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - agile/tasks/DTM-52_stage5-monthly-alert-threshold-drift-review-note-in-ceremony-template.md
 - agile/tasks/DTM-53_stage5-retry-taxonomy-trend-threshold-note-weekly-ops-review.md
 - agile/tasks/DTM-54_stage5-owner-notify-fallback-wording-check-evaluator-dry-run.md
+- agile/tasks/DTM-55_stage6-kickoff-dynamic-estimate-and-completion-notify.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -334,3 +346,6 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - 2026-02-27: DTM-53 completed (weekly retry taxonomy trend threshold triggers added in `doc/02` and `doc/05`; Jira `Gotovo`).
 - 2026-02-27: DTM-54 moved to `V rabote` for Stage 5 owner-notify fallback wording consistency check in evaluator/local dry-run output.
 - 2026-02-27: DTM-54 completed (readable owner-notify dry-run command output + local notify fallback context normalization `авторежим`; evaluator/local smoke checks passed; Jira `Gotovo`).
+- 2026-02-27: DTM-55 moved to `V rabote` for Stage 6 kickoff on dynamic estimate tracking (`done/remaining`) and completion Telegram notify rule.
+- 2026-02-27: Owner directive accepted: always report Stage estimate as `done/remaining` and send Telegram update on each task completion.
+- 2026-02-27: DTM-55 completed (Stage 6 dynamic estimate tracker initialized: baseline 8, done 1, remaining 7; completion Telegram notify rule formalized; Jira `Gotovo`).
