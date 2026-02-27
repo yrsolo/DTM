@@ -1,9 +1,17 @@
 """Application-layer use-cases for planner runtime orchestration."""
 
+from __future__ import annotations
+
+from typing import Any, Mapping
+
 import pandas as pd
 
 
-def resolve_run_mode(mode=None, event=None, triggers=None):
+def resolve_run_mode(
+    mode: str | None = None,
+    event: Any = None,
+    triggers: Mapping[str, str] | None = None,
+) -> str:
     """Resolve execution mode from explicit argument or cloud trigger payload."""
     if mode:
         return mode
@@ -20,7 +28,7 @@ def resolve_run_mode(mode=None, event=None, triggers=None):
     return "test"
 
 
-async def run_planner_use_case(planner, mode):
+async def run_planner_use_case(planner: Any, mode: str) -> dict[str, Any]:
     """Execute planner branches for the resolved mode."""
     if mode in {"timer", "test", "sync-only"}:
         start_time = pd.Timestamp.now()

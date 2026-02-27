@@ -35,6 +35,8 @@ This file explains where to read first and where to go for details.
 - Stage 10: `doc/stages/21_stage9_closeout_and_stage10_handoff.md`, `doc/stages/22_stage10_execution_plan.md`
 - Stage 11: `doc/stages/23_stage10_closeout_and_stage11_handoff.md`, `doc/stages/24_stage11_retrospective_execution_plan.md`
 - Stage 11 closeout: `doc/stages/30_stage11_closeout_and_stage12_handoff.md`
+- Stage 12 quality sweep: `doc/stages/31_stage12_code_quality_execution_plan.md`, `doc/governance/stage12_code_quality_standard.md`
+- Stage 12 audit artifact: `doc/governance/stage12_module_audit_matrix.md`
 - Stage 10 ops drill: `doc/ops/stage10_function_rollback_drill.md`
 - Stage 10 owner quickstart: `doc/ops/stage10_owner_quickstart_checklist.md`
 

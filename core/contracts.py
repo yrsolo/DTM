@@ -1,3 +1,5 @@
+"""Typed row contracts used during repository parsing and validation."""
+
 from dataclasses import dataclass
 from typing import Any, ClassVar, Mapping
 
@@ -5,6 +7,7 @@ import pandas as pd
 
 
 def is_nullish(value: Any) -> bool:
+    """Return True when the value should be treated as empty in row contracts."""
     if value is None:
         return True
     try:
@@ -22,6 +25,7 @@ def is_nullish(value: Any) -> bool:
 
 
 def normalize_text(value: Any, strip: bool = True) -> str:
+    """Convert value to normalized text, preserving empty-string semantics."""
     if is_nullish(value):
         return ""
     text = value if isinstance(value, str) else str(value)
@@ -30,6 +34,7 @@ def normalize_text(value: Any, strip: bool = True) -> str:
 
 @dataclass(frozen=True)
 class TaskRowContract:
+    """Validated snapshot of a single task row from source sheets."""
     brand: str
     format_: str
     project_name: str
@@ -82,6 +87,7 @@ class TaskRowContract:
 
 @dataclass(frozen=True)
 class PersonRowContract:
+    """Validated snapshot of a single person row from source sheets."""
     person_id: str
     name: str
     email: str

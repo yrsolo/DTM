@@ -1,21 +1,23 @@
 # Sprint Current
 
 ## Sprint Goal
-Run Stage 11 as a detailed retrospective with evidence-backed findings and corrective backlog.
+Execute full code quality sweep (style/typing/docstrings/readability) without adding new features.
 
 ## Capacity
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] Stage 12 kickoff planning from Stage 11 corrective backlog priorities.
+- [IN_PROGRESS] DTM-102 / TSK-105 - Stage 12 typing/docstring/style cleanup slice for `core/*`.
 
-## Stage 11 Estimate (Dynamic)
-- Baseline estimate: 7 tasks.
-- Done: 7
-- Remaining: 0
-- Rule: update `Done/Remaining` after each completed Stage 11 task.
+## Stage 12 Estimate (Dynamic)
+- Baseline estimate: 8 tasks.
+- Done: 2
+- Remaining: 6
+- Rule: update `Done/Remaining` after each completed Stage 12 task.
 
 ## Done
+- [DONE] DTM-101 / TSK-104 - Stage 12 module-by-module audit matrix generated (`53` modules, `398` items).
+- [DONE] DTM-100 / TSK-103 - Stage 12 quality-sweep kickoff and standards.
 - [DONE] DTM-76 / TSK-079 - main-branch auto-deploy workflow for Yandex Cloud Function.
 - [DONE] DTM-77 / TSK-080 - automate `.env` to Lockbox sync + Google key runtime secret source.
 - [DONE] DTM-78 / TSK-081 - bind Lockbox env mappings to function + cloud invoke smoke.
@@ -44,11 +46,13 @@ Run Stage 11 as a detailed retrospective with evidence-backed findings and corre
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 12: kickoff and baseline estimate.
-- [TODO] Stage 12: Priority A runtime contour hardening slice.
+- [TODO] Stage 12: typing/docstring/style cleanup for `utils/*`.
+- [TODO] Stage 12: typing/docstring/style cleanup for `agent/*`.
+- [TODO] Stage 12: consistency pass for exceptions/logging/naming.
+- [TODO] Stage 12: final readability pass + dead code cleanup.
 
 ## Active Task Files
-- none (Stage 11 queue complete)
+- `agile/tasks/DTM-102_stage12-core-cleanup.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`

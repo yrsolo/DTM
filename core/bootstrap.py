@@ -1,6 +1,9 @@
 """Stage 2 bootstrap boundary for planner dependency wiring."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
+from typing import Mapping
 
 from config import HELPER_CHARACTER, MODEL, OPENAI, ORG, PROXIES, SOURCE_SHEET_INFO, TG
 from core.adapters import ChatAdapter, MessageAdapter, SheetRenderAdapter
@@ -30,11 +33,12 @@ class PlannerDependencies:
 
 
 def build_planner_dependencies(
-        key_json,
-        sheet_info_data,
-        dry_run=False,
-        mock_external=False,
-):
+    key_json: str,
+    sheet_info_data: Mapping[str, str],
+    dry_run: bool = False,
+    mock_external: bool = False,
+) -> PlannerDependencies:
+    """Construct runtime dependencies for planner orchestration."""
     sheet_info = GoogleSheetInfo(**sheet_info_data)
     source_sheet_info = GoogleSheetInfo(**SOURCE_SHEET_INFO)
 
