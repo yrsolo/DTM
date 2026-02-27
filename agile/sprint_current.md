@@ -41,12 +41,13 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - [DONE] DTM-27 / TSK-030 Stage 3 render contract parity for calendar header/date cells
 - [DONE] DTM-28 / TSK-031 Stage 3 render adapter test harness (dry-run request assertions)
 - [DONE] DTM-29 / TSK-032 Stage 3 close-out: TaskManager renderer adapter unification
+- [DONE] DTM-30 / TSK-033 Stage 3 close-out coverage: manager adapter smoke assertions
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 3 close-out grooming (coverage review after TaskManager adapter unification)
+- [TODO] Stage 3 close-out grooming (legacy path disposition for `TaskCalendarManagerOld`)
 - [TODO] Stage 4 kickoff grooming (reminder pipeline fallback/idempotency first slice)
 
 ## Selected Work (Jira/Local)
@@ -104,6 +105,8 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
   - Jira: DTM-28 (status: Done / `Gotovo`)
 - TSK-032 - Stage 3 close-out: TaskManager renderer adapter unification
   - Jira: DTM-29 (status: Done / `Gotovo`)
+- TSK-033 - Stage 3 close-out coverage: manager adapter smoke assertions
+  - Jira: DTM-30 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -135,6 +138,7 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - agile/tasks/DTM-27_stage3-render-contract-parity-calendar-cells.md
 - agile/tasks/DTM-28_stage3-render-adapter-test-harness.md
 - agile/tasks/DTM-29_stage3-taskmanager-renderer-adapter-unification.md
+- agile/tasks/DTM-30_stage3-closeout-coverage-manager-adapter-smoke.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -185,3 +189,5 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - 2026-02-27: DTM-28 completed (adapter dry-run harness assertions via `agent/render_adapter_smoke.py`; smoke checks; Jira `Gotovo`).
 - 2026-02-27: DTM-29 moved to `V rabote` as Stage 3 close-out slice for TaskManager renderer adapter unification.
 - 2026-02-27: DTM-29 completed (TaskManager adapter unification + bootstrap DI wiring; adapter smoke + sync dry-run; Jira `Gotovo`).
+- 2026-02-27: DTM-30 moved to `V rabote` for Stage 3 close-out coverage assertions at manager-level adapter paths.
+- 2026-02-27: DTM-30 completed (extended manager-level adapter smoke assertions + sync dry-run; Jira `Gotovo`).
