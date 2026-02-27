@@ -1,4 +1,4 @@
-﻿# DTM-5: Add run modes `sync-only` / `reminders-only` and `--dry-run`
+# DTM-5: Add run modes `sync-only` / `reminders-only` and `--dry-run`
 
 ## Context
 - Stage 0 backlog requires safer execution control for local verification.

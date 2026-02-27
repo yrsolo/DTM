@@ -1,4 +1,4 @@
-﻿# Sprint Current
+# Sprint Current
 
 ## Sprint Goal
 Keep delivery steady with low-risk, reversible steps toward reconstruction backlog Stage 0.
@@ -51,5 +51,5 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - Keep WIP limit = 1 to reduce regression risk.
 - Before assigning execution tasks, verify source freshness and trust level in `agile/context_registry.md`.
 - Jira synchronization started: issues created/linked for TSK-009 and TSK-010, lifecycle managed in Jira first.
-- 2026-02-27: Jira access is currently unavailable in this shell session; owner escalated via `python agent/notify_owner.py` (`🚨 Jira недоступна`).
+- 2026-02-27: Jira access is currently unavailable in this shell session; owner escalated via `python agent/notify_owner.py` (`Jira nedostupna (alert)`).
 - Until Jira is restored or waiver is provided, execution tasks remain blocked by contract.
