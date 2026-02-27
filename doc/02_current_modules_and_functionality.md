@@ -77,6 +77,7 @@
   - улучшение текста через OpenAI;
   - отправка по chat_id сотрудника.
   - fallback-поведение: если OpenAI enhancer вернул пустой/недоступный ответ, используется draft-сообщение вместо пустой отправки.
+  - idempotency guard: повторная отправка идентичного сообщения тому же designer/chat в рамках одного run-cycle пропускается.
   - test-safe режим: при `mock_external` используется `MockOpenAIChatAgent`, а Telegram-отправка пропускается без внешних вызовов.
 
 ## `core/bootstrap.py`
@@ -141,3 +142,4 @@
 - Stage 2 application use-case extraction: orchestration ветки выполнения вынесены из `main.py` в `core/use_cases.py`.
 - Stage 2 infra adapter extraction: reminder/bootstrap flow uses explicit external adapter contracts (`core/adapters.py`) with injected Telegram/OpenAI implementations.
 - Stage 4 fallback hardening: reminder pipeline now enforces draft fallback when enhancer output is empty/unavailable and includes deterministic local smoke `agent/reminder_fallback_smoke.py`.
+- Stage 4 idempotency increment: reminder send path tracks in-run delivery keys and skips duplicate sends; deterministic smoke added in `agent/reminder_idempotency_smoke.py`.

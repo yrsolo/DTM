@@ -7,6 +7,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Builds visual planning views for a design team (timeline and designer-focused boards).
 - Sends morning reminders to designers via Telegram.
 - Uses OpenAI to improve reminder text style, with automatic fallback to draft text when enhancer is unavailable.
+- Reminder delivery has in-run duplicate guard (idempotent send key) to prevent repeated sends in one runtime cycle.
 
 ## Why this repository exists
 - Show practical refactoring of a working legacy system.

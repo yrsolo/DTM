@@ -1,5 +1,6 @@
 """Модуль для напоминаний о задачах."""
 import asyncio
+import hashlib
 import json
 from collections import defaultdict
 
@@ -209,6 +210,7 @@ class Reminder(object):
         self.helper_character = helper_character
         self.draft_messages = {}
         self.enhanced_messages = {}
+        self.sent_delivery_keys = set()
         self.today = None
         self.next_work_day = None
         self.people_manager = people_manager
@@ -396,4 +398,18 @@ class Reminder(object):
                     _safe_print(f'mock_telegram_send: skipped for {designer_name} to chat_id={chat_id}')
                     continue
                 if chat_id and self.tg_bot and vacation:
+                    delivery_key = self._build_delivery_key(designer_name, chat_id, message)
+                    if delivery_key in self.sent_delivery_keys:
+                        _safe_print(f"duplicate_reminder_skip: {designer_name} chat_id={chat_id}")
+                        continue
                     await self.tg_bot.send_message(chat_id, message)
+                    self.sent_delivery_keys.add(delivery_key)
+
+    def _build_delivery_key(self, designer_name, chat_id, message):
+        normalized_day = (
+            str(self.today.date())
+            if isinstance(self.today, pd.Timestamp)
+            else str(pd.Timestamp.today().date())
+        )
+        msg_hash = hashlib.sha256(str(message).encode("utf-8")).hexdigest()[:16]
+        return f"{normalized_day}|{designer_name}|{chat_id}|{msg_hash}"
