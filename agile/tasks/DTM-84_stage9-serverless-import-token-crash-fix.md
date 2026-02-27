@@ -26,12 +26,15 @@
 - [x] Cloud function invoke smoke utility script added.
 - [ ] Jira evidence comment added.
 - [ ] Jira moved to `Gotovo`.
-- [ ] Telegram completion sent.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-27: Created `DTM-84`, moved to `V rabote`.
 - 2026-02-27: Removed eager notifier in `utils/service.py`; implemented lazy bot init in `core/reminder.py`.
 - 2026-02-27: Added `agent/invoke_function_smoke.py` for endpoint smoke checks.
+- 2026-02-27: Added HTTP invoke controls in `index.py` (`healthcheck`, optional mode overrides, fail-safe error notifier path).
+- 2026-02-27: Fixed Yandex HTTP envelope parsing (`event.body`) so smoke payload is read correctly.
+- 2026-02-27: Deployed via `main`; GitHub Actions run `22501249449` passed; endpoint healthcheck returns `!HEALTHY!`.
 
 ## Links
 - Jira: DTM-84

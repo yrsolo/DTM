@@ -7,12 +7,12 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] DTM-84 / TSK-086 - fix import-time Telegram token crash in serverless runtime + add function invoke smoke script.
+- [IN_PROGRESS] Stage 9 next slice grooming (post DTM-84 closeout): shadow-run + contract-regression + smoke checklist.
 
 ## Stage 9 Estimate (Dynamic)
 - Baseline estimate: 9 tasks (adjusted after serverless runtime hotfix slice).
-- Done: 7
-- Remaining: 2
+- Done: 8
+- Remaining: 1
 - Rule: update `Done/Remaining` after each completed Stage 9 task.
 
 ## Done
@@ -23,12 +23,12 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 - [DONE] DTM-81 / TSK-083 - documentation readability refactor (`doc` map + concise backlog format).
 - [DONE] DTM-82 / TSK-084 - doc folder restructuring by purpose (`core/ops/governance/stages/archive`).
 - [DONE] DTM-83 / TSK-085 - owner-approved main deploy trigger + credential fallback; deploy run `22500598734` successful.
+- [DONE] DTM-84 / TSK-086 - import/runtime Telegram crash fixed for serverless startup; HTTP-body parsing + healthcheck invoke path; deploy run `22501249449` successful, endpoint returns `!HEALTHY!`.
 
 ## Blocked
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-84 / TSK-086 - fix import-time Telegram token crash in serverless runtime + add function invoke smoke script.
 - [TODO] Stage 9: cloud-profile shadow-run with explicit `PROTOTYPE_*_S3_KEY` pass criteria.
 - [TODO] Stage 9: deploy-pipeline consumer contract-regression checks.
 - [TODO] Stage 9: deployment smoke checklist for Yandex Cloud Function profile.
