@@ -22,7 +22,7 @@ jobs:
         id: deploy
         uses: yc-actions/yc-sls-function@v4
         with:
-          yc-sa-id: ${{ vars.YC_SERVICE_ACCOUNT_ID }}
+          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
           folder-id: ${{ vars.YC_FOLDER_ID }}
           function-name: ${{ vars.YC_CLOUD_FUNCTION_NAME }}
           runtime: ${{ vars.YC_FUNCTION_RUNTIME || 'python311' }}

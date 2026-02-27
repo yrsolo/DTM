@@ -7,7 +7,7 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] DTM-83 / TSK-085 - owner-approved `dev -> main` merge and deploy trigger execution.
+- [IN_PROGRESS] DTM-83 / TSK-085 - emergency workflow credential fallback (`YC_SA_JSON_CREDENTIALS`) and redeploy trigger.
 
 ## Stage 9 Estimate (Dynamic)
 - Baseline estimate: 8 tasks (adjusted after explicit doc-structure refactor slice).

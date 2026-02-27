@@ -20,14 +20,17 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-83`) and moved to `V rabote` before execution.
-- [ ] Merge `dev -> main` completed.
-- [ ] Push to `origin/main` completed.
+- [x] Merge `dev -> main` completed.
+- [x] Push to `origin/main` completed.
 - [ ] Jira evidence comment added.
 - [ ] Jira moved to `Gotovo`.
 - [ ] Telegram completion sent.
 
 ## Work log
 - 2026-02-27: Created `DTM-83`, moved to `V rabote`.
+- 2026-02-27: `dev -> main` merge pushed (`main` head `99594fa`), GitHub Actions deploy run started.
+- 2026-02-27: Deploy workflow run `22499553371` failed on `Deploy function version` with error `No credentials`; task moved to blocked pending cloud auth setup decision.
+- 2026-02-27: Owner provided temporary service-account JSON secret (`YC_SA_JSON_CREDENTIALS`); workflow switched to secret-based credential path for immediate deploy recovery.
 
 ## Links
 - Jira: DTM-83
