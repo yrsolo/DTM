@@ -139,6 +139,7 @@
 
 Статус:
 - Stage 2 kickoff started: layer boundary inventory and dependency map completed (`doc/10_stage2_layer_inventory.md`, DTM-19).
+- выполнен Stage 2 scaffold-инкремент `S2-SLICE-01`: выделен bootstrap boundary для сборки зависимостей планировщика (`core/bootstrap.py`) и подключена dependency injection инициализация в `main.py`/`core/planner.py` (DTM-20).
 
 ---
 

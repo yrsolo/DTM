@@ -4,7 +4,7 @@
 
 ## `main.py`
 - Определяет режим запуска (`timer`, `morning`, `test`) по event/trigger.
-- Создает `GoogleSheetPlanner`.
+- Создает bootstrap-зависимости планировщика через `core/bootstrap.py` и передает их в `GoogleSheetPlanner`.
 - В режиме `timer/test`:
   - обновляет данные;
   - перерисовывает листы `Задачи`, `Календарь`, `Дизайнеры`.
@@ -79,6 +79,10 @@
   - отправка по chat_id сотрудника.
   - test-safe режим: при `mock_external` используется `MockOpenAIChatAgent`, а Telegram-отправка пропускается без внешних вызовов.
 
+## `core/bootstrap.py`
+- Stage 2 scaffold-модуль для сборки зависимостей планировщика (`build_planner_dependencies`).
+- Централизует wiring `GoogleSheetsService` / managers / repository / reminder stack вне `GoogleSheetPlanner`.
+
 ## Инфраструктура и утилиты
 
 ## `utils/service.py`
@@ -121,3 +125,4 @@
 - `TimingParser` now keeps structured diagnostics (`TimingParseIssue`, `parse_issues`, `total_parse_errors`), and task loader records timing-parse error counts into row-level issues without stopping the pipeline.
 - `GoogleSheetPlanner.build_quality_report()` now surfaces structured Stage 1 diagnostics; `main.py` prints quality summary and `local_run.py --quality-report-file` can persist JSON artifacts.
 - Added reminder external-call mock controls for test runs: `main.py` auto-enables `mock_external` for `mode=test`, `local_run.py` supports explicit `--mock-external`, and reminder flow skips real OpenAI/Telegram calls in this mode.
+- Stage 2 scaffold: planner dependency construction moved into explicit bootstrap boundary (`core/bootstrap.py`), and `main.py` now uses injected dependencies when constructing `GoogleSheetPlanner`.

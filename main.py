@@ -5,6 +5,7 @@ import asyncio
 import pandas as pd
 
 from config import KEY_JSON, SHEET_INFO, TRIGGERS
+from core.bootstrap import build_planner_dependencies
 from core.planner import GoogleSheetPlanner
 
 
@@ -45,12 +46,19 @@ async def main(**kwargs):
         mock_external = mode == "test"
     print(f"{mode=} {dry_run=} {mock_external=}")
 
+    dependencies = build_planner_dependencies(
+        KEY_JSON,
+        SHEET_INFO,
+        dry_run=dry_run,
+        mock_external=mock_external,
+    )
     planner = GoogleSheetPlanner(
         KEY_JSON,
         SHEET_INFO,
         mode=mode,
         dry_run=dry_run,
         mock_external=mock_external,
+        dependencies=dependencies,
     )
 
     if mode in {"timer", "test", "sync-only"}:

@@ -84,3 +84,4 @@ Document the current module boundaries for Stage 2 decomposition and identify th
 
 ## Notes
 - This inventory intentionally reflects current mixed boundaries; it is a staging artifact for incremental extraction, not target architecture.
+- 2026-02-27: `S2-SLICE-01` scaffold executed in DTM-20 (`core/bootstrap.py` + wiring through `main.py` and dependency injection in `core/planner.py`).

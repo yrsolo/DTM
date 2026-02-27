@@ -1,54 +1,45 @@
 """
-Модуль содержит класс GoogleSheetPlanner, предоставляющий высокоуровневый интерфейс
-для работы с задачами и календарем в Google Sheets. Этот класс интегрирует различные
-компоненты системы, такие как управление задачами, управление календарем и
-сервисные функции для работы с Google Sheets.
+Модуль содержит класс GoogleSheetPlanner.
+В Stage 2 wiring зависимостей вынесен в bootstrap-слой.
 """
 
-from config import HELPER_CHARACTER, MODEL, OPENAI, ORG, PROXIES, SOURCE_SHEET_INFO, TG
-from core.manager import CalendarManager, TaskCalendarManager, TaskManager, TaskTimingProcessor
-from core.people import PeopleManager
-from core.reminder import AsyncOpenAIChatAgent, MockOpenAIChatAgent, Reminder
-from core.repository import GoogleSheetsTaskRepository
-from utils.service import GoogleSheetInfo, GoogleSheetsService
+from config import SOURCE_SHEET_INFO
+from core.bootstrap import PlannerDependencies, build_planner_dependencies
+from utils.service import GoogleSheetInfo
 
 
 class GoogleSheetPlanner:
-    def __init__(self, key_json, sheet_info_data, mode="test", dry_run=False, mock_external=False):
+    def __init__(
+            self,
+            key_json,
+            sheet_info_data,
+            mode="test",
+            dry_run=False,
+            mock_external=False,
+            dependencies: PlannerDependencies = None,
+    ):
         self.mode = mode
         self.dry_run = dry_run
         self.mock_external = bool(mock_external)
         self.sheet_info = GoogleSheetInfo(**sheet_info_data)
         self.source_sheet_info = GoogleSheetInfo(**SOURCE_SHEET_INFO)
-        self.service = GoogleSheetsService(key_json, dry_run=dry_run)
-        self.timing_processor = TaskTimingProcessor()
-        self.task_repository = GoogleSheetsTaskRepository(
-            self.sheet_info,
-            self.service,
-            source_sheet_info=self.source_sheet_info,
-        )
-        self.task_manager = TaskManager(self.task_repository)
-        self.calendar_manager = CalendarManager(self.sheet_info, self.service, self.task_repository)
-        self.task_calendar_manager = TaskCalendarManager(
-            self.sheet_info, self.service, self.task_repository
-        )
-        self.openai_agent = (
-            MockOpenAIChatAgent()
-            if self.mock_external
-            else AsyncOpenAIChatAgent(
-                api_key=OPENAI, organization=ORG, proxies=PROXIES, model=MODEL
+        if dependencies is None:
+            dependencies = build_planner_dependencies(
+                key_json,
+                sheet_info_data,
+                dry_run=dry_run,
+                mock_external=self.mock_external,
             )
-        )
-        self.people_manager = PeopleManager(service=self.service, sheet_info=self.source_sheet_info)
-        self.reminder = Reminder(
-            self.task_repository,
-            self.openai_agent,
-            HELPER_CHARACTER,
-            tg_bot_token=TG,
-            people_manager=self.people_manager,
-            mock_openai=self.mock_external,
-            mock_telegram=self.mock_external,
-        )
+
+        self.service = dependencies.service
+        self.timing_processor = dependencies.timing_processor
+        self.task_repository = dependencies.task_repository
+        self.task_manager = dependencies.task_manager
+        self.calendar_manager = dependencies.calendar_manager
+        self.task_calendar_manager = dependencies.task_calendar_manager
+        self.openai_agent = dependencies.openai_agent
+        self.people_manager = dependencies.people_manager
+        self.reminder = dependencies.reminder
 
     def task_to_table(self, color_status=("work", "pre_done")):
         self.task_manager.task_to_table(color_status)

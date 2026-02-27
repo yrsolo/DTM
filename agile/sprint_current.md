@@ -31,12 +31,12 @@ Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk
 - [DONE] DTM-18 / TSK-021 Stage 1 quality report surfacing in local run artifacts.
 - [DONE] DTM-15 / TSK-018 Reminder tests: mock OpenAI and Telegram delivery paths.
 - [DONE] DTM-19 / TSK-022 Stage 2 layer boundary inventory and dependency map.
+- [DONE] DTM-20 / TSK-023 Stage 2 domain module extraction scaffold.
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-20 / TSK-023 Stage 2 domain module extraction scaffold
 - [TODO] DTM-21 / TSK-024 Stage 2 application use-case orchestration extraction
 - [TODO] DTM-22 / TSK-025 Stage 2 infrastructure adapter boundary for external services
 
@@ -76,7 +76,7 @@ Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk
 - TSK-022 - Stage 2 layer boundary inventory and dependency map
   - Jira: DTM-19 (status: Done / `Gotovo`)
 - TSK-023 - Stage 2 domain module extraction scaffold
-  - Jira: DTM-20 (status: To Do / `K vypolneniyu`)
+  - Jira: DTM-20 (status: Done / `Gotovo`)
 - TSK-024 - Stage 2 application use-case orchestration extraction
   - Jira: DTM-21 (status: To Do / `K vypolneniyu`)
 - TSK-025 - Stage 2 infrastructure adapter boundary for external services
@@ -102,6 +102,7 @@ Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk
 - agile/tasks/DTM-17_timing-parse-diagnostics.md
 - agile/tasks/DTM-18_quality-report-local-artifacts.md
 - agile/tasks/DTM-19_stage2-layer-boundary-inventory.md
+- agile/tasks/DTM-20_stage2-domain-scaffold.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -132,3 +133,5 @@ Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk
 - 2026-02-27: DTM-15 completed (mock external reminder mode via `--mock-external`/`mode=test` default, smoke-check, Jira `Gotovo`).
 - 2026-02-27: Stage 2 kickoff created in Jira (`DTM-19..DTM-22`); `DTM-19` moved to `V rabote` as single active execution task.
 - 2026-02-27: DTM-19 completed (Stage 2 layer boundary inventory + dependency map in `doc/10_stage2_layer_inventory.md`; Jira `Gotovo`).
+- 2026-02-27: DTM-20 moved to `V rabote` for Stage 2 scaffold (`S2-SLICE-01`: planner dependency construction boundary extraction).
+- 2026-02-27: DTM-20 completed (bootstrap dependency-construction boundary via `core/bootstrap.py`; smoke-check; Jira `Gotovo`).
