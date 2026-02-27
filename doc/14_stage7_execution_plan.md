@@ -6,7 +6,7 @@ Start implementation-ready migration planning after Stage 6, so the first web vi
 ## Baseline
 - Stage 7 estimate baseline: 7 tasks.
 - Dynamic tracking rule: after each completed task update `Done` and `Remaining` in `agile/sprint_current.md`.
-- Current counter: done `6`, remaining `1`.
+- Current counter: done `7`, remaining `0`.
 
 ## Stage 7 slices (initial)
 1. TSK-066 (DTM-63): kickoff and estimate baseline.
@@ -15,7 +15,7 @@ Start implementation-ready migration planning after Stage 6, so the first web vi
 4. TSK-069 (DTM-66): frontend-friendly static fixture bundle from baseline captures (Object Storage in cloud profile).
 5. TSK-070 (DTM-67): UI migration spike scope and acceptance checklist.
 6. TSK-071 (DTM-68): shadow-run readiness checklist for visualization data consumer.
-7. TSK-072: Stage 7 closeout and Stage 8 handoff package.
+7. TSK-072 (DTM-69): Stage 7 closeout and Stage 8 handoff package.
 
 ## Delivery rules
 - WIP stays 1 active execution task.
@@ -26,3 +26,4 @@ Start implementation-ready migration planning after Stage 6, so the first web vi
 - Stage 7 queue is fully documented and Jira-aligned.
 - Consumer-facing read-model integration policy is explicit and testable.
 - Artifacts needed for Stage 8 prototype work are reproducible from environment-aware flow (`local artifacts` for dev, `Object Storage` for serverless).
+- Stage 7 closeout package is published in `doc/18_stage7_closeout_and_stage8_handoff.md`.

@@ -299,4 +299,5 @@ Status:
 - Stage 7 artifact slice completed: frontend fixture bundle generation from baseline captures (`fixture_bundle.json`) with optional cloud Object Storage export path (`DTM-66`).
 - Stage 7 planning slice completed: UI migration Spike-1 scope and acceptance checklist documented (`doc/16_stage7_ui_spike_scope_and_acceptance.md`, `DTM-67`).
 - Stage 7 readiness slice completed: shadow-run checklist for visualization consumer documented (`doc/17_stage7_shadow_run_readiness_checklist.md`, `DTM-68`).
+- Stage 7 closeout completed: handoff package for Stage 8 published (`doc/18_stage7_closeout_and_stage8_handoff.md`, `DTM-69`).
 
