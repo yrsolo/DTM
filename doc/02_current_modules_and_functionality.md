@@ -58,8 +58,6 @@
   - формирование и запись листа `Календарь`.
 - `TaskCalendarManager`:
   - основной текущий рендер листа `Задачи` через `all_tasks_to_sheet()` (структура по дизайнерам + таймлайн).
-- `TaskCalendarManagerOld`:
-  - сохранена легаси-реализация табличного рендера `Задачи` как fallback/референс.
 
 ## Люди и уведомления
 
@@ -78,6 +76,7 @@
   - сбор черновика;
   - улучшение текста через OpenAI;
   - отправка по chat_id сотрудника.
+  - fallback-поведение: если OpenAI enhancer вернул пустой/недоступный ответ, используется draft-сообщение вместо пустой отправки.
   - test-safe режим: при `mock_external` используется `MockOpenAIChatAgent`, а Telegram-отправка пропускается без внешних вызовов.
 
 ## `core/bootstrap.py`
@@ -141,3 +140,4 @@
 - Stage 2 scaffold: planner dependency construction moved into explicit bootstrap boundary (`core/bootstrap.py`), and `main.py` now uses injected dependencies when constructing `GoogleSheetPlanner`.
 - Stage 2 application use-case extraction: orchestration ветки выполнения вынесены из `main.py` в `core/use_cases.py`.
 - Stage 2 infra adapter extraction: reminder/bootstrap flow uses explicit external adapter contracts (`core/adapters.py`) with injected Telegram/OpenAI implementations.
+- Stage 4 fallback hardening: reminder pipeline now enforces draft fallback when enhancer output is empty/unavailable and includes deterministic local smoke `agent/reminder_fallback_smoke.py`.

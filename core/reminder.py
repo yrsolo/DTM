@@ -243,6 +243,9 @@ class Reminder(object):
                 return draft
             try:
                 enhanced = await self.enhance_message(draft)
+                if not enhanced:
+                    _safe_print("chat_enhancer_empty_response: fallback_to_draft")
+                    enhanced = draft
                 self.enhanced_messages[designer] = enhanced  # Сохраняем улучшенное сообщение
                 return enhanced
             except Exception as e:
@@ -372,6 +375,16 @@ class Reminder(object):
             mode (str): Режим работы.
         """
         for designer_name, message in self.enhanced_messages.items():
+            if not message:
+                fallback_message = self.draft_messages.get(designer_name)
+                if fallback_message:
+                    message = fallback_message
+                    self.enhanced_messages[designer_name] = message
+                    _safe_print(f"empty_message_fallback: using draft for {designer_name}")
+                else:
+                    _safe_print(f"empty_message_skip: no draft for {designer_name}")
+                    continue
+
             designer = self.people_manager.get_person(designer_name)
             if designer:
                 vacation = designer.vacation != 'да'

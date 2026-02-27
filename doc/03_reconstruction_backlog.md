@@ -179,6 +179,9 @@
 Критерий готовности:
 - напоминания отправляются стабильно даже при деградации внешних сервисов.
 
+Статус:
+- Stage 4 kickoff started: fallback hardening for empty/unavailable OpenAI enhancer response with draft-message delivery preservation (`DTM-32`).
+
 ---
 
 ## Этап 5. Наблюдаемость и эксплуатация

@@ -6,7 +6,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Reads task data from Google Sheets.
 - Builds visual planning views for a design team (timeline and designer-focused boards).
 - Sends morning reminders to designers via Telegram.
-- Uses OpenAI to improve reminder text style.
+- Uses OpenAI to improve reminder text style, with automatic fallback to draft text when enhancer is unavailable.
 
 ## Why this repository exists
 - Show practical refactoring of a working legacy system.

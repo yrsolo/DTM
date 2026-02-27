@@ -43,13 +43,14 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - [DONE] DTM-29 / TSK-032 Stage 3 close-out: TaskManager renderer adapter unification
 - [DONE] DTM-30 / TSK-033 Stage 3 close-out coverage: manager adapter smoke assertions
 - [DONE] DTM-31 / TSK-034 Stage 3 close-out: TaskCalendarManagerOld legacy path disposition
+- [DONE] DTM-32 / TSK-035 Stage 4 fallback: send draft when OpenAI enhancer unavailable
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 4 kickoff grooming (reminder pipeline fallback/idempotency first slice)
-- [TODO] Stage 4 execution slice: reminder fallback (send draft when OpenAI unavailable)
+- [TODO] Stage 4 follow-up: idempotent reminder delivery guard
+- [TODO] Stage 4 follow-up: reminder pipeline decomposition (facts/draft/enhancer/sender)
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -110,6 +111,8 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
   - Jira: DTM-30 (status: Done / `Gotovo`)
 - TSK-034 - Stage 3 close-out: TaskCalendarManagerOld legacy path disposition
   - Jira: DTM-31 (status: Done / `Gotovo`)
+- TSK-035 - Stage 4 fallback: send draft when OpenAI enhancer unavailable
+  - Jira: DTM-32 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -143,6 +146,7 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - agile/tasks/DTM-29_stage3-taskmanager-renderer-adapter-unification.md
 - agile/tasks/DTM-30_stage3-closeout-coverage-manager-adapter-smoke.md
 - agile/tasks/DTM-31_stage3-legacy-path-disposition-taskcalendar-old.md
+- agile/tasks/DTM-32_stage4-reminder-fallback-draft-on-openai-unavailable.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -197,3 +201,5 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - 2026-02-27: DTM-30 completed (extended manager-level adapter smoke assertions + sync dry-run; Jira `Gotovo`).
 - 2026-02-27: DTM-31 moved to `V rabote` for Stage 3 legacy path disposition (`TaskCalendarManagerOld`).
 - 2026-02-27: DTM-31 completed (legacy `TaskCalendarManagerOld` and obsolete global helper removed; adapter smoke + sync dry-run; Jira `Gotovo`).
+- 2026-02-27: DTM-32 moved to `V rabote` as Stage 4 kickoff slice for reminder fallback when OpenAI enhancer is unavailable/empty.
+- 2026-02-27: DTM-32 completed (draft fallback enforced for empty/unavailable enhancer responses + deterministic fallback smoke; Jira `Gotovo`).
