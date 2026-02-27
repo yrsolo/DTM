@@ -1,12 +1,32 @@
-﻿import traceback
+﻿import json
+import traceback
 
 from core.reminder import TelegramNotifier
 from main import main
 
 
+def _extract_payload(event):
+    if not isinstance(event, dict):
+        return {}, False
+    if "body" not in event:
+        return event, False
+
+    raw_body = event.get("body")
+    if isinstance(raw_body, dict):
+        return raw_body, True
+    if isinstance(raw_body, str) and raw_body.strip():
+        try:
+            parsed = json.loads(raw_body)
+            if isinstance(parsed, dict):
+                return parsed, True
+        except json.JSONDecodeError:
+            pass
+    return {}, True
+
+
 async def handler(event, _):
     """Yandex Cloud handler."""
-    request_payload = event if isinstance(event, dict) else {}
+    request_payload, is_http_event = _extract_payload(event)
     if request_payload.get("healthcheck"):
         return {
             "statusCode": 200,
@@ -16,7 +36,9 @@ async def handler(event, _):
     run_mode = request_payload.get("mode")
     dry_run = bool(request_payload.get("dry_run", False))
     mock_external = request_payload.get("mock_external")
-    planner_event = request_payload.get("event", event)
+    planner_event = request_payload.get("event")
+    if planner_event is None and not is_http_event:
+        planner_event = event
 
     try:
         await main(
