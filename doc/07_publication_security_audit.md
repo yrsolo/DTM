@@ -1,35 +1,30 @@
-# Проверка безопасности перед публикацией
+# Security Audit Before Publication
 
-Дата: 2026-02-26
+Date: 2026-02-27
 
-## Что проверено
-- `git ls-files` (что реально трекается git).
-- Поиск сигнатур секретов в репозитории (`rg`).
-- Проверка `.gitignore`.
-- Проверка папки `key/`.
+## Verified Controls
+- `detect-secrets` hook is configured in `.pre-commit-config.yaml` with baseline `.secrets.baseline`.
+- `.env` and key files are ignored by git (`.gitignore`).
+- Full-repo secret scan command is available and repeatable from virtualenv.
 
-## Найдено и исправлено
-1. В `test.ipynb` был hardcoded OpenAI key (`sk-...`) в нескольких ячейках.
-- Статус: исправлено (заменено на безопасный placeholder).
+## Required Smoke Command
+Run from repository root:
 
-2. В `config/constants.py` был hardcoded proxy URL с логином/паролем.
-- Статус: исправлено.
-- Теперь proxy берется из `PROXY_URL` (`env`), при отсутствии прокси используется пустой словарь.
+```powershell
+.venv\Scripts\python.exe -m pre_commit run detect-secrets --all-files
+```
 
-## Текущее состояние трекинга секретов
-- Файл сервисного ключа `key/google_key_*.json` физически есть в проекте, но **не трекается git** (защищен `.gitignore`).
-- `.env` не трекается git.
-- Добавлен security-baseline:
-  - `.pre-commit-config.yaml`
-  - `.secrets.baseline` (генерируется `detect-secrets`, текущий baseline без находок по tracked-коду)
-  - pre-commit hook установлен локально.
+Expected result: `Passed` with no new findings.
 
-## Остаточные риски
-1. `test.ipynb` остается tracked-файлом, поэтому туда легко снова случайно записать секреты.
-2. `.idea/*` сейчас tracked; это не секреты, но нежелательный шум для публикации.
+## Baseline Management
+- Baseline file: `.secrets.baseline`
+- Refresh baseline only when intentional changes are reviewed.
+- Any baseline refresh must be accompanied by Jira evidence comment.
 
-## Рекомендации перед публичным релизом
-1. Подключить pre-commit scan секретов (`gitleaks` или `detect-secrets`).
-2. Добавить `env`-шаблон (`.env.example`) без реальных значений.
-3. По возможности вынести эксперименты из tracked notebooks или убрать их из репозитория.
-4. Проверить историю git на старые утечки (если ключи уже были закоммичены ранее, их нужно ротировать независимо от текущего состояния файлов).
+## Residual Risks
+1. Tracked notebooks can still receive accidental secret pastes.
+2. Historical leaks in git history require rotation independently from current file state.
+
+## Current Status
+- Stage 0.5 gate is active.
+- TeamLead evidence flow includes full-repo smoke command output in Jira.

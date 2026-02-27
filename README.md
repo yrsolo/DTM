@@ -50,6 +50,13 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Detailed process and checklist:
   - `doc/02_baseline_validation_and_artifacts.md`
 
+## Secret scan gate (Stage 0.5)
+- Pre-commit gate: `detect-secrets` with `.secrets.baseline`.
+- Full-repo smoke command:
+  - `.venv\Scripts\python.exe -m pre_commit run detect-secrets --all-files`
+- Security audit notes:
+  - `doc/07_publication_security_audit.md`
+
 ## Environment contour
 - Runtime env selector: `ENV` with allowed values `dev`, `test`, `prod`.
 - Base variables are loaded from `.env`.

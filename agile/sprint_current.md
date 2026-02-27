@@ -18,12 +18,13 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - [DONE] DTM-4 / TSK-005 Env contour formalization (`ENV`, `.env.<ENV>`, optional `STRICT_ENV_GUARD`).
 - [DONE] DTM-5 / TSK-006 Pipeline run modes and dry-run (`sync-only`, `reminders-only`, `--dry-run` write guard).
 - [DONE] DTM-6 / TSK-007 Baseline validation checklist and artifact capture flow.
+- [DONE] DTM-7 / TSK-008 Secret scan pre-commit gate hardening and verification.
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- TSK-008 Introduce secret scan pre-commit gate (`detect-secrets` or `gitleaks`) from backlog 0.5.
+- none (prepare next sprint selection)
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -31,10 +32,11 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - TSK-005 - Env contour formalization
   - Jira: DTM-4 (status: Done / `Gotovo`)
 - TSK-006 - Pipeline run modes and dry-run
-  - Jira: DTM-5 (status: Done / `Ð“Ð¾Ñ‚Ð¾Ð²Ð¾`)
+  - Jira: DTM-5 (status: Done / `Gotovo`)
 - TSK-007 - Baseline validation checklist
-  - Jira: DTM-6 (status: Done / `Готово`)
+  - Jira: DTM-6 (status: Done / `Gotovo`)
 - TSK-008 - Secret scan gate
+  - Jira: DTM-7 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -43,6 +45,7 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - agile/tasks/DTM-4_env-contour-formalization.md
 - agile/tasks/DTM-5_run-modes-and-dry-run.md
 - agile/tasks/DTM-6_baseline-validation-checklist.md
+- agile/tasks/DTM-7_secret-scan-gate.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -54,5 +57,5 @@ Keep delivery steady with low-risk, reversible steps toward reconstruction backl
 - Jira synchronization started: issues created/linked for TSK-009 and TSK-010, lifecycle managed in Jira first.
 - 2026-02-27: Jira runtime access verified from `.env` (REST `/myself` = 200); DTM-5 lifecycle moved `V rabote` -> `Gotovo` with evidence comments.
 - 2026-02-27: DTM-5 implemented and smoke-checked (`local_run.py --help`, `local_run.py --mode sync-only --dry-run`).
-- 2026-02-27: DTM-6 created for Stage 0.4 baseline validation flow and moved to `В работе`.
-- 2026-02-27: DTM-6 completed (`agent/capture_baseline.py`, baseline docs, smoke-check, Jira `Готово`).
+- 2026-02-27: DTM-6 completed (`agent/capture_baseline.py`, baseline docs, smoke-check, Jira `Gotovo`).
+- 2026-02-27: DTM-7 completed (full-repo detect-secrets smoke, docs sync, Jira `Gotovo`).

@@ -97,6 +97,9 @@
 Критерий готовности:
 - репозиторий проходит secret-scan без критичных находок.
 
+Статус:
+- gate активен через pre-commit `detect-secrets` + baseline `.secrets.baseline`, подтверждается smoke-командой `pre-commit run detect-secrets --all-files`.
+
 ---
 
 ## Этап 1. Стабилизация данных и контрактов
