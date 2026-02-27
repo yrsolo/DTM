@@ -43,6 +43,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Stage 7 shadow-run readiness checklist is documented in `doc/17_stage7_shadow_run_readiness_checklist.md`.
 - Stage 7 closeout and Stage 8 handoff package is documented in `doc/18_stage7_closeout_and_stage8_handoff.md`.
 - Stage 8 execution plan is documented in `doc/19_stage8_execution_plan.md`.
+- Stage 8 prototype loader utility: `agent/load_prototype_payload.py` (filesystem/Object Storage + schema gate).
 
 ## Local run (current)
 - Preferred: `run_timer.cmd` (uses project virtualenv and runs timer mode).

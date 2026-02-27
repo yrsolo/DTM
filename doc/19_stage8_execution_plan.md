@@ -6,11 +6,11 @@ Build the first read-only web prototype consumer over Stage 7 artifacts with det
 ## Baseline
 - Stage 8 estimate baseline: 6 tasks.
 - Dynamic tracking rule: update `Done` / `Remaining` in `agile/sprint_current.md` after each completed task.
-- Current counter: done `1`, remaining `5`.
+- Current counter: done `2`, remaining `4`.
 
 ## Stage 8 slices (initial)
 1. TSK-073 (DTM-70): kickoff and estimate baseline.
-2. TSK-074: prototype data loader + schema gate over read-model artifacts.
+2. TSK-074 (DTM-71): prototype data loader + schema gate over read-model artifacts.
 3. TSK-075: static web prototype views (timeline/by-designer/task-details) with filters.
 4. TSK-076: local/cloud source switch for prototype data loader (filesystem/Object Storage).
 5. TSK-077: shadow-run execution evidence package for prototype consumer.

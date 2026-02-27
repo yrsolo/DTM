@@ -11,8 +11,8 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
 
 ## Stage 8 Estimate (Dynamic)
 - Baseline estimate: 6 tasks
-- Done: 1
-- Remaining: 5
+- Done: 2
+- Remaining: 4
 - Rule: estimate is adjusted during execution when scope clarifies; done/remaining is updated after each task completion.
 
 ## Done
@@ -88,12 +88,12 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
 - [DONE] DTM-68 / TSK-071 Stage 7: shadow-run readiness checklist for visualization consumer
 - [DONE] DTM-69 / TSK-072 Stage 7 closeout: handoff package for Stage 8
 - [DONE] DTM-70 / TSK-073 Stage 8 kickoff: web prototype execution plan and dynamic estimate baseline
+- [DONE] DTM-71 / TSK-074 Stage 8: prototype data loader + schema gate over Stage 7 artifacts
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] TSK-074 Stage 8: prototype data loader + schema gate over read-model artifacts.
 - [TODO] TSK-075 Stage 8: static web prototype views (timeline/by-designer/task-details) with filters.
 - [TODO] TSK-076 Stage 8: local/cloud source switch for prototype data loader (filesystem/Object Storage).
 - [TODO] TSK-077 Stage 8: shadow-run execution evidence package for prototype consumer.
@@ -236,6 +236,8 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
   - Jira: DTM-69 (status: Done / `Gotovo`)
 - TSK-073 - Stage 8 kickoff: web prototype execution plan and dynamic estimate baseline
   - Jira: DTM-70 (status: Done / `Gotovo`)
+- TSK-074 - Stage 8: prototype data loader + schema gate over Stage 7 artifacts
+  - Jira: DTM-71 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -433,3 +435,5 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
 - 2026-02-27: DTM-69 completed (`doc/18_stage7_closeout_and_stage8_handoff.md` + docs alignment); Stage 7 estimate updated to done 7 / remaining 0; Jira `Gotovo`.
 - 2026-02-27: DTM-70 moved to `V rabote` for Stage 8 kickoff planning (execution plan + estimate baseline).
 - 2026-02-27: DTM-70 completed (`doc/19_stage8_execution_plan.md` + sprint/backlog/context sync); Stage 8 estimate initialized to done 1 / remaining 5; Jira `Gotovo`.
+- 2026-02-27: DTM-71 moved to `V rabote` for Stage 8 prototype loader and schema gate implementation.
+- 2026-02-27: DTM-71 completed (`web_prototype/loader.py`, `agent/load_prototype_payload.py`, smoke + docs sync); Stage 8 estimate updated to done 2 / remaining 4; Jira `Gotovo`.

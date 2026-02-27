@@ -301,4 +301,5 @@ Status:
 - Stage 7 readiness slice completed: shadow-run checklist for visualization consumer documented (`doc/17_stage7_shadow_run_readiness_checklist.md`, `DTM-68`).
 - Stage 7 closeout completed: handoff package for Stage 8 published (`doc/18_stage7_closeout_and_stage8_handoff.md`, `DTM-69`).
 - Stage 8 kickoff started: execution plan and dynamic estimate baseline documented (`doc/19_stage8_execution_plan.md`, `DTM-70`).
+- Stage 8 implementation slice completed: prototype artifact loader with schema gate for local/cloud profiles (`DTM-71`).
 
