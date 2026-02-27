@@ -1,38 +1,46 @@
-import sys
-import os
-import traceback
+﻿import traceback
 
-from config import TG
 from core.reminder import TelegramNotifier
 from main import main
 
+
 async def handler(event, _):
-    """
-    Yandex Cloud handler.
+    """Yandex Cloud handler."""
+    request_payload = event if isinstance(event, dict) else {}
+    if request_payload.get("healthcheck"):
+        return {
+            "statusCode": 200,
+            "body": "!HEALTHY!",
+        }
 
-    Args:
-        event: Yandex Cloud event.
-        _: Yandex Cloud context.
+    run_mode = request_payload.get("mode")
+    dry_run = bool(request_payload.get("dry_run", False))
+    mock_external = request_payload.get("mock_external")
+    planner_event = request_payload.get("event", event)
 
-    Returns:
-        dict: Response.
-    """
     try:
-        await main(event=event)
+        await main(
+            event=planner_event,
+            mode=run_mode,
+            dry_run=dry_run,
+            mock_external=mock_external,
+        )
     except Exception as ex:
-
         tr = str(traceback.format_exc())
-        txt = f'Нам худо: \n{ex}\nTRACKBAR\n{tr}\n'
+        txt = f"Runtime failure:\n{ex}\nTRACEBACK\n{tr}\n"
 
         print(txt)
-        await TelegramNotifier().alog(txt)
+        try:
+            await TelegramNotifier().alog(txt)
+        except Exception as notifier_error:
+            print(f"Error notifier failed: {notifier_error}")
 
         return {
-            'statusCode': 200,
-            'body': '!!!EGGORR!!!',
+            "statusCode": 200,
+            "body": "!!!EGGORR!!!",
         }
 
     return {
-        'statusCode': 200,
-        'body': '!GOOD!',
+        "statusCode": 200,
+        "body": "!GOOD!",
     }
