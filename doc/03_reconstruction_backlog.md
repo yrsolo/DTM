@@ -187,6 +187,7 @@
 - Stage 4 observability increment completed: reminder delivery outcome counters integrated into runtime logs and planner quality report with deterministic counters smoke verification (`DTM-36`).
 - Stage 5 kickoff increment completed: derived reminder SLI metrics (`delivery_rate`, `failure_rate`, attemptable/attempted counters) integrated into quality report summary with deterministic formula smoke verification (`DTM-37`).
 - Stage 5 kickoff increment completed: risk register aligned to implemented reminder/API mitigations with explicit retry-policy stance and ownership (`DTM-38`).
+- Stage 5 kickoff increment completed: explicit reminder SLI alert thresholds and escalation policy documented with owner notification flow alignment (`DTM-39`).
 
 ---
 

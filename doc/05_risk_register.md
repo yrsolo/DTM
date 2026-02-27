@@ -81,4 +81,27 @@
 - mitigation: structured delivery counters + derived SLI fields in quality report summary.
 - owner: tech lead
 - status: watch
-- notes: alert thresholds/escalation policy still pending Stage 5 follow-up.
+- notes: alert thresholds and escalation policy formalized in Stage 5 (`DTM-39`).
+
+## Reminder Alerting Thresholds And Escalation Policy
+
+### Metrics source
+- `quality_report.summary.reminder_delivery_rate`
+- `quality_report.summary.reminder_failure_rate`
+- `quality_report.summary.reminder_delivery_attemptable_count`
+- `quality_report.summary.reminder_send_error_count`
+
+### Thresholds
+- `WARN`: `reminder_delivery_attemptable_count >= 5` and `reminder_delivery_rate < 0.98`.
+- `CRITICAL`: `reminder_delivery_attemptable_count >= 5` and (`reminder_delivery_rate < 0.95` or `reminder_send_error_count >= 3`).
+- `INFO_ONLY`: `reminder_delivery_attemptable_count < 5` (insufficient sample size for hard alerting).
+
+### Escalation sequence
+1. Generate quality report after each run and evaluate thresholds.
+2. On `WARN`: create/update Jira incident follow-up task and post evidence comment with metrics snapshot.
+3. On `CRITICAL`: immediately notify owner via `python agent/notify_owner.py` with Russian text and explicit next action options.
+4. Keep affected sprint item in `agile/sprint_current.md` under `Blocked` until owner decision is received.
+
+### Owner next action template (for notify message)
+- `1) create a new chat for incident mitigation task`
+- `2) reply to TeamLead to continue current chat with selected option`

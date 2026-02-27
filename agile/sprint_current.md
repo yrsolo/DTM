@@ -1,7 +1,7 @@
 # Sprint Current
 
 ## Sprint Goal
-Start Stage 3 rendering refactor with a shared cell-contract scaffold and reversible extraction slices.
+Complete Stage 5 observability hardening for reminders with explicit SLI alert thresholds and escalation policy.
 
 ## Capacity
 1 active task (WIP), 3 tasks queued for this short sprint cycle.
@@ -50,14 +50,15 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - [DONE] DTM-36 / TSK-039 Stage 4 reminder observability counters for send outcomes
 - [DONE] DTM-37 / TSK-040 Stage 5 kickoff derived SLI counters for reminder delivery/failure rates
 - [DONE] DTM-38 / TSK-041 Stage 5 kickoff risk-register update for reminder/API degradation and retry policy
+- [DONE] DTM-39 / TSK-042 Stage 5 alerting thresholds and escalation policy for reminder delivery metrics
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 5 kickoff: alerting thresholds and escalation policy for reminder delivery metrics
 - [TODO] Stage 5 follow-up: persist SLI trend snapshots across runs
 - [TODO] Stage 5 follow-up: implement explicit retry/backoff policy for reminder delivery transient failures
+- [TODO] Stage 5 follow-up: automate threshold evaluation from latest quality report artifact
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -132,6 +133,8 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
   - Jira: DTM-37 (status: Done / `Gotovo`)
 - TSK-041 - Stage 5 kickoff: risk-register update for reminder/API degradation and retry policy
   - Jira: DTM-38 (status: Done / `Gotovo`)
+- TSK-042 - Stage 5 kickoff: alerting thresholds and escalation policy for reminder delivery metrics
+  - Jira: DTM-39 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -172,6 +175,7 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - agile/tasks/DTM-36_stage4-reminder-observability-counters.md
 - agile/tasks/DTM-37_stage5-derived-sli-reminder-delivery-rates.md
 - agile/tasks/DTM-38_stage5-risk-register-reminder-api-retry-policy.md
+- agile/tasks/DTM-39_stage5-alerting-thresholds-escalation-policy.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -240,3 +244,5 @@ Start Stage 3 rendering refactor with a shared cell-contract scaffold and revers
 - 2026-02-27: DTM-37 completed (derived reminder SLI summary metrics in quality report + SLI smoke; Jira `Gotovo`).
 - 2026-02-27: DTM-38 moved to `V rabote` for Stage 5 risk-register update (reminder/API degradation + retry policy).
 - 2026-02-27: DTM-38 completed (risk-register aligned to Stage 4/5 controls + explicit retry-policy stance + reminders-only dry-run sanity-check; Jira `Gotovo`).
+- 2026-02-27: DTM-39 moved to `V rabote` for Stage 5 alerting thresholds and escalation policy for reminder delivery metrics.
+- 2026-02-27: DTM-39 completed (explicit reminder SLI alert thresholds + escalation sequence documented in risk register; reminders-only mock dry-run sanity-check; Jira `Gotovo`).
