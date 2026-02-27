@@ -118,6 +118,7 @@
 - выполнен runtime-фикс reminder-контура: совместимый `httpx` proxy setup + unicode-safe logging для dry-run напоминаний (DTM-11).
 - выполнен контрактный scaffold Stage 1: typed row-контракты для Task/Person (`core/contracts.py`) и перевод row mapping в `repository/people` на эти контракты (DTM-12).
 - выполнен guardrail-инкремент Stage 1: required-header валидация tasks/people через метаданные typed contracts + fail-fast ошибки с контекстом листа (DTM-13).
+- выполнен инкремент Stage 1 по taxonomy ошибок качества данных: добавлены typed исключения (`DataQualityError`, `MissingRequiredColumnsError`) и унифицирована диагностика missing-header для task/people загрузчиков (DTM-14).
 
 ---
 

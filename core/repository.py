@@ -17,6 +17,7 @@ import pandas as pd
 
 from config import COLOR_STATUS, REPLACE_NAMES, TASK_FIELD_MAP
 from core.contracts import TaskRowContract, is_nullish, normalize_text
+from core.errors import MissingRequiredColumnsError
 from core.reminder import TelegramNotifier
 from utils.service import GoogleSheetInfo, GoogleSheetsService
 
@@ -278,10 +279,12 @@ class GoogleSheetsTaskRepository(TaskRepository):
         required_columns = TaskRowContract.required_columns(TASK_FIELD_MAP)
         missing = sorted(col for col in required_columns if col not in df.columns)
         if missing:
-            missing_str = ", ".join(missing)
-            raise ValueError(
-                f"Missing required task columns in '{spreadsheet_name}/{sheet_name}': {missing_str}. "
-                "Check source sheet headers against config.TASK_FIELD_MAP."
+            raise MissingRequiredColumnsError(
+                entity_name="task",
+                spreadsheet_name=spreadsheet_name,
+                sheet_name=sheet_name,
+                missing_columns=tuple(missing),
+                field_map_name="TASK_FIELD_MAP",
             )
 
     def _generate_task_name(self, row):

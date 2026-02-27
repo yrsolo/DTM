@@ -11,10 +11,11 @@ Purpose: track freshness and trust of planning sources before TeamLead creates/a
 | source | last_verified_at | verified_by | evidence | trust_level | notes |
 |---|---|---|---|---|---|
 | agile/strategy.md | 2026-02-27 | TeamLead | checked against runnable entrypoints `run_timer.cmd` -> `local_run.py --mode timer` and Stage 0 themes in code/config (`SOURCE_SHEET_NAME`/`TARGET_SHEET_NAME`) | medium | strategy is direction-level and consistent with code shape |
-| agile/sprint_current.md | 2026-02-27 | TeamLead | verified board sections and WIP=1 discipline; synchronized DTM-13 lifecycle (`V rabote` -> `Gotovo`) | high | local sprint board is current for this sprint cycle |
+| agile/sprint_current.md | 2026-02-27 | TeamLead | verified board sections and WIP=1 discipline; synchronized DTM-14 lifecycle (`V rabote` -> `Gotovo`) | high | local sprint board is current for this sprint cycle |
 | agile/retro.md | 2026-02-27 | TeamLead | retro improvements match implemented process controls (owner escalation, single board discipline) | medium | historical context only; not used as execution truth |
 | doc/03_reconstruction_backlog.md | 2026-02-27 | TeamLead | Stage 0 items 0.3, 0.4, 0.5 remain aligned; Stage 1 status extended with DTM-13 schema guardrails | high | backlog status now reflects DTM-8/9/10/11/12/13 Stage 1 progress |
 | doc/02_current_modules_and_functionality.md | 2026-02-27 | TeamLead | synchronized with repository changes for typed contracts and schema guardrails (`core/contracts.py`, `core/repository.py`, `core/people.py`) | high | module doc covers latest Stage 1 hardening details |
+| core/repository.py + core/people.py data-quality diagnostics paths | 2026-02-27 | TeamLead | verified active drift points with `git log --oneline -n 8 -- core/repository.py core/people.py core/contracts.py`, `git blame -L 277,316 core/repository.py`, `git blame -L 56,94 core/people.py`; runnable entrypoint confirmed via `local_run.py --help` | high | safe to execute DTM-14 taxonomy/diagnostics increment |
 | doc/07_publication_security_audit.md | 2026-02-27 | TeamLead | synchronized with actual pre-commit detect-secrets gate and full-repo smoke command, then validated by smoke run | high | security gate documentation now matches runtime process |
 | README.md | 2026-02-27 | TeamLead | validated local run + baseline + security gate docs against runnable commands | high | operational commands in README align with current runtime |
 | Jira control plane | 2026-02-27 | TeamLead | `.env` contains required `JIRA_*` keys; REST check `/rest/api/3/myself` returned `200`; DTM-13 lifecycle/comment updates succeeded via API | high | control plane is available when runtime loads `.env` values |
@@ -39,3 +40,4 @@ Purpose: track freshness and trust of planning sources before TeamLead creates/a
    - `.venv\Scripts\python.exe local_run.py --mode timer --dry-run` and `.venv\Scripts\python.exe local_run.py --mode reminders-only --dry-run` passed after DTM-12 mapping changes.
    - DTM-13 migrated required-header validation to contract metadata (`TaskRowContract.required_columns`, `PersonRowContract.required_columns`) and added fail-fast people sheet validation.
    - shell-level `Env:JIRA_*` check may be empty if `.env` is not exported globally; Jira checks should load `.env` explicitly for API validation.
+   - DTM-14 pre-task freshness check completed on current Stage 1 drift points (`core/repository.py`, `core/people.py`, `core/contracts.py`) via git history + blame before decomposition.

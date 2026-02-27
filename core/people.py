@@ -2,6 +2,7 @@ from typing import List
 from utils.service import GoogleSheetsService, GoogleSheetInfo
 from config import PEOPLE_FIELD_MAP
 from core.contracts import PersonRowContract, normalize_text
+from core.errors import MissingRequiredColumnsError
 
 
 class Person:
@@ -68,10 +69,12 @@ class PeopleManager:
         required_columns = PersonRowContract.required_columns(PEOPLE_FIELD_MAP)
         missing = sorted(col for col in required_columns if col not in df.columns)
         if missing:
-            missing_str = ", ".join(missing)
-            raise ValueError(
-                f"Missing required people columns in '{spreadsheet_name}/{sheet_name}': {missing_str}. "
-                "Check source sheet headers against config.PEOPLE_FIELD_MAP."
+            raise MissingRequiredColumnsError(
+                entity_name="people",
+                spreadsheet_name=spreadsheet_name,
+                sheet_name=sheet_name,
+                missing_columns=tuple(missing),
+                field_map_name="PEOPLE_FIELD_MAP",
             )
 
     def _create_person(self, person):
