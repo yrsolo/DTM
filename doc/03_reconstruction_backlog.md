@@ -306,4 +306,5 @@ Status:
 - Stage 8 implementation slice completed: local/cloud source switch wiring for prototype payload preparation (`DTM-73`).
 - Stage 8 implementation slice completed: shadow-run execution evidence package builder with reproducible command logs/checklist artifact (`DTM-74`).
 - Stage 8 closeout completed: readiness gate and Stage 9 handoff package published (`doc/20_stage8_closeout_and_stage9_handoff.md`, `DTM-75`).
+- Stage 9 kickoff slice completed: main-branch auto-deploy workflow for Yandex Cloud Function published (`.github/workflows/deploy_yc_function_main.yml`) with setup guide (`doc/21_stage9_main_autodeploy_setup.md`, `DTM-76`).
 

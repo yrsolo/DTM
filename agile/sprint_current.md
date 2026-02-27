@@ -1,7 +1,7 @@
 # Sprint Current
 
 ## Sprint Goal
-Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/cloud source switching.
+Start Stage 9 serverless deployment contour for web prototype with main-branch auto-deploy.
 
 ## Capacity
 1 active task (WIP), 3-5 tasks queued for this short sprint cycle.
@@ -9,10 +9,10 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
 ## Now
 - [IN_PROGRESS] none
 
-## Stage 8 Estimate (Dynamic)
-- Baseline estimate: 6 tasks
-- Done: 6
-- Remaining: 0
+## Stage 9 Estimate (Dynamic)
+- Baseline estimate: 5 tasks
+- Done: 1
+- Remaining: 4
 - Rule: estimate is adjusted during execution when scope clarifies; done/remaining is updated after each task completion.
 
 ## Done
@@ -93,12 +93,16 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
 - [DONE] DTM-73 / TSK-076 Stage 8: local/cloud source switch wiring for prototype consumer
 - [DONE] DTM-74 / TSK-077 Stage 8: shadow-run execution evidence package for prototype consumer
 - [DONE] DTM-75 / TSK-078 Stage 8 closeout: readiness gate and handoff package
+- [DONE] DTM-76 / TSK-079 Stage 9 kickoff: main-branch auto-deploy workflow for Yandex Cloud Function
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 9 kickoff: serverless prototype serving contour and task decomposition baseline.
+- [TODO] Stage 9: cloud-profile shadow-run with explicit `PROTOTYPE_*_S3_KEY` pass criteria.
+- [TODO] Stage 9: lightweight consumer contract-regression checks for deploy pipeline.
+- [TODO] Stage 9: UX hardening for empty/error/loading states with acceptance checks.
+- [TODO] Stage 9: deployment smoke checklist for Yandex Cloud Function profile.
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -247,6 +251,8 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
   - Jira: DTM-74 (status: Done / `Gotovo`)
 - TSK-078 - Stage 8 closeout: readiness gate and handoff package
   - Jira: DTM-75 (status: Done / `Gotovo`)
+- TSK-079 - Stage 9 kickoff: main-branch auto-deploy workflow for Yandex Cloud Function
+  - Jira: DTM-76 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -311,6 +317,7 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
 - agile/tasks/DTM-60_stage6-ui-view-spec-baseline-over-read-model.md
 - agile/tasks/DTM-61_stage6-read-model-artifact-in-baseline-capture-flow.md
 - agile/tasks/DTM-62_stage6-closeout-readiness-gate-and-handoff.md
+- agile/tasks/DTM-76_stage9-kickoff-main-autodeploy-yc-function.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -455,3 +462,5 @@ Execute Stage 8 web prototype over Stage 7 artifacts with schema gate and local/
 - 2026-02-27: Stage 8 shadow-run evidence artifact: `artifacts/shadow_run_stage8/20260227T161720Z_dtm74_final/shadow_run_evidence.json` (cloud fetch check skipped in this run due absent `PROTOTYPE_*_S3_KEY` values in shell env).
 - 2026-02-27: DTM-75 moved to `V rabote` for Stage 8 closeout and next-stage handoff package.
 - 2026-02-27: DTM-75 completed (`doc/20_stage8_closeout_and_stage9_handoff.md` + sprint/backlog/context sync); Stage 8 estimate updated to done 6 / remaining 0; Jira `Gotovo`.
+- 2026-02-27: DTM-76 moved to `V rabote` for Stage 9 kickoff main-branch auto-deploy workflow.
+- 2026-02-27: DTM-76 completed (`.github/workflows/deploy_yc_function_main.yml` + `doc/21_stage9_main_autodeploy_setup.md` + sprint/backlog/context sync); Stage 9 estimate updated to done 1 / remaining 4; Jira `Gotovo`.

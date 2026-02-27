@@ -1,0 +1,57 @@
+name: Deploy Yandex Cloud Function (main)
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy function version
+        id: deploy
+        uses: yc-actions/yc-sls-function@v4
+        with:
+          yc-sa-id: ${{ vars.YC_SERVICE_ACCOUNT_ID }}
+          folder-id: ${{ vars.YC_FOLDER_ID }}
+          function-name: ${{ vars.YC_CLOUD_FUNCTION_NAME }}
+          runtime: ${{ vars.YC_FUNCTION_RUNTIME || 'python311' }}
+          memory: ${{ vars.YC_FUNCTION_MEMORY || '512Mb' }}
+          execution-timeout: ${{ vars.YC_FUNCTION_TIMEOUT || '60s' }}
+          entrypoint: ${{ vars.YC_FUNCTION_ENTRYPOINT || 'index.handler' }}
+          include: |
+            **/*.py
+            requirements.txt
+            run_timer.cmd
+            AGENTS.md
+            README.md
+            doc/**/*.md
+            agile/**/*.md
+          exclude: |
+            .env
+            .env.*
+            .venv/**
+            venv/**
+            artifacts/**
+            old/**
+            .git/**
+            .github/**
+            **/__pycache__/**
+            **/*.ipynb
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "Function deploy action finished."
+          echo "Function: ${{ vars.YC_CLOUD_FUNCTION_NAME }}"
+          echo "Entrypoint: ${{ vars.YC_FUNCTION_ENTRYPOINT }}"

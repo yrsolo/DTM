@@ -44,10 +44,12 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Stage 7 closeout and Stage 8 handoff package is documented in `doc/18_stage7_closeout_and_stage8_handoff.md`.
 - Stage 8 execution plan is documented in `doc/19_stage8_execution_plan.md`.
 - Stage 8 closeout and Stage 9 handoff package is documented in `doc/20_stage8_closeout_and_stage9_handoff.md`.
+- Stage 9 main auto-deploy setup for Yandex Cloud Function is documented in `doc/21_stage9_main_autodeploy_setup.md`.
 - Stage 8 prototype loader utility: `agent/load_prototype_payload.py` (filesystem/Object Storage + schema gate).
 - Stage 8 static prototype assets: `web_prototype/static` (run local preview with `.venv\Scripts\python.exe agent\run_web_prototype_server.py`).
 - Stage 8 payload preparation helper: `.venv\Scripts\python.exe agent\prepare_web_prototype_payload.py --source-mode auto` (writes `web_prototype/static/prototype_payload.json`).
 - Stage 8 shadow-run evidence builder: `.venv\Scripts\python.exe agent\stage8_shadow_run_evidence.py` (builds execution evidence package under `artifacts/shadow_run_stage8`).
+- Main-branch auto-deploy workflow: `.github/workflows/deploy_yc_function_main.yml`.
 
 ## Local run (current)
 - Preferred: `run_timer.cmd` (uses project virtualenv and runs timer mode).
@@ -107,6 +109,16 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `.venv\Scripts\python.exe -m pre_commit run detect-secrets --all-files`
 - Security audit notes:
   - `doc/07_publication_security_audit.md`
+
+## Main Auto-Deploy (Stage 9 kickoff)
+- Workflow: `.github/workflows/deploy_yc_function_main.yml`
+- Trigger: `push` to `main`
+- Required GitHub repository variables:
+  - `YC_FOLDER_ID`
+  - `YC_SERVICE_ACCOUNT_ID`
+  - `YC_CLOUD_FUNCTION_NAME`
+- Full setup guide:
+  - `doc/21_stage9_main_autodeploy_setup.md`
 
 ## Environment contour
 - Runtime env selector: `ENV` with allowed values `dev`, `test`, `prod`.
