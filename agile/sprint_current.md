@@ -7,7 +7,7 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] Stage 9 next slice grooming (post DTM-84 closeout): shadow-run + contract-regression + smoke checklist.
+- [BLOCKED] Stage 9 next slice grooming (post DTM-84 closeout): waiting explicit local-mode waiver or task-system access restore.
 
 ## Stage 9 Estimate (Dynamic)
 - Baseline estimate: 9 tasks (adjusted after serverless runtime hotfix slice).
@@ -26,7 +26,7 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 - [DONE] DTM-84 / TSK-086 - import/runtime Telegram crash fixed for serverless startup; HTTP-body parsing + healthcheck invoke path; deploy run `22501249449` successful, endpoint returns `!HEALTHY!`.
 
 ## Blocked
-- [BLOCKED] none.
+- [BLOCKED] Stage 9 execution is paused by process gate (task-system lifecycle unavailable in current runtime); owner escalation sent via `agent/notify_owner.py` on 2026-02-27.
 
 ## Next 3-5 Tasks (Groomed)
 - [TODO] Stage 9: cloud-profile shadow-run with explicit `PROTOTYPE_*_S3_KEY` pass criteria.
