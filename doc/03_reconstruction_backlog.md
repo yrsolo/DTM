@@ -29,6 +29,10 @@ Completed:
 
 Completed:
 - `DTM-82`: doc folder restructuring by purpose (`core/ops/governance/stages/archive`) and active-link cleanup.
+- `DTM-83`: main deploy trigger executed, workflow recovered via credential fallback, successful deploy run `22500598734`.
+
+In progress:
+- `DTM-84`: serverless runtime hotfix for import-time Telegram token crash + invoke smoke script.
 
 Planned next:
 - Cloud-profile shadow-run with explicit `PROTOTYPE_*_S3_KEY` pass criteria.

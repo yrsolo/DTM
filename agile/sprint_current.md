@@ -7,12 +7,12 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] none.
+- [IN_PROGRESS] DTM-84 / TSK-086 - fix import-time Telegram token crash in serverless runtime + add function invoke smoke script.
 
 ## Stage 9 Estimate (Dynamic)
-- Baseline estimate: 8 tasks (adjusted after explicit doc-structure refactor slice).
+- Baseline estimate: 9 tasks (adjusted after serverless runtime hotfix slice).
 - Done: 7
-- Remaining: 1
+- Remaining: 2
 - Rule: update `Done/Remaining` after each completed Stage 9 task.
 
 ## Done
@@ -28,12 +28,13 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
+- [TODO] DTM-84 / TSK-086 - fix import-time Telegram token crash in serverless runtime + add function invoke smoke script.
 - [TODO] Stage 9: cloud-profile shadow-run with explicit `PROTOTYPE_*_S3_KEY` pass criteria.
 - [TODO] Stage 9: deploy-pipeline consumer contract-regression checks.
 - [TODO] Stage 9: deployment smoke checklist for Yandex Cloud Function profile.
 
 ## Active Task Files
-- `agile/tasks/DTM-83_stage9-main-merge-and-deploy-trigger.md`
+- `agile/tasks/DTM-84_stage9-serverless-import-token-crash-fix.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`
