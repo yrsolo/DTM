@@ -39,3 +39,6 @@ Optional overrides:
 ## Notes
 - Current workflow packages source from repository (Python modules and docs) and excludes secrets, artifacts, notebooks, and local virtualenv.
 - If runtime requires additional environment variables in function configuration, keep them managed in Yandex Cloud function settings (or add controlled CI wiring as next task).
+- For non-manual secret refresh from local contour, use:
+  - `.venv\Scripts\python.exe agent\sync_lockbox_from_env.py --secret-name DTM`
+  This command syncs all non-empty `.env` keys and also updates `GOOGLE_KEY_JSON` from local key file as text payload entry.

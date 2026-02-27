@@ -119,11 +119,18 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `YC_CLOUD_FUNCTION_NAME`
 - Full setup guide:
   - `doc/21_stage9_main_autodeploy_setup.md`
+- Lockbox sync helper for full `.env` payload:
+  - `.venv\Scripts\python.exe agent\sync_lockbox_from_env.py --secret-name DTM`
 
 ## Environment contour
 - Runtime env selector: `ENV` with allowed values `dev`, `test`, `prod`.
 - Base variables are loaded from `.env`.
 - Optional profile override is auto-loaded from `.env.<ENV>` when file exists.
+- Google service-account key runtime source priority:
+  - `GOOGLE_KEY_JSON_PATH` (existing file path)
+  - `GOOGLE_KEY_JSON_B64` (base64 JSON text)
+  - `GOOGLE_KEY_JSON` (raw JSON text)
+  - fallback local file in `key/...json` (dev/local only)
 - Optional safety guard: set `STRICT_ENV_GUARD=1` to enforce that for `ENV=dev/test` `SOURCE_SHEET_NAME` and `TARGET_SHEET_NAME` are different.
 - Templates:
   - `.env.example` (base)

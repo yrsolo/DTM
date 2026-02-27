@@ -1,7 +1,9 @@
 """Constants for the project."""
 
+import base64
 import os
 from pathlib import Path
+import tempfile
 from types import MappingProxyType as MapProxy
 
 from dotenv import load_dotenv
@@ -37,7 +39,33 @@ ORG = os.environ.get("ORG_TOKEN")
 PROXY = os.environ.get("PROXY_URL", "")
 PROXIES = MapProxy({"https://": PROXY}) if PROXY else MapProxy({})
 
-KEY_JSON = "key/google_key_poised-backbone-191400-4e9fc454915f.json"
+def _resolve_google_key_json_path() -> str:
+    """Resolve Google service-account key path.
+
+    Priority:
+    1) GOOGLE_KEY_JSON_PATH (already materialized file path)
+    2) GOOGLE_KEY_JSON_B64 (base64-encoded JSON payload)
+    3) GOOGLE_KEY_JSON (raw JSON payload text)
+    4) local development fallback file path in repository
+    """
+    key_path = os.environ.get("GOOGLE_KEY_JSON_PATH", "").strip()
+    if key_path:
+        return key_path
+
+    key_b64 = os.environ.get("GOOGLE_KEY_JSON_B64", "").strip()
+    key_text = os.environ.get("GOOGLE_KEY_JSON", "").strip()
+    if key_b64:
+        key_text = base64.b64decode(key_b64).decode("utf-8")
+
+    if key_text:
+        tmp_file = Path(tempfile.gettempdir()) / "dtm_google_key.json"
+        tmp_file.write_text(key_text, encoding="utf-8")
+        return str(tmp_file)
+
+    return "key/google_key_poised-backbone-191400-4e9fc454915f.json"
+
+
+KEY_JSON = _resolve_google_key_json_path()
 
 DEFAULT_CHAT_ID = os.environ.get("DEFAULT_CHAT_ID", "-4083724311")
 
