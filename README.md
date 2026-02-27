@@ -47,6 +47,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - `mode=test` now enables mock external mode by default in `main.py` unless explicitly overridden.
 - Optional artifact export: `--quality-report-file <path>` writes structured diagnostics snapshot (`task/people row issues`, `timing parse errors`) as JSON.
 - Reminder run summary now includes delivery counters (`sent`, `skipped_*`, `send_errors`) and quality report summary includes reminder send/error counts.
+- Quality report summary now also includes derived reminder SLI metrics: attemptable deliveries, attempted sends, delivery rate, and failure rate.
 
 ## Baseline validation flow (Stage 0.4)
 - Capture artifact bundle:

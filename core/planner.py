@@ -8,6 +8,33 @@ from core.bootstrap import PlannerDependencies, build_planner_dependencies
 from utils.service import GoogleSheetInfo
 
 
+def build_reminder_sli_summary(reminder_delivery_counters):
+    counters = dict(reminder_delivery_counters or {})
+    sent = int(counters.get("sent", 0))
+    send_errors = int(counters.get("send_errors", 0))
+    # Attemptable = entries that reached "send attempt" decision point.
+    # Excludes functional skips (no message/person/chat_id/vacation/mock mode).
+    reminder_delivery_attemptable_count = sent + send_errors + int(counters.get("skipped_duplicate", 0))
+    reminder_delivery_attempted_count = sent + send_errors
+    reminder_delivery_rate = (
+        round(sent / reminder_delivery_attemptable_count, 4)
+        if reminder_delivery_attemptable_count > 0
+        else None
+    )
+    reminder_failure_rate = (
+        round(send_errors / reminder_delivery_attemptable_count, 4)
+        if reminder_delivery_attemptable_count > 0
+        else None
+    )
+
+    return {
+        "reminder_delivery_attemptable_count": reminder_delivery_attemptable_count,
+        "reminder_delivery_attempted_count": reminder_delivery_attempted_count,
+        "reminder_delivery_rate": reminder_delivery_rate,
+        "reminder_failure_rate": reminder_failure_rate,
+    }
+
+
 class GoogleSheetPlanner:
     def __init__(
             self,
@@ -74,6 +101,7 @@ class GoogleSheetPlanner:
         timing_parse_error_count = int(
             getattr(self.task_repository.timing_parser, "total_parse_errors", 0)
         )
+        reminder_sli_summary = build_reminder_sli_summary(reminder_delivery_counters)
 
         return {
             "mode": self.mode,
@@ -84,6 +112,7 @@ class GoogleSheetPlanner:
                 "timing_parse_error_count": timing_parse_error_count,
                 "reminder_sent_count": int(reminder_delivery_counters.get("sent", 0)),
                 "reminder_send_error_count": int(reminder_delivery_counters.get("send_errors", 0)),
+                **reminder_sli_summary,
             },
             "task_row_issues": task_row_issues,
             "people_row_issues": people_row_issues,
