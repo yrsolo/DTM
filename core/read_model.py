@@ -59,3 +59,49 @@ def build_read_model(
         "alerts": _normalize_alert(alert_evaluation),
         "quality_summary": summary,
     }
+
+
+def validate_read_model_contract(payload: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    model = dict(payload or {})
+
+    required_top = ("schema_version", "generated_at_utc", "source", "board", "task_details", "alerts", "quality_summary")
+    for key in required_top:
+        if key not in model:
+            errors.append(f"missing_top_level_field:{key}")
+
+    if model.get("schema_version") != READ_MODEL_SCHEMA_VERSION:
+        errors.append("invalid_schema_version")
+
+    generated = model.get("generated_at_utc")
+    if not isinstance(generated, str) or not generated.endswith("Z"):
+        errors.append("invalid_generated_at_utc")
+
+    source = model.get("source")
+    if not isinstance(source, dict):
+        errors.append("invalid_source")
+    else:
+        for key in ("mode", "dry_run", "build_id"):
+            if key not in source:
+                errors.append(f"missing_source_field:{key}")
+        if "dry_run" in source and not isinstance(source.get("dry_run"), bool):
+            errors.append("invalid_source_dry_run_type")
+
+    board = model.get("board")
+    if not isinstance(board, dict):
+        errors.append("invalid_board")
+    else:
+        for key in ("timeline", "by_designer"):
+            if key not in board:
+                errors.append(f"missing_board_field:{key}")
+            elif not isinstance(board.get(key), list):
+                errors.append(f"invalid_board_field_type:{key}")
+
+    if not isinstance(model.get("task_details"), list):
+        errors.append("invalid_task_details_type")
+    if not isinstance(model.get("alerts"), list):
+        errors.append("invalid_alerts_type")
+    if not isinstance(model.get("quality_summary"), dict):
+        errors.append("invalid_quality_summary_type")
+
+    return errors

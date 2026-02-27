@@ -111,8 +111,10 @@ Runtime quality and delivery counters consumed by dashboards.
 - Unknown fields are allowed for forward compatibility.
 - Required fields must always be present, even when value is `null`.
 - Date strings must be normalized to `YYYY-MM-DD` where applicable.
+- Runtime helper: `core.read_model.validate_read_model_contract(payload)` performs baseline compatibility checks.
 
 ## Smoke Coverage
 - Deterministic builder contract smoke: `agent/read_model_builder_smoke.py`.
 - Local launcher publication smoke: `agent/read_model_publication_smoke.py`.
 - Local launcher artifact option: `local_run.py --read-model-file <path> [--read-model-build-id <id>]`.
+- Contract compatibility smoke: `agent/read_model_contract_compat_smoke.py`.

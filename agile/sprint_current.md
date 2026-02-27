@@ -11,8 +11,8 @@ Start Stage 6 preparation for visualization platform migration with explicit rea
 
 ## Stage 6 Estimate (Dynamic)
 - Baseline estimate: 8 tasks
-- Done: 4
-- Remaining: 4
+- Done: 5
+- Remaining: 3
 - Rule: estimate is adjusted during execution when scope clarifies; done/remaining is updated after each task completion.
 
 ## Done
@@ -76,14 +76,15 @@ Start Stage 6 preparation for visualization platform migration with explicit rea
 - [DONE] DTM-56 / TSK-059 Stage 6 slice: read-model JSON contract definition (entities fields versioning)
 - [DONE] DTM-57 / TSK-060 Stage 6 slice: read-model builder from current planner artifacts
 - [DONE] DTM-58 / TSK-061 Stage 6 slice: publication path for read-model artifacts without runtime impact
+- [DONE] DTM-59 / TSK-062 Stage 6 slice: read-model builder contract tests and compatibility checks
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 6 slice: publication path for read-model artifacts without impact on existing runtime
 - [TODO] Stage 6 slice: UI view-spec baseline over read-model (filters/timeline/history)
 - [TODO] Stage 6 slice: read-model builder contract tests and compatibility checks
+- [TODO] Stage 6 slice: sheets storefront bridge policy for migration period
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -198,6 +199,8 @@ Start Stage 6 preparation for visualization platform migration with explicit rea
   - Jira: DTM-57 (status: Done / `Gotovo`)
 - TSK-061 - Stage 6 slice: publication path for read-model artifacts without runtime impact
   - Jira: DTM-58 (status: Done / `Gotovo`)
+- TSK-062 - Stage 6 slice: read-model builder contract tests and compatibility checks
+  - Jira: DTM-59 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -258,6 +261,7 @@ Start Stage 6 preparation for visualization platform migration with explicit rea
 - agile/tasks/DTM-56_stage6-read-model-json-contract-definition.md
 - agile/tasks/DTM-57_stage6-read-model-builder-from-current-planner-artifacts.md
 - agile/tasks/DTM-58_stage6-read-model-publication-path-local-launcher.md
+- agile/tasks/DTM-59_stage6-read-model-contract-compatibility-checks.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -367,3 +371,5 @@ Start Stage 6 preparation for visualization platform migration with explicit rea
 - 2026-02-27: DTM-57 completed (`core/read_model.py` builder + `agent/read_model_builder_smoke.py`; Stage 6 estimate updated to done 3 / remaining 5; Jira `Gotovo`).
 - 2026-02-27: DTM-58 moved to `V rabote` for Stage 6 read-model publication path in local launcher (artifact file output).
 - 2026-02-27: DTM-58 completed (`local_run.py --read-model-file` publication path + `agent/read_model_publication_smoke.py`; Stage 6 estimate updated to done 4 / remaining 4; Jira `Gotovo`).
+- 2026-02-27: DTM-59 moved to `V rabote` for Stage 6 contract compatibility checks for read-model payload.
+- 2026-02-27: DTM-59 completed (contract validator + compatibility smoke for read-model; Stage 6 estimate updated to done 5 / remaining 3; Jira `Gotovo`).
