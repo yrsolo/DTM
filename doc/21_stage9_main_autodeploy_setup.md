@@ -42,3 +42,4 @@ Optional overrides:
 - For non-manual secret refresh from local contour, use:
   - `.venv\Scripts\python.exe agent\sync_lockbox_from_env.py --secret-name DTM`
   This command syncs all non-empty `.env` keys and also updates `GOOGLE_KEY_JSON` from local key file as text payload entry.
+- After secret sync, publish function version with Lockbox secret mappings (`--secret ... environment-variable=...`) and ensure runtime service account has `lockbox.payloadViewer` on secret `DTM`.

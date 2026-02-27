@@ -11,8 +11,8 @@ Start Stage 9 serverless deployment contour for web prototype with main-branch a
 
 ## Stage 9 Estimate (Dynamic)
 - Baseline estimate: 5 tasks
-- Done: 2
-- Remaining: 3
+- Done: 3
+- Remaining: 2
 - Rule: estimate is adjusted during execution when scope clarifies; done/remaining is updated after each task completion.
 
 ## Done
@@ -95,6 +95,7 @@ Start Stage 9 serverless deployment contour for web prototype with main-branch a
 - [DONE] DTM-75 / TSK-078 Stage 8 closeout: readiness gate and handoff package
 - [DONE] DTM-76 / TSK-079 Stage 9 kickoff: main-branch auto-deploy workflow for Yandex Cloud Function
 - [DONE] DTM-77 / TSK-080 Stage 9: automate `.env` to Lockbox sync and Google secret runtime source
+- [DONE] DTM-78 / TSK-081 Stage 9: bind Lockbox secret env to function and run invoke smoke
 
 ## Blocked
 - [BLOCKED] none
@@ -256,6 +257,8 @@ Start Stage 9 serverless deployment contour for web prototype with main-branch a
   - Jira: DTM-76 (status: Done / `Gotovo`)
 - TSK-080 - Stage 9: automate `.env` to Lockbox sync and Google secret runtime source
   - Jira: DTM-77 (status: Done / `Gotovo`)
+- TSK-081 - Stage 9: bind Lockbox secret env to function and run invoke smoke
+  - Jira: DTM-78 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -322,6 +325,7 @@ Start Stage 9 serverless deployment contour for web prototype with main-branch a
 - agile/tasks/DTM-62_stage6-closeout-readiness-gate-and-handoff.md
 - agile/tasks/DTM-76_stage9-kickoff-main-autodeploy-yc-function.md
 - agile/tasks/DTM-77_stage9-automate-env-to-lockbox-sync-and-google-secret-runtime-source.md
+- agile/tasks/DTM-78_stage9-bind-lockbox-secret-env-to-function-and-invoke-smoke.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -470,3 +474,5 @@ Start Stage 9 serverless deployment contour for web prototype with main-branch a
 - 2026-02-27: DTM-76 completed (`.github/workflows/deploy_yc_function_main.yml` + `doc/21_stage9_main_autodeploy_setup.md` + sprint/backlog/context sync); Stage 9 estimate updated to done 1 / remaining 4; Jira `Gotovo`.
 - 2026-02-27: DTM-77 moved to `V rabote` for Stage 9 automated Lockbox sync and Google secret text runtime sourcing.
 - 2026-02-27: DTM-77 completed (`agent/sync_lockbox_from_env.py` + `config/constants.py` secret-source fallback + Lockbox sync execution); Stage 9 estimate updated to done 2 / remaining 3; Jira `Gotovo`.
+- 2026-02-27: DTM-78 moved to `V rabote` for Stage 9 Lockbox-to-function env binding and cloud invoke smoke.
+- 2026-02-27: DTM-78 completed (new function version with 29 Lockbox mappings + invoke smoke); Stage 9 estimate updated to done 3 / remaining 2; Jira `Gotovo`.

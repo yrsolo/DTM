@@ -308,4 +308,5 @@ Status:
 - Stage 8 closeout completed: readiness gate and Stage 9 handoff package published (`doc/20_stage8_closeout_and_stage9_handoff.md`, `DTM-75`).
 - Stage 9 kickoff slice completed: main-branch auto-deploy workflow for Yandex Cloud Function published (`.github/workflows/deploy_yc_function_main.yml`) with setup guide (`doc/21_stage9_main_autodeploy_setup.md`, `DTM-76`).
 - Stage 9 security/config slice completed: automated `.env` to Lockbox sync utility and Google key secret-text runtime sourcing (`agent/sync_lockbox_from_env.py`, `config/constants.py`, `DTM-77`).
+- Stage 9 cloud-binding slice completed: Lockbox `DTM` payload bound into function env via secret mappings and runtime SA access binding; invoke smoke executed (`DTM-78`).
 
