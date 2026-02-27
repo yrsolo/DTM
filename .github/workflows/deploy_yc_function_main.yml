@@ -18,6 +18,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Preflight required variables
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${{ vars.YC_LOCKBOX_SECRET_ID }}" ]; then
+            echo "Missing required repository variable: YC_LOCKBOX_SECRET_ID" >&2
+            exit 1
+          fi
+          if [ -z "${{ vars.YC_SERVICE_ACCOUNT_ID }}" ] && [ -z "${{ vars.YC_RUNTIME_SERVICE_ACCOUNT_ID }}" ]; then
+            echo "Missing runtime service account variable: set YC_RUNTIME_SERVICE_ACCOUNT_ID or YC_SERVICE_ACCOUNT_ID" >&2
+            exit 1
+          fi
+
       - name: Deploy function version
         id: deploy
         uses: yc-actions/yc-sls-function@v4
