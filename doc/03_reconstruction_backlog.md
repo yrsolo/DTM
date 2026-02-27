@@ -210,6 +210,7 @@
 - Stage 6 slice completed: read-model contract compatibility guard added (`validate_read_model_contract`) with deterministic compatibility smoke (`DTM-59`).
 - Stage 6 slice completed: baseline UI view-spec over read-model documented (`doc/12_stage6_ui_view_spec.md`) for filters, timeline/gantt, and history surfaces (`DTM-60`).
 - Stage 6 slice completed: baseline capture flow extended to include `read_model.json` artifact for Stage 6 verification workflow (`DTM-61`).
+- Stage 6 closeout completed: formal readiness gate and handoff checklist added (`doc/13_stage6_closeout_and_handoff.md`) with Stage 6 artifact inventory and next-stage order (`DTM-62`).
 
 ---
 

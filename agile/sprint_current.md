@@ -1,7 +1,7 @@
 # Sprint Current
 
 ## Sprint Goal
-Start Stage 6 preparation for visualization platform migration with explicit read-model planning and delivery tracking.
+Complete Stage 6 preparation for visualization platform migration with explicit read-model planning and delivery tracking.
 
 ## Capacity
 1 active task (WIP), 3 tasks queued for this short sprint cycle.
@@ -11,8 +11,8 @@ Start Stage 6 preparation for visualization platform migration with explicit rea
 
 ## Stage 6 Estimate (Dynamic)
 - Baseline estimate: 8 tasks
-- Done: 7
-- Remaining: 1
+- Done: 8
+- Remaining: 0
 - Rule: estimate is adjusted during execution when scope clarifies; done/remaining is updated after each task completion.
 
 ## Done
@@ -79,13 +79,13 @@ Start Stage 6 preparation for visualization platform migration with explicit rea
 - [DONE] DTM-59 / TSK-062 Stage 6 slice: read-model builder contract tests and compatibility checks
 - [DONE] DTM-60 / TSK-063 Stage 6 slice: UI view-spec baseline over read-model (filters timeline history)
 - [DONE] DTM-61 / TSK-064 Stage 6 slice: include read-model artifact in baseline capture flow
+- [DONE] DTM-62 / TSK-065 Stage 6 closeout: readiness gate and handoff checklist
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 6 slice: sheets storefront bridge policy for migration period
-- [TODO] Stage 6 slice: stage closeout checklist and readiness gate
+- [TODO] none (Stage 6 completed)
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -206,6 +206,8 @@ Start Stage 6 preparation for visualization platform migration with explicit rea
   - Jira: DTM-60 (status: Done / `Gotovo`)
 - TSK-064 - Stage 6 slice: include read-model artifact in baseline capture flow
   - Jira: DTM-61 (status: Done / `Gotovo`)
+- TSK-065 - Stage 6 closeout: readiness gate and handoff checklist
+  - Jira: DTM-62 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -269,6 +271,7 @@ Start Stage 6 preparation for visualization platform migration with explicit rea
 - agile/tasks/DTM-59_stage6-read-model-contract-compatibility-checks.md
 - agile/tasks/DTM-60_stage6-ui-view-spec-baseline-over-read-model.md
 - agile/tasks/DTM-61_stage6-read-model-artifact-in-baseline-capture-flow.md
+- agile/tasks/DTM-62_stage6-closeout-readiness-gate-and-handoff.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -384,3 +387,5 @@ Start Stage 6 preparation for visualization platform migration with explicit rea
 - 2026-02-27: DTM-60 completed (`doc/12_stage6_ui_view_spec.md` added and linked; Stage 6 estimate updated to done 6 / remaining 2; Jira `Gotovo`).
 - 2026-02-27: DTM-61 moved to `V rabote` for Stage 6 baseline capture integration of read-model artifact.
 - 2026-02-27: DTM-61 completed (`agent/capture_baseline.py` now emits `read_model.json`; Stage 6 estimate updated to done 7 / remaining 1; Jira `Gotovo`).
+- 2026-02-27: DTM-62 moved to `V rabote` for Stage 6 formal closeout (readiness gate + handoff checklist).
+- 2026-02-27: DTM-62 completed (`doc/13_stage6_closeout_and_handoff.md` added; Stage 6 estimate updated to done 8 / remaining 0; Jira `Gotovo`).
