@@ -16,34 +16,19 @@ from typing import Dict, List
 import pandas as pd
 
 from config import COLOR_STATUS, REPLACE_NAMES, TASK_FIELD_MAP
+from core.contracts import TaskRowContract, is_nullish, normalize_text
 from core.reminder import TelegramNotifier
 from utils.service import GoogleSheetInfo, GoogleSheetsService
 
 
 def _is_nullish(value) -> bool:
-    """Return True for None/NaN-like values without crashing on list-like payloads."""
-    if value is None:
-        return True
-    try:
-        result = pd.isna(value)
-    except (TypeError, ValueError):
-        return False
-    if isinstance(result, (list, tuple)):
-        return all(result)
-    if hasattr(result, "all"):
-        try:
-            return bool(result.all())
-        except Exception:
-            return False
-    return bool(result)
+    """Compatibility wrapper for local module usage."""
+    return is_nullish(value)
 
 
 def _normalize_text(value, strip: bool = True) -> str:
-    """Convert nullable mixed payloads to a predictable text value."""
-    if _is_nullish(value):
-        return ""
-    text = value if isinstance(value, str) else str(value)
-    return text.strip() if strip else text
+    """Compatibility wrapper for local module usage."""
+    return normalize_text(value, strip=strip)
 
 
 class TimingParser:
@@ -323,8 +308,8 @@ class GoogleSheetsTaskRepository(TaskRepository):
         tasks_list = []
         next_task_date = None
         for idx, row in df.iterrows():
-            task = {key: row.get(value, None) for key, value in TASK_FIELD_MAP.items()}
-            task = Task(**task, parser=self.timing_parser, next_task_date=next_task_date)
+            contract = TaskRowContract.from_mapping(row, TASK_FIELD_MAP)
+            task = Task(**contract.to_task_kwargs(), parser=self.timing_parser, next_task_date=next_task_date)
             tasks_list.append(task)
             self.tasks[task.id] = task
             mean_date = pd.Series(task.timing.keys()).mean()

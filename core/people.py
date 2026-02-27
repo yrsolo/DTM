@@ -1,44 +1,22 @@
 from typing import List
-import pandas as pd
 from utils.service import GoogleSheetsService, GoogleSheetInfo
 from config import PEOPLE_FIELD_MAP
-
-
-def _is_nullish(value) -> bool:
-    if value is None:
-        return True
-    try:
-        result = pd.isna(value)
-    except (TypeError, ValueError):
-        return False
-    if hasattr(result, "all"):
-        try:
-            return bool(result.all())
-        except Exception:
-            return False
-    return bool(result)
-
-
-def _normalize_text(value, strip: bool = True) -> str:
-    if _is_nullish(value):
-        return ""
-    text = value if isinstance(value, str) else str(value)
-    return text.strip() if strip else text
+from core.contracts import PersonRowContract, normalize_text
 
 
 class Person:
     """ Человек"""
 
     def __init__(self, person_id, name, email, position, telegram_id, chat_id, info, vacation, tg_bot=None, **kwargs):
-        self.id = _normalize_text(person_id)
-        self.name = _normalize_text(name)
-        self.email = _normalize_text(email)
-        self.telegram_id = _normalize_text(telegram_id)
-        self.chat_id = _normalize_text(chat_id)
+        self.id = normalize_text(person_id)
+        self.name = normalize_text(name)
+        self.email = normalize_text(email)
+        self.telegram_id = normalize_text(telegram_id)
+        self.chat_id = normalize_text(chat_id)
         self.tg_bot = tg_bot
-        self.info = _normalize_text(info, strip=False)
-        self.position = _normalize_text(position).lower()
-        self.vacation = _normalize_text(vacation).lower()
+        self.info = normalize_text(info, strip=False)
+        self.position = normalize_text(position).lower()
+        self.vacation = normalize_text(vacation).lower()
         self.tasks = []
 
     def __repr__(self):
@@ -86,11 +64,12 @@ class PeopleManager:
         return self.people
 
     def _create_person(self, person):
-        person = {key: person.get(value, None) for key, value in PEOPLE_FIELD_MAP.items()}
-        if _normalize_text(person.get('position')).lower() == 'дизайнер':
-            person = Designer(**person)
+        contract = PersonRowContract.from_mapping(person, PEOPLE_FIELD_MAP)
+        person_kwargs = contract.to_person_kwargs()
+        if contract.position == "\u0434\u0438\u0437\u0430\u0439\u043d\u0435\u0440":
+            person = Designer(**person_kwargs)
         else:
-            person = Person(**person)
+            person = Person(**person_kwargs)
         return person
 
     def get_person(self, name):
@@ -101,3 +80,4 @@ class PeopleManager:
     def get_designers(self):
         self._load()
         return [person for person in self.people.values() if isinstance(person, Designer)]
+

@@ -11,13 +11,13 @@ Purpose: track freshness and trust of planning sources before TeamLead creates/a
 | source | last_verified_at | verified_by | evidence | trust_level | notes |
 |---|---|---|---|---|---|
 | agile/strategy.md | 2026-02-27 | TeamLead | checked against runnable entrypoints `run_timer.cmd` -> `local_run.py --mode timer` and Stage 0 themes in code/config (`SOURCE_SHEET_NAME`/`TARGET_SHEET_NAME`) | medium | strategy is direction-level and consistent with code shape |
-| agile/sprint_current.md | 2026-02-27 | TeamLead | verified board sections and WIP=1 discipline; synchronized DTM-11 lifecycle (`V rabote` -> `Gotovo`) | high | local sprint board is current for this sprint cycle |
+| agile/sprint_current.md | 2026-02-27 | TeamLead | verified board sections and WIP=1 discipline; synchronized DTM-12 lifecycle (`V rabote` -> `Gotovo`) | high | local sprint board is current for this sprint cycle |
 | agile/retro.md | 2026-02-27 | TeamLead | retro improvements match implemented process controls (owner escalation, single board discipline) | medium | historical context only; not used as execution truth |
-| doc/03_reconstruction_backlog.md | 2026-02-27 | TeamLead | Stage 0 items 0.3, 0.4, 0.5 remain aligned; Stage 1 status extended with DTM-11 reminder runtime compatibility increment | high | backlog status now reflects DTM-8/9/10/11 Stage 1 progress |
-| doc/02_current_modules_and_functionality.md | 2026-02-27 | TeamLead | synchronized with repository changes for task/people contracts and reminder runtime fix (`core/repository.py`, `core/people.py`, `core/reminder.py`) | high | module doc covers latest Stage 1 hardening details |
+| doc/03_reconstruction_backlog.md | 2026-02-27 | TeamLead | Stage 0 items 0.3, 0.4, 0.5 remain aligned; Stage 1 status extended with DTM-12 typed row-contract scaffold | high | backlog status now reflects DTM-8/9/10/11/12 Stage 1 progress |
+| doc/02_current_modules_and_functionality.md | 2026-02-27 | TeamLead | synchronized with repository changes for task/people/reminder stabilization and typed row contracts (`core/contracts.py`, `core/repository.py`, `core/people.py`, `core/reminder.py`) | high | module doc covers latest Stage 1 hardening details |
 | doc/07_publication_security_audit.md | 2026-02-27 | TeamLead | synchronized with actual pre-commit detect-secrets gate and full-repo smoke command, then validated by smoke run | high | security gate documentation now matches runtime process |
 | README.md | 2026-02-27 | TeamLead | validated local run + baseline + security gate docs against runnable commands | high | operational commands in README align with current runtime |
-| Jira control plane | 2026-02-27 | TeamLead | `.env` contains required `JIRA_*` keys; REST check `/rest/api/3/myself` returned `200`; DTM-11 lifecycle/comment updates succeeded via API | high | control plane is available when runtime loads `.env` values |
+| Jira control plane | 2026-02-27 | TeamLead | `.env` contains required `JIRA_*` keys; REST check `/rest/api/3/myself` returned `200`; DTM-12 lifecycle/comment updates succeeded via API | high | control plane is available when runtime loads `.env` values |
 
 ## Usage Rules
 1. Update this file before sprint grooming and before assigning new execution tasks.
@@ -34,4 +34,7 @@ Purpose: track freshness and trust of planning sources before TeamLead creates/a
    - `git log --oneline -n 6 -- core/people.py core/reminder.py` + `git blame -L 1,220 core/people.py` confirm `core/people.py` stayed legacy and needed Stage 1 guardrails.
    - `.venv\Scripts\python.exe -m py_compile core\people.py` and targeted people smoke script passed (`people_smoke_ok`).
    - `.venv\Scripts\python.exe local_run.py --mode reminders-only --dry-run` now passes after reminder runtime compatibility fix (`httpx` proxy setup + unicode-safe logging).
+   - `git log --oneline -n 8 -- core/repository.py core/people.py core/reminder.py` confirms Stage 1 drift points and latest stabilization commits (`DTM-9..DTM-11`) before planning DTM-12 typed contract scaffold.
+   - `.venv\Scripts\python.exe -m py_compile core\contracts.py core\repository.py core\people.py` passed after DTM-12 typed row-contract integration.
+   - `.venv\Scripts\python.exe local_run.py --mode timer --dry-run` and `.venv\Scripts\python.exe local_run.py --mode reminders-only --dry-run` passed after DTM-12 mapping changes.
    - shell-level `Env:JIRA_*` check may be empty if `.env` is not exported globally; Jira checks should load `.env` explicitly for API validation.
