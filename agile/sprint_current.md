@@ -51,14 +51,15 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - [DONE] DTM-37 / TSK-040 Stage 5 kickoff derived SLI counters for reminder delivery/failure rates
 - [DONE] DTM-38 / TSK-041 Stage 5 kickoff risk-register update for reminder/API degradation and retry policy
 - [DONE] DTM-39 / TSK-042 Stage 5 alerting thresholds and escalation policy for reminder delivery metrics
+- [DONE] DTM-40 / TSK-043 Stage 5 persist SLI trend snapshots across runs
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 5 follow-up: persist SLI trend snapshots across runs
 - [TODO] Stage 5 follow-up: implement explicit retry/backoff policy for reminder delivery transient failures
 - [TODO] Stage 5 follow-up: automate threshold evaluation from latest quality report artifact
+- [TODO] Stage 5 follow-up: wire persisted SLI trend snapshots into alert-review workflow
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -135,6 +136,8 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
   - Jira: DTM-38 (status: Done / `Gotovo`)
 - TSK-042 - Stage 5 kickoff: alerting thresholds and escalation policy for reminder delivery metrics
   - Jira: DTM-39 (status: Done / `Gotovo`)
+- TSK-043 - Stage 5 follow-up: persist SLI trend snapshots across runs
+  - Jira: DTM-40 (status: Done / `Gotovo`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -176,6 +179,7 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - agile/tasks/DTM-37_stage5-derived-sli-reminder-delivery-rates.md
 - agile/tasks/DTM-38_stage5-risk-register-reminder-api-retry-policy.md
 - agile/tasks/DTM-39_stage5-alerting-thresholds-escalation-policy.md
+- agile/tasks/DTM-40_stage5-persist-sli-trend-snapshots.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -246,3 +250,5 @@ Complete Stage 5 observability hardening for reminders with explicit SLI alert t
 - 2026-02-27: DTM-38 completed (risk-register aligned to Stage 4/5 controls + explicit retry-policy stance + reminders-only dry-run sanity-check; Jira `Gotovo`).
 - 2026-02-27: DTM-39 moved to `V rabote` for Stage 5 alerting thresholds and escalation policy for reminder delivery metrics.
 - 2026-02-27: DTM-39 completed (explicit reminder SLI alert thresholds + escalation sequence documented in risk register; reminders-only mock dry-run sanity-check; Jira `Gotovo`).
+- 2026-02-27: DTM-40 moved to `V rabote` for Stage 5 SLI trend snapshot persistence across runs.
+- 2026-02-27: DTM-40 completed (rolling SLI trend snapshot persistence in local run artifacts + deterministic trend smoke + reminders-only mock dry-run; Jira `Gotovo`).

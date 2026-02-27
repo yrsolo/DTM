@@ -188,6 +188,7 @@
 - Stage 5 kickoff increment completed: derived reminder SLI metrics (`delivery_rate`, `failure_rate`, attemptable/attempted counters) integrated into quality report summary with deterministic formula smoke verification (`DTM-37`).
 - Stage 5 kickoff increment completed: risk register aligned to implemented reminder/API mitigations with explicit retry-policy stance and ownership (`DTM-38`).
 - Stage 5 kickoff increment completed: explicit reminder SLI alert thresholds and escalation policy documented with owner notification flow alignment (`DTM-39`).
+- Stage 5 follow-up increment completed: rolling reminder SLI trend snapshots persisted across runs via local artifact flow (`DTM-40`).
 
 ---
 
