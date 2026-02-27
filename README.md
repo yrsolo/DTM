@@ -46,6 +46,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Stage 8 prototype loader utility: `agent/load_prototype_payload.py` (filesystem/Object Storage + schema gate).
 - Stage 8 static prototype assets: `web_prototype/static` (run local preview with `.venv\Scripts\python.exe agent\run_web_prototype_server.py`).
 - Stage 8 payload preparation helper: `.venv\Scripts\python.exe agent\prepare_web_prototype_payload.py --source-mode auto` (writes `web_prototype/static/prototype_payload.json`).
+- Stage 8 shadow-run evidence builder: `.venv\Scripts\python.exe agent\stage8_shadow_run_evidence.py` (builds execution evidence package under `artifacts/shadow_run_stage8`).
 
 ## Local run (current)
 - Preferred: `run_timer.cmd` (uses project virtualenv and runs timer mode).
