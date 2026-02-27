@@ -1,13 +1,13 @@
 # Sprint Current
 
 ## Sprint Goal
-Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk extraction sequence.
+Start Stage 3 rendering refactor with a shared cell-contract scaffold and reversible extraction slices.
 
 ## Capacity
 1 active task (WIP), 3 tasks queued for this short sprint cycle.
 
 ## Now
-- [IN_PROGRESS] none
+- [IN_PROGRESS] DTM-24 / TSK-027 Stage 3 task-calendar renderer alignment
 
 ## Done
 - [DONE] Initial git workflow policy added.
@@ -34,12 +34,13 @@ Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk
 - [DONE] DTM-20 / TSK-023 Stage 2 domain module extraction scaffold.
 - [DONE] DTM-21 / TSK-024 Stage 2 application use-case orchestration extraction.
 - [DONE] DTM-22 / TSK-025 Stage 2 infrastructure adapter boundary for external services.
+- [DONE] DTM-23 / TSK-026 Stage 3 calendar rendering shared cell-contract scaffold
 
 ## Blocked
 - [BLOCKED] none
 
 ## Next 3-5 Tasks (Groomed)
-- none (Stage 2 completion gate)
+- [TODO] DTM-25 / TSK-028 Stage 3 sheet renderer adapter extraction
 
 ## Selected Work (Jira/Local)
 - TSK-004 - Sprint workspace normalization (status: Done)
@@ -82,6 +83,12 @@ Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk
   - Jira: DTM-21 (status: Done / `Gotovo`)
 - TSK-025 - Stage 2 infrastructure adapter boundary for external services
   - Jira: DTM-22 (status: Done / `Gotovo`)
+- TSK-026 - Stage 3 calendar rendering shared cell-contract scaffold
+  - Jira: DTM-23 (status: Done / `Gotovo`)
+- TSK-027 - Stage 3 task-calendar renderer alignment
+  - Jira: DTM-24 (status: In Progress / `V rabote`)
+- TSK-028 - Stage 3 sheet renderer adapter extraction
+  - Jira: DTM-25 (status: To Do / `K vypolneniyu`)
 - DTM-3 - TSK-010 README/runtime alignment verification (status: Done / `Gotovo`)
 
 ## Active Task Files
@@ -106,6 +113,8 @@ Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk
 - agile/tasks/DTM-20_stage2-domain-scaffold.md
 - agile/tasks/DTM-21_stage2-application-usecases.md
 - agile/tasks/DTM-22_stage2-infra-adapter-boundary.md
+- agile/tasks/DTM-23_stage3-render-cell-contract.md
+- agile/tasks/DTM-24_stage3-task-calendar-renderer-alignment.md
 
 ## Risks / Blockers
 - [BLOCKED] none
@@ -142,3 +151,6 @@ Start Stage 2 decomposition by defining explicit layer boundaries and a low-risk
 - 2026-02-27: DTM-21 completed (orchestration extracted to `core/use_cases.py`; smoke-check; Jira `Gotovo`).
 - 2026-02-27: DTM-22 moved to `V rabote` for Stage 2 infrastructure adapter boundary extraction.
 - 2026-02-27: DTM-22 completed (adapter contracts + injected Telegram/OpenAI integration wiring; smoke-check; Jira `Gotovo`).
+- 2026-02-27: Stage 3 kickoff created in Jira (`DTM-23..DTM-25`); `DTM-23` moved to `V rabote` as active execution task.
+- 2026-02-27: DTM-23 completed (shared `RenderCell` scaffold + TaskCalendarManager contract adoption, sync dry-run smoke, Jira `Gotovo`).
+- 2026-02-27: DTM-24 moved to `V rabote` as next single active Stage 3 execution task.

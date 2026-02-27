@@ -16,6 +16,7 @@ from typing import Dict, List
 import pandas as pd
 
 from config import COLORS
+from core.render_contracts import RenderCell
 from core.repository import TimingParser
 from utils.func import GetColor, RGBColor, cell_to_indices, filter_stages
 
@@ -246,7 +247,6 @@ class CalendarManager:
         write_cur_time(self.service, spreadsheet_name, sheet_name, cell="A1")
         self.service.execute_updates(spreadsheet_name)
 
-
 def write_cur_time(service, spreadsheet_name, sheet_name, cell="A1"):
     cur_time = pd.Timestamp.now(tz="Europe/Moscow").strftime("%H:%M %B %d")
     row, col = cell_to_indices(cell)
@@ -300,18 +300,21 @@ class TaskCalendarManager:
         color = self.get_color("gray")
 
         while day < end:
-            cell_data = {
-                "value": day.strftime("%d.%m"),
-                "color": color if day != now else self.get_color("green"),
-                "text_color": color**3,
-                "col": col,
-                "row": row,
-                "bold": True,
-                "italic": True,
-                "font_size": 9,
-            }
             if day.weekday() >= 5:
-                cell_data["color"] **= 0.25
+                day_color = (color if day != now else self.get_color("green")) ** 0.25
+            else:
+                day_color = color if day != now else self.get_color("green")
+
+            cell_data = RenderCell(
+                value=day.strftime("%d.%m"),
+                color=day_color,
+                text_color=color**3,
+                col=col,
+                row=row,
+                bold=True,
+                italic=True,
+                font_size=9,
+            ).to_cell_data()
 
             self.service.update_cell(cell_data=cell_data)
             col += 1
@@ -321,17 +324,13 @@ class TaskCalendarManager:
 
     def task_to_sheet(self, row, task, color):
         # task name
-        cell_data = {
-            "value": task.name,
-            "note": f"Менеджер: {task.customer}\nСтатус:\n{task.status}\nТайминг:\n{task.raw_timing}",
-            # 'color': color if day.weekday() < 5 else color ** 2,
-            # 'text_color': RGBColor().gray**.5,
-            "col": 1,
-            "row": row,
-            # 'bold': True,
-            # 'italic': True,
-            "font_size": 9,
-        }
+        cell_data = RenderCell(
+            value=task.name,
+            note=f"Менеджер: {task.customer}\nСтатус:\n{task.status}\nТайминг:\n{task.raw_timing}",
+            col=1,
+            row=row,
+            font_size=9,
+        ).to_cell_data()
         self.service.update_cell(cell_data=cell_data)
 
         day = max(self.timeline["start"], task.min_date)
@@ -341,19 +340,23 @@ class TaskCalendarManager:
         while day <= self.timeline["end"] and day <= task.max_date:
             stage = ", ".join(task.timing.get(day, [""]))
             # print(day,col, stage)
-            cell_data = {
-                "value": stage[:5].upper(),
-                "note": f"{stage} \n{task.name}" if stage else "",
-                "color": color if task.color_status not in ["wait"] else color.gray,
-                "text_color": color**0.01,
-                "col": col,
-                "row": row,
-                "bold": True,
-                # 'italic': True,
-                "font_size": 8,
-            }
             if day.weekday() >= 5:
-                cell_data["color"] **= 0.6
+                stage_color = (
+                    color if task.color_status not in ["wait"] else color.gray
+                ) ** 0.6
+            else:
+                stage_color = color if task.color_status not in ["wait"] else color.gray
+
+            cell_data = RenderCell(
+                value=stage[:5].upper(),
+                note=f"{stage} \n{task.name}" if stage else "",
+                color=stage_color,
+                text_color=color**0.01,
+                col=col,
+                row=row,
+                bold=True,
+                font_size=8,
+            ).to_cell_data()
 
             self.service.update_cell(cell_data=cell_data)
 
@@ -365,16 +368,15 @@ class TaskCalendarManager:
         self.create_timeline(row)
         # task name
         color = self.get_color()
-        cell_data = {
-            "value": designer,
-            "color": color**1.5,
-            "text_color": color**0.03,
-            "col": 1,
-            "row": row,
-            "bold": True,
-            # 'italic': True,
-            "font_size": 10,
-        }
+        cell_data = RenderCell(
+            value=designer,
+            color=color**1.5,
+            text_color=color**0.03,
+            col=1,
+            row=row,
+            bold=True,
+            font_size=10,
+        ).to_cell_data()
         self.service.update_cell(cell_data=cell_data)
         row += 1
 
@@ -399,12 +401,7 @@ class TaskCalendarManager:
 
     def write_cur_time(self):
         cur_time = pd.Timestamp.now(tz="Europe/Moscow").strftime("%H:%M %B %d")
-        cell_data = {
-            "value": cur_time,
-            "col": 1,
-            "row": 1,
-            "bold": True,
-        }
+        cell_data = RenderCell(value=cur_time, col=1, row=1, bold=True).to_cell_data()
         self.service.update_cell(cell_data=cell_data)
 
     def all_tasks_to_sheet(self, color_status=("wait", "work", "pre_done")):
@@ -571,3 +568,4 @@ class TaskCalendarManagerOld(CalendarManager):
 
         write_cur_time(self.service, spreadsheet_name, sheet_name, cell="A1")
         self.service.execute_updates(spreadsheet_name)
+

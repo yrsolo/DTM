@@ -150,6 +150,9 @@
 - Вынести "рендер в таблицу" в отдельный адаптер.
 - Сделать единые правила цветов/подписей/нотов.
 
+Статус:
+- Stage 3 started: shared render cell-contract scaffold introduced (`core/render_contracts.py`) and integrated into `TaskCalendarManager` rendering flow (`DTM-23`).
+
 Критерий готовности:
 - обе визуализации строятся через единый промежуточный формат.
 
