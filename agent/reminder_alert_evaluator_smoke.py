@@ -26,6 +26,7 @@ from agent.reminder_alert_evaluator import (
 
 
 def _quality_report_summary(attemptable: int, delivery_rate: float | None, send_errors: int) -> dict[str, Any]:
+    """Build minimal quality report summary payload for evaluator tests."""
     return {
         "summary": {
             "reminder_delivery_attemptable_count": attemptable,
@@ -36,6 +37,7 @@ def _quality_report_summary(attemptable: int, delivery_rate: float | None, send_
 
 
 def _write_quality_report(path: Path, attemptable: int, delivery_rate: float | None, send_errors: int) -> None:
+    """Write temporary quality report fixture to disk."""
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "mode": "reminders-only",
@@ -45,6 +47,7 @@ def _write_quality_report(path: Path, attemptable: int, delivery_rate: float | N
 
 
 def run() -> None:
+    """Run deterministic evaluator smoke assertions."""
     info = evaluate_thresholds(_quality_report_summary(attemptable=2, delivery_rate=None, send_errors=0))
     assert info["level"] == "INFO_ONLY", info
 

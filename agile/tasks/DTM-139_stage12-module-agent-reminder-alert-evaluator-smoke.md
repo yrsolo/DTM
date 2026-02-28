@@ -5,37 +5,30 @@
 - Module baseline from audit matrix: `agent.reminder_alert_evaluator_smoke` (`2` items).
 
 ## Goal
-- Perform deep quality cleanup for this module without feature behavior changes:
-  - typing completeness,
-  - accurate concise docstrings,
-  - readability and local structure cleanup,
-  - removal of obvious dead or misleading fragments.
+- Perform deep quality cleanup for this module without feature behavior changes.
 
 ## Non-goals
 - No business logic redesign.
 - No interface contract expansion.
-- No unrelated cross-module refactor.
 
 ## Plan
-1. Analyze the module and identify highest-impact readability/type debt.
-2. Apply focused refactor patches preserving behavior.
-3. Run relevant smoke checks.
-4. Record Jira evidence and close the task.
+1. Analyze module readability/type debt.
+2. Apply focused non-functional cleanup.
+3. Run smoke checks.
+4. Record Jira evidence and close task.
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-139`).
-- [x] Jira status set to `? ??????????`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `??????`.
-- [ ] Telegram completion sent.
+- [x] Jira status set to `? ??????`.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `??????`.
+- [x] Telegram completion sent.
 
 ## Work log
-- 2026-02-28: Task generated from Stage 12 module queue and linked to module `agent.reminder_alert_evaluator_smoke`.
+- 2026-02-28: Added concise fixture/run docstrings; assertions unchanged.
+- 2026-02-28: Checks: `python -m compileall agent`, `.venv\Scripts\python.exe agent\reminder_alert_evaluator_smoke.py`.
 
 ## Links
 - Jira: DTM-139
-- Inputs:
-  - `doc/governance/stage12_module_audit_matrix.md`
-  - `doc/governance/stage12_code_quality_standard.md`

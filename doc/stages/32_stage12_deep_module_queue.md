@@ -4,7 +4,7 @@ Generated from `doc/governance/stage12_module_jira_map.json`.
 
 ## Baseline
 - Module tasks created: 53.
-- Active module: `DTM-135` / `agent.invoke_function_smoke`.
+- Active module: `DTM-141` / `agent.run_web_prototype_server`.
 - Rule: one active module task at a time (WIP=1), others stay in `todo`.
 
 ## Queue
@@ -42,13 +42,13 @@ Generated from `doc/governance/stage12_module_jira_map.json`.
 | 30 | `DTM-132` | `agent.notify_owner_payload_smoke` | 3 | `done` | `agile/tasks/DTM-132_stage12-module-agent-notify_owner_payload_smoke.md` |
 | 31 | `DTM-133` | `core.fixture_bundle` | 3 | `done` | `agile/tasks/DTM-133_stage12-module-core-fixture_bundle.md` |
 | 32 | `DTM-134` | `core.schema_snapshot` | 3 | `done` | `agile/tasks/DTM-134_stage12-module-core-schema_snapshot.md` |
-| 33 | `DTM-135` | `agent.invoke_function_smoke` | 2 | `in_progress` | `agile/tasks/DTM-135_stage12-module-agent-invoke_function_smoke.md` |
-| 34 | `DTM-136` | `agent.load_prototype_payload` | 2 | `todo` | `agile/tasks/DTM-136_stage12-module-agent-load_prototype_payload.md` |
-| 35 | `DTM-137` | `agent.prepare_web_prototype_payload_smoke` | 2 | `todo` | `agile/tasks/DTM-137_stage12-module-agent-prepare_web_prototype_payload_smoke.md` |
-| 36 | `DTM-138` | `agent.prototype_loader_smoke` | 2 | `todo` | `agile/tasks/DTM-138_stage12-module-agent-prototype_loader_smoke.md` |
-| 37 | `DTM-139` | `agent.reminder_alert_evaluator_smoke` | 2 | `todo` | `agile/tasks/DTM-139_stage12-module-agent-reminder_alert_evaluator_smoke.md` |
-| 38 | `DTM-140` | `agent.reminder_sli_trend_persistence_smoke` | 2 | `todo` | `agile/tasks/DTM-140_stage12-module-agent-reminder_sli_trend_persistence_smoke.md` |
-| 39 | `DTM-141` | `agent.run_web_prototype_server` | 2 | `todo` | `agile/tasks/DTM-141_stage12-module-agent-run_web_prototype_server.md` |
+| 33 | `DTM-135` | `agent.invoke_function_smoke` | 2 | `done` | `agile/tasks/DTM-135_stage12-module-agent-invoke_function_smoke.md` |
+| 34 | `DTM-136` | `agent.load_prototype_payload` | 2 | `done` | `agile/tasks/DTM-136_stage12-module-agent-load_prototype_payload.md` |
+| 35 | `DTM-137` | `agent.prepare_web_prototype_payload_smoke` | 2 | `done` | `agile/tasks/DTM-137_stage12-module-agent-prepare_web_prototype_payload_smoke.md` |
+| 36 | `DTM-138` | `agent.prototype_loader_smoke` | 2 | `done` | `agile/tasks/DTM-138_stage12-module-agent-prototype_loader_smoke.md` |
+| 37 | `DTM-139` | `agent.reminder_alert_evaluator_smoke` | 2 | `done` | `agile/tasks/DTM-139_stage12-module-agent-reminder_alert_evaluator_smoke.md` |
+| 38 | `DTM-140` | `agent.reminder_sli_trend_persistence_smoke` | 2 | `done` | `agile/tasks/DTM-140_stage12-module-agent-reminder_sli_trend_persistence_smoke.md` |
+| 39 | `DTM-141` | `agent.run_web_prototype_server` | 2 | `in_progress` | `agile/tasks/DTM-141_stage12-module-agent-run_web_prototype_server.md` |
 | 40 | `DTM-142` | `agent.stage8_shadow_run_evidence_smoke` | 2 | `todo` | `agile/tasks/DTM-142_stage12-module-agent-stage8_shadow_run_evidence_smoke.md` |
 | 41 | `DTM-143` | `config.constants` | 2 | `todo` | `agile/tasks/DTM-143_stage12-module-config-constants.md` |
 | 42 | `DTM-144` | `core.bootstrap` | 2 | `todo` | `agile/tasks/DTM-144_stage12-module-core-bootstrap.md` |

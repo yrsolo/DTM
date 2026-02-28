@@ -24,7 +24,7 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-141`).
-- [x] Jira status set to `? ??????????`.
+- [x] Jira status set to `? ??????`.
 - [ ] Module cleanup patch applied.
 - [ ] Relevant checks passed.
 - [ ] Jira evidence comment added.

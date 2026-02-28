@@ -7,15 +7,21 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] DTM-135 - Stage 12 deep module cleanup: `agent.invoke_function_smoke`.
+- [IN_PROGRESS] DTM-141 - Stage 12 deep module cleanup: `agent.run_web_prototype_server`.
 
 ## Stage 12 Estimate (Dynamic)
 - Baseline estimate: 57 tasks (kickoff, matrix, transition, 53 module tasks, closeout).
-- Done: 35
-- Remaining: 22
+- Done: 41
+- Remaining: 16
 - Rule: update `Done/Remaining` after each completed Stage 12 task.
 
 ## Done
+- [DONE] DTM-140 - Stage 12 deep module cleanup completed for `agent.reminder_sli_trend_persistence_smoke`.
+- [DONE] DTM-139 - Stage 12 deep module cleanup completed for `agent.reminder_alert_evaluator_smoke`.
+- [DONE] DTM-138 - Stage 12 deep module cleanup completed for `agent.prototype_loader_smoke`.
+- [DONE] DTM-137 - Stage 12 deep module cleanup completed for `agent.prepare_web_prototype_payload_smoke`.
+- [DONE] DTM-136 - Stage 12 deep module cleanup completed for `agent.load_prototype_payload`.
+- [DONE] DTM-135 - Stage 12 deep module cleanup completed for `agent.invoke_function_smoke`.
 - [DONE] DTM-134 - Stage 12 deep module cleanup completed for `core.schema_snapshot`.
 - [DONE] DTM-133 - Stage 12 deep module cleanup completed for `core.fixture_bundle`.
 - [DONE] DTM-132 - Stage 12 deep module cleanup completed for `agent.notify_owner_payload_smoke`.
@@ -79,13 +85,11 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-136: deep module cleanup `agent.load_prototype_payload`.
-- [TODO] DTM-137: deep module cleanup `agent.prepare_web_prototype_payload_smoke`.
-- [TODO] DTM-138: deep module cleanup `agent.prototype_loader_smoke`.
-- [TODO] DTM-139: deep module cleanup `agent.reminder_alert_evaluator_smoke`.
+- [TODO] DTM-142: deep module cleanup `agent.stage8_shadow_run_evidence_smoke`.
+- [TODO] DTM-143: deep module cleanup `config.constants`.
 
 ## Active Task Files
-- `agile/tasks/DTM-135_stage12-module-agent-invoke-function-smoke.md`
+- `agile/tasks/DTM-141_stage12-module-agent-run-web-prototype-server.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`

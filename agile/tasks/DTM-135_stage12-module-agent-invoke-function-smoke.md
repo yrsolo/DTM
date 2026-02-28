@@ -25,14 +25,19 @@
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-135`).
 - [x] Jira status set to `В работе`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `Готово`.
-- [ ] Telegram completion sent.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `agent.invoke_function_smoke`.
+- 2026-02-28: Added typed payload builder helper and concise env/payload docstrings.
+- 2026-02-28: Ran checks:
+  - `python -m compileall agent`
+  - `.venv\\Scripts\\python.exe agent\\invoke_function_smoke.py --help`
+- 2026-02-28: Added Jira evidence, moved issue to `Готово`, owner completion notification sent.
 
 ## Links
 - Jira: DTM-135

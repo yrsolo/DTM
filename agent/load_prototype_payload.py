@@ -13,6 +13,7 @@ from web_prototype.loader import PrototypeSchemaError, load_prototype_payload
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse CLI options for prototype payload loading."""
     parser = argparse.ArgumentParser(description="Load Stage 8 prototype payload from artifacts")
     parser.add_argument(
         "--source-mode",
@@ -34,7 +35,21 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _build_summary(payload: object) -> dict[str, object]:
+    """Build compact summary for loaded prototype payload."""
+    read_model = payload.read_model
+    board = dict(read_model.get("board", {}))
+    return {
+        "schema_version": read_model.get("schema_version"),
+        "timeline_count": len(board.get("timeline", [])),
+        "designer_count": len(board.get("by_designer", [])),
+        "task_details_count": len(read_model.get("task_details", [])),
+        "fixture_bundle_id": payload.fixture_bundle.get("bundle_id"),
+    }
+
+
 def main() -> int:
+    """Load payload from selected source mode and optionally save summary JSON."""
     args = parse_args()
     payload = load_prototype_payload(
         source_mode=args.source_mode,
@@ -45,13 +60,7 @@ def main() -> int:
         schema_snapshot_s3_key=args.schema_snapshot_s3_key,
         fixture_bundle_s3_key=args.fixture_bundle_s3_key,
     )
-    summary = {
-        "schema_version": payload.read_model.get("schema_version"),
-        "timeline_count": len(payload.read_model.get("board", {}).get("timeline", [])),
-        "designer_count": len(payload.read_model.get("board", {}).get("by_designer", [])),
-        "task_details_count": len(payload.read_model.get("task_details", [])),
-        "fixture_bundle_id": payload.fixture_bundle.get("bundle_id"),
-    }
+    summary = _build_summary(payload)
     if args.output_file:
         args.output_file.parent.mkdir(parents=True, exist_ok=True)
         args.output_file.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
