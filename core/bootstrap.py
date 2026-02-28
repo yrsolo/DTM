@@ -9,6 +9,8 @@ from config import (
     GOOGLE_LLM_API_KEY,
     GOOGLE_LLM_MODEL,
     HELPER_CHARACTER,
+    LLM_FAILOVER_MODE,
+    LLM_FAILOVER_PROVIDER,
     LLM_HTTP_RETRY_ATTEMPTS,
     LLM_HTTP_RETRY_BACKOFF_SECONDS,
     LLM_HTTP_TIMEOUT_SECONDS,
@@ -29,6 +31,7 @@ from core.reminder import (
     AsyncGoogleLLMChatAgent,
     AsyncOpenAIChatAgent,
     AsyncYandexLLMChatAgent,
+    FallbackChatAdapter,
     MockOpenAIChatAgent,
     Reminder,
     TelegramNotifier,
@@ -69,13 +72,8 @@ def _build_renderer(
     )
 
 
-def _build_chat_adapter(mock_external: bool) -> ChatAdapter:
-    """Create chat adapter according to selected provider and runtime mode."""
-
-    if mock_external:
-        return MockOpenAIChatAgent()
-
-    provider = LLM_PROVIDER.lower()
+def _build_single_chat_adapter(provider: str) -> ChatAdapter:
+    provider = str(provider or "").lower()
     if provider == "openai":
         return AsyncOpenAIChatAgent(
             api_key=OPENAI,
@@ -105,6 +103,50 @@ def _build_chat_adapter(mock_external: bool) -> ChatAdapter:
 
     raise ValueError(
         f"Unsupported LLM_PROVIDER={provider!r}. Allowed values: openai, google, yandex."
+    )
+
+def _build_chat_adapter(mock_external: bool) -> ChatAdapter:
+    """Create chat adapter according to selected provider/runtime/failover mode."""
+
+    if mock_external:
+        return MockOpenAIChatAgent()
+
+    provider = LLM_PROVIDER.lower()
+    primary = _build_single_chat_adapter(provider)
+    failover_mode = LLM_FAILOVER_MODE.lower()
+    failover_provider = LLM_FAILOVER_PROVIDER.lower()
+    if failover_mode != "provider":
+        return FallbackChatAdapter(
+            primary=primary,
+            primary_provider=provider,
+            mode=failover_mode,
+            fallback=None,
+            fallback_provider="",
+        )
+
+    if not failover_provider:
+        return FallbackChatAdapter(
+            primary=primary,
+            primary_provider=provider,
+            mode="draft_only",
+            fallback=None,
+            fallback_provider="",
+        )
+    if failover_provider == provider:
+        return FallbackChatAdapter(
+            primary=primary,
+            primary_provider=provider,
+            mode="draft_only",
+            fallback=None,
+            fallback_provider="",
+        )
+    fallback = _build_single_chat_adapter(failover_provider)
+    return FallbackChatAdapter(
+        primary=primary,
+        primary_provider=provider,
+        mode="provider",
+        fallback=fallback,
+        fallback_provider=failover_provider,
     )
 
 

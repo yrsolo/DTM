@@ -155,6 +155,9 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
     - `LLM_HTTP_TIMEOUT_SECONDS` (default `25`)
     - `LLM_HTTP_RETRY_ATTEMPTS` (default `2`)
     - `LLM_HTTP_RETRY_BACKOFF_SECONDS` (default `0.8`)
+  - Failover policy knobs:
+    - `LLM_FAILOVER_MODE=draft_only|provider` (default `draft_only`)
+    - `LLM_FAILOVER_PROVIDER=openai|google|yandex` (used when mode=`provider` and different from primary provider)
 - Group chat query contour:
   - `TG_BOT_USERNAME` (without `@`) to enable mention parsing in group messages.
 

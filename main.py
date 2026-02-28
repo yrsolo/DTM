@@ -20,6 +20,7 @@ def _print_quality_report(report):
         f"reminder_retry_attempts={summary.get('reminder_send_retry_attempt_count', 0)} "
         f"reminder_retry_exhausted={summary.get('reminder_send_retry_exhausted_count', 0)} "
         f"reminder_enhancer_provider={summary.get('reminder_enhancer_provider', '')} "
+        f"reminder_enhancer_failover_mode={summary.get('reminder_enhancer_failover_mode', '')} "
         f"reminder_enhancer_attempted={summary.get('reminder_enhancer_attempt_count', 0)} "
         f"reminder_enhancer_fallback_empty={summary.get('reminder_enhancer_fallback_empty_count', 0)} "
         f"reminder_attemptable={summary.get('reminder_delivery_attemptable_count')} "

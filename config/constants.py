@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 ALLOWED_ENVS = frozenset({"dev", "test", "prod"})
 ALLOWED_LLM_PROVIDERS = frozenset({"openai", "google", "yandex"})
+ALLOWED_LLM_FAILOVER_MODES = frozenset({"draft_only", "provider"})
 
 
 def _env(name: str, default: str = "") -> str:
@@ -63,6 +64,18 @@ YANDEX_LLM_MODEL_URI = _env("YANDEX_LLM_MODEL_URI")
 LLM_HTTP_TIMEOUT_SECONDS = float(_env("LLM_HTTP_TIMEOUT_SECONDS", "25"))
 LLM_HTTP_RETRY_ATTEMPTS = max(1, int(_env("LLM_HTTP_RETRY_ATTEMPTS", "2")))
 LLM_HTTP_RETRY_BACKOFF_SECONDS = max(0.0, float(_env("LLM_HTTP_RETRY_BACKOFF_SECONDS", "0.8")))
+LLM_FAILOVER_MODE = _env("LLM_FAILOVER_MODE", "draft_only").lower()
+if LLM_FAILOVER_MODE not in ALLOWED_LLM_FAILOVER_MODES:
+    raise ValueError(
+        f"Unsupported LLM_FAILOVER_MODE={LLM_FAILOVER_MODE!r}. "
+        "Allowed values: draft_only, provider."
+    )
+LLM_FAILOVER_PROVIDER = _env("LLM_FAILOVER_PROVIDER", "").lower()
+if LLM_FAILOVER_PROVIDER and LLM_FAILOVER_PROVIDER not in ALLOWED_LLM_PROVIDERS:
+    raise ValueError(
+        f"Unsupported LLM_FAILOVER_PROVIDER={LLM_FAILOVER_PROVIDER!r}. "
+        "Allowed values: openai, google, yandex."
+    )
 if not YANDEX_LLM_MODEL_URI:
     yc_folder_id = _env("YC_FOLDER_ID")
     if yc_folder_id:

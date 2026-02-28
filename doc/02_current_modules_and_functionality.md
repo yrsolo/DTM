@@ -150,3 +150,4 @@
 - Stage 16 increment: reminder enhancer supports multiple LLM providers (`openai`/`google`/`yandex`) via `LLM_PROVIDER` switch in bootstrap.
 - Stage 17 increment: cloud HTTP handler now supports Telegram group query requests (commands/mentions) and replies in same group chat; parser/render helpers are isolated in `core/group_query.py` with deterministic smoke `agent/group_query_smoke.py`.
 - Stage 18 increment: reminder enhancer adapters now use explicit timeout/retry/backoff guardrails (`LLM_HTTP_*`) and planner quality report exposes enhancer counters by provider.
+- Stage 19 increment: failover policy added (`LLM_FAILOVER_MODE`, `LLM_FAILOVER_PROVIDER`) with wrapper `FallbackChatAdapter` and failover telemetry in quality report summary.

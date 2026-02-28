@@ -367,6 +367,69 @@ class MockOpenAIChatAgent:
         return None
 
 
+class FallbackChatAdapter:
+    """Chat adapter wrapper supporting optional provider failover."""
+
+    def __init__(
+        self,
+        primary: ChatAdapter,
+        primary_provider: str,
+        mode: str = "draft_only",
+        fallback: ChatAdapter | None = None,
+        fallback_provider: str = "",
+    ) -> None:
+        self.primary = primary
+        self.primary_provider = str(primary_provider or "openai")
+        self.mode = str(mode or "draft_only")
+        self.fallback = fallback
+        self.fallback_provider = str(fallback_provider or "")
+        self.counters: dict[str, Any] = {}
+        self.reset_counters()
+
+    def reset_counters(self) -> None:
+        self.counters = {
+            "mode": self.mode,
+            "primary_provider": self.primary_provider,
+            "fallback_provider": self.fallback_provider,
+            "primary_calls": 0,
+            "primary_errors": 0,
+            "fallback_calls": 0,
+            "fallback_success": 0,
+            "fallback_failure": 0,
+            "fallback_skipped": 0,
+        }
+
+    def get_failover_counters(self) -> dict[str, Any]:
+        return dict(self.counters)
+
+    async def chat(self, messages: Any, model: str | None = None) -> str | None:
+        self.counters["primary_calls"] = int(self.counters.get("primary_calls", 0)) + 1
+        primary_result: str | None = None
+        try:
+            primary_result = await self.primary.chat(messages=messages, model=model)
+        except Exception:
+            self.counters["primary_errors"] = int(self.counters.get("primary_errors", 0)) + 1
+            primary_result = None
+
+        if primary_result:
+            return primary_result
+
+        if self.mode != "provider" or not self.fallback:
+            self.counters["fallback_skipped"] = int(self.counters.get("fallback_skipped", 0)) + 1
+            return None
+
+        self.counters["fallback_calls"] = int(self.counters.get("fallback_calls", 0)) + 1
+        try:
+            fallback_result = await self.fallback.chat(messages=messages, model=model)
+        except Exception:
+            fallback_result = None
+        if fallback_result:
+            self.counters["fallback_success"] = int(self.counters.get("fallback_success", 0)) + 1
+            return fallback_result
+        self.counters["fallback_failure"] = int(self.counters.get("fallback_failure", 0)) + 1
+        return None
+
+
 class Reminder:
     """Reminder orchestration for designer notifications."""
 
@@ -455,7 +518,13 @@ class Reminder:
         self.enhancement_counters[key] = int(self.enhancement_counters.get(key, 0)) + int(value)
 
     def get_enhancement_counters(self) -> dict[str, Any]:
-        return dict(self.enhancement_counters)
+        counters = dict(self.enhancement_counters)
+        failover_getter = getattr(self.openai_agent, "get_failover_counters", None)
+        if callable(failover_getter):
+            failover = failover_getter()
+            for key, value in dict(failover).items():
+                counters[f"failover_{key}"] = value
+        return counters
 
     def _build_reminder_context(self) -> tuple[pd.Timestamp, pd.Timestamp, dict[str, list[Any]], dict[str, list[Any]]]:
         today, next_work_day = self.calculate_dates()

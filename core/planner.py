@@ -179,6 +179,23 @@ class GoogleSheetPlanner:
                     reminder_enhancement_counters,
                     "skipped_mock",
                 ),
+                "reminder_enhancer_failover_mode": reminder_enhancement_counters.get("failover_mode", ""),
+                "reminder_enhancer_failover_primary_provider": reminder_enhancement_counters.get(
+                    "failover_primary_provider",
+                    "",
+                ),
+                "reminder_enhancer_failover_fallback_provider": reminder_enhancement_counters.get(
+                    "failover_fallback_provider",
+                    "",
+                ),
+                "reminder_enhancer_failover_calls": _counter_value(
+                    reminder_enhancement_counters,
+                    "failover_fallback_calls",
+                ),
+                "reminder_enhancer_failover_success_count": _counter_value(
+                    reminder_enhancement_counters,
+                    "failover_fallback_success",
+                ),
                 **reminder_sli_summary,
             },
             "task_row_issues": task_row_issues,

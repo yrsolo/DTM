@@ -1,21 +1,26 @@
 # Sprint Current
 
 ## Sprint Goal
-Complete Stage 18 multi-LLM reliability contour: timeout/retry guardrails and provider-level enhancer counters.
+Complete Stage 19 provider failover policy contour: `draft_only` vs `provider` fallback mode with telemetry.
 
 ## Capacity
 1 active task (strict WIP=1).
 
 ## Now
-- [DONE] DTM-186 - Stage 18 closeout and Stage 19 handoff package.
+- [DONE] DTM-191 - Stage 19 closeout and Stage 20 handoff package.
 
-## Stage 18 Estimate (Dynamic)
+## Stage 19 Estimate (Dynamic)
 - Baseline estimate: 5 tasks (kickoff, 3 execution slices, closeout).
 - Done: 5
 - Remaining: 0
-- Rule: update `Done/Remaining` after each completed Stage 18 task.
+- Rule: update `Done/Remaining` after each completed Stage 19 task.
 
 ## Done
+- [DONE] DTM-191 - Stage 19 closeout and Stage 20 handoff package.
+- [DONE] DTM-190 - Stage 19 docs and runbook refresh for failover policy.
+- [DONE] DTM-189 - Stage 19 smoke coverage for failover mode and bootstrap mapping.
+- [DONE] DTM-188 - Stage 19 runtime failover policy implementation (`draft_only` / `provider`).
+- [DONE] DTM-187 - Stage 19 kickoff and bounded queue.
 - [DONE] DTM-186 - Stage 18 closeout and Stage 19 handoff package.
 - [DONE] DTM-185 - Stage 18 docs and runbook refresh for reliability contour.
 - [DONE] DTM-184 - Stage 18 smoke coverage for enhancer counters and provider bootstrap.
@@ -131,11 +136,11 @@ Complete Stage 18 multi-LLM reliability contour: timeout/retry guardrails and pr
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 19 kickoff: provider failover policy (draft-only vs alternate-provider).
-- [TODO] Stage 19 kickoff: publish execution plan and bounded queue.
+- [TODO] Stage 20 kickoff: provider-level SLI thresholds and alert policy.
+- [TODO] Stage 20 kickoff: publish execution plan and bounded queue.
 
 ## Active Task Files
-- `agile/tasks/DTM-186_stage18-closeout-and-stage19-handoff.md`
+- `agile/tasks/DTM-191_stage19-closeout-and-stage20-handoff.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`
