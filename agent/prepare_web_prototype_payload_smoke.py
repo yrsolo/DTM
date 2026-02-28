@@ -6,14 +6,17 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 
-def _write(path: Path, payload: dict) -> None:
+def _write(path: Path, payload: dict[str, Any]) -> None:
+    """Write JSON payload fixture to disk."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def main() -> int:
+    """Run filesystem-mode payload preparation smoke scenario."""
     root = Path("artifacts") / "tmp" / "prepare_web_payload_smoke"
     baseline_root = root / "baseline"
     run_dir = baseline_root / "20260227_000000Z_smoke"
@@ -32,7 +35,10 @@ def main() -> int:
         "required_top_level_fields": sorted(read_model.keys()),
         "schema": {},
     }
-    fixture_bundle = {"bundle_id": "smoke", "sample": {"timeline": [], "task_details": [], "by_designer": {}}}
+    fixture_bundle = {
+        "bundle_id": "smoke",
+        "sample": {"timeline": [], "task_details": [], "by_designer": {}},
+    }
 
     _write(run_dir / "read_model.json", read_model)
     _write(run_dir / "schema_snapshot.json", schema_snapshot)

@@ -1,21 +1,88 @@
 # Sprint Current
 
 ## Sprint Goal
-Stabilize Stage 9 serverless delivery and keep process/documentation concise and operational.
+Complete Stage 14 process-clarity rollout so owner-facing control, tracking, and escalation semantics are explicit and reproducible.
 
 ## Capacity
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] Stage 9 next slice grooming (post DTM-84 closeout): shadow-run + contract-regression + smoke checklist.
+- [DONE] DTM-166 - Stage 14 closeout and Stage 15 handoff package.
 
-## Stage 9 Estimate (Dynamic)
-- Baseline estimate: 9 tasks (adjusted after serverless runtime hotfix slice).
-- Done: 8
-- Remaining: 1
-- Rule: update `Done/Remaining` after each completed Stage 9 task.
+## Stage 14 Estimate (Dynamic)
+- Baseline estimate: 5 tasks (kickoff, 3 execution slices, closeout).
+- Done: 5
+- Remaining: 0
+- Rule: update `Done/Remaining` after each completed Stage 14 task.
 
 ## Done
+- [DONE] DTM-166 - Stage 14 closeout and Stage 15 handoff package.
+- [DONE] DTM-165 - Stage 14 stage-transition summary standard and owner decision gate.
+- [DONE] DTM-164 - Stage 14 notification semantics split (`blocked` vs `info`) and rollout.
+- [DONE] DTM-163 - Stage 14 tracking policy convergence (Jira optional, local tracking first-class).
+- [DONE] DTM-162 - Stage 14 kickoff and bounded execution queue.
+- [DONE] DTM-161 - Stage 13 closeout and Stage 14 handoff package.
+- [DONE] DTM-160 - Stage 13 smoke suite normalization and runbook refresh.
+- [DONE] DTM-159 - Stage 13 runtime profile matrix and guardrails.
+- [DONE] DTM-158 - Stage 13 source-of-truth contour and data flow map.
+- [DONE] DTM-157 - Stage 13 kickoff and execution baseline.
+- [DONE] DTM-156 - Stage 12 closeout and Stage 13 handoff package.
+- [DONE] DTM-155 - Stage 12 deep module cleanup completed for `agent.web_prototype_assets_smoke`.
+- [DONE] DTM-154 - Stage 12 deep module cleanup completed for `agent.schema_snapshot_smoke`.
+- [DONE] DTM-153 - Stage 12 deep module cleanup completed for `agent.reminder_sli_summary_smoke`.
+- [DONE] DTM-152 - Stage 12 deep module cleanup completed for `agent.reminder_alert_review_flow_smoke`.
+- [DONE] DTM-151 - Stage 12 deep module cleanup completed for `agent.read_model_publication_smoke`.
+- [DONE] DTM-150 - Stage 12 deep module cleanup completed for `agent.read_model_contract_compat_smoke`.
+- [DONE] DTM-149 - Stage 12 deep module cleanup completed for `agent.read_model_builder_smoke`.
+- [DONE] DTM-148 - Stage 12 deep module cleanup completed for `agent.fixture_bundle_smoke`.
+- [DONE] DTM-147 - Stage 12 deep module cleanup completed for `agent.deploy_run_evidence_report_smoke`.
+- [DONE] DTM-146 - Stage 12 deep module cleanup completed for `core.use_cases`.
+- [DONE] DTM-145 - Stage 12 deep module cleanup completed for `core.render_contracts`.
+- [DONE] DTM-144 - Stage 12 deep module cleanup completed for `core.bootstrap`.
+- [DONE] DTM-143 - Stage 12 deep module cleanup completed for `config.constants`.
+- [DONE] DTM-142 - Stage 12 deep module cleanup completed for `agent.stage8_shadow_run_evidence_smoke`.
+- [DONE] DTM-141 - Stage 12 deep module cleanup completed for `agent.run_web_prototype_server`.
+- [DONE] DTM-140 - Stage 12 deep module cleanup completed for `agent.reminder_sli_trend_persistence_smoke`.
+- [DONE] DTM-139 - Stage 12 deep module cleanup completed for `agent.reminder_alert_evaluator_smoke`.
+- [DONE] DTM-138 - Stage 12 deep module cleanup completed for `agent.prototype_loader_smoke`.
+- [DONE] DTM-137 - Stage 12 deep module cleanup completed for `agent.prepare_web_prototype_payload_smoke`.
+- [DONE] DTM-136 - Stage 12 deep module cleanup completed for `agent.load_prototype_payload`.
+- [DONE] DTM-135 - Stage 12 deep module cleanup completed for `agent.invoke_function_smoke`.
+- [DONE] DTM-134 - Stage 12 deep module cleanup completed for `core.schema_snapshot`.
+- [DONE] DTM-133 - Stage 12 deep module cleanup completed for `core.fixture_bundle`.
+- [DONE] DTM-132 - Stage 12 deep module cleanup completed for `agent.notify_owner_payload_smoke`.
+- [DONE] DTM-131 - Stage 12 deep module cleanup completed for `agent.build_fixture_bundle`.
+- [DONE] DTM-130 - Stage 12 deep module cleanup completed for `utils.storage`.
+- [DONE] DTM-129 - Stage 12 deep module cleanup completed for `core.read_model`.
+- [DONE] DTM-128 - Stage 12 deep module cleanup completed for `agent.prepare_web_prototype_payload`.
+- [DONE] DTM-127 - Stage 12 deep module cleanup completed for `web_prototype.loader`.
+- [DONE] DTM-126 - Stage 12 deep module cleanup completed for `agent.sync_lockbox_from_env`.
+- [DONE] DTM-125 - Stage 12 deep module cleanup completed for `agent.stage8_shadow_run_evidence`.
+- [DONE] DTM-124 - Stage 12 deep module cleanup completed for `agent.deploy_run_evidence_report`.
+- [DONE] DTM-123 - Stage 12 deep module cleanup completed for `agent.capture_baseline`.
+- [DONE] DTM-122 - Stage 12 deep module cleanup completed for `agent.build_stage12_audit_matrix`.
+- [DONE] DTM-121 - Stage 12 deep module cleanup completed for `core.errors`.
+- [DONE] DTM-120 - Stage 12 deep module cleanup completed for `agent.reminder_fallback_smoke`.
+- [DONE] DTM-119 - Stage 12 deep module cleanup completed for `agent.notify_owner`.
+- [DONE] DTM-118 - Stage 12 deep module cleanup completed for `core.sheet_renderer`.
+- [DONE] DTM-117 - Stage 12 deep module cleanup completed for `agent.reminder_parallel_enhancer_smoke`.
+- [DONE] DTM-116 - Stage 12 deep module cleanup completed for `core.planner`.
+- [DONE] DTM-115 - Stage 12 deep module cleanup completed for `agent.reminder_alert_evaluator`.
+- [DONE] DTM-114 - Stage 12 deep module cleanup completed for `core.contracts`.
+- [DONE] DTM-113 - Stage 12 deep module cleanup completed for `agent.reminder_idempotency_smoke`.
+- [DONE] DTM-112 - Stage 12 deep module cleanup completed for `agent.reminder_delivery_counters_smoke`.
+- [DONE] DTM-111 - Stage 12 deep module cleanup completed for `core.adapters`.
+- [DONE] DTM-110 - Stage 12 deep module cleanup completed for `core.people`.
+- [DONE] DTM-109 - Stage 12 deep module cleanup completed for `utils.service`.
+- [DONE] DTM-108 - Stage 12 deep module cleanup completed for `agent.reminder_retry_backoff_smoke`.
+- [DONE] DTM-107 - Stage 12 deep module cleanup completed for `utils.func`.
+- [DONE] DTM-106 - Stage 12 deep module cleanup completed for `agent.render_adapter_smoke`.
+- [DONE] DTM-105 - Stage 12 deep module cleanup completed for `core.repository`.
+- [DONE] DTM-104 - Stage 12 deep module cleanup completed for `core.manager`.
+- [DONE] DTM-103 - Stage 12 deep module cleanup completed for `core.reminder`.
+- [DONE] DTM-102 / TSK-105 - transition slice closed; Stage 12 switched to deep per-module queue.
+- [DONE] DTM-101 / TSK-104 - Stage 12 module-by-module audit matrix generated (`53` modules, `398` items).
+- [DONE] DTM-100 / TSK-103 - Stage 12 quality-sweep kickoff and standards.
 - [DONE] DTM-76 / TSK-079 - main-branch auto-deploy workflow for Yandex Cloud Function.
 - [DONE] DTM-77 / TSK-080 - automate `.env` to Lockbox sync + Google key runtime secret source.
 - [DONE] DTM-78 / TSK-081 - bind Lockbox env mappings to function + cloud invoke smoke.
@@ -24,17 +91,31 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 - [DONE] DTM-82 / TSK-084 - doc folder restructuring by purpose (`core/ops/governance/stages/archive`).
 - [DONE] DTM-83 / TSK-085 - owner-approved main deploy trigger + credential fallback; deploy run `22500598734` successful.
 - [DONE] DTM-84 / TSK-086 - import/runtime Telegram crash fixed for serverless startup; HTTP-body parsing + healthcheck invoke path; deploy run `22501249449` successful, endpoint returns `!HEALTHY!`.
+- [DONE] DTM-85 / TSK-087 - deployment smoke checklist published and validated (`healthcheck` + `timer dry-run` evidence), Jira moved to `Готово`.
+- [DONE] DTM-86 / TSK-088 - shadow-run cloud gate now supports required `PROTOTYPE_*_S3_KEY` mode with smoke coverage and ops checklist update.
+- [DONE] DTM-87 / TSK-089 - deploy workflow now enforces consumer contract-regression smoke checks before cloud deploy.
+- [DONE] DTM-88 / TSK-090 - Stage 9 closeout package published and Stage 10 kickoff baseline initialized.
+- [DONE] DTM-89 / TSK-091 - rollback drill and recovery notes published for function profile incidents.
+- [DONE] DTM-90 / TSK-093 - normalized deploy run evidence report script and smoke check added.
+- [DONE] DTM-91 / TSK-094 - owner quickstart checklist published for daily/weekly serverless operations.
+- [DONE] DTM-92 / TSK-092 - cloud shadow-run required-mode run succeeded with stored evidence artifact.
+- [DONE] DTM-93 / TSK-096 - Stage 10 closeout package + Stage 11 retrospective kickoff plan.
+- [DONE] DTM-94 / TSK-097 - timeline reconstruction across stages 0-10 published.
+- [DONE] DTM-95 / TSK-098 - root-cause cluster analysis published for retrospective.
+- [DONE] DTM-96 / TSK-099 - repeated incident/rework cost estimate published.
+- [DONE] DTM-97 / TSK-100 - corrective action backlog published with owners and verification signals.
+- [DONE] DTM-98 / TSK-101 - retrospective review package published for owner sign-off.
+- [DONE] DTM-99 / TSK-102 - Stage 11 closeout package published and Stage 12 handoff sequence defined.
 
 ## Blocked
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 9: cloud-profile shadow-run with explicit `PROTOTYPE_*_S3_KEY` pass criteria.
-- [TODO] Stage 9: deploy-pipeline consumer contract-regression checks.
-- [TODO] Stage 9: deployment smoke checklist for Yandex Cloud Function profile.
+- [TODO] Stage 15 kickoff: define objective, success metric, and bounded execution queue.
+- [TODO] Stage 15 kickoff: publish execution plan and entry criteria.
 
 ## Active Task Files
-- `agile/tasks/DTM-84_stage9-serverless-import-token-crash-fix.md`
+- `agile/tasks/DTM-166_stage14-closeout-and-stage15-handoff.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`
@@ -44,4 +125,6 @@ Stabilize Stage 9 serverless delivery and keep process/documentation concise and
 ## Notes / Decisions
 - Keep top-level `doc/` minimal and strategy-first.
 - Move operational/history/stage-package docs into subfolders to remove numbered clutter.
-- Jira remains mandatory lifecycle control plane for all execution tasks.
+- Jira is optional; tracking can run fully in `agile/sprint_current.md` + `agile/tasks/*.md`.
+- Stage-close communication must include owner-friendly summary of previous stage, next stage, task estimate, and explicit go/no-go request.
+

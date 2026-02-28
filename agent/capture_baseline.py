@@ -1,11 +1,9 @@
-"""Capture repeatable baseline artifacts for Stage 0.4 validation."""
+﻿"""Capture repeatable baseline artifacts for Stage 0.4 validation."""
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
-import sys
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -16,18 +14,22 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from core.fixture_bundle import build_fixture_bundle
 
+
 def _repo_root() -> Path:
+    """Return repository root path resolved from this script location."""
     return Path(__file__).resolve().parents[1]
 
 
 def _default_python(repo: Path) -> str:
+    """Pick project venv Python when available, otherwise current interpreter."""
     venv_python = repo / ".venv" / "Scripts" / "python.exe"
     if venv_python.exists():
         return str(venv_python)
     return sys.executable
 
 
-def _run(cmd: Sequence[str], cwd: Path) -> subprocess.CompletedProcess:
+def _run(cmd: Sequence[str], cwd: Path) -> subprocess.CompletedProcess[str]:
+    """Run a subprocess command and capture decoded stdout/stderr."""
     return subprocess.run(
         cmd,
         cwd=str(cwd),
@@ -40,7 +42,8 @@ def _run(cmd: Sequence[str], cwd: Path) -> subprocess.CompletedProcess:
 
 
 def _safe_label(label: str) -> str:
-    keep = []
+    """Convert arbitrary label into filesystem-safe token."""
+    keep: list[str] = []
     for ch in label.strip():
         if ch.isalnum() or ch in {"-", "_"}:
             keep.append(ch)
@@ -51,6 +54,7 @@ def _safe_label(label: str) -> str:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse CLI args for baseline capture flow."""
     parser = argparse.ArgumentParser(description="Capture baseline validation artifacts")
     parser.add_argument(
         "--label",
@@ -94,6 +98,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    """Run dry-run baseline capture and persist artifact bundle to timestamped folder."""
     args = parse_args()
     repo = _repo_root()
     python_bin = args.python_bin or _default_python(repo)
@@ -109,6 +114,7 @@ def main() -> int:
     read_model_file = out_dir / "read_model.json"
     schema_snapshot_file = out_dir / "schema_snapshot.json"
     fixture_bundle_file = out_dir / "fixture_bundle.json"
+
     cmd = [
         python_bin,
         "local_run.py",
@@ -142,6 +148,7 @@ def main() -> int:
         )
     if args.notify_owner_dry_run:
         cmd.append("--notify-owner-dry-run")
+
     run = _run(cmd, repo)
 
     (out_dir / "sync_dry_run.log").write_text(

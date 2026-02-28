@@ -52,7 +52,11 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Stage 8 static prototype assets: `web_prototype/static` (run local preview with `.venv\Scripts\python.exe agent\run_web_prototype_server.py`).
 - Stage 8 payload preparation helper: `.venv\Scripts\python.exe agent\prepare_web_prototype_payload.py --source-mode auto` (writes `web_prototype/static/prototype_payload.json`).
 - Stage 8 shadow-run evidence builder: `.venv\Scripts\python.exe agent\stage8_shadow_run_evidence.py` (builds execution evidence package under `artifacts/shadow_run_stage8`).
+- Deploy run evidence report builder: `.venv\Scripts\python.exe agent\deploy_run_evidence_report.py --per-page 1 --output-file artifacts/tmp/deploy_run_evidence.json`.
 - Main-branch auto-deploy workflow: `.github/workflows/deploy_yc_function_main.yml`.
+  - Includes contract smoke gate before deploy:
+    - `python agent/read_model_contract_compat_smoke.py`
+    - `python agent/schema_snapshot_smoke.py`
 
 ## Local run (current)
 - Preferred: `run_timer.cmd` (uses project virtualenv and runs timer mode).

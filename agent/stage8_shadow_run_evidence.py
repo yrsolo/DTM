@@ -5,17 +5,22 @@ from __future__ import annotations
 import argparse
 import json
 import os
-from datetime import datetime, timezone
-from pathlib import Path
 import subprocess
 import time
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Sequence
+
+from dotenv import load_dotenv
 
 
 def _utc_stamp() -> str:
+    """Return compact UTC timestamp for artifact folder names."""
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
 def _latest_baseline_dir(root: Path) -> Path:
+    """Return latest baseline directory containing required artifact files."""
     required = ("read_model.json", "schema_snapshot.json", "fixture_bundle.json")
     candidates = [
         p
@@ -28,6 +33,7 @@ def _latest_baseline_dir(root: Path) -> Path:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse CLI args for Stage 8 shadow-run evidence builder."""
     parser = argparse.ArgumentParser(description="Build Stage 8 shadow-run evidence package")
     parser.add_argument(
         "--baseline-root",
@@ -46,12 +52,32 @@ def parse_args() -> argparse.Namespace:
         default="stage8_shadow_run",
         help="Label suffix for evidence directory (default: stage8_shadow_run).",
     )
+    parser.add_argument(
+        "--require-cloud-keys",
+        action="store_true",
+        help="Fail run when cloud profile S3 keys are not provided.",
+    )
     return parser.parse_args()
 
 
-def _run(cmd: list[str], cwd: Path | None = None) -> dict[str, object]:
+def _default_python() -> str:
+    """Pick project virtualenv python when available."""
+    venv_python = Path(".venv") / "Scripts" / "python.exe"
+    return str(venv_python) if venv_python.exists() else os.environ.get("PYTHON", "python")
+
+
+def _run(cmd: Sequence[str], cwd: Path | None = None) -> dict[str, Any]:
+    """Run command and return normalized process evidence payload."""
     started = time.perf_counter()
-    proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", cwd=cwd)
+    proc = subprocess.run(
+        list(cmd),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        cwd=cwd,
+        check=False,
+    )
     elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
     return {
         "cmd": cmd,
@@ -63,6 +89,7 @@ def _run(cmd: list[str], cwd: Path | None = None) -> dict[str, object]:
 
 
 def _has_cloud_keys() -> bool:
+    """Check whether all required Object Storage keys are present."""
     return all(
         (
             os.environ.get("PROTOTYPE_READ_MODEL_S3_KEY", "").strip(),
@@ -73,13 +100,15 @@ def _has_cloud_keys() -> bool:
 
 
 def main() -> int:
+    """Build Stage 8 shadow-run evidence artifacts and evaluate pass/fail checks."""
+    load_dotenv(".env")
     args = parse_args()
     run_id = f"{_utc_stamp()}_{args.label}"
     out_dir = args.evidence_root / run_id
     out_dir.mkdir(parents=True, exist_ok=True)
 
     baseline_dir = _latest_baseline_dir(args.baseline_root)
-    py = ".venv\\Scripts\\python.exe"
+    py = _default_python()
 
     commands: dict[str, dict[str, object]] = {}
 
@@ -115,7 +144,8 @@ def main() -> int:
     commands["assets_smoke"] = _run([py, "agent/web_prototype_assets_smoke.py"])
 
     cloud_result: dict[str, object]
-    if _has_cloud_keys():
+    cloud_keys_present = _has_cloud_keys()
+    if cloud_keys_present:
         cloud_result = _run(
             [
                 py,
@@ -154,9 +184,11 @@ def main() -> int:
         "empty_state_render_contract_present": commands["assets_smoke"]["returncode"] == 0,
         "cloud_profile_fetch_validated": (
             commands["load_object_storage"].get("returncode") == 0
-            if _has_cloud_keys()
+            if cloud_keys_present
             else "skipped_missing_s3_keys"
         ),
+        "cloud_keys_required_mode": bool(args.require_cloud_keys),
+        "cloud_keys_present": bool(cloud_keys_present),
     }
     evidence = {
         "artifact": "stage8_shadow_run_evidence",
@@ -175,12 +207,15 @@ def main() -> int:
         for name in ("load_filesystem", "prepare_filesystem", "loader_schema_smoke", "assets_smoke")
         if commands[name]["returncode"] != 0
     ]
-    if _has_cloud_keys() and commands["load_object_storage"].get("returncode") != 0:
+    if cloud_keys_present and commands["load_object_storage"].get("returncode") != 0:
         failed.append("load_object_storage")
+    if args.require_cloud_keys and not cloud_keys_present:
+        failed.append("missing_required_cloud_keys")
 
     print(f"shadow_run_evidence_file={summary_file}")
     print(f"shadow_run_baseline_dir={baseline_dir}")
-    print(f"shadow_run_cloud_check={'enabled' if _has_cloud_keys() else 'skipped_missing_s3_keys'}")
+    print(f"shadow_run_cloud_check={'enabled' if cloud_keys_present else 'skipped_missing_s3_keys'}")
+    print(f"shadow_run_require_cloud_keys={args.require_cloud_keys}")
     if failed:
         print(f"shadow_run_failed_checks={','.join(failed)}")
         return 2

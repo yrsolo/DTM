@@ -1,3 +1,7 @@
+"""Typed row contracts used during repository parsing and validation."""
+
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Any, ClassVar, Mapping
 
@@ -5,12 +9,14 @@ import pandas as pd
 
 
 def is_nullish(value: Any) -> bool:
+    """Return ``True`` when value should be treated as empty in row contracts."""
     if value is None:
         return True
     try:
         result = pd.isna(value)
     except (TypeError, ValueError):
         return False
+
     if isinstance(result, (list, tuple)):
         return all(result)
     if hasattr(result, "all"):
@@ -22,14 +28,21 @@ def is_nullish(value: Any) -> bool:
 
 
 def normalize_text(value: Any, strip: bool = True) -> str:
+    """Convert arbitrary value to normalized text preserving empty-string semantics."""
     if is_nullish(value):
         return ""
     text = value if isinstance(value, str) else str(value)
     return text.strip() if strip else text
 
 
+def _required_columns(field_map: Mapping[str, str], optional_keys: set[str]) -> set[str]:
+    return {mapped for key, mapped in field_map.items() if key not in optional_keys}
+
+
 @dataclass(frozen=True)
 class TaskRowContract:
+    """Validated snapshot of one task row from source sheets."""
+
     brand: str
     format_: str
     project_name: str
@@ -54,15 +67,15 @@ class TaskRowContract:
             designer=normalize_text(row.get(field_map["designer"])),
             raw_timing=normalize_text(row.get(field_map["raw_timing"]), strip=False),
             status=normalize_text(row.get(field_map["status"])),
-            color=row.get(field_map["color"], None),
+            color=row.get(field_map["color"]),
             color_status=normalize_text(row.get(field_map["color_status"])),
             name=normalize_text(row.get(field_map["name"])),
-            task_id=row.get(field_map["task_id"], None),
+            task_id=row.get(field_map["task_id"]),
         )
 
     @classmethod
     def required_columns(cls, field_map: Mapping[str, str]) -> set[str]:
-        return {mapped for key, mapped in field_map.items() if key not in cls.OPTIONAL_MAPPING_KEYS}
+        return _required_columns(field_map, cls.OPTIONAL_MAPPING_KEYS)
 
     def to_task_kwargs(self) -> dict[str, Any]:
         return {
@@ -82,6 +95,8 @@ class TaskRowContract:
 
 @dataclass(frozen=True)
 class PersonRowContract:
+    """Validated snapshot of one person row from source sheets."""
+
     person_id: str
     name: str
     email: str
@@ -94,9 +109,7 @@ class PersonRowContract:
     OPTIONAL_MAPPING_KEYS: ClassVar[set[str]] = set()
 
     @classmethod
-    def from_mapping(
-        cls, row: Mapping[str, Any], field_map: Mapping[str, str]
-    ) -> "PersonRowContract":
+    def from_mapping(cls, row: Mapping[str, Any], field_map: Mapping[str, str]) -> "PersonRowContract":
         return cls(
             person_id=normalize_text(row.get(field_map["person_id"])),
             name=normalize_text(row.get(field_map["name"])),
@@ -110,7 +123,7 @@ class PersonRowContract:
 
     @classmethod
     def required_columns(cls, field_map: Mapping[str, str]) -> set[str]:
-        return {mapped for key, mapped in field_map.items() if key not in cls.OPTIONAL_MAPPING_KEYS}
+        return _required_columns(field_map, cls.OPTIONAL_MAPPING_KEYS)
 
     def to_person_kwargs(self) -> dict[str, str]:
         return {

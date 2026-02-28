@@ -6,11 +6,13 @@ import argparse
 import json
 import os
 from pathlib import Path
+from typing import Any
 
 import requests
 
 
 def load_env(path: str = ".env") -> None:
+    """Load .env pairs into process env without overriding existing values."""
     env_path = Path(path)
     if not env_path.exists():
         return
@@ -21,6 +23,22 @@ def load_env(path: str = ".env") -> None:
         key, value = line.split("=", 1)
         if key and key not in os.environ:
             os.environ[key] = value
+
+
+def _build_payload(args: argparse.Namespace) -> dict[str, Any]:
+    """Build invoke payload from CLI args and optional event file."""
+    payload: dict[str, Any] = {}
+    if args.event_file:
+        payload = json.loads(Path(args.event_file).read_text(encoding="utf-8"))
+    if args.healthcheck:
+        payload["healthcheck"] = True
+    if args.mode:
+        payload["mode"] = args.mode
+    if args.dry_run:
+        payload["dry_run"] = True
+    if args.mock_external:
+        payload["mock_external"] = True
+    return payload
 
 
 def main() -> int:
@@ -56,17 +74,7 @@ def main() -> int:
         print("ERROR: function URL is required (pass --url or set YC_FUNCTION_URL)")
         return 2
 
-    payload = {}
-    if args.event_file:
-        payload = json.loads(Path(args.event_file).read_text(encoding="utf-8"))
-    if args.healthcheck:
-        payload["healthcheck"] = True
-    if args.mode:
-        payload["mode"] = args.mode
-    if args.dry_run:
-        payload["dry_run"] = True
-    if args.mock_external:
-        payload["mock_external"] = True
+    payload = _build_payload(args)
 
     response = requests.post(url, json=payload, timeout=args.timeout)
     print(f"status_code={response.status_code}")

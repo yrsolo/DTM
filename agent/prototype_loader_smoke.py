@@ -5,18 +5,21 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from web_prototype.loader import PrototypeSchemaError, load_prototype_payload
 
 
-def _write(path: Path, payload: dict) -> None:
+def _write(path: Path, payload: dict[str, Any]) -> None:
+    """Write JSON fixture payload to disk."""
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def main() -> int:
+    """Verify happy-path load and schema-gate failure path."""
     tmp = Path("artifacts") / "tmp" / "prototype_loader_smoke"
     read_model_file = tmp / "read_model.json"
     schema_file = tmp / "schema_snapshot.json"

@@ -24,6 +24,14 @@ LEVEL_RU = {
 }
 
 
+def _summary_value(summary: dict[str, Any], key: str, cast: type, default: Any) -> Any:
+    value = summary.get(key, default)
+    try:
+        return cast(value)
+    except (TypeError, ValueError):
+        return default
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Evaluate reminder alert thresholds from quality_report artifacts."
@@ -115,9 +123,9 @@ def evaluate_thresholds(
     critical_send_errors: int = 3,
 ) -> dict[str, Any]:
     summary = dict(quality_report.get("summary", {}))
-    attemptable = int(summary.get("reminder_delivery_attemptable_count") or 0)
+    attemptable = _summary_value(summary, "reminder_delivery_attemptable_count", int, 0)
     delivery_rate = summary.get("reminder_delivery_rate")
-    send_errors = int(summary.get("reminder_send_error_count") or 0)
+    send_errors = _summary_value(summary, "reminder_send_error_count", int, 0)
     source_mode = quality_report.get("mode")
 
     level = "OK"
@@ -233,6 +241,8 @@ def maybe_notify_owner(
     cmd = [
         sys.executable,
         "agent/notify_owner.py",
+        "--mode",
+        "info",
         "--title",
         payload["title"],
         "--details",

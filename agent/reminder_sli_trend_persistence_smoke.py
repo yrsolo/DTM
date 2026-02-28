@@ -4,6 +4,7 @@ from pathlib import Path
 import json
 import sys
 import tempfile
+from typing import Any
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
@@ -12,7 +13,16 @@ if str(ROOT_DIR) not in sys.path:
 from local_run import persist_sli_trend_snapshot
 
 
-def build_report(mode, sent, errors, attemptable, attempted, delivery_rate, failure_rate):
+def build_report(
+    mode: str,
+    sent: int,
+    errors: int,
+    attemptable: int,
+    attempted: int,
+    delivery_rate: float | None,
+    failure_rate: float | None,
+) -> dict[str, Any]:
+    """Build synthetic quality report payload for SLI trend persistence checks."""
     return {
         "mode": mode,
         "dry_run": True,
@@ -27,7 +37,8 @@ def build_report(mode, sent, errors, attemptable, attempted, delivery_rate, fail
     }
 
 
-def run():
+def run() -> None:
+    """Run local smoke for trend snapshot retention and value persistence."""
     with tempfile.TemporaryDirectory() as tmp_dir:
         trend_file = Path(tmp_dir) / "sli_trend.json"
         count = persist_sli_trend_snapshot(

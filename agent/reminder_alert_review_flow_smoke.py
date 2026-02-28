@@ -1,9 +1,12 @@
 """Smoke for alert evaluator wiring into local run review flow helpers."""
 
-from pathlib import Path
 import json
 import sys
 import tempfile
+from pathlib import Path
+
+INFO_MODE = "reminders-only"
+FAIL_LEVEL = "critical"
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
@@ -13,9 +16,11 @@ from local_run import build_alert_evaluation, persist_alert_evaluation
 from agent.reminder_alert_evaluator import should_fail
 
 
-def run():
+def _build_reports() -> tuple[dict[str, object], dict[str, object]]:
+    """Return deterministic input reports for alert flow checks."""
+
     info_report = {
-        "mode": "reminders-only",
+        "mode": INFO_MODE,
         "summary": {
             "reminder_delivery_attemptable_count": 1,
             "reminder_delivery_rate": None,
@@ -23,21 +28,28 @@ def run():
         },
     }
     critical_report = {
-        "mode": "reminders-only",
+        "mode": INFO_MODE,
         "summary": {
             "reminder_delivery_attemptable_count": 10,
             "reminder_delivery_rate": 0.9,
             "reminder_send_error_count": 0,
         },
     }
+    return info_report, critical_report
+
+
+def run() -> None:
+    """Execute alert-review flow smoke assertions."""
+
+    info_report, critical_report = _build_reports()
 
     info_eval = build_alert_evaluation(info_report)
     assert info_eval["level"] == "INFO_ONLY", info_eval
-    assert should_fail(info_eval["level"], "critical") is False
+    assert should_fail(info_eval["level"], FAIL_LEVEL) is False
 
     critical_eval = build_alert_evaluation(critical_report)
     assert critical_eval["level"] == "CRITICAL", critical_eval
-    assert should_fail(critical_eval["level"], "critical") is True
+    assert should_fail(critical_eval["level"], FAIL_LEVEL) is True
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         out = Path(tmp_dir) / "alert_evaluation.json"

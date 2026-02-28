@@ -2,11 +2,26 @@
 
 import base64
 import os
-from pathlib import Path
 import tempfile
+from pathlib import Path
 from types import MappingProxyType as MapProxy
+from typing import Mapping
 
 from dotenv import load_dotenv
+
+ALLOWED_ENVS = frozenset({"dev", "test", "prod"})
+
+
+def _env(name: str, default: str = "") -> str:
+    """Return stripped environment value."""
+
+    return os.environ.get(name, default).strip()
+
+
+def _env_flag(name: str, default: str = "0") -> bool:
+    """Parse bool-like flag from environment."""
+
+    return _env(name, default).lower() in {"1", "true", "yes"}
 
 
 def _load_runtime_env() -> str:
@@ -15,11 +30,11 @@ def _load_runtime_env() -> str:
     Profile file naming: .env.<env>, for example .env.dev or .env.prod.
     """
     load_dotenv()
-    runtime_env = os.environ.get("ENV", "dev").strip().lower() or "dev"
+    runtime_env = _env("ENV", "dev").lower() or "dev"
     profile_path = Path(f".env.{runtime_env}")
     if profile_path.exists():
         load_dotenv(dotenv_path=profile_path, override=True)
-    if runtime_env not in {"dev", "test", "prod"}:
+    if runtime_env not in ALLOWED_ENVS:
         raise ValueError(
             f"Unsupported ENV={runtime_env!r}. Allowed values: dev, test, prod."
         )
@@ -27,17 +42,14 @@ def _load_runtime_env() -> str:
 
 
 RUNTIME_ENV = _load_runtime_env()
-STRICT_ENV_GUARD = os.environ.get("STRICT_ENV_GUARD", "0").strip().lower() in {
-    "1",
-    "true",
-    "yes",
-}
+STRICT_ENV_GUARD = _env_flag("STRICT_ENV_GUARD")
 
 TG = os.environ.get("TG_TOKEN")
 OPENAI = os.environ.get("OPENAI_TOKEN")
 ORG = os.environ.get("ORG_TOKEN")
-PROXY = os.environ.get("PROXY_URL", "")
-PROXIES = MapProxy({"https://": PROXY}) if PROXY else MapProxy({})
+PROXY = _env("PROXY_URL")
+PROXIES: Mapping[str, str] = MapProxy({"https://": PROXY}) if PROXY else MapProxy({})
+
 
 def _resolve_google_key_json_path() -> str:
     """Resolve Google service-account key path.
@@ -48,12 +60,12 @@ def _resolve_google_key_json_path() -> str:
     3) GOOGLE_KEY_JSON (raw JSON payload text)
     4) local development fallback file path in repository
     """
-    key_path = os.environ.get("GOOGLE_KEY_JSON_PATH", "").strip()
+    key_path = _env("GOOGLE_KEY_JSON_PATH")
     if key_path:
         return key_path
 
-    key_b64 = os.environ.get("GOOGLE_KEY_JSON_B64", "").strip()
-    key_text = os.environ.get("GOOGLE_KEY_JSON", "").strip()
+    key_b64 = _env("GOOGLE_KEY_JSON_B64")
+    key_text = _env("GOOGLE_KEY_JSON")
     if key_b64:
         key_text = base64.b64decode(key_b64).decode("utf-8")
 

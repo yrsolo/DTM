@@ -1,8 +1,10 @@
-"""Local smoke for reminder fallback when enhancer returns empty response."""
+﻿"""Local smoke for reminder fallback when enhancer returns empty response."""
 
-from pathlib import Path
+import asyncio
 import sys
+from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
@@ -10,31 +12,44 @@ if str(ROOT_DIR) not in sys.path:
 
 from core.reminder import Reminder
 
+DESIGN_STEP = "\u0434\u0438\u0437\u0430\u0439\u043d"
+NO_VACATION = "\u043d\u0435\u0442"
+
 
 class EmptyChatAgent:
-    async def chat(self, messages, model=None):
+    """Stub enhancer that always returns empty output to trigger fallback."""
+
+    async def chat(self, messages: Any, model: str | None = None) -> None:
+        _ = messages
+        _ = model
         return None
 
 
 class FakeTaskRepository:
-    def get_tasks_by_date(self, date):
+    """Single-task repository stub for fallback scenario."""
+
+    def get_tasks_by_date(self, date: str) -> list[SimpleNamespace]:
         return [
             SimpleNamespace(
                 designer="Alice",
                 brand="BrandX",
                 format_="Post\nlong",
                 project_name="ProjectX",
-                timing={date: ["дизайн"]},
+                timing={date: [DESIGN_STEP]},
             )
         ]
 
 
 class FakePeopleManager:
-    def get_person(self, designer_name):
-        return SimpleNamespace(chat_id=123456, vacation="нет")
+    """People manager stub with non-vacation user."""
+
+    def get_person(self, designer_name: str) -> SimpleNamespace:
+        _ = designer_name
+        return SimpleNamespace(chat_id=123456, vacation=NO_VACATION)
 
 
-async def run():
+async def run() -> None:
+    """Validate fallback to draft reminder when enhancement returns empty text."""
     reminder = Reminder(
         task_repository=FakeTaskRepository(),
         openai_agent=EmptyChatAgent(),
@@ -56,6 +71,4 @@ async def run():
 
 
 if __name__ == "__main__":
-    import asyncio
-
     asyncio.run(run())

@@ -16,16 +16,20 @@ class PrototypeSchemaError(RuntimeError):
 
 @dataclass(frozen=True)
 class PrototypePayload:
+    """Container for validated prototype payload artifacts."""
+
     read_model: dict[str, Any]
     schema_snapshot: dict[str, Any]
     fixture_bundle: dict[str, Any]
 
 
 def _load_json_from_file(path: Path) -> dict[str, Any]:
+    """Load JSON payload from local filesystem path."""
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _load_json(source_mode: str, *, path: Path | None = None, s3_key: str = "") -> dict[str, Any]:
+    """Load JSON payload either from filesystem path or Object Storage key."""
     mode = (source_mode or "filesystem").strip().lower()
     if mode == "filesystem":
         if path is None:
@@ -41,6 +45,7 @@ def _load_json(source_mode: str, *, path: Path | None = None, s3_key: str = "") 
 
 
 def _validate_schema_snapshot(read_model: dict[str, Any], schema_snapshot: dict[str, Any]) -> list[str]:
+    """Validate lightweight schema snapshot compatibility against read model."""
     errors: list[str] = []
     if schema_snapshot.get("schema_version") != read_model.get("schema_version"):
         errors.append("schema_version_mismatch")
@@ -64,6 +69,7 @@ def load_prototype_payload(
     schema_snapshot_s3_key: str = "",
     fixture_bundle_s3_key: str = "",
 ) -> PrototypePayload:
+    """Load and validate prototype payload bundle for web consumer flows."""
     read_model = _load_json(
         source_mode,
         path=read_model_path,

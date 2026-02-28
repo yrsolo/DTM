@@ -1,8 +1,8 @@
-"""
-Module provides services for working with Google Sheets, including getting and updating sheet data.
-"""
+"""Google Sheets service wrapper for read/write operations and render requests."""
 
-from typing import List, Optional
+from __future__ import annotations
+
+from typing import Any
 
 import pandas as pd
 from google.oauth2.service_account import Credentials
@@ -15,7 +15,7 @@ from utils.func import color_to_rgb, color_to_str, parse_range
 class GoogleSheetInfo:
     """Information about Google Spreadsheet."""
 
-    def __init__(self, spreadsheet_name: str, sheet_names: dict):
+    def __init__(self, spreadsheet_name: str, sheet_names: dict[str, str]):
         """Information about Google Spreadsheet.
 
         Args:
@@ -25,7 +25,7 @@ class GoogleSheetInfo:
         self.spreadsheet_name = spreadsheet_name
         self.sheets = sheet_names
 
-    def get_sheet_name(self, key: str) -> str:
+    def get_sheet_name(self, key: str) -> str | None:
         """Get sheet name by key.
 
         Args:
@@ -40,7 +40,7 @@ class GoogleSheetInfo:
 class GoogleSheetsService:
     """Service for working with Google Sheets."""
 
-    def __init__(self, credentials_path: str, dry_run: bool = False):
+    def __init__(self, credentials_path: str, dry_run: bool = False) -> None:
         """Service for working with Google Sheets.
 
         Args:
@@ -57,7 +57,7 @@ class GoogleSheetsService:
         self.spreadsheet_name = None
         self.worksheet_name = None
 
-    def _dry_run_log(self, action: str, details: str = ""):
+    def _dry_run_log(self, action: str, details: str = "") -> None:
         if self.dry_run:
             count = self._dry_run_counters.get(action, 0) + 1
             self._dry_run_counters[action] = count
@@ -68,7 +68,7 @@ class GoogleSheetsService:
             suffix = f"{count_info} | {safe_details}" if safe_details else count_info
             print(f"[DRY-RUN] GoogleSheetsService::{action}{suffix}")
 
-    def set_spreadsheet_and_worksheet(self, spreadsheet_name, worksheet_name):
+    def set_spreadsheet_and_worksheet(self, spreadsheet_name: str, worksheet_name: str) -> None:
         self.spreadsheet_name = spreadsheet_name
         self.worksheet_name = worksheet_name
 
@@ -98,7 +98,7 @@ class GoogleSheetsService:
 
         return spreadsheet_id
 
-    def get_sheet_id_by_name(self, spreadsheet_name, worksheet_name):
+    def get_sheet_id_by_name(self, spreadsheet_name: str, worksheet_name: str) -> int | None:
         """Get sheet id by name.
 
         Args:
@@ -120,7 +120,12 @@ class GoogleSheetsService:
                 self.sheet_id_cache[cache_key] = sheet_id
                 return sheet_id
 
-    def get_worksheet_values(self, spreadsheet_name, worksheet_name, worksheet_range="A1:Z1000"):
+    def get_worksheet_values(
+        self,
+        spreadsheet_name: str,
+        worksheet_name: str,
+        worksheet_range: str = "A1:Z1000",
+    ) -> list[list[str]]:
         """Get worksheet values by name.
 
         Args:
@@ -144,8 +149,12 @@ class GoogleSheetsService:
         return result.get("values", [])
 
     def get_dataframe(
-        self, spreadsheet_name, worksheet_name, worksheet_range="A1:Z1000", header=True
-    ):
+        self,
+        spreadsheet_name: str,
+        worksheet_name: str,
+        worksheet_range: str = "A1:Z1000",
+        header: bool = True,
+    ) -> pd.DataFrame:
         """Get DataFrame by spreadsheet name and worksheet name.
 
         Args:
@@ -172,7 +181,12 @@ class GoogleSheetsService:
         df = pd.DataFrame(worksheet_values[1:], columns=columns)  # expected header in first row
         return df
 
-    def get_cell_colors(self, spreadsheet_name, worksheet_name, worksheet_range="A1:Z1000"):
+    def get_cell_colors(
+        self,
+        spreadsheet_name: str,
+        worksheet_name: str,
+        worksheet_range: str = "A1:Z1000",
+    ) -> list[str]:
         """Get cell colors by spreadsheet name and worksheet name.
 
         Args:
@@ -219,13 +233,13 @@ class GoogleSheetsService:
 
     def update_borders(
         self,
-        spreadsheet_name: str = None,
-        sheet_name: str = None,
-        row: int = None,
-        col: int = None,
-        border_data: dict = None,
-        **kwargs,
-    ):
+        spreadsheet_name: str | None = None,
+        sheet_name: str | None = None,
+        row: int | None = None,
+        col: int | None = None,
+        border_data: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> None:
         """Add update cell request to batch.
 
         Args:
@@ -250,6 +264,7 @@ class GoogleSheetsService:
 
         sheet_id = self.get_sheet_id_by_name(spreadsheet_name, sheet_name)
 
+        _ = row, col
         if border_data:
             kwargs.update(border_data)
         start_col, start_row, end_col, end_row = parse_range(kwargs["worksheet_range"])
@@ -277,13 +292,13 @@ class GoogleSheetsService:
 
     def update_cell(
         self,
-        spreadsheet_name: str = None,
-        sheet_name: str = None,
-        row: int = None,
-        col: int = None,
-        cell_data: dict = None,
-        **kwargs,
-    ):
+        spreadsheet_name: str | None = None,
+        sheet_name: str | None = None,
+        row: int | None = None,
+        col: int | None = None,
+        cell_data: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> None:
         """Add update cell request to batch.
 
         Args:
@@ -309,9 +324,8 @@ class GoogleSheetsService:
             kwargs.update(cell_data)
             # kwargs = cell_data
 
-        fields = []
-        cell_data = {}
-        cell_data = {
+        fields: list[str] = []
+        payload = {
             "userEnteredValue": {},
             "userEnteredFormat": {},
         }
@@ -326,48 +340,48 @@ class GoogleSheetsService:
             value = kwargs["value"]
             if pd.isna(value):
                 value = ""
-            cell_data["userEnteredValue"]["stringValue"] = value
+            payload["userEnteredValue"]["stringValue"] = value
             fields.append("userEnteredValue")
 
         if "note" in kwargs:
             value = kwargs["note"]
             if pd.isna(value):
                 value = ""
-            cell_data["note"] = value
+            payload["note"] = value
             fields.append("note")
 
         if "color" in kwargs:
             rgb = color_to_rgb(kwargs["color"])
             if isinstance(rgb, dict):
-                cell_data["userEnteredFormat"]["backgroundColor"] = rgb
+                payload["userEnteredFormat"]["backgroundColor"] = rgb
                 fields.append("userEnteredFormat.backgroundColor")
 
         if "text_color" in kwargs:
             rgb = color_to_rgb(kwargs["text_color"])
             if isinstance(rgb, dict):
-                cell_data["userEnteredFormat"].setdefault("textFormat", {})
-                cell_data["userEnteredFormat"]["textFormat"]["foregroundColor"] = rgb
+                payload["userEnteredFormat"].setdefault("textFormat", {})
+                payload["userEnteredFormat"]["textFormat"]["foregroundColor"] = rgb
                 fields.append("userEnteredFormat.textFormat.foregroundColor")
 
         if "font_size" in kwargs:
             # fontSize должен быть числом
             size = kwargs["font_size"]
-            cell_data["userEnteredFormat"].setdefault("textFormat", {})
-            cell_data["userEnteredFormat"]["textFormat"]["fontSize"] = int(size)
+            payload["userEnteredFormat"].setdefault("textFormat", {})
+            payload["userEnteredFormat"]["textFormat"]["fontSize"] = int(size)
             fields.append("userEnteredFormat.textFormat.fontSize")
 
         if "bold" in kwargs:
             # bold – это булево значение
             bold_val = kwargs["bold"]
-            cell_data["userEnteredFormat"].setdefault("textFormat", {})
-            cell_data["userEnteredFormat"]["textFormat"]["bold"] = bool(bold_val)
+            payload["userEnteredFormat"].setdefault("textFormat", {})
+            payload["userEnteredFormat"]["textFormat"]["bold"] = bool(bold_val)
             fields.append("userEnteredFormat.textFormat.bold")
 
         if "italic" in kwargs:
             # italic – это булево значение
             italic_val = kwargs["italic"]
-            cell_data["userEnteredFormat"].setdefault("textFormat", {})
-            cell_data["userEnteredFormat"]["textFormat"]["italic"] = bool(italic_val)
+            payload["userEnteredFormat"].setdefault("textFormat", {})
+            payload["userEnteredFormat"]["textFormat"]["italic"] = bool(italic_val)
             fields.append("userEnteredFormat.textFormat.italic")
 
         fields.append("userEnteredFormat.textFormat.foregroundColor")
@@ -378,7 +392,7 @@ class GoogleSheetsService:
             spreadsheet_name,
             {
                 "updateCells": {
-                    "rows": {"values": [cell_data]},
+                    "rows": {"values": [payload]},
                     "fields": ",".join(fields),
                     "range": {
                         "sheetId": sheet_id,
@@ -392,8 +406,12 @@ class GoogleSheetsService:
         ]
         self.requests.append(request)
 
-    def execute_updates(self, spreadsheet_name: str = None, requests: Optional[List] = None):
-        """Выполнить пакетное обновление"""
+    def execute_updates(
+        self,
+        spreadsheet_name: str | None = None,
+        requests: list[dict[str, Any]] | None = None,
+    ) -> None:
+        """Execute batched requests for selected spreadsheet."""
 
         if spreadsheet_name is None:
             spreadsheet_name = self.spreadsheet_name
@@ -425,11 +443,16 @@ class GoogleSheetsService:
         except Exception as e:
             print(f"Error executing batch update: {e}")
 
-    def clear_requests(self):
-        """Очистить пакет обновлений"""
+    def clear_requests(self) -> None:
+        """Clear queued update requests."""
         self.requests = []
 
-    def clear_cells(self, spreadsheet_name: str = None, sheet_name: str = None, range_="A1:ZZ1000"):
+    def clear_cells(
+        self,
+        spreadsheet_name: str | None = None,
+        sheet_name: str | None = None,
+        range_: str = "A1:ZZ1000",
+    ) -> None:
         """Очистить заданный диапазон ячеек от значений и заметок."""
 
         if spreadsheet_name is None:

@@ -8,25 +8,41 @@ import subprocess
 from pathlib import Path
 
 
+def _clean_env_value(value: str) -> str:
+    """Normalize env value by trimming whitespace and wrapping quotes."""
+    return value.strip().strip('"').strip("'")
+
+
+def _safe_print(text: str) -> None:
+    """Print text safely on consoles with narrow encodings."""
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        print(str(text).encode("unicode_escape").decode("ascii"))
+
+
 def _parse_env_file(path: Path) -> dict[str, str]:
+    """Parse key/value pairs from .env-like file."""
     result: dict[str, str] = {}
     for raw in path.read_text(encoding="utf-8").splitlines():
         line = raw.strip()
         if not line or line.startswith("#") or "=" not in line:
             continue
         key, value = line.split("=", 1)
-        key = key.strip()
-        value = value.strip().strip('"').strip("'")
+        key = key.strip().lstrip("\ufeff")
+        value = _clean_env_value(value)
         if key:
             result[key] = value
     return result
 
 
 def _default_yc_binary() -> Path:
+    """Return default local path to yc executable."""
     return Path.home() / "yandex-cloud" / "bin" / "yc.exe"
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse CLI options for Lockbox sync."""
     parser = argparse.ArgumentParser(description="Sync local .env keys into Lockbox secret")
     parser.add_argument(
         "--secret-name",
@@ -60,6 +76,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def _build_payload_entries(env_map: dict[str, str], google_key_file: Path) -> list[dict[str, str]]:
+    """Build Lockbox payload entries from env values and optional Google key JSON."""
     payload: list[dict[str, str]] = []
     for key, value in env_map.items():
         if value:
@@ -72,6 +89,7 @@ def _build_payload_entries(env_map: dict[str, str], google_key_file: Path) -> li
 
 
 def _add_secret_version(yc_binary: Path, secret_name: str, payload: list[dict[str, str]]) -> None:
+    """Publish new Lockbox secret version with prepared payload."""
     payload_json = json.dumps(payload, ensure_ascii=False)
     run = subprocess.run(
         [
@@ -89,30 +107,33 @@ def _add_secret_version(yc_binary: Path, secret_name: str, payload: list[dict[st
         capture_output=True,
         text=True,
         encoding="utf-8",
+        errors="replace",
+        check=False,
     )
     if run.returncode != 0:
         raise RuntimeError(run.stderr.strip() or "yc lockbox add-version failed")
 
 
 def main() -> int:
+    """Execute Lockbox sync flow in dry-run or live mode."""
     args = parse_args()
     env_map = _parse_env_file(args.env_file)
     payload = _build_payload_entries(env_map, args.google_key_file)
     payload_keys = sorted({entry["key"] for entry in payload})
 
     if args.dry_run:
-        print(f"lockbox_sync_secret={args.secret_name}")
-        print(f"lockbox_sync_keys_count={len(payload_keys)}")
-        print(f"lockbox_sync_keys={','.join(payload_keys)}")
+        _safe_print(f"lockbox_sync_secret={args.secret_name}")
+        _safe_print(f"lockbox_sync_keys_count={len(payload_keys)}")
+        _safe_print(f"lockbox_sync_keys={','.join(payload_keys)}")
         return 0
 
     if not args.yc_binary.exists():
         raise FileNotFoundError(f"yc binary not found: {args.yc_binary}")
 
     _add_secret_version(args.yc_binary, args.secret_name, payload)
-    print(f"lockbox_sync_secret={args.secret_name}")
-    print(f"lockbox_sync_keys_count={len(payload_keys)}")
-    print("lockbox_sync_ok")
+    _safe_print(f"lockbox_sync_secret={args.secret_name}")
+    _safe_print(f"lockbox_sync_keys_count={len(payload_keys)}")
+    _safe_print("lockbox_sync_ok")
     return 0
 
 

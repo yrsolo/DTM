@@ -1,8 +1,11 @@
 """Local smoke assertions for adapter and manager render wiring."""
 
-from pathlib import Path
+from __future__ import annotations
+
 import sys
+from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 
 import pandas as pd
 
@@ -15,58 +18,75 @@ from core.sheet_renderer import ServiceSheetRenderAdapter
 
 
 class FakeService:
-    def __init__(self):
-        self.calls = []
+    def __init__(self) -> None:
+        self.calls: list[tuple[Any, ...]] = []
 
-    def set_spreadsheet_and_worksheet(self, spreadsheet_name, worksheet_name):
+    def set_spreadsheet_and_worksheet(self, spreadsheet_name: str, worksheet_name: str) -> None:
         self.calls.append(("set_spreadsheet_and_worksheet", spreadsheet_name, worksheet_name))
 
-    def clear_cells(self, spreadsheet_name=None, sheet_name=None, range_="A1:ZZ1000"):
+    def clear_cells(
+        self,
+        spreadsheet_name: str | None = None,
+        sheet_name: str | None = None,
+        range_: str = "A1:ZZ1000",
+    ) -> None:
         self.calls.append(("clear_cells", spreadsheet_name, sheet_name, range_))
 
-    def clear_requests(self):
+    def clear_requests(self) -> None:
         self.calls.append(("clear_requests",))
 
-    def update_cell(self, spreadsheet_name=None, sheet_name=None, cell_data=None, **kwargs):
+    def update_cell(
+        self,
+        spreadsheet_name: str | None = None,
+        sheet_name: str | None = None,
+        cell_data: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> None:
         self.calls.append(("update_cell", spreadsheet_name, sheet_name, cell_data, kwargs))
 
-    def update_borders(self, spreadsheet_name=None, sheet_name=None, border_data=None, **kwargs):
+    def update_borders(
+        self,
+        spreadsheet_name: str | None = None,
+        sheet_name: str | None = None,
+        border_data: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> None:
         self.calls.append(("update_borders", spreadsheet_name, sheet_name, border_data, kwargs))
 
-    def execute_updates(self, spreadsheet_name=None, requests=None):
+    def execute_updates(self, spreadsheet_name: str | None = None, requests: Any = None) -> None:
         self.calls.append(("execute_updates", spreadsheet_name, requests))
 
 
 class FakeRenderer:
-    def __init__(self):
-        self.calls = []
-        self.cell_payloads = []
+    def __init__(self) -> None:
+        self.calls: list[str] = []
+        self.cell_payloads: list[dict[str, Any]] = []
 
-    def begin(self):
+    def begin(self) -> None:
         self.calls.append("begin")
 
-    def clear_cells(self, range_="A1:ZZ1000"):
+    def clear_cells(self, range_: str = "A1:ZZ1000") -> None:
         self.calls.append(f"clear_cells:{range_}")
 
-    def clear_requests(self):
+    def clear_requests(self) -> None:
         self.calls.append("clear_requests")
 
-    def update_cell(self, cell_data):
+    def update_cell(self, cell_data: dict[str, Any]) -> None:
         self.calls.append("update_cell")
         self.cell_payloads.append(cell_data)
 
-    def update_borders(self, border_data):
+    def update_borders(self, border_data: dict[str, Any]) -> None:
         self.calls.append("update_borders")
 
-    def execute_updates(self):
+    def execute_updates(self) -> None:
         self.calls.append("execute_updates")
 
 
 class FakeSheetInfo:
-    def __init__(self):
+    def __init__(self) -> None:
         self.spreadsheet_name = "sheet-test"
 
-    def get_sheet_name(self, kind):
+    def get_sheet_name(self, kind: str) -> str:
         mapping = {
             "designers": "Designers",
             "calendar": "Calendar",
@@ -76,16 +96,16 @@ class FakeSheetInfo:
 
 
 class FakeRepository:
-    def __init__(self, tasks):
+    def __init__(self, tasks: list[Any]) -> None:
         self.tasks = tasks
         self.sheet_info = FakeSheetInfo()
         self.service = FakeService()
 
-    def get_all_tasks(self):
+    def get_all_tasks(self) -> list[Any]:
         return list(self.tasks)
 
 
-def run_adapter_contract_smoke():
+def run_adapter_contract_smoke() -> None:
     service = FakeService()
     adapter = ServiceSheetRenderAdapter(
         service=service,
@@ -114,7 +134,7 @@ def run_adapter_contract_smoke():
     assert service.calls[5] == ("execute_updates", "sheet-A", None)
 
 
-def run_task_manager_adapter_smoke():
+def run_task_manager_adapter_smoke() -> None:
     tasks = [
         SimpleNamespace(
             id=1,
@@ -148,7 +168,7 @@ def run_task_manager_adapter_smoke():
     assert any(payload.get("value") == "Task A" for payload in renderer.cell_payloads)
 
 
-def run_calendar_manager_adapter_smoke():
+def run_calendar_manager_adapter_smoke() -> None:
     repository = FakeRepository(tasks=[])
     renderer = FakeRenderer()
     manager = CalendarManager(
@@ -172,7 +192,7 @@ def run_calendar_manager_adapter_smoke():
     assert any(payload.get("value") == "25.02" for payload in renderer.cell_payloads)
 
 
-def run():
+def run() -> None:
     run_adapter_contract_smoke()
     run_task_manager_adapter_smoke()
     run_calendar_manager_adapter_smoke()
