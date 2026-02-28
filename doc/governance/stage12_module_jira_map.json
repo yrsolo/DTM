@@ -1,8 +1,8 @@
 {
   "created": 53,
   "total": 53,
-  "active_key": "DTM-127",
-  "active_module": "web_prototype.loader",
+  "active_key": "DTM-133",
+  "active_module": "core.fixture_bundle",
   "mapping": [
     {
       "module": "core.reminder",
@@ -152,43 +152,43 @@
       "module": "web_prototype.loader",
       "items": 6,
       "key": "DTM-127",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "module": "agent.prepare_web_prototype_payload",
       "items": 4,
       "key": "DTM-128",
-      "status": "todo"
+      "status": "done"
     },
     {
       "module": "core.read_model",
       "items": 4,
       "key": "DTM-129",
-      "status": "todo"
+      "status": "done"
     },
     {
       "module": "utils.storage",
       "items": 4,
       "key": "DTM-130",
-      "status": "todo"
+      "status": "done"
     },
     {
       "module": "agent.build_fixture_bundle",
       "items": 3,
       "key": "DTM-131",
-      "status": "todo"
+      "status": "done"
     },
     {
       "module": "agent.notify_owner_payload_smoke",
       "items": 3,
       "key": "DTM-132",
-      "status": "todo"
+      "status": "done"
     },
     {
       "module": "core.fixture_bundle",
       "items": 3,
       "key": "DTM-133",
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "module": "core.schema_snapshot",

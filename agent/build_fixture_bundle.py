@@ -13,6 +13,7 @@ from core.fixture_bundle import build_fixture_bundle
 
 
 def _latest_baseline_dir(root: Path) -> Path:
+    """Return latest baseline directory under root."""
     candidates = [p for p in root.glob("*") if p.is_dir()]
     if not candidates:
         raise FileNotFoundError(f"no baseline directories found under {root}")
@@ -20,6 +21,7 @@ def _latest_baseline_dir(root: Path) -> Path:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse CLI arguments for fixture bundle builder."""
     parser = argparse.ArgumentParser(description="Build frontend fixture bundle from baseline artifacts")
     parser.add_argument(
         "--baseline-dir",
@@ -56,15 +58,21 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _load_json(path: Path) -> dict:
+    """Load JSON payload from file path."""
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def main() -> int:
+    """Build fixture bundle file and optionally upload to Object Storage."""
     args = parse_args()
     baseline_dir = args.baseline_dir or _latest_baseline_dir(args.baseline_root)
     read_model_file = baseline_dir / "read_model.json"
     schema_snapshot_file = baseline_dir / "schema_snapshot.json"
     output_file = args.output_file or (baseline_dir / "fixture_bundle.json")
 
-    read_model = json.loads(read_model_file.read_text(encoding="utf-8"))
-    schema_snapshot = json.loads(schema_snapshot_file.read_text(encoding="utf-8"))
+    read_model = _load_json(read_model_file)
+    schema_snapshot = _load_json(schema_snapshot_file)
     payload = build_fixture_bundle(
         read_model=read_model,
         schema_snapshot=schema_snapshot,

@@ -73,7 +73,13 @@ Planned next:
 - `DTM-124` (`agent.deploy_run_evidence_report`) completed.
 - `DTM-125` (`agent.stage8_shadow_run_evidence`) completed.
 - `DTM-126` (`agent.sync_lockbox_from_env`) completed.
-- Active execution task: `DTM-127` (`web_prototype.loader`).
+- `DTM-127` (`web_prototype.loader`) completed.
+- `DTM-128` (`agent.prepare_web_prototype_payload`) completed.
+- `DTM-129` (`core.read_model`) completed.
+- `DTM-130` (`utils.storage`) completed.
+- `DTM-131` (`agent.build_fixture_bundle`) completed.
+- `DTM-132` (`agent.notify_owner_payload_smoke`) completed.
+- Active execution task: `DTM-133` (`core.fixture_bundle`).
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).

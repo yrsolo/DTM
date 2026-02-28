@@ -1,4 +1,4 @@
-# DTM-132: Stage 12 deep cleanup for module `agent.notify_owner_payload_smoke`
+﻿# DTM-132: Stage 12 deep cleanup for module `agent.notify_owner_payload_smoke`
 
 ## Context
 - Stage 12 switched to deep per-module execution model.
@@ -24,15 +24,20 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-132`).
-- [x] Jira status set to `? ??????????`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `??????`.
-- [ ] Telegram completion sent.
+- [x] Jira status set to `В работе`.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `agent.notify_owner_payload_smoke`.
+- 2026-02-28: Replaced mojibake with valid RU samples, introduced dataclass args fixture, and clarified smoke intent with docstrings.
+- 2026-02-28: Ran checks:
+  - `python -m compileall agent`
+  - `.venv\\Scripts\\python.exe agent\\notify_owner_payload_smoke.py`
+- 2026-02-28: Added Jira evidence, moved issue to `Готово`, owner completion notification sent.
 
 ## Links
 - Jira: DTM-132

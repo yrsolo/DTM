@@ -7,15 +7,21 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] DTM-127 - Stage 12 deep module cleanup: `web_prototype.loader`.
+- [IN_PROGRESS] DTM-133 - Stage 12 deep module cleanup: `core.fixture_bundle`.
 
 ## Stage 12 Estimate (Dynamic)
 - Baseline estimate: 57 tasks (kickoff, matrix, transition, 53 module tasks, closeout).
-- Done: 27
-- Remaining: 30
+- Done: 33
+- Remaining: 24
 - Rule: update `Done/Remaining` after each completed Stage 12 task.
 
 ## Done
+- [DONE] DTM-132 - Stage 12 deep module cleanup completed for `agent.notify_owner_payload_smoke`.
+- [DONE] DTM-131 - Stage 12 deep module cleanup completed for `agent.build_fixture_bundle`.
+- [DONE] DTM-130 - Stage 12 deep module cleanup completed for `utils.storage`.
+- [DONE] DTM-129 - Stage 12 deep module cleanup completed for `core.read_model`.
+- [DONE] DTM-128 - Stage 12 deep module cleanup completed for `agent.prepare_web_prototype_payload`.
+- [DONE] DTM-127 - Stage 12 deep module cleanup completed for `web_prototype.loader`.
 - [DONE] DTM-126 - Stage 12 deep module cleanup completed for `agent.sync_lockbox_from_env`.
 - [DONE] DTM-125 - Stage 12 deep module cleanup completed for `agent.stage8_shadow_run_evidence`.
 - [DONE] DTM-124 - Stage 12 deep module cleanup completed for `agent.deploy_run_evidence_report`.
@@ -71,13 +77,13 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-128: deep module cleanup `agent.prepare_web_prototype_payload`.
-- [TODO] DTM-129: deep module cleanup `core.read_model`.
-- [TODO] DTM-130: deep module cleanup `utils.storage`.
-- [TODO] DTM-131: deep module cleanup `agent.build_fixture_bundle`.
+- [TODO] DTM-134: deep module cleanup `core.schema_snapshot`.
+- [TODO] DTM-135: deep module cleanup `agent.invoke_function_smoke`.
+- [TODO] DTM-136: deep module cleanup `agent.load_prototype_payload`.
+- [TODO] DTM-137: deep module cleanup `agent.prepare_web_prototype_payload_smoke`.
 
 ## Active Task Files
-- `agile/tasks/DTM-127_stage12-module-web-prototype-loader.md`
+- `agile/tasks/DTM-133_stage12-module-core-fixture-bundle.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`

@@ -1,4 +1,4 @@
-# DTM-128: Stage 12 deep cleanup for module `agent.prepare_web_prototype_payload`
+﻿# DTM-128: Stage 12 deep cleanup for module `agent.prepare_web_prototype_payload`
 
 ## Context
 - Stage 12 switched to deep per-module execution model.
@@ -24,15 +24,20 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-128`).
-- [x] Jira status set to `? ??????????`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `??????`.
-- [ ] Telegram completion sent.
+- [x] Jira status set to `В работе`.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `agent.prepare_web_prototype_payload`.
+- 2026-02-28: Added mode/env helper docstrings and extracted S3 env-key helper/constants for readability without logic changes.
+- 2026-02-28: Ran checks:
+  - `python -m compileall agent`
+  - `.venv\\Scripts\\python.exe agent\\prepare_web_prototype_payload_smoke.py`
+- 2026-02-28: Added Jira evidence, moved issue to `Готово`, owner completion notification sent.
 
 ## Links
 - Jira: DTM-128

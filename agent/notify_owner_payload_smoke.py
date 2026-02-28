@@ -1,9 +1,10 @@
-"""Smoke checks for RU-only payload validation in notify_owner helper."""
+﻿"""Smoke checks for RU-only payload validation in notify_owner helper."""
 
 from __future__ import annotations
 
-from pathlib import Path
 import sys
+from dataclasses import dataclass
+from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
@@ -12,15 +13,18 @@ if str(ROOT_DIR) not in sys.path:
 from agent.notify_owner import _validate_ru_payload
 
 
+@dataclass
 class _Args:
-    def __init__(self, title: str, details: str, options: str = "", context: str = "") -> None:
-        self.title = title
-        self.details = details
-        self.options = options
-        self.context = context
+    """Minimal argparse-like object for payload validation checks."""
+
+    title: str
+    details: str
+    options: str = ""
+    context: str = ""
 
 
 def run() -> None:
+    """Validate Russian-only payload pass/fail behavior for notify_owner helper."""
     _validate_ru_payload(
         _Args(
             title="❓ Нужен выбор",

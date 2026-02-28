@@ -7,13 +7,24 @@ from typing import Any
 
 
 READ_MODEL_SCHEMA_VERSION = "1.0.0"
+REQUIRED_TOP_LEVEL_FIELDS = (
+    "schema_version",
+    "generated_at_utc",
+    "source",
+    "board",
+    "task_details",
+    "alerts",
+    "quality_summary",
+)
 
 
 def _now_utc_iso() -> str:
+    """Return UTC timestamp in canonical read-model format."""
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def _normalize_alert(alert_evaluation: dict[str, Any] | None) -> list[dict[str, Any]]:
+    """Normalize optional evaluator payload into read-model alerts list."""
     if not alert_evaluation:
         return []
     level = str(alert_evaluation.get("level", "UNKNOWN"))
@@ -38,6 +49,7 @@ def build_read_model(
     *,
     build_id: str | None = None,
 ) -> dict[str, Any]:
+    """Build canonical consumer-facing read model from runtime diagnostics."""
     report = dict(quality_report or {})
     summary = dict(report.get("summary", {}))
     mode = report.get("mode")
@@ -62,11 +74,11 @@ def build_read_model(
 
 
 def validate_read_model_contract(payload: dict[str, Any]) -> list[str]:
+    """Validate read-model contract expected by prototype consumers."""
     errors: list[str] = []
     model = dict(payload or {})
 
-    required_top = ("schema_version", "generated_at_utc", "source", "board", "task_details", "alerts", "quality_summary")
-    for key in required_top:
+    for key in REQUIRED_TOP_LEVEL_FIELDS:
         if key not in model:
             errors.append(f"missing_top_level_field:{key}")
 
