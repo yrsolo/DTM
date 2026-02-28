@@ -1,4 +1,4 @@
-# DTM-122: Stage 12 deep cleanup for module `agent.build_stage12_audit_matrix`
+﻿# DTM-122: Stage 12 deep cleanup for module `agent.build_stage12_audit_matrix`
 
 ## Context
 - Stage 12 switched to deep per-module execution model.
@@ -24,11 +24,11 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-122`).
-- [x] Jira status set to `? ??????????`.
+- [x] Jira status set to `В работе`.
 - [ ] Module cleanup patch applied.
 - [ ] Relevant checks passed.
 - [ ] Jira evidence comment added.
-- [ ] Jira moved to `??????`.
+- [ ] Jira moved to `Готово`.
 - [ ] Telegram completion sent.
 
 ## Work log

@@ -4,7 +4,7 @@ Generated from `doc/governance/stage12_module_jira_map.json`.
 
 ## Baseline
 - Module tasks created: 53.
-- Active module: `DTM-121` / `core.errors`.
+- Active module: `DTM-122` / `agent.build_stage12_audit_matrix`.
 - Rule: one active module task at a time (WIP=1), others stay in `todo`.
 
 ## Queue
@@ -28,8 +28,8 @@ Generated from `doc/governance/stage12_module_jira_map.json`.
 | 16 | `DTM-118` | `core.sheet_renderer` | 8 | `done` | `agile/tasks/DTM-118_stage12-module-core-sheet_renderer.md` |
 | 17 | `DTM-119` | `agent.notify_owner` | 7 | `done` | `agile/tasks/DTM-119_stage12-module-agent-notify_owner.md` |
 | 18 | `DTM-120` | `agent.reminder_fallback_smoke` | 7 | `done` | `agile/tasks/DTM-120_stage12-module-agent-reminder_fallback_smoke.md` |
-| 19 | `DTM-121` | `core.errors` | 7 | `in_progress` | `agile/tasks/DTM-121_stage12-module-core-errors.md` |
-| 20 | `DTM-122` | `agent.build_stage12_audit_matrix` | 6 | `todo` | `agile/tasks/DTM-122_stage12-module-agent-build_stage12_audit_matrix.md` |
+| 19 | `DTM-121` | `core.errors` | 7 | `done` | `agile/tasks/DTM-121_stage12-module-core-errors.md` |
+| 20 | `DTM-122` | `agent.build_stage12_audit_matrix` | 6 | `in_progress` | `agile/tasks/DTM-122_stage12-module-agent-build_stage12_audit_matrix.md` |
 | 21 | `DTM-123` | `agent.capture_baseline` | 6 | `todo` | `agile/tasks/DTM-123_stage12-module-agent-capture_baseline.md` |
 | 22 | `DTM-124` | `agent.deploy_run_evidence_report` | 6 | `todo` | `agile/tasks/DTM-124_stage12-module-agent-deploy_run_evidence_report.md` |
 | 23 | `DTM-125` | `agent.stage8_shadow_run_evidence` | 6 | `todo` | `agile/tasks/DTM-125_stage12-module-agent-stage8_shadow_run_evidence.md` |

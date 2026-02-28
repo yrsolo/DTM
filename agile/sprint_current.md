@@ -7,15 +7,16 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] DTM-121 - Stage 12 deep module cleanup: `core.errors`.
+- [IN_PROGRESS] DTM-122 - Stage 12 deep module cleanup: `agent.build_stage12_audit_matrix`.
 
 ## Stage 12 Estimate (Dynamic)
 - Baseline estimate: 57 tasks (kickoff, matrix, transition, 53 module tasks, closeout).
-- Done: 21
-- Remaining: 36
+- Done: 22
+- Remaining: 35
 - Rule: update `Done/Remaining` after each completed Stage 12 task.
 
 ## Done
+- [DONE] DTM-121 - Stage 12 deep module cleanup completed for `core.errors`.
 - [DONE] DTM-120 - Stage 12 deep module cleanup completed for `agent.reminder_fallback_smoke`.
 - [DONE] DTM-119 - Stage 12 deep module cleanup completed for `agent.notify_owner`.
 - [DONE] DTM-118 - Stage 12 deep module cleanup completed for `core.sheet_renderer`.
@@ -65,13 +66,13 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-122: deep module cleanup `agent.build_stage12_audit_matrix`.
 - [TODO] DTM-123: deep module cleanup `agent.capture_baseline`.
 - [TODO] DTM-124: deep module cleanup `agent.deploy_run_evidence_report`.
 - [TODO] DTM-125: deep module cleanup `agent.stage8_shadow_run_evidence`.
+- [TODO] DTM-126: deep module cleanup `agent.sync_lockbox_from_env`.
 
 ## Active Task Files
-- `agile/tasks/DTM-121_stage12-module-core-errors.md`
+- `agile/tasks/DTM-122_stage12-module-agent-build-stage12-audit-matrix.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`

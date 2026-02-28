@@ -67,7 +67,8 @@ Planned next:
 - `DTM-118` (`core.sheet_renderer`) completed.
 - `DTM-119` (`agent.notify_owner`) completed.
 - `DTM-120` (`agent.reminder_fallback_smoke`) completed.
-- Active execution task: `DTM-121` (`core.errors`).
+- `DTM-121` (`core.errors`) completed.
+- Active execution task: `DTM-122` (`agent.build_stage12_audit_matrix`).
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).

@@ -25,14 +25,18 @@
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-121`).
 - [x] Jira status set to `В работе`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `Готово`.
-- [ ] Telegram completion sent.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `core.errors`.
+- 2026-02-28: Added module-level and dataclass-level docstrings to make error-contract intent explicit.
+- 2026-02-28: Ran check:
+  - `python -m compileall core`
+- 2026-02-28: Added Jira evidence, moved issue to `Готово`, owner completion notification sent.
 
 ## Links
 - Jira: DTM-121

@@ -1,3 +1,5 @@
+"""Domain-level error contracts for data quality and parsing issues."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -9,6 +11,8 @@ class DataQualityError(ValueError):
 
 @dataclass(frozen=True)
 class MissingRequiredColumnsError(DataQualityError):
+    """Raised when required headers are missing in an input worksheet."""
+
     entity_name: str
     spreadsheet_name: str
     sheet_name: str
@@ -26,6 +30,8 @@ class MissingRequiredColumnsError(DataQualityError):
 
 @dataclass(frozen=True)
 class RowValidationIssue:
+    """Represents a non-fatal malformed input row skipped during parsing."""
+
     entity_name: str
     row_number: int
     reason: str
@@ -38,6 +44,8 @@ class RowValidationIssue:
 
 @dataclass(frozen=True)
 class TimingParseIssue:
+    """Represents a non-fatal timing parser issue for one input row."""
+
     row_number: int
     timing_line: str
     normalized_date: str
