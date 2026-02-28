@@ -4,7 +4,7 @@ Generated from `doc/governance/stage12_module_jira_map.json`.
 
 ## Baseline
 - Module tasks created: 53.
-- Active module: `DTM-125` / `agent.stage8_shadow_run_evidence`.
+- Active module: `DTM-127` / `web_prototype.loader`.
 - Rule: one active module task at a time (WIP=1), others stay in `todo`.
 
 ## Queue
@@ -32,9 +32,9 @@ Generated from `doc/governance/stage12_module_jira_map.json`.
 | 20 | `DTM-122` | `agent.build_stage12_audit_matrix` | 6 | `done` | `agile/tasks/DTM-122_stage12-module-agent-build_stage12_audit_matrix.md` |
 | 21 | `DTM-123` | `agent.capture_baseline` | 6 | `done` | `agile/tasks/DTM-123_stage12-module-agent-capture_baseline.md` |
 | 22 | `DTM-124` | `agent.deploy_run_evidence_report` | 6 | `done` | `agile/tasks/DTM-124_stage12-module-agent-deploy_run_evidence_report.md` |
-| 23 | `DTM-125` | `agent.stage8_shadow_run_evidence` | 6 | `in_progress` | `agile/tasks/DTM-125_stage12-module-agent-stage8_shadow_run_evidence.md` |
-| 24 | `DTM-126` | `agent.sync_lockbox_from_env` | 6 | `todo` | `agile/tasks/DTM-126_stage12-module-agent-sync_lockbox_from_env.md` |
-| 25 | `DTM-127` | `web_prototype.loader` | 6 | `todo` | `agile/tasks/DTM-127_stage12-module-web_prototype-loader.md` |
+| 23 | `DTM-125` | `agent.stage8_shadow_run_evidence` | 6 | `done` | `agile/tasks/DTM-125_stage12-module-agent-stage8_shadow_run_evidence.md` |
+| 24 | `DTM-126` | `agent.sync_lockbox_from_env` | 6 | `done` | `agile/tasks/DTM-126_stage12-module-agent-sync_lockbox_from_env.md` |
+| 25 | `DTM-127` | `web_prototype.loader` | 6 | `in_progress` | `agile/tasks/DTM-127_stage12-module-web_prototype-loader.md` |
 | 26 | `DTM-128` | `agent.prepare_web_prototype_payload` | 4 | `todo` | `agile/tasks/DTM-128_stage12-module-agent-prepare_web_prototype_payload.md` |
 | 27 | `DTM-129` | `core.read_model` | 4 | `todo` | `agile/tasks/DTM-129_stage12-module-core-read_model.md` |
 | 28 | `DTM-130` | `utils.storage` | 4 | `todo` | `agile/tasks/DTM-130_stage12-module-utils-storage.md` |

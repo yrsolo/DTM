@@ -7,15 +7,17 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] DTM-125 - Stage 12 deep module cleanup: `agent.stage8_shadow_run_evidence`.
+- [IN_PROGRESS] DTM-127 - Stage 12 deep module cleanup: `web_prototype.loader`.
 
 ## Stage 12 Estimate (Dynamic)
 - Baseline estimate: 57 tasks (kickoff, matrix, transition, 53 module tasks, closeout).
-- Done: 25
-- Remaining: 32
+- Done: 27
+- Remaining: 30
 - Rule: update `Done/Remaining` after each completed Stage 12 task.
 
 ## Done
+- [DONE] DTM-126 - Stage 12 deep module cleanup completed for `agent.sync_lockbox_from_env`.
+- [DONE] DTM-125 - Stage 12 deep module cleanup completed for `agent.stage8_shadow_run_evidence`.
 - [DONE] DTM-124 - Stage 12 deep module cleanup completed for `agent.deploy_run_evidence_report`.
 - [DONE] DTM-123 - Stage 12 deep module cleanup completed for `agent.capture_baseline`.
 - [DONE] DTM-122 - Stage 12 deep module cleanup completed for `agent.build_stage12_audit_matrix`.
@@ -69,13 +71,13 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-126: deep module cleanup `agent.sync_lockbox_from_env`.
-- [TODO] DTM-127: deep module cleanup `web_prototype.loader`.
 - [TODO] DTM-128: deep module cleanup `agent.prepare_web_prototype_payload`.
 - [TODO] DTM-129: deep module cleanup `core.read_model`.
+- [TODO] DTM-130: deep module cleanup `utils.storage`.
+- [TODO] DTM-131: deep module cleanup `agent.build_fixture_bundle`.
 
 ## Active Task Files
-- `agile/tasks/DTM-125_stage12-module-agent-stage8-shadow-run-evidence.md`
+- `agile/tasks/DTM-127_stage12-module-web-prototype-loader.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`

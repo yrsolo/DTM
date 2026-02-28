@@ -71,7 +71,9 @@ Planned next:
 - `DTM-122` (`agent.build_stage12_audit_matrix`) completed.
 - `DTM-123` (`agent.capture_baseline`) completed.
 - `DTM-124` (`agent.deploy_run_evidence_report`) completed.
-- Active execution task: `DTM-125` (`agent.stage8_shadow_run_evidence`).
+- `DTM-125` (`agent.stage8_shadow_run_evidence`) completed.
+- `DTM-126` (`agent.sync_lockbox_from_env`) completed.
+- Active execution task: `DTM-127` (`web_prototype.loader`).
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).
