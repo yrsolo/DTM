@@ -24,15 +24,18 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-111`).
-- [x] Jira status set to `? ??????????`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `??????`.
-- [ ] Telegram completion sent.
+- [x] Jira status set to `Готово`.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `core.adapters`.
+- 2026-02-28: Completed deep cleanup patch for `core.adapters` (typed protocol docs and explicit no-op logger behavior).
+- 2026-02-28: Validation passed: `python -m compileall core`, `agent/render_adapter_smoke.py`.
+- 2026-02-28: Added Jira evidence, moved task to `Готово`, sent owner Telegram completion note.
 
 ## Links
 - Jira: DTM-111

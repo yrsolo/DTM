@@ -54,7 +54,12 @@ Planned next:
 - `DTM-105` (`core.repository`) completed.
 - `DTM-106` (`agent.render_adapter_smoke`) completed.
 - `DTM-107` (`utils.func`) completed.
-- Active execution task: `DTM-108` (`agent.reminder_retry_backoff_smoke`).
+- `DTM-108` (`agent.reminder_retry_backoff_smoke`) completed.
+- `DTM-109` (`utils.service`) completed.
+- `DTM-110` (`core.people`) completed.
+- `DTM-111` (`core.adapters`) completed.
+- `DTM-112` (`agent.reminder_delivery_counters_smoke`) completed.
+- Active execution task: `DTM-113` (`agent.reminder_idempotency_smoke`).
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).

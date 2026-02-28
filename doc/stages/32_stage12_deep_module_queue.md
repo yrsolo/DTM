@@ -4,7 +4,7 @@ Generated from `doc/governance/stage12_module_jira_map.json`.
 
 ## Baseline
 - Module tasks created: 53.
-- Active module: `DTM-108` / `agent.reminder_retry_backoff_smoke`.
+- Active module: `DTM-113` / `agent.reminder_idempotency_smoke`.
 - Rule: one active module task at a time (`? ??????`), others stay in `? ??????????`.
 
 ## Queue
@@ -15,12 +15,12 @@ Generated from `doc/governance/stage12_module_jira_map.json`.
 | 3 | `DTM-105` | `core.repository` | 33 | ?????? | `agile/tasks/DTM-105_stage12-module-core-repository.md` |
 | 4 | `DTM-106` | `agent.render_adapter_smoke` | 26 | ?????? | `agile/tasks/DTM-106_stage12-module-agent-render-adapter-smoke.md` |
 | 5 | `DTM-107` | `utils.func` | 22 | ?????? | `agile/tasks/DTM-107_stage12-module-utils-func.md` |
-| 6 | `DTM-108` | `agent.reminder_retry_backoff_smoke` | 18 | ? ?????? | `agile/tasks/DTM-108_stage12-module-agent-reminder-retry-backoff-smoke.md` |
-| 7 | `DTM-109` | `utils.service` | 17 | ? ?????????? | `agile/tasks/DTM-109_stage12-module-utils-service.md` |
-| 8 | `DTM-110` | `core.people` | 16 | ? ?????????? | `agile/tasks/DTM-110_stage12-module-core-people.md` |
-| 9 | `DTM-111` | `core.adapters` | 15 | ? ?????????? | `agile/tasks/DTM-111_stage12-module-core-adapters.md` |
-| 10 | `DTM-112` | `agent.reminder_delivery_counters_smoke` | 10 | ? ?????????? | `agile/tasks/DTM-112_stage12-module-agent-reminder-delivery-counters-smoke.md` |
-| 11 | `DTM-113` | `agent.reminder_idempotency_smoke` | 10 | ? ?????????? | `agile/tasks/DTM-113_stage12-module-agent-reminder-idempotency-smoke.md` |
+| 6 | `DTM-108` | `agent.reminder_retry_backoff_smoke` | 18 | ?????? | `agile/tasks/DTM-108_stage12-module-agent-reminder-retry-backoff-smoke.md` |
+| 7 | `DTM-109` | `utils.service` | 17 | ?????? | `agile/tasks/DTM-109_stage12-module-utils-service.md` |
+| 8 | `DTM-110` | `core.people` | 16 | ?????? | `agile/tasks/DTM-110_stage12-module-core-people.md` |
+| 9 | `DTM-111` | `core.adapters` | 15 | ?????? | `agile/tasks/DTM-111_stage12-module-core-adapters.md` |
+| 10 | `DTM-112` | `agent.reminder_delivery_counters_smoke` | 10 | ?????? | `agile/tasks/DTM-112_stage12-module-agent-reminder-delivery-counters-smoke.md` |
+| 11 | `DTM-113` | `agent.reminder_idempotency_smoke` | 10 | ? ?????? | `agile/tasks/DTM-113_stage12-module-agent-reminder-idempotency-smoke.md` |
 | 12 | `DTM-114` | `core.contracts` | 10 | ? ?????????? | `agile/tasks/DTM-114_stage12-module-core-contracts.md` |
 | 13 | `DTM-115` | `agent.reminder_alert_evaluator` | 9 | ? ?????????? | `agile/tasks/DTM-115_stage12-module-agent-reminder-alert-evaluator.md` |
 | 14 | `DTM-116` | `core.planner` | 9 | ? ?????????? | `agile/tasks/DTM-116_stage12-module-core-planner.md` |

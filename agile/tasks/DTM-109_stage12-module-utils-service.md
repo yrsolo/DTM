@@ -24,15 +24,18 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-109`).
-- [x] Jira status set to `? ??????????`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `??????`.
-- [ ] Telegram completion sent.
+- [x] Jira status set to `Готово`.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `utils.service`.
+- 2026-02-28: Completed deep cleanup patch for `utils.service` (typing/readability hardening in service API and write-path methods).
+- 2026-02-28: Validation passed: `python -m compileall utils`, `agent/read_model_builder_smoke.py`, `agent/render_adapter_smoke.py`.
+- 2026-02-28: Added Jira evidence, moved task to `Готово`, sent owner Telegram completion note.
 
 ## Links
 - Jira: DTM-109

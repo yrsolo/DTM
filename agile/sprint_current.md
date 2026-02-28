@@ -7,15 +7,20 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] DTM-108 - Stage 12 deep module cleanup: `agent.reminder_retry_backoff_smoke`.
+- [IN_PROGRESS] DTM-113 - Stage 12 deep module cleanup: `agent.reminder_idempotency_smoke`.
 
 ## Stage 12 Estimate (Dynamic)
 - Baseline estimate: 57 tasks (kickoff, matrix, transition, 53 module tasks, closeout).
-- Done: 8
-- Remaining: 49
+- Done: 13
+- Remaining: 44
 - Rule: update `Done/Remaining` after each completed Stage 12 task.
 
 ## Done
+- [DONE] DTM-112 - Stage 12 deep module cleanup completed for `agent.reminder_delivery_counters_smoke`.
+- [DONE] DTM-111 - Stage 12 deep module cleanup completed for `core.adapters`.
+- [DONE] DTM-110 - Stage 12 deep module cleanup completed for `core.people`.
+- [DONE] DTM-109 - Stage 12 deep module cleanup completed for `utils.service`.
+- [DONE] DTM-108 - Stage 12 deep module cleanup completed for `agent.reminder_retry_backoff_smoke`.
 - [DONE] DTM-107 - Stage 12 deep module cleanup completed for `utils.func`.
 - [DONE] DTM-106 - Stage 12 deep module cleanup completed for `agent.render_adapter_smoke`.
 - [DONE] DTM-105 - Stage 12 deep module cleanup completed for `core.repository`.
@@ -52,13 +57,13 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-109: deep module cleanup `utils.service`.
-- [TODO] DTM-110: deep module cleanup `core.people`.
-- [TODO] DTM-111: deep module cleanup `core.adapters`.
-- [TODO] DTM-112: deep module cleanup `agent.reminder_delivery_counters_smoke`.
+- [TODO] DTM-114: deep module cleanup `core.contracts`.
+- [TODO] DTM-115: deep module cleanup `agent.reminder_alert_evaluator`.
+- [TODO] DTM-116: deep module cleanup `core.planner`.
+- [TODO] DTM-117: deep module cleanup `agent.reminder_parallel_enhancer_smoke`.
 
 ## Active Task Files
-- `agile/tasks/DTM-108_stage12-module-agent-reminder-retry-backoff-smoke.md`
+- `agile/tasks/DTM-113_stage12-module-agent-reminder-idempotency-smoke.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`
