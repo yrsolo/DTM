@@ -1,8 +1,12 @@
 """Local smoke for in-run idempotent reminder delivery guard."""
 
-from pathlib import Path
+from __future__ import annotations
+
+import asyncio
 import sys
+from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
@@ -12,14 +16,14 @@ from core.reminder import Reminder
 
 
 class EchoChatAgent:
-    async def chat(self, messages, model=None):
+    async def chat(self, messages: Any, model: str | None = None) -> str:
         if isinstance(messages, list):
-            return messages[-1].get("content")
+            return str(messages[-1].get("content"))
         return str(messages)
 
 
 class FakeTaskRepository:
-    def get_tasks_by_date(self, date):
+    def get_tasks_by_date(self, date: Any) -> list[Any]:
         return [
             SimpleNamespace(
                 designer="Alice",
@@ -32,20 +36,27 @@ class FakeTaskRepository:
 
 
 class FakePeopleManager:
-    def get_person(self, designer_name):
+    def get_person(self, designer_name: str) -> Any:
+        _ = designer_name
         return SimpleNamespace(chat_id=555001, vacation="нет")
 
 
 class FakeTelegramAdapter:
-    def __init__(self):
-        self.sent = []
+    def __init__(self) -> None:
+        self.sent: list[tuple[Any, str]] = []
 
-    async def send_message(self, chat_id, text, parse_mode="Markdown"):
+    async def send_message(
+        self,
+        chat_id: Any,
+        text: str,
+        parse_mode: str | None = "Markdown",
+    ) -> dict[str, bool]:
+        _ = parse_mode
         self.sent.append((chat_id, text))
         return {"ok": True}
 
 
-async def run():
+async def run() -> None:
     tg = FakeTelegramAdapter()
     reminder = Reminder(
         task_repository=FakeTaskRepository(),
@@ -67,6 +78,4 @@ async def run():
 
 
 if __name__ == "__main__":
-    import asyncio
-
     asyncio.run(run())

@@ -24,15 +24,18 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-113`).
-- [x] Jira status set to `В работе`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `Готово`.
-- [ ] Telegram completion sent.
+- [x] Jira status set to `Готово`.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `agent.reminder_idempotency_smoke`.
+- 2026-02-28: Completed deep cleanup patch (typed/readable smoke harness and fixture contracts).
+- 2026-02-28: Validation passed: `python -m compileall agent`, `agent/reminder_idempotency_smoke.py`.
+- 2026-02-28: Added Jira evidence, moved task to `Готово`, sent owner Telegram completion note.
 
 ## Links
 - Jira: DTM-113

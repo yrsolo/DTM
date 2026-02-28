@@ -1,4 +1,4 @@
-# DTM-116: Stage 12 deep cleanup for module `core.planner`
+﻿# DTM-116: Stage 12 deep cleanup for module `core.planner`
 
 ## Context
 - Stage 12 switched to deep per-module execution model.
@@ -24,15 +24,22 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-116`).
-- [x] Jira status set to `? ??????????`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `??????`.
-- [ ] Telegram completion sent.
+- [x] Jira status set to `В работе`.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `core.planner`.
+- 2026-02-28: Added `_counter_value` helper and `CounterValue` alias for safer counter extraction.
+- 2026-02-28: Simplified summary counter collection in `build_quality_report` and added concise facade method docstrings.
+- 2026-02-28: Ran checks:
+  - `python -m compileall core`
+  - `python -m compileall agent`
+  - `.venv\Scripts\python.exe agent\reminder_alert_evaluator_smoke.py`
+- 2026-02-28: Added Jira evidence, moved issue to `Готово`, owner completion notification sent.
 
 ## Links
 - Jira: DTM-116

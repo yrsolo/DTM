@@ -1,7 +1,7 @@
-"""Send owner decision request notifications to Telegram.
+﻿"""Send owner decision request notifications to Telegram.
 
 Usage:
-    python agent/notify_owner.py --title "Decision needed" --details "Pick A or B"
+    python agent/notify_owner.py --title "❓ Нужен выбор" --details "Опиши решение"
 """
 
 from __future__ import annotations
@@ -16,8 +16,8 @@ from urllib.error import HTTPError
 
 from dotenv import load_dotenv
 
-CyrillicPattern = re.compile(r"[А-Яа-яЁё]")
-LatinPattern = re.compile(r"[A-Za-z]")
+CYRILLIC_PATTERN = re.compile(r"[А-Яа-яЁё]")
+LATIN_PATTERN = re.compile(r"[A-Za-z]")
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -27,7 +27,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--options",
         default="",
-        help="Optional short options, e.g. '1) keep legacy; 2) refactor now'",
+        help="Optional short options, e.g. '1) оставить как есть; 2) исправить сейчас'",
     )
     parser.add_argument(
         "--context",
@@ -38,6 +38,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _safe_print(text: str) -> None:
+    """Print text safely on consoles with narrow encodings."""
     try:
         print(text)
     except UnicodeEncodeError:
@@ -50,9 +51,9 @@ def _validate_ru_field(name: str, value: str, required: bool = True) -> None:
         raise ValueError(f"Поле '{name}' не может быть пустым")
     if not text:
         return
-    if LatinPattern.search(text):
+    if LATIN_PATTERN.search(text):
         raise ValueError(f"Поле '{name}' должно содержать только русский текст (без латиницы)")
-    if not CyrillicPattern.search(text):
+    if not CYRILLIC_PATTERN.search(text):
         raise ValueError(f"Поле '{name}' должно содержать русский текст")
 
 
@@ -80,6 +81,7 @@ def _send_message(token: str, chat_id: str, message: str) -> None:
         }
     ).encode("utf-8")
     request = urllib.request.Request(endpoint, data=payload, method="POST")
+
     try:
         with urllib.request.urlopen(request, timeout=20) as response:
             body = response.read().decode("utf-8", errors="replace")
@@ -111,7 +113,11 @@ def main() -> int:
         _safe_print(str(exc))
         return 2
 
-    lines = ["DTM агент: требуется решение владельца", f"Заголовок: {args.title}", f"Детали: {args.details}"]
+    lines = [
+        "DTM агент: требуется решение владельца",
+        f"Заголовок: {args.title}",
+        f"Детали: {args.details}",
+    ]
     if args.options:
         lines.append(f"Варианты: {args.options}")
     if args.context:

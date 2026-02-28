@@ -1,326 +1,326 @@
 {
   "created": 53,
   "total": 53,
-  "active_key": "DTM-113",
-  "active_module": "agent.reminder_idempotency_smoke",
+  "active_key": "DTM-121",
+  "active_module": "core.errors",
   "mapping": [
     {
       "module": "core.reminder",
       "items": 39,
       "key": "DTM-103",
-      "status": "??????"
+      "status": "done"
     },
     {
       "module": "core.manager",
       "items": 34,
       "key": "DTM-104",
-      "status": "??????"
+      "status": "done"
     },
     {
       "module": "core.repository",
       "items": 33,
       "key": "DTM-105",
-      "status": "??????"
+      "status": "done"
     },
     {
       "module": "agent.render_adapter_smoke",
       "items": 26,
       "key": "DTM-106",
-      "status": "??????"
+      "status": "done"
     },
     {
       "module": "utils.func",
       "items": 22,
       "key": "DTM-107",
-      "status": "??????"
+      "status": "done"
     },
     {
       "module": "agent.reminder_retry_backoff_smoke",
       "items": 18,
       "key": "DTM-108",
-      "status": "??????"
+      "status": "done"
     },
     {
       "module": "utils.service",
       "items": 17,
       "key": "DTM-109",
-      "status": "??????"
+      "status": "done"
     },
     {
       "module": "core.people",
       "items": 16,
       "key": "DTM-110",
-      "status": "??????"
+      "status": "done"
     },
     {
       "module": "core.adapters",
       "items": 15,
       "key": "DTM-111",
-      "status": "??????"
+      "status": "done"
     },
     {
       "module": "agent.reminder_delivery_counters_smoke",
       "items": 10,
       "key": "DTM-112",
-      "status": "??????"
+      "status": "done"
     },
     {
       "module": "agent.reminder_idempotency_smoke",
       "items": 10,
       "key": "DTM-113",
-      "status": "? ??????"
+      "status": "done"
     },
     {
       "module": "core.contracts",
       "items": 10,
       "key": "DTM-114",
-      "status": "? ??????????"
+      "status": "done"
     },
     {
       "module": "agent.reminder_alert_evaluator",
       "items": 9,
       "key": "DTM-115",
-      "status": "? ??????????"
+      "status": "done"
     },
     {
       "module": "core.planner",
       "items": 9,
       "key": "DTM-116",
-      "status": "? ??????????"
+      "status": "done"
     },
     {
       "module": "agent.reminder_parallel_enhancer_smoke",
       "items": 8,
       "key": "DTM-117",
-      "status": "? ??????????"
+      "status": "done"
     },
     {
       "module": "core.sheet_renderer",
       "items": 8,
       "key": "DTM-118",
-      "status": "? ??????????"
+      "status": "done"
     },
     {
       "module": "agent.notify_owner",
       "items": 7,
       "key": "DTM-119",
-      "status": "? ??????????"
+      "status": "done"
     },
     {
       "module": "agent.reminder_fallback_smoke",
       "items": 7,
       "key": "DTM-120",
-      "status": "? ??????????"
+      "status": "done"
     },
     {
       "module": "core.errors",
       "items": 7,
       "key": "DTM-121",
-      "status": "? ??????????"
+      "status": "in_progress"
     },
     {
       "module": "agent.build_stage12_audit_matrix",
       "items": 6,
       "key": "DTM-122",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.capture_baseline",
       "items": 6,
       "key": "DTM-123",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.deploy_run_evidence_report",
       "items": 6,
       "key": "DTM-124",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.stage8_shadow_run_evidence",
       "items": 6,
       "key": "DTM-125",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.sync_lockbox_from_env",
       "items": 6,
       "key": "DTM-126",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "web_prototype.loader",
       "items": 6,
       "key": "DTM-127",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.prepare_web_prototype_payload",
       "items": 4,
       "key": "DTM-128",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "core.read_model",
       "items": 4,
       "key": "DTM-129",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "utils.storage",
       "items": 4,
       "key": "DTM-130",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.build_fixture_bundle",
       "items": 3,
       "key": "DTM-131",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.notify_owner_payload_smoke",
       "items": 3,
       "key": "DTM-132",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "core.fixture_bundle",
       "items": 3,
       "key": "DTM-133",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "core.schema_snapshot",
       "items": 3,
       "key": "DTM-134",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.invoke_function_smoke",
       "items": 2,
       "key": "DTM-135",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.load_prototype_payload",
       "items": 2,
       "key": "DTM-136",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.prepare_web_prototype_payload_smoke",
       "items": 2,
       "key": "DTM-137",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.prototype_loader_smoke",
       "items": 2,
       "key": "DTM-138",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.reminder_alert_evaluator_smoke",
       "items": 2,
       "key": "DTM-139",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.reminder_sli_trend_persistence_smoke",
       "items": 2,
       "key": "DTM-140",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.run_web_prototype_server",
       "items": 2,
       "key": "DTM-141",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.stage8_shadow_run_evidence_smoke",
       "items": 2,
       "key": "DTM-142",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "config.constants",
       "items": 2,
       "key": "DTM-143",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "core.bootstrap",
       "items": 2,
       "key": "DTM-144",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "core.render_contracts",
       "items": 2,
       "key": "DTM-145",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "core.use_cases",
       "items": 2,
       "key": "DTM-146",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.deploy_run_evidence_report_smoke",
       "items": 1,
       "key": "DTM-147",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.fixture_bundle_smoke",
       "items": 1,
       "key": "DTM-148",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.read_model_builder_smoke",
       "items": 1,
       "key": "DTM-149",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.read_model_contract_compat_smoke",
       "items": 1,
       "key": "DTM-150",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.read_model_publication_smoke",
       "items": 1,
       "key": "DTM-151",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.reminder_alert_review_flow_smoke",
       "items": 1,
       "key": "DTM-152",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.reminder_sli_summary_smoke",
       "items": 1,
       "key": "DTM-153",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.schema_snapshot_smoke",
       "items": 1,
       "key": "DTM-154",
-      "status": "? ??????????"
+      "status": "todo"
     },
     {
       "module": "agent.web_prototype_assets_smoke",
       "items": 1,
       "key": "DTM-155",
-      "status": "? ??????????"
+      "status": "todo"
     }
   ]
 }

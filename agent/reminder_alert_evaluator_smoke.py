@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-import tempfile
-from pathlib import Path
+import io
 import json
 import sys
+import tempfile
 import time
-import io
 from contextlib import redirect_stdout
+from pathlib import Path
+from typing import Any
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
@@ -24,41 +25,43 @@ from agent.reminder_alert_evaluator import (
 )
 
 
-def _write_quality_report(path: Path, attemptable: int, delivery_rate, send_errors: int) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    payload = {
-        "mode": "reminders-only",
+def _quality_report_summary(attemptable: int, delivery_rate: float | None, send_errors: int) -> dict[str, Any]:
+    return {
         "summary": {
             "reminder_delivery_attemptable_count": attemptable,
             "reminder_delivery_rate": delivery_rate,
             "reminder_send_error_count": send_errors,
-        },
+        }
+    }
+
+
+def _write_quality_report(path: Path, attemptable: int, delivery_rate: float | None, send_errors: int) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "mode": "reminders-only",
+        **_quality_report_summary(attemptable, delivery_rate, send_errors),
     }
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def run() -> None:
-    info = evaluate_thresholds({"summary": {"reminder_delivery_attemptable_count": 2}})
+    info = evaluate_thresholds(_quality_report_summary(attemptable=2, delivery_rate=None, send_errors=0))
     assert info["level"] == "INFO_ONLY", info
 
-    warn = evaluate_thresholds(
-        {"summary": {"reminder_delivery_attemptable_count": 10, "reminder_delivery_rate": 0.97, "reminder_send_error_count": 0}}
-    )
+    warn = evaluate_thresholds(_quality_report_summary(attemptable=10, delivery_rate=0.97, send_errors=0))
     assert warn["level"] == "WARN", warn
 
     critical_rate = evaluate_thresholds(
-        {"summary": {"reminder_delivery_attemptable_count": 10, "reminder_delivery_rate": 0.9, "reminder_send_error_count": 0}}
+        _quality_report_summary(attemptable=10, delivery_rate=0.9, send_errors=0)
     )
     assert critical_rate["level"] == "CRITICAL", critical_rate
 
     critical_errors = evaluate_thresholds(
-        {"summary": {"reminder_delivery_attemptable_count": 10, "reminder_delivery_rate": 1.0, "reminder_send_error_count": 4}}
+        _quality_report_summary(attemptable=10, delivery_rate=1.0, send_errors=4)
     )
     assert critical_errors["level"] == "CRITICAL", critical_errors
 
-    ok = evaluate_thresholds(
-        {"summary": {"reminder_delivery_attemptable_count": 10, "reminder_delivery_rate": 0.99, "reminder_send_error_count": 0}}
-    )
+    ok = evaluate_thresholds(_quality_report_summary(attemptable=10, delivery_rate=0.99, send_errors=0))
     assert ok["level"] == "OK", ok
     assert should_notify("WARN", "warn") is True
     assert should_notify("CRITICAL", "critical") is True

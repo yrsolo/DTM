@@ -1,4 +1,4 @@
-# DTM-115: Stage 12 deep cleanup for module `agent.reminder_alert_evaluator`
+﻿# DTM-115: Stage 12 deep cleanup for module `agent.reminder_alert_evaluator`
 
 ## Context
 - Stage 12 switched to deep per-module execution model.
@@ -24,15 +24,20 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-115`).
-- [x] Jira status set to `? ??????????`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `??????`.
-- [ ] Telegram completion sent.
+- [x] Jira status set to `В работе`.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `agent.reminder_alert_evaluator`.
+- 2026-02-28: Added typed summary value normalization helper (`_summary_value`) and simplified threshold value extraction in `evaluate_thresholds`.
+- 2026-02-28: Ran smoke checks:
+  - `python -m compileall agent`
+  - `.venv\Scripts\python.exe agent\reminder_alert_evaluator_smoke.py`
+- 2026-02-28: Prepared Jira evidence and moved lifecycle to `Готово`; owner Telegram completion sent with Stage 12 counter update.
 
 ## Links
 - Jira: DTM-115
