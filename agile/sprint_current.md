@@ -7,15 +7,16 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] DTM-133 - Stage 12 deep module cleanup: `core.fixture_bundle`.
+- [IN_PROGRESS] DTM-134 - Stage 12 deep module cleanup: `core.schema_snapshot`.
 
 ## Stage 12 Estimate (Dynamic)
 - Baseline estimate: 57 tasks (kickoff, matrix, transition, 53 module tasks, closeout).
-- Done: 33
-- Remaining: 24
+- Done: 34
+- Remaining: 23
 - Rule: update `Done/Remaining` after each completed Stage 12 task.
 
 ## Done
+- [DONE] DTM-133 - Stage 12 deep module cleanup completed for `core.fixture_bundle`.
 - [DONE] DTM-132 - Stage 12 deep module cleanup completed for `agent.notify_owner_payload_smoke`.
 - [DONE] DTM-131 - Stage 12 deep module cleanup completed for `agent.build_fixture_bundle`.
 - [DONE] DTM-130 - Stage 12 deep module cleanup completed for `utils.storage`.
@@ -77,13 +78,13 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-134: deep module cleanup `core.schema_snapshot`.
 - [TODO] DTM-135: deep module cleanup `agent.invoke_function_smoke`.
 - [TODO] DTM-136: deep module cleanup `agent.load_prototype_payload`.
 - [TODO] DTM-137: deep module cleanup `agent.prepare_web_prototype_payload_smoke`.
+- [TODO] DTM-138: deep module cleanup `agent.prototype_loader_smoke`.
 
 ## Active Task Files
-- `agile/tasks/DTM-133_stage12-module-core-fixture-bundle.md`
+- `agile/tasks/DTM-134_stage12-module-core-schema-snapshot.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`

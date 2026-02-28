@@ -25,14 +25,19 @@
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-133`).
 - [x] Jira status set to `В работе`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `Готово`.
-- [ ] Telegram completion sent.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `core.fixture_bundle`.
+- 2026-02-28: Added helper extraction (`_utc_now_iso`, `_safe_list`, `_safe_dict`) and concise helper docstrings to reduce repetitive type guards.
+- 2026-02-28: Ran checks:
+  - `python -m compileall core`
+  - `.venv\\Scripts\\python.exe agent\\fixture_bundle_smoke.py`
+- 2026-02-28: Added Jira evidence, moved issue to `Готово`, owner completion notification sent.
 
 ## Links
 - Jira: DTM-133

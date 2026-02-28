@@ -4,7 +4,7 @@ Generated from `doc/governance/stage12_module_jira_map.json`.
 
 ## Baseline
 - Module tasks created: 53.
-- Active module: `DTM-133` / `core.fixture_bundle`.
+- Active module: `DTM-134` / `core.schema_snapshot`.
 - Rule: one active module task at a time (WIP=1), others stay in `todo`.
 
 ## Queue
@@ -40,8 +40,8 @@ Generated from `doc/governance/stage12_module_jira_map.json`.
 | 28 | `DTM-130` | `utils.storage` | 4 | `done` | `agile/tasks/DTM-130_stage12-module-utils-storage.md` |
 | 29 | `DTM-131` | `agent.build_fixture_bundle` | 3 | `done` | `agile/tasks/DTM-131_stage12-module-agent-build_fixture_bundle.md` |
 | 30 | `DTM-132` | `agent.notify_owner_payload_smoke` | 3 | `done` | `agile/tasks/DTM-132_stage12-module-agent-notify_owner_payload_smoke.md` |
-| 31 | `DTM-133` | `core.fixture_bundle` | 3 | `in_progress` | `agile/tasks/DTM-133_stage12-module-core-fixture_bundle.md` |
-| 32 | `DTM-134` | `core.schema_snapshot` | 3 | `todo` | `agile/tasks/DTM-134_stage12-module-core-schema_snapshot.md` |
+| 31 | `DTM-133` | `core.fixture_bundle` | 3 | `done` | `agile/tasks/DTM-133_stage12-module-core-fixture_bundle.md` |
+| 32 | `DTM-134` | `core.schema_snapshot` | 3 | `in_progress` | `agile/tasks/DTM-134_stage12-module-core-schema_snapshot.md` |
 | 33 | `DTM-135` | `agent.invoke_function_smoke` | 2 | `todo` | `agile/tasks/DTM-135_stage12-module-agent-invoke_function_smoke.md` |
 | 34 | `DTM-136` | `agent.load_prototype_payload` | 2 | `todo` | `agile/tasks/DTM-136_stage12-module-agent-load_prototype_payload.md` |
 | 35 | `DTM-137` | `agent.prepare_web_prototype_payload_smoke` | 2 | `todo` | `agile/tasks/DTM-137_stage12-module-agent-prepare_web_prototype_payload_smoke.md` |

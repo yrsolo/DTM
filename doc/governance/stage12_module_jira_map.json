@@ -1,8 +1,8 @@
 {
   "created": 53,
   "total": 53,
-  "active_key": "DTM-133",
-  "active_module": "core.fixture_bundle",
+  "active_key": "DTM-134",
+  "active_module": "core.schema_snapshot",
   "mapping": [
     {
       "module": "core.reminder",
@@ -188,13 +188,13 @@
       "module": "core.fixture_bundle",
       "items": 3,
       "key": "DTM-133",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "module": "core.schema_snapshot",
       "items": 3,
       "key": "DTM-134",
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "module": "agent.invoke_function_smoke",
