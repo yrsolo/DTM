@@ -32,14 +32,18 @@ This file explains where to read first and where to go for details.
 - Stage 7: `doc/stages/14_stage7_execution_plan.md` ... `doc/stages/18_stage7_closeout_and_stage8_handoff.md`
 - Stage 8: `doc/stages/19_stage8_execution_plan.md`, `doc/stages/20_stage8_closeout_and_stage9_handoff.md`
 - Stage 9 setup: `doc/ops/stage9_main_autodeploy_setup.md`
-- Stage 10: `doc/stages/21_stage9_closeout_and_stage10_handoff.md`, `doc/stages/22_stage10_execution_plan.md`
-- Stage 11: `doc/stages/23_stage10_closeout_and_stage11_handoff.md`, `doc/stages/24_stage11_retrospective_execution_plan.md`
-- Stage 11 closeout: `doc/stages/30_stage11_closeout_and_stage12_handoff.md`
-- Stage 12 quality sweep: `doc/stages/31_stage12_code_quality_execution_plan.md`, `doc/governance/stage12_code_quality_standard.md`
-- Stage 12 audit artifact: `doc/governance/stage12_module_audit_matrix.md`
-- Stage 12 deep queue: `doc/stages/32_stage12_deep_module_queue.md`, `doc/governance/stage12_module_jira_map.json`
-- Stage 10 ops drill: `doc/ops/stage10_function_rollback_drill.md`
-- Stage 10 owner quickstart: `doc/ops/stage10_owner_quickstart_checklist.md`
+- Stage 10: `doc/stages/21_stage9_closeout_and_stage10_handoff.md` ... `doc/stages/23_stage10_closeout_and_stage11_handoff.md`
+- Stage 11: `doc/stages/24_stage11_retrospective_execution_plan.md` ... `doc/stages/30_stage11_closeout_and_stage12_handoff.md`
+- Stage 12 quality sweep: `doc/stages/31_stage12_code_quality_execution_plan.md`, `doc/stages/32_stage12_deep_module_queue.md`, `doc/stages/33_stage12_closeout_and_stage13_handoff.md`
+- Stage 13: `doc/stages/34_stage13_execution_plan.md` ... `doc/stages/38_stage13_closeout_and_stage14_handoff.md`
+- Stage 14: `doc/stages/39_stage14_execution_plan.md` ... `doc/stages/42_stage14_closeout_and_stage15_handoff.md`
+- Stage 15: `doc/stages/43_stage15_execution_plan.md` ... `doc/stages/46_stage15_closeout_and_stage16_handoff.md`
+- Stage 16: `doc/stages/47_stage16_execution_plan.md` ... `doc/stages/50_stage16_closeout_and_stage17_handoff.md`
+- Stage 17: `doc/stages/51_stage17_execution_plan.md` ... `doc/stages/54_stage17_closeout_and_stage18_handoff.md`
+- Stage 18: `doc/stages/55_stage18_execution_plan.md` ... `doc/stages/58_stage18_closeout_and_stage19_handoff.md`
+- Stage 19: `doc/stages/59_stage19_execution_plan.md` ... `doc/stages/62_stage19_closeout_and_stage20_handoff.md`
+- Stage 20: `doc/stages/63_stage20_execution_plan.md` ... `doc/stages/66_stage20_closeout_and_stage21_handoff.md`
+- For current status and latest active stage, use `doc/03_reconstruction_backlog.md`.
 
 ## Historical Archives
 - Old detailed backlog snapshot:

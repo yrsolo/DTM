@@ -39,18 +39,12 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Production workflow is active.
 - Architecture is under phased reconstruction.
 - Legacy snapshot is kept in `old/` for controlled comparison during migration.
-- Stage 6 read-model JSON contract draft is documented in `doc/stages/11_stage6_read_model_contract.md`.
-- Stage 6 read-model builder is available in `core/read_model.py` (from current runtime artifacts).
-- Stage 6 UI baseline view specification is documented in `doc/stages/12_stage6_ui_view_spec.md`.
-- Stage 6 closeout and handoff checklist is documented in `doc/stages/13_stage6_closeout_and_handoff.md`.
-- Stage 7 execution plan and dynamic estimate baseline are documented in `doc/stages/14_stage7_execution_plan.md`.
-- Stage 7 consumer/storage policy is documented in `doc/stages/15_stage7_read_model_consumer_policy.md` (Object Storage primary for serverless runtime).
-- Stage 7 UI migration spike scope and acceptance checklist are documented in `doc/stages/16_stage7_ui_spike_scope_and_acceptance.md`.
-- Stage 7 shadow-run readiness checklist is documented in `doc/stages/17_stage7_shadow_run_readiness_checklist.md`.
-- Stage 7 closeout and Stage 8 handoff package is documented in `doc/stages/18_stage7_closeout_and_stage8_handoff.md`.
-- Stage 8 execution plan is documented in `doc/stages/19_stage8_execution_plan.md`.
-- Stage 8 closeout and Stage 9 handoff package is documented in `doc/stages/20_stage8_closeout_and_stage9_handoff.md`.
-- Stage 9 main auto-deploy setup for Yandex Cloud Function is documented in `doc/ops/stage9_main_autodeploy_setup.md`.
+- Stage 0-19 status and evidence index are tracked in `doc/03_reconstruction_backlog.md`.
+- Current sprint/task execution state is tracked in `agile/sprint_current.md`.
+- Main serverless deploy setup is in `doc/ops/stage9_main_autodeploy_setup.md`.
+- Deployment smoke and rollback runbooks are in:
+  - `doc/ops/stage9_deployment_smoke_checklist.md`
+  - `doc/ops/stage10_function_rollback_drill.md`
 - Stage 8 prototype loader utility: `agent/load_prototype_payload.py` (filesystem/Object Storage + schema gate).
 - Stage 8 static prototype assets: `web_prototype/static` (run local preview with `.venv\Scripts\python.exe agent\run_web_prototype_server.py`).
 - Stage 8 payload preparation helper: `.venv\Scripts\python.exe agent\prepare_web_prototype_payload.py --source-mode auto` (writes `web_prototype/static/prototype_payload.json`).

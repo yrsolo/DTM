@@ -1,21 +1,26 @@
 # Sprint Current
 
 ## Sprint Goal
-Complete Stage 19 provider failover policy contour: `draft_only` vs `provider` fallback mode with telemetry.
+Complete Stage 20 production-readiness hardening: documentation freshness, artifact hygiene, and release evidence package for confident `main` delivery.
 
 ## Capacity
 1 active task (strict WIP=1).
 
 ## Now
-- [DONE] DTM-191 - Stage 19 closeout and Stage 20 handoff package.
+- [DONE] DTM-196 - Stage 20 closeout and Stage 21 handoff package.
 
-## Stage 19 Estimate (Dynamic)
+## Stage 20 Estimate (Dynamic)
 - Baseline estimate: 5 tasks (kickoff, 3 execution slices, closeout).
 - Done: 5
 - Remaining: 0
-- Rule: update `Done/Remaining` after each completed Stage 19 task.
+- Rule: update `Done/Remaining` after each completed Stage 20 task.
 
 ## Done
+- [DONE] DTM-196 - Stage 20 closeout and Stage 21 handoff package.
+- [DONE] DTM-195 - Stage 20 pre-prod smoke run and release-readiness package.
+- [DONE] DTM-194 - Stage 20 documentation structure hygiene and stale-tail register.
+- [DONE] DTM-193 - Stage 20 doc/agile freshness and consistency audit.
+- [DONE] DTM-192 - Stage 20 kickoff and bounded execution queue.
 - [DONE] DTM-191 - Stage 19 closeout and Stage 20 handoff package.
 - [DONE] DTM-190 - Stage 19 docs and runbook refresh for failover policy.
 - [DONE] DTM-189 - Stage 19 smoke coverage for failover mode and bootstrap mapping.
@@ -136,11 +141,13 @@ Complete Stage 19 provider failover policy contour: `draft_only` vs `provider` f
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 20 kickoff: provider-level SLI thresholds and alert policy.
-- [TODO] Stage 20 kickoff: publish execution plan and bounded queue.
+- [TODO] Stage 21 kickoff: provider-level SLI threshold policy for OpenAI/Google/Yandex.
+- [TODO] Stage 21 alert profile tuning and provider incident runbook refresh.
+- [TODO] Stage 21 provider SLI regression smoke and evidence package.
+- [TODO] Stage 21 closeout and Stage 22 handoff package.
 
 ## Active Task Files
-- `agile/tasks/DTM-191_stage19-closeout-and-stage20-handoff.md`
+- `agile/tasks/DTM-196_stage20-closeout-and-stage21-handoff.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`
@@ -153,4 +160,5 @@ Complete Stage 19 provider failover policy contour: `draft_only` vs `provider` f
 - Jira is optional; tracking can run fully in `agile/sprint_current.md` + `agile/tasks/*.md`.
 - Stage-close communication must include owner-friendly summary of previous stage, next stage, task estimate, and explicit go/no-go request.
 - Minimal cloud render acceptance includes fresh corner timestamp (not stale) after live invoke.
+- Stage 20 production-readiness hardening completed; Stage 21 start requires explicit owner go/no-go.
 
