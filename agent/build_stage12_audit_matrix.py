@@ -5,39 +5,45 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Iterable
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TARGET_DIRS = ("core", "utils", "agent", "config", "web_prototype")
 OUTPUT_FILE = REPO_ROOT / "doc" / "governance" / "stage12_module_audit_matrix.md"
+SKIP_PARTS = {"__pycache__", ".venv", "venv"}
 
 
-@dataclass
+@dataclass(frozen=True)
 class Item:
+    """Single matrix entry for one discovered symbol."""
+
     kind: str
     qualified_name: str
 
 
 def _iter_py_files() -> list[Path]:
+    """Collect Python source files under target dirs excluding virtualenv/cache paths."""
     files: list[Path] = []
     for root_name in TARGET_DIRS:
         root = REPO_ROOT / root_name
         if not root.exists():
             continue
         for path in sorted(root.rglob("*.py")):
-            parts = set(path.parts)
-            if "__pycache__" in parts or ".venv" in parts or "venv" in parts:
+            if SKIP_PARTS.intersection(path.parts):
                 continue
             files.append(path)
     return files
 
 
 def _module_name(path: Path) -> str:
+    """Convert repository-relative path to dotted module name."""
     rel = path.relative_to(REPO_ROOT)
     return str(rel.with_suffix("")).replace("\\", ".").replace("/", ".")
 
 
 def _collect_items(path: Path) -> list[Item]:
+    """Parse one file and extract module-level functions/classes/methods."""
     source = path.read_text(encoding="utf-8-sig")
     try:
         tree = ast.parse(source, filename=str(path))
@@ -64,7 +70,15 @@ def _collect_items(path: Path) -> list[Item]:
     return items
 
 
+def _iter_render_rows(items_by_module: dict[str, list[Item]]) -> Iterable[str]:
+    """Yield markdown table rows for matrix items."""
+    for module in sorted(items_by_module):
+        for item in items_by_module[module]:
+            yield f"| `{module}` | {item.kind} | `{item.qualified_name}` | todo | todo | todo | |"
+
+
 def _render(items_by_module: dict[str, list[Item]]) -> str:
+    """Render markdown matrix content for discovered repository symbols."""
     lines: list[str] = []
     lines.append("# Stage 12 Module Audit Matrix")
     lines.append("")
@@ -73,11 +87,7 @@ def _render(items_by_module: dict[str, list[Item]]) -> str:
     lines.append("")
     lines.append("| module | item kind | item | typing | docstring | readability | notes |")
     lines.append("|---|---|---|---|---|---|---|")
-    for module in sorted(items_by_module):
-        for item in items_by_module[module]:
-            lines.append(
-                f"| `{module}` | {item.kind} | `{item.qualified_name}` | todo | todo | todo | |"
-            )
+    lines.extend(_iter_render_rows(items_by_module))
     return "\n".join(lines) + "\n"
 
 

@@ -1,4 +1,4 @@
-# DTM-123: Stage 12 deep cleanup for module `agent.capture_baseline`
+﻿# DTM-123: Stage 12 deep cleanup for module `agent.capture_baseline`
 
 ## Context
 - Stage 12 switched to deep per-module execution model.
@@ -24,15 +24,20 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-123`).
-- [x] Jira status set to `? ??????????`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `??????`.
-- [ ] Telegram completion sent.
+- [x] Jira status set to `В работе`.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `agent.capture_baseline`.
+- 2026-02-28: Refactored imports/typing/docstrings, removed duplicate imports, restored readable RU notify-context text, preserved artifact flow.
+- 2026-02-28: Ran checks:
+  - `python -m compileall agent`
+  - `.venv\\Scripts\\python.exe agent\\capture_baseline.py --help`
+- 2026-02-28: Added Jira evidence, moved issue to `Готово`, owner completion notification sent.
 
 ## Links
 - Jira: DTM-123

@@ -1,8 +1,8 @@
 {
   "created": 53,
   "total": 53,
-  "active_key": "DTM-122",
-  "active_module": "agent.build_stage12_audit_matrix",
+  "active_key": "DTM-125",
+  "active_module": "agent.stage8_shadow_run_evidence",
   "mapping": [
     {
       "module": "core.reminder",
@@ -122,25 +122,25 @@
       "module": "agent.build_stage12_audit_matrix",
       "items": 6,
       "key": "DTM-122",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "module": "agent.capture_baseline",
       "items": 6,
       "key": "DTM-123",
-      "status": "todo"
+      "status": "done"
     },
     {
       "module": "agent.deploy_run_evidence_report",
       "items": 6,
       "key": "DTM-124",
-      "status": "todo"
+      "status": "done"
     },
     {
       "module": "agent.stage8_shadow_run_evidence",
       "items": 6,
       "key": "DTM-125",
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "module": "agent.sync_lockbox_from_env",

@@ -12,6 +12,7 @@ Status fields are initialized as `todo` for manual review.
 | `agent.build_stage12_audit_matrix` | function | `agent.build_stage12_audit_matrix._iter_py_files` | todo | todo | todo | |
 | `agent.build_stage12_audit_matrix` | function | `agent.build_stage12_audit_matrix._module_name` | todo | todo | todo | |
 | `agent.build_stage12_audit_matrix` | function | `agent.build_stage12_audit_matrix._collect_items` | todo | todo | todo | |
+| `agent.build_stage12_audit_matrix` | function | `agent.build_stage12_audit_matrix._iter_render_rows` | todo | todo | todo | |
 | `agent.build_stage12_audit_matrix` | function | `agent.build_stage12_audit_matrix._render` | todo | todo | todo | |
 | `agent.build_stage12_audit_matrix` | function | `agent.build_stage12_audit_matrix.main` | todo | todo | todo | |
 | `agent.capture_baseline` | function | `agent.capture_baseline._repo_root` | todo | todo | todo | |
@@ -53,6 +54,7 @@ Status fields are initialized as `todo` for manual review.
 | `agent.read_model_builder_smoke` | function | `agent.read_model_builder_smoke.run` | todo | todo | todo | |
 | `agent.read_model_contract_compat_smoke` | function | `agent.read_model_contract_compat_smoke.run` | todo | todo | todo | |
 | `agent.read_model_publication_smoke` | function | `agent.read_model_publication_smoke.run` | todo | todo | todo | |
+| `agent.reminder_alert_evaluator` | function | `agent.reminder_alert_evaluator._summary_value` | todo | todo | todo | |
 | `agent.reminder_alert_evaluator` | function | `agent.reminder_alert_evaluator.parse_args` | todo | todo | todo | |
 | `agent.reminder_alert_evaluator` | function | `agent.reminder_alert_evaluator.find_latest_quality_report` | todo | todo | todo | |
 | `agent.reminder_alert_evaluator` | function | `agent.reminder_alert_evaluator.evaluate_thresholds` | todo | todo | todo | |
@@ -62,6 +64,7 @@ Status fields are initialized as `todo` for manual review.
 | `agent.reminder_alert_evaluator` | function | `agent.reminder_alert_evaluator._build_notify_payload` | todo | todo | todo | |
 | `agent.reminder_alert_evaluator` | function | `agent.reminder_alert_evaluator.maybe_notify_owner` | todo | todo | todo | |
 | `agent.reminder_alert_evaluator` | function | `agent.reminder_alert_evaluator.main` | todo | todo | todo | |
+| `agent.reminder_alert_evaluator_smoke` | function | `agent.reminder_alert_evaluator_smoke._quality_report_summary` | todo | todo | todo | |
 | `agent.reminder_alert_evaluator_smoke` | function | `agent.reminder_alert_evaluator_smoke._write_quality_report` | todo | todo | todo | |
 | `agent.reminder_alert_evaluator_smoke` | function | `agent.reminder_alert_evaluator_smoke.run` | todo | todo | todo | |
 | `agent.reminder_alert_review_flow_smoke` | function | `agent.reminder_alert_review_flow_smoke.run` | todo | todo | todo | |
@@ -113,6 +116,7 @@ Status fields are initialized as `todo` for manual review.
 | `agent.reminder_retry_backoff_smoke` | class | `agent.reminder_retry_backoff_smoke.RetryAfter` | todo | todo | todo | |
 | `agent.reminder_retry_backoff_smoke` | method | `agent.reminder_retry_backoff_smoke.RetryAfter.__init__` | todo | todo | todo | |
 | `agent.reminder_retry_backoff_smoke` | class | `agent.reminder_retry_backoff_smoke.BadRequest` | todo | todo | todo | |
+| `agent.reminder_retry_backoff_smoke` | function | `agent.reminder_retry_backoff_smoke.build_reminder` | todo | todo | todo | |
 | `agent.reminder_retry_backoff_smoke` | function | `agent.reminder_retry_backoff_smoke.run_transient_success_case` | todo | todo | todo | |
 | `agent.reminder_retry_backoff_smoke` | function | `agent.reminder_retry_backoff_smoke.run_transient_exhausted_case` | todo | todo | todo | |
 | `agent.reminder_retry_backoff_smoke` | function | `agent.reminder_retry_backoff_smoke.run_permanent_case` | todo | todo | todo | |
@@ -186,6 +190,7 @@ Status fields are initialized as `todo` for manual review.
 | `core.bootstrap` | function | `core.bootstrap.build_planner_dependencies` | todo | todo | todo | |
 | `core.contracts` | function | `core.contracts.is_nullish` | todo | todo | todo | |
 | `core.contracts` | function | `core.contracts.normalize_text` | todo | todo | todo | |
+| `core.contracts` | function | `core.contracts._required_columns` | todo | todo | todo | |
 | `core.contracts` | class | `core.contracts.TaskRowContract` | todo | todo | todo | |
 | `core.contracts` | method | `core.contracts.TaskRowContract.from_mapping` | todo | todo | todo | |
 | `core.contracts` | method | `core.contracts.TaskRowContract.required_columns` | todo | todo | todo | |
@@ -254,6 +259,7 @@ Status fields are initialized as `todo` for manual review.
 | `core.people` | method | `core.people.PeopleManager._record_row_issue` | todo | todo | todo | |
 | `core.people` | method | `core.people.PeopleManager.get_person` | todo | todo | todo | |
 | `core.people` | method | `core.people.PeopleManager.get_designers` | todo | todo | todo | |
+| `core.planner` | function | `core.planner._counter_value` | todo | todo | todo | |
 | `core.planner` | function | `core.planner.build_reminder_sli_summary` | todo | todo | todo | |
 | `core.planner` | class | `core.planner.GoogleSheetPlanner` | todo | todo | todo | |
 | `core.planner` | method | `core.planner.GoogleSheetPlanner.__init__` | todo | todo | todo | |
@@ -344,6 +350,13 @@ Status fields are initialized as `todo` for manual review.
 | `core.schema_snapshot` | function | `core.schema_snapshot._type_name` | todo | todo | todo | |
 | `core.schema_snapshot` | function | `core.schema_snapshot._collect_schema` | todo | todo | todo | |
 | `core.schema_snapshot` | function | `core.schema_snapshot.build_schema_snapshot` | todo | todo | todo | |
+| `core.sheet_renderer` | class | `core.sheet_renderer._SheetService` | todo | todo | todo | |
+| `core.sheet_renderer` | method | `core.sheet_renderer._SheetService.set_spreadsheet_and_worksheet` | todo | todo | todo | |
+| `core.sheet_renderer` | method | `core.sheet_renderer._SheetService.clear_cells` | todo | todo | todo | |
+| `core.sheet_renderer` | method | `core.sheet_renderer._SheetService.clear_requests` | todo | todo | todo | |
+| `core.sheet_renderer` | method | `core.sheet_renderer._SheetService.update_cell` | todo | todo | todo | |
+| `core.sheet_renderer` | method | `core.sheet_renderer._SheetService.update_borders` | todo | todo | todo | |
+| `core.sheet_renderer` | method | `core.sheet_renderer._SheetService.execute_updates` | todo | todo | todo | |
 | `core.sheet_renderer` | class | `core.sheet_renderer.ServiceSheetRenderAdapter` | todo | todo | todo | |
 | `core.sheet_renderer` | method | `core.sheet_renderer.ServiceSheetRenderAdapter.__init__` | todo | todo | todo | |
 | `core.sheet_renderer` | method | `core.sheet_renderer.ServiceSheetRenderAdapter.begin` | todo | todo | todo | |

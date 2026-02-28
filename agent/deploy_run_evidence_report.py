@@ -6,19 +6,23 @@ import argparse
 import json
 import os
 from pathlib import Path
+from typing import Any
 
 import requests
 from dotenv import load_dotenv
 
+DEFAULT_WORKFLOW_FILE = "deploy_yc_function_main.yml"
+
 
 def parse_args() -> argparse.Namespace:
+    """Parse CLI arguments for deploy evidence report generation."""
     parser = argparse.ArgumentParser(description="Build deploy run evidence report from GitHub Actions API")
     parser.add_argument("--owner", default="", help="GitHub owner (defaults to GITHUB_OWNER env)")
     parser.add_argument("--repo", default="", help="GitHub repo (defaults to GITHUB_REPO env)")
     parser.add_argument(
         "--workflow-file",
-        default="deploy_yc_function_main.yml",
-        help="Workflow file name (default: deploy_yc_function_main.yml)",
+        default=DEFAULT_WORKFLOW_FILE,
+        help=f"Workflow file name (default: {DEFAULT_WORKFLOW_FILE})",
     )
     parser.add_argument("--run-id", type=int, default=0, help="Optional specific workflow run id")
     parser.add_argument("--per-page", type=int, default=5, help="Number of latest runs to fetch")
@@ -31,6 +35,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def _headers_from_env() -> dict[str, str]:
+    """Build GitHub API headers from environment credentials."""
     token = os.environ.get("GITHUB_TOKEN", "").strip()
     headers = {"Accept": "application/vnd.github+json"}
     if token:
@@ -38,13 +43,15 @@ def _headers_from_env() -> dict[str, str]:
     return headers
 
 
-def _get_json(url: str, headers: dict[str, str]) -> dict:
+def _get_json(url: str, headers: dict[str, str]) -> dict[str, Any]:
+    """Perform authenticated GET and return decoded JSON payload."""
     response = requests.get(url, headers=headers, timeout=30)
     response.raise_for_status()
-    return response.json()
+    return dict(response.json())
 
 
-def _normalize_run(run: dict) -> dict:
+def _normalize_run(run: dict[str, Any]) -> dict[str, Any]:
+    """Extract stable top-level workflow run fields."""
     return {
         "run_id": run.get("id"),
         "workflow_name": run.get("name"),
@@ -58,8 +65,9 @@ def _normalize_run(run: dict) -> dict:
     }
 
 
-def _normalize_jobs(jobs_payload: dict) -> list[dict]:
-    normalized = []
+def _normalize_jobs(jobs_payload: dict[str, Any]) -> list[dict[str, Any]]:
+    """Extract stable job/step evidence fields for one workflow run."""
+    normalized: list[dict[str, Any]] = []
     for job in jobs_payload.get("jobs", []):
         steps = []
         for step in job.get("steps", []):

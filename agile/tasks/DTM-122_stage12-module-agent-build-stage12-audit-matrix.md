@@ -25,14 +25,19 @@
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-122`).
 - [x] Jira status set to `В работе`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `Готово`.
-- [ ] Telegram completion sent.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `agent.build_stage12_audit_matrix`.
+- 2026-02-28: Refactored readability/typing: constants for path skips, frozen item dataclass, explicit helpers for module naming and row rendering.
+- 2026-02-28: Ran checks:
+  - `python -m compileall agent`
+  - `.venv\\Scripts\\python.exe agent\\build_stage12_audit_matrix.py` (`modules_count=53`, `items_count=411`)
+- 2026-02-28: Added Jira evidence, moved issue to `Готово`, owner completion notification sent.
 
 ## Links
 - Jira: DTM-122
