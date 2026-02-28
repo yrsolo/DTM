@@ -9,19 +9,24 @@ No new product features. Stage 12 is dedicated to code quality and readability h
 - method-level clarity improvements.
 
 ## Baseline
-- Stage 12 estimate baseline: 8 tasks.
-- Dynamic tracking rule: update `Done/Remaining` in `agile/sprint_current.md` after each completed slice.
-- Current counter: done `2`, remaining `6`.
+- Stage 12 estimate baseline: 57 tasks.
+- Composition:
+  - 3 completed setup tasks (`DTM-100..DTM-102`),
+  - 53 deep module tasks (`DTM-103..DTM-155`),
+  - 1 closeout/handoff task (to be created after module queue completion).
+- Dynamic tracking rule: update `Done/Remaining` in `agile/sprint_current.md` after each completed task.
 
-## Stage 12 slices (initial)
-1. TSK-103 (DTM-100): kickoff and quality-sweep standards.
-2. TSK-104: module-by-module audit matrix (all modules/classes/methods).
-3. TSK-105: typing/docstring/style cleanup slice for `core/*`.
-4. TSK-106: typing/docstring/style cleanup slice for `utils/*`.
-5. TSK-107: typing/docstring/style cleanup slice for `agent/*`.
-6. TSK-108: consistency pass for exceptions/logging/naming.
-7. TSK-109: final readability pass + dead code/misleading comments cleanup.
-8. TSK-110: Stage 12 closeout and Stage 13 handoff package.
+## Execution Model (Deep)
+1. One Jira task per module from `doc/governance/stage12_module_audit_matrix.md`.
+2. One active execution task at a time (`В работе`), all others stay in `К выполнению`.
+3. Queue and mapping are stored in:
+   - `doc/governance/stage12_module_jira_map.json`
+   - `doc/stages/32_stage12_deep_module_queue.md`
+4. Each task must produce:
+   - concrete cleanup patch,
+   - relevant smoke-check result,
+   - Jira evidence comment,
+   - Telegram completion note with updated `done/remaining`.
 
 ## Delivery rules
 - WIP=1 (one active execution task).

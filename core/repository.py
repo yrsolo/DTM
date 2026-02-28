@@ -1,17 +1,12 @@
-"""
-Модуль содержит реализацию репозиториев для работы с задачами, включая получение, обработку и фильтрацию данных.
+"""Task repositories and timing parser for Google Sheets source data."""
 
-Основные классы:
-- Task: представление задачи в системе.
-- TaskRepository: базовый интерфейс репозитория для работы с задачами.
-- GoogleSheetsTaskRepository: реализация репозитория для работы с Google Таблицами.
-"""
+from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import Dict, List
+from typing import Any
 
 import pandas as pd
 
@@ -22,12 +17,12 @@ from core.reminder import TelegramNotifier
 from utils.service import GoogleSheetInfo, GoogleSheetsService
 
 
-def _is_nullish(value) -> bool:
+def _is_nullish(value: Any) -> bool:
     """Compatibility wrapper for local module usage."""
     return is_nullish(value)
 
 
-def _normalize_text(value, strip: bool = True) -> str:
+def _normalize_text(value: Any, strip: bool = True) -> str:
     """Compatibility wrapper for local module usage."""
     return normalize_text(value, strip=strip)
 
@@ -40,37 +35,30 @@ def _safe_print(text: str) -> None:
 
 
 class TimingParser:
-    """Парсер тайминга задач."""
+    """Parse raw timing text into date -> stages mapping."""
 
-    def __init__(self):
-        """Инициализация парсера тайминга."""
+    def __init__(self) -> None:
         self.date_pattern = re.compile(r"(\d{2}\.\d{2})")
         self.logger = TelegramNotifier()
-        self.parse_issues: List[TimingParseIssue] = []
+        self.parse_issues: list[TimingParseIssue] = []
         self.total_parse_errors = 0
 
-    def reset_diagnostics(self):
+    def reset_diagnostics(self) -> None:
         self.parse_issues = []
         self.total_parse_errors = 0
 
-    def issues_since(self, start_index: int) -> List[TimingParseIssue]:
+    def issues_since(self, start_index: int) -> list[TimingParseIssue]:
         if start_index < 0:
             start_index = 0
         return self.parse_issues[start_index:]
 
     def parse(
-        self, timing_str: str, next_task_date: pd.Timestamp = None, row_number: int = 0
-    ) -> Dict[pd.Timestamp, List[str]]:
-        """Преобразует строку тайминга в словарь, где ключи - даты, значения - списки этапов задач.
-
-        Args:
-            timing_str: Строка тайминга.
-            next_task_date: дата соседней задачи (для определения года)
-
-        Returns:
-            dict: Словарь с датами и этапами задач.
-
-        """
+        self,
+        timing_str: str,
+        next_task_date: pd.Timestamp | None = None,
+        row_number: int = 0,
+    ) -> dict[pd.Timestamp, list[str]]:
+        """Convert timing multiline text to normalized dictionary."""
         if next_task_date is None:
             next_task_date = pd.Timestamp.now()
         timings = defaultdict(list)
@@ -137,21 +125,21 @@ class TimingParser:
 class Task:
     def __init__(
         self,
-        brand,
-        format_,
-        project_name,
-        customer,
-        designer,
-        raw_timing,
-        status,
-        color,
-        color_status,
-        name,
-        task_id,
-        parser=None,
-        next_task_date=None,
-        source_row_number=0,
-    ):
+        brand: Any,
+        format_: Any,
+        project_name: Any,
+        customer: Any,
+        designer: Any,
+        raw_timing: Any,
+        status: Any,
+        color: Any,
+        color_status: Any,
+        name: Any,
+        task_id: Any,
+        parser: TimingParser | None = None,
+        next_task_date: pd.Timestamp | None = None,
+        source_row_number: int = 0,
+    ) -> None:
         self.brand = _normalize_text(brand)
         self.format_ = _normalize_text(format_)
         self.project_name = _normalize_text(project_name)
@@ -168,11 +156,11 @@ class Task:
         self.next_task_date = next_task_date
         self.source_row_number = int(source_row_number or 0)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.id} {self.name}"
 
     @property
-    def timing(self):
+    def timing(self) -> dict[pd.Timestamp, list[str]]:
         if self.timing_cache:
             return self.timing_cache
         else:
@@ -184,11 +172,11 @@ class Task:
             return self.timing_cache
 
     @property
-    def max_date(self):
+    def max_date(self) -> pd.Timestamp | None:
         return max(self.timing.keys()) if self.timing else None
 
     @property
-    def min_date(self):
+    def min_date(self) -> pd.Timestamp | None:
         return min(self.timing.keys()) if self.timing else None
 
     @property
@@ -205,15 +193,15 @@ class Task:
 
 
 class TaskRepository(ABC):
-    """Репозиторий для работы с задачами"""
+    """Base task repository contract."""
 
     @abstractmethod
-    def get_all_tasks(self) -> List[Task]:
-        pass
+    def get_all_tasks(self) -> list[Task]:
+        raise NotImplementedError
 
 
-def _determine_status_from_color(color):
-    """Определить статус по цвету"""
+def _determine_status_from_color(color: Any) -> str:
+    """Resolve task status from color mapping."""
     cs = COLOR_STATUS
     try:
         color_status = cs.get(color, "work")
@@ -224,14 +212,14 @@ def _determine_status_from_color(color):
 
 
 class GoogleSheetsTaskRepository(TaskRepository):
-    """Репозиторий для работы с задачами в Google Таблицах"""
+    """Google Sheets backed repository for task data."""
 
     def __init__(
         self,
         sheet_info: GoogleSheetInfo,
         service: GoogleSheetsService,
-        source_sheet_info: GoogleSheetInfo = None,
-    ):
+        source_sheet_info: GoogleSheetInfo | None = None,
+    ) -> None:
         # sheet_info is used as target for writes by managers.
         self.sheet_info = sheet_info
         # source_sheet_info is used for reads from main table.
@@ -240,40 +228,40 @@ class GoogleSheetsTaskRepository(TaskRepository):
         self.df = None
         self.replace_names = REPLACE_NAMES
         self.tasks = dict()
-        self.row_issues: List[RowValidationIssue] = []
+        self.row_issues: list[RowValidationIssue] = []
         self.timing_parser = TimingParser()
         self.dop = {}
 
-    def get_all_tasks(self) -> List[Task]:
-        """Получить все задачи"""
+    def get_all_tasks(self) -> list[Task]:
+        """Return all tasks from current sheet snapshot."""
         self._load()
         return [task for task in self.tasks.values()]
 
-    def get_tasks_by_date(self, date):
-        """Получить задачи по дате"""
+    def get_tasks_by_date(self, date: pd.Timestamp) -> list[Task]:
+        """Return active work tasks that contain given date in timing."""
         self._load()
         tasks = self.get_task_by_color_status(["work"])
         return [task for task in tasks if date in task.timing.keys()]
 
-    def get_task_by(self, column_name, value):
-        """Получить задачи по значению в колонке"""
+    def get_task_by(self, column_name: str, value: Any) -> list[Task] | Task:
+        """Return tasks filtered by dataframe column value."""
         ids = self._filter(column_name, value)["id"]
         return self.get_task_by_id(ids)
 
-    def get_task_by_id(self, task_ids):
-        """Получить задачи по идентификатору."""
+    def get_task_by_id(self, task_ids: Any) -> list[Task] | Task:
+        """Return task or list of tasks by id(s)."""
         self._load()
         if isinstance(task_ids, Iterable):
             return [self.tasks[task_id] for task_id in task_ids]
         else:
             return self.tasks[task_ids]
 
-    def get_task_by_color_status(self, color_status):
-        """Получить задачи по цветовому статусу."""
+    def get_task_by_color_status(self, color_status: Any) -> list[Task] | Task:
+        """Return tasks filtered by color status."""
         return self.get_task_by("color_status", color_status)
 
-    def _load_and_process_data(self):
-        """Загрузить и обработать данные из Google Таблицы."""
+    def _load_and_process_data(self) -> None:
+        """Load task dataframe and convert to in-memory task objects."""
         spreadsheet_name = self.source_sheet_info.spreadsheet_name
         sheet_name = self.source_sheet_info.get_sheet_name("tasks")
         assistant_sheet_name = self.source_sheet_info.get_sheet_name("assistant")
@@ -308,7 +296,7 @@ class GoogleSheetsTaskRepository(TaskRepository):
         self.df = df
         self._df_to_task(df)
 
-    def _validate_required_columns(self, df, spreadsheet_name, sheet_name):
+    def _validate_required_columns(self, df: pd.DataFrame, spreadsheet_name: str, sheet_name: str) -> None:
         required_columns = TaskRowContract.required_columns(TASK_FIELD_MAP)
         missing = sorted(col for col in required_columns if col not in df.columns)
         if missing:
@@ -320,8 +308,8 @@ class GoogleSheetsTaskRepository(TaskRepository):
                 field_map_name="TASK_FIELD_MAP",
             )
 
-    def _generate_task_name(self, row):
-        """Сгенерировать название задачи"""
+    def _generate_task_name(self, row: pd.Series) -> str:
+        """Generate human-readable task name from row fields."""
         raw_format = row.get("ФОРМАТ", "")
         raw_format = "" if pd.isna(raw_format) else str(raw_format)
         format_ = raw_format.split("\n")[0] if raw_format else ""
@@ -332,13 +320,13 @@ class GoogleSheetsTaskRepository(TaskRepository):
             name = name.replace(key, value)
         return name
 
-    def _load(self):
-        """Проверить наличие данных"""
+    def _load(self) -> None:
+        """Load dataframe once and keep snapshot for repository methods."""
         if self.df is None:
             self._load_and_process_data()
 
-    def _df_to_task(self, df):
-        """Преобразовать DataFrame в список задач"""
+    def _df_to_task(self, df: pd.DataFrame) -> list[Task]:
+        """Convert dataframe rows into Task objects with diagnostics."""
         self.row_issues = []
         self.tasks = dict()
         self.timing_parser.reset_diagnostics()
@@ -379,7 +367,7 @@ class GoogleSheetsTaskRepository(TaskRepository):
                 next_task_date = mean_date
         return tasks_list
 
-    def _record_row_issue(self, entity_name: str, row_number: int, reason: str, row_id: str = ""):
+    def _record_row_issue(self, entity_name: str, row_number: int, reason: str, row_id: str = "") -> None:
         issue = RowValidationIssue(
             entity_name=entity_name,
             row_number=row_number,
@@ -389,8 +377,8 @@ class GoogleSheetsTaskRepository(TaskRepository):
         self.row_issues.append(issue)
         _safe_print(str(issue))
 
-    def _filter(self, column_name, value):
-        """Отфильтровать DataFrame по значению в колонке"""
+    def _filter(self, column_name: str, value: Any) -> pd.DataFrame:
+        """Filter source dataframe by value(s) of selected column."""
         self._load()
         # если не кортеж или список, то преобразуем в список
         if not isinstance(value, Iterable):

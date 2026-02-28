@@ -24,11 +24,11 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-102`) and moved to `В работе`.
-- [ ] Core cleanup patches applied and reviewed.
-- [ ] Relevant smoke checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `Готово`.
-- [ ] Telegram completion sent.
+- [x] Core cleanup patches applied and reviewed.
+- [x] Relevant smoke checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-27: Created Jira `DTM-102` and moved it to `В работе`.
@@ -38,6 +38,7 @@
   - `python -m compileall core` passed.
   - `.venv\Scripts\python.exe local_run.py --mode timer --dry-run --mock-external` failed on external source mismatch (`Spreadsheet ... not found`), not on syntax/runtime import.
   - `.venv\Scripts\python.exe -c "<planner/use_cases sanity checks>"` passed.
+- 2026-02-28: Transition slice closed after owner decision to switch Stage 12 to per-module deep execution.
 
 ## Links
 - Jira: DTM-102

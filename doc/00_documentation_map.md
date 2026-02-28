@@ -37,6 +37,7 @@ This file explains where to read first and where to go for details.
 - Stage 11 closeout: `doc/stages/30_stage11_closeout_and_stage12_handoff.md`
 - Stage 12 quality sweep: `doc/stages/31_stage12_code_quality_execution_plan.md`, `doc/governance/stage12_code_quality_standard.md`
 - Stage 12 audit artifact: `doc/governance/stage12_module_audit_matrix.md`
+- Stage 12 deep queue: `doc/stages/32_stage12_deep_module_queue.md`, `doc/governance/stage12_module_jira_map.json`
 - Stage 10 ops drill: `doc/ops/stage10_function_rollback_drill.md`
 - Stage 10 owner quickstart: `doc/ops/stage10_owner_quickstart_checklist.md`
 

@@ -7,15 +7,21 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] DTM-102 / TSK-105 - Stage 12 typing/docstring/style cleanup slice for `core/*`.
+- [IN_PROGRESS] DTM-108 - Stage 12 deep module cleanup: `agent.reminder_retry_backoff_smoke`.
 
 ## Stage 12 Estimate (Dynamic)
-- Baseline estimate: 8 tasks.
-- Done: 2
-- Remaining: 6
+- Baseline estimate: 57 tasks (kickoff, matrix, transition, 53 module tasks, closeout).
+- Done: 8
+- Remaining: 49
 - Rule: update `Done/Remaining` after each completed Stage 12 task.
 
 ## Done
+- [DONE] DTM-107 - Stage 12 deep module cleanup completed for `utils.func`.
+- [DONE] DTM-106 - Stage 12 deep module cleanup completed for `agent.render_adapter_smoke`.
+- [DONE] DTM-105 - Stage 12 deep module cleanup completed for `core.repository`.
+- [DONE] DTM-104 - Stage 12 deep module cleanup completed for `core.manager`.
+- [DONE] DTM-103 - Stage 12 deep module cleanup completed for `core.reminder`.
+- [DONE] DTM-102 / TSK-105 - transition slice closed; Stage 12 switched to deep per-module queue.
 - [DONE] DTM-101 / TSK-104 - Stage 12 module-by-module audit matrix generated (`53` modules, `398` items).
 - [DONE] DTM-100 / TSK-103 - Stage 12 quality-sweep kickoff and standards.
 - [DONE] DTM-76 / TSK-079 - main-branch auto-deploy workflow for Yandex Cloud Function.
@@ -46,13 +52,13 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 12: typing/docstring/style cleanup for `utils/*`.
-- [TODO] Stage 12: typing/docstring/style cleanup for `agent/*`.
-- [TODO] Stage 12: consistency pass for exceptions/logging/naming.
-- [TODO] Stage 12: final readability pass + dead code cleanup.
+- [TODO] DTM-109: deep module cleanup `utils.service`.
+- [TODO] DTM-110: deep module cleanup `core.people`.
+- [TODO] DTM-111: deep module cleanup `core.adapters`.
+- [TODO] DTM-112: deep module cleanup `agent.reminder_delivery_counters_smoke`.
 
 ## Active Task Files
-- `agile/tasks/DTM-102_stage12-core-cleanup.md`
+- `agile/tasks/DTM-108_stage12-module-agent-reminder-retry-backoff-smoke.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`

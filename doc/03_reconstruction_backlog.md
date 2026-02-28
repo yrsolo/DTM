@@ -48,8 +48,13 @@ Stage 10 kickoff:
 
 Planned next:
 - Stage 12 module-by-module audit matrix (`DTM-101`) completed and published in `doc/governance/stage12_module_audit_matrix.md`.
-- Stage 12 core cleanup slice (`DTM-102`) in progress.
-- Stage 12 typing/docstring/style cleanup slices (`core`, `utils`, `agent`).
+- Stage 12 switched to deep per-module queue: `53` Jira tasks (`DTM-103..DTM-155`), queue in `doc/stages/32_stage12_deep_module_queue.md`.
+- `DTM-103` (`core.reminder`) completed.
+- `DTM-104` (`core.manager`) completed.
+- `DTM-105` (`core.repository`) completed.
+- `DTM-106` (`agent.render_adapter_smoke`) completed.
+- `DTM-107` (`utils.func`) completed.
+- Active execution task: `DTM-108` (`agent.reminder_retry_backoff_smoke`).
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).

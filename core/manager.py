@@ -1,16 +1,9 @@
-"""
-Manager.py
+"""Managers for sheet rendering, calendars, and task timing processing."""
 
-Модуль содержит реализацию менеджера для работы с задачами и календарем.
-Основные классы:
-- TaskManager: Менеджер для работы с задачами.
-- TaskTimingProcessor: Обработчик тайминга задач.
-- CalendarManager: Менеджер для работы с календарем.
-
-"""
+from __future__ import annotations
 
 from collections import defaultdict
-from typing import Dict, List
+from typing import Any, Iterable, Sequence
 
 import pandas as pd
 
@@ -23,10 +16,12 @@ from utils.func import GetColor, RGBColor, cell_to_indices, filter_stages
 
 
 class TaskManager:
-    def __init__(self, task_repository, renderer: SheetRenderAdapter | None = None):
+    """Render grouped task list into the designers sheet."""
+
+    def __init__(self, task_repository: Any, renderer: SheetRenderAdapter | None = None) -> None:
         self.repository = task_repository
-        self.tasks = None
-        self.designers = None
+        self.tasks: list[Any] = []
+        self.designers: set[str] = set()
         self.get_color = GetColor()
         self.spreadsheet_name = self.repository.sheet_info.spreadsheet_name
         self.sheet_name = self.repository.sheet_info.get_sheet_name("designers")
@@ -36,13 +31,13 @@ class TaskManager:
             sheet_name=self.sheet_name,
         )
 
-    def update(self):
-        """Обновить данные из репозитория"""
+    def update(self) -> None:
+        """Reload tasks and active designer set from repository."""
         self.tasks = self.repository.get_all_tasks()
         self.designers = set(task.designer for task in self.tasks if task.designer)
 
-    def task_to_table(self, color_status=("work", "pre_done")):
-        """Получить задачи в виде таблицы"""
+    def task_to_table(self, color_status: Sequence[str] | str = ("work", "pre_done")) -> None:
+        """Write tasks filtered by color status into designers table."""
         if color_status == "all":
             color_status = ["work", "pre_done", "done"]
         elif color_status == "done":
@@ -81,7 +76,7 @@ class TaskManager:
         self._write_cur_time(cell="A1")
         self.renderer.execute_updates()
 
-    def _build_designer_header_cell(self, designer, row, col):
+    def _build_designer_header_cell(self, designer: str, row: int, col: int) -> dict[str, Any]:
         return RenderCell(
             value=designer,
             color=self.get_color("deep purple"),
@@ -92,7 +87,7 @@ class TaskManager:
             font_size=12,
         ).to_cell_data()
 
-    def _build_task_cell(self, task, row, col):
+    def _build_task_cell(self, task: Any, row: int, col: int) -> dict[str, Any]:
         note = f"{task.customer}\n{task.raw_timing}"
         return RenderCell(
             value=task.name,
@@ -101,7 +96,7 @@ class TaskManager:
             row=row,
         ).to_cell_data()
 
-    def _write_cur_time(self, cell="A1"):
+    def _write_cur_time(self, cell: str = "A1") -> None:
         cur_time = pd.Timestamp.now(tz="Europe/Moscow").strftime("%H:%M %B %d")
         row, col = cell_to_indices(cell)
         self.renderer.update_cell(
@@ -113,20 +108,18 @@ class TaskManager:
         )
 
 
-def get_date_range(timings_dict: Dict[pd.Timestamp, List[str]]):
-    """Возвращает минимальную и максимальную дату из словаря тайминга"""
+def get_date_range(timings_dict: dict[pd.Timestamp, list[str]]) -> tuple[pd.Timestamp, pd.Timestamp]:
+    """Return min/max date for parsed timing dictionary."""
     min_date = min(timings_dict.keys())
     max_date = max(timings_dict.keys())
     return min_date, max_date
 
 
 class TaskTimingProcessor:
-    """Класс для обработки тайминга задач"""
+    """Build normalized timing payload for calendar managers."""
 
-    def create_task_timing_structure(self, tasks):
-        """
-        Создает структуру тайминга для задачи
-        """
+    def create_task_timing_structure(self, tasks: Iterable[Any]) -> dict[str, Any]:
+        """Convert tasks into normalized timing structure with global date bounds."""
         global_min_date = pd.Timestamp.max
         global_max_date = pd.Timestamp.min
 
@@ -157,13 +150,15 @@ class TaskTimingProcessor:
 
 
 class CalendarManager:
+    """Build and render designer calendar from task timing structure."""
+
     def __init__(
         self,
-        sheet_info,
-        service,
-        repository,
+        sheet_info: Any,
+        service: Any,
+        repository: Any,
         renderer: SheetRenderAdapter | None = None,
-    ):
+    ) -> None:
         self.sheet_info = sheet_info
         self.service = service
         self.calendar = None
@@ -177,7 +172,7 @@ class CalendarManager:
             sheet_name=self.sheet_name,
         )
 
-    def create_calendar_structure(self, task_timings, answer=False):
+    def create_calendar_structure(self, task_timings: dict[str, Any], answer: bool = False) -> dict[Any, Any]:
         calendar = defaultdict(lambda: defaultdict(list))
         for task in task_timings["timings"]:
             designer = task["designer"]
@@ -194,7 +189,7 @@ class CalendarManager:
                     calendar[date][designer].append(stage)
         return calendar
 
-    def calendar_to_dataframe(self, calendar):
+    def calendar_to_dataframe(self, calendar: dict[Any, Any]) -> pd.DataFrame:
         df = pd.DataFrame(calendar).T
         df.index.name = "Date"
         min_date = df.index.min()
@@ -205,7 +200,7 @@ class CalendarManager:
         self.calendar = calendar.reindex(sorted(calendar.columns), axis=1)
         return self.calendar
 
-    def write_calendar_to_sheet(self, calendar, min_date="1W"):
+    def write_calendar_to_sheet(self, calendar: dict[Any, Any], min_date: str | None = "1W") -> None:
         df = self.calendar_to_dataframe(calendar)
         if min_date:
             now = pd.Timestamp.now()
@@ -258,7 +253,7 @@ class CalendarManager:
         self._write_cur_time(cell="A1")
         self.renderer.execute_updates()
 
-    def _write_cur_time(self, cell="A1"):
+    def _write_cur_time(self, cell: str = "A1") -> None:
         cur_time = pd.Timestamp.now(tz="Europe/Moscow").strftime("%H:%M %B %d")
         row, col = cell_to_indices(cell)
         self.renderer.update_cell(
@@ -269,7 +264,7 @@ class CalendarManager:
             }
         )
 
-    def _build_calendar_header_cell(self, col_num, designer):
+    def _build_calendar_header_cell(self, col_num: int, designer: str) -> dict[str, Any]:
         return RenderCell(
             value=designer,
             color=self.get_color("deep purple"),
@@ -280,7 +275,7 @@ class CalendarManager:
             font_size=12,
         ).to_cell_data()
 
-    def _build_calendar_date_cell(self, row_num, date):
+    def _build_calendar_date_cell(self, row_num: int, date: pd.Timestamp) -> dict[str, Any]:
         if date.weekday() >= 5:
             date_color = COLORS["med_gray"]
         else:
@@ -292,7 +287,14 @@ class CalendarManager:
             row=row_num,
         ).to_cell_data()
 
-    def _build_calendar_stage_cell(self, row_num, col_num, value, color, text_color):
+    def _build_calendar_stage_cell(
+        self,
+        row_num: int,
+        col_num: int,
+        value: str,
+        color: Any,
+        text_color: Any,
+    ) -> dict[str, Any]:
         return RenderCell(
             value=value,
             color=color,
@@ -303,13 +305,15 @@ class CalendarManager:
 
 
 class TaskCalendarManager:
+    """Render per-task timeline calendar into dedicated sheet."""
+
     def __init__(
         self,
-        sheet_info,
-        service,
-        repository,
+        sheet_info: Any,
+        service: Any,
+        repository: Any,
         renderer: SheetRenderAdapter | None = None,
-    ):
+    ) -> None:
         self.sheet_info = sheet_info
         self.service = service
         self.calendar = None
@@ -324,7 +328,10 @@ class TaskCalendarManager:
             sheet_name=self.sheet_name,
         )
 
-    def get_actual_tasks(self, color_status=("wait", "work", "pre_done")):
+    def get_actual_tasks(
+        self,
+        color_status: Sequence[str] = ("wait", "work", "pre_done"),
+    ) -> dict[str, list[Any]]:
         self.tasks = self.repository.get_task_by_color_status(color_status)
         self.designers = set(task.designer for task in self.tasks if task.designer)
         self.tasks_by_designer = defaultdict(list)
@@ -343,10 +350,10 @@ class TaskCalendarManager:
     def create_timeline(
         self,
         row: int = 1,
-        start: pd.Timestamp = None,
-        end: pd.Timestamp = None,
-        now: pd.Timestamp = None,
-    ):
+        start: pd.Timestamp | None = None,
+        end: pd.Timestamp | None = None,
+        now: pd.Timestamp | None = None,
+    ) -> None:
 
         if start is None:
             now = pd.Timestamp.now().floor("D")
@@ -368,7 +375,14 @@ class TaskCalendarManager:
 
         # self.service.execute_updates()
 
-    def _build_timeline_cell(self, row, col, day, now, base_color):
+    def _build_timeline_cell(
+        self,
+        row: int,
+        col: int,
+        day: pd.Timestamp,
+        now: pd.Timestamp,
+        base_color: Any,
+    ) -> dict[str, Any]:
         if day.weekday() >= 5:
             day_color = (base_color if day != now else self.get_color("green")) ** 0.25
         else:
@@ -384,7 +398,7 @@ class TaskCalendarManager:
             font_size=9,
         ).to_cell_data()
 
-    def _build_task_name_cell(self, row, task):
+    def _build_task_name_cell(self, row: int, task: Any) -> dict[str, Any]:
         return RenderCell(
             value=task.name,
             note=f"Менеджер: {task.customer}\nСтатус:\n{task.status}\nТайминг:\n{task.raw_timing}",
@@ -393,7 +407,15 @@ class TaskCalendarManager:
             font_size=9,
         ).to_cell_data()
 
-    def _build_stage_cell(self, row, col, day, task, color, stage):
+    def _build_stage_cell(
+        self,
+        row: int,
+        col: int,
+        day: pd.Timestamp,
+        task: Any,
+        color: Any,
+        stage: str,
+    ) -> dict[str, Any]:
         if day.weekday() >= 5:
             stage_color = (color if task.color_status not in ["wait"] else color.gray) ** 0.6
         else:
@@ -409,7 +431,7 @@ class TaskCalendarManager:
             font_size=8,
         ).to_cell_data()
 
-    def _build_designer_cell(self, designer, row, color):
+    def _build_designer_cell(self, designer: str, row: int, color: Any) -> dict[str, Any]:
         return RenderCell(
             value=designer,
             color=color**1.5,
@@ -420,10 +442,10 @@ class TaskCalendarManager:
             font_size=10,
         ).to_cell_data()
 
-    def _build_timestamp_cell(self, cur_time):
+    def _build_timestamp_cell(self, cur_time: str) -> dict[str, Any]:
         return RenderCell(value=cur_time, col=1, row=1, bold=True).to_cell_data()
 
-    def task_to_sheet(self, row, task, color):
+    def task_to_sheet(self, row: int, task: Any, color: Any) -> None:
         # task name
         cell_data = self._build_task_name_cell(row=row, task=task)
         self.renderer.update_cell(cell_data=cell_data)
@@ -449,7 +471,7 @@ class TaskCalendarManager:
             col += 1
             day += pd.Timedelta("1D")
 
-    def designer_tasks_to_sheet(self, designer, tasks, row):
+    def designer_tasks_to_sheet(self, designer: str, tasks: list[Any], row: int) -> int:
         # timelint
         self.create_timeline(row)
         # task name
@@ -469,20 +491,20 @@ class TaskCalendarManager:
 
         return row
 
-    def init(self):
+    def init(self) -> None:
         self.renderer.begin()
         self.renderer.clear_cells()
         self.renderer.clear_requests()
 
-    def write(self):
+    def write(self) -> None:
         self.renderer.execute_updates()
 
-    def write_cur_time(self):
+    def write_cur_time(self) -> None:
         cur_time = pd.Timestamp.now(tz="Europe/Moscow").strftime("%H:%M %B %d")
         cell_data = self._build_timestamp_cell(cur_time=cur_time)
         self.renderer.update_cell(cell_data=cell_data)
 
-    def all_tasks_to_sheet(self, color_status=("wait", "work", "pre_done")):
+    def all_tasks_to_sheet(self, color_status: Sequence[str] = ("wait", "work", "pre_done")) -> None:
         """main"""
         self.init()
 

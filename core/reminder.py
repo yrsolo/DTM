@@ -1,110 +1,92 @@
-"""Модуль для напоминаний о задачах."""
+"""Reminder pipeline: draft generation, enhancement, and Telegram delivery."""
+
+from __future__ import annotations
+
 import asyncio
 import hashlib
 import json
 from collections import defaultdict
+from typing import Any, Callable, Iterable, Mapping
 
 import aiohttp
 import httpx
 import pandas as pd
 import pytz
+from openai import AsyncOpenAI
 from telegram.ext import Application
 
+from config import DEFAULT_CHAT_ID, TG
 from core.adapters import ChatAdapter, LoggerAdapter, MessageAdapter, NullLogger
 from utils.func import filter_stages
-from openai import AsyncOpenAI
-from config import TG, DEFAULT_CHAT_ID
 
 
-def _safe_print(text):
+def _safe_print(text: Any) -> None:
     try:
         print(text)
     except UnicodeEncodeError:
         print(str(text).encode("unicode_escape").decode("ascii"))
 
 
-def _sanitize_proxy_url(url):
+def _sanitize_proxy_url(url: str | None) -> str | None:
     if not url:
         return None
     return str(url).strip().strip('"').strip("'")
 
 
-class TelegramNotifier(object):
-    """Интерфейс для отправки сообщений в Telegram."""
+class TelegramNotifier:
+    """Thin adapter for Telegram bot message delivery."""
 
-    def __init__(self, bot_token=TG, default_chat_id=DEFAULT_CHAT_ID):
-        """Инициализация интерфейса для отправки сообщений в Telegram.
-
-        Args:
-            bot_token (str): Токен бота.
-            default_chat_id (str): ID чата по умолчанию.
-        """
+    def __init__(self, bot_token: str = TG, default_chat_id: str | int = DEFAULT_CHAT_ID) -> None:
         self._bot_token = bot_token
         self._bot = None
         self.default_chat_id = default_chat_id
 
-    def _get_bot(self):
+    def _get_bot(self) -> Any:
         if self._bot is None:
             self._bot = Application.builder().token(self._bot_token).build().bot
         return self._bot
 
-    async def send_message(self, chat_id, text, parse_mode='Markdown'):
-        """Отправить сообщение в Telegram.
-
-        Args:
-            chat_id (str): ID чата.
-            text (str): Текст сообщения.
-
-        Returns:
-            str: Ответ Telegram.
-        """
+    async def send_message(
+        self,
+        chat_id: str | int,
+        text: str,
+        parse_mode: str | None = "Markdown",
+    ) -> Any:
         try:
             bot = self._get_bot()
             return await bot.send_message(chat_id=chat_id, text=text, parse_mode=parse_mode)
-        except Exception as e:
-            _safe_print(f'Ошибка при отправке сообщения в Telegram: {e}')
-            _safe_print('Повторная попытка отправки сообщения в Telegram без разметки')
-            _safe_print(f'Лог в Telegram пропущен: {e}')
+        except Exception as error:
+            _safe_print(f"Ошибка при отправке сообщения в Telegram: {error}")
+            _safe_print("Повторная попытка отправки сообщения в Telegram без разметки")
+            _safe_print(f"Лог в Telegram пропущен: {error}")
             try:
                 bot = self._get_bot()
                 return await bot.send_message(chat_id=chat_id, text=text, parse_mode=None)
-            except Exception as e:
-                _safe_print(f'Ошибка при отправке сообщения в Telegram без разметки: {e}')
-                _safe_print(f'Сообщение: {text}')
+            except Exception as error:
+                _safe_print(f"Ошибка при отправке сообщения в Telegram без разметки: {error}")
+                _safe_print(f"Сообщение: {text}")
+        return None
 
-    def log(self, text):
-        """Логирование сообщения в Telegram.
-
-        Args:
-            text (str): Текст сообщения.
-
-        """
+    def log(self, text: str) -> None:
         func = self.send_message(self.default_chat_id, text)
         loop = asyncio.get_running_loop()
         asyncio.run_coroutine_threadsafe(func, loop)
 
-    async def alog(self, text):
-        """Логирование сообщения в Telegram.
-
-        Args:
-            text (str): Текст сообщения.
-        """
-
+    async def alog(self, text: str) -> Any:
         return await self.send_message(self.default_chat_id, text, parse_mode=None)
 
 
-class AsyncOpenAIChatAgent(object):
-    """Агент для чатов с OpenAI."""
+class AsyncOpenAIChatAgent:
+    """Async OpenAI chat adapter used by reminder pipeline."""
 
-    def __init__(self, api_key, proxies=None, model=None, organization=None, logger: LoggerAdapter = None):
-        """Инициализация агента для чатов с OpenAI.
-
-        Args:
-            api_key (str): API ключ для OpenAI.
-            model (str): model.
-            organization (str): Название организации.
-            proxies (dict): Прокси.
-        """
+    def __init__(
+        self,
+        api_key: str,
+        proxies: Mapping[str, str] | None = None,
+        model: str | None = None,
+        organization: str | None = None,
+        logger: LoggerAdapter | None = None,
+    ) -> None:
 
         self.api_key = api_key
         self.organization = organization
@@ -124,7 +106,7 @@ class AsyncOpenAIChatAgent(object):
         )
 
 
-    async def chat(self, messages, model=None):
+    async def chat(self, messages: Any, model: str | None = None) -> str | None:
         """Чат с OpenAI GPT.
 
         Args:
@@ -169,14 +151,14 @@ class AsyncOpenAIChatAgent(object):
 
         return completion.choices[0].message.content
 
-    async def aclose(self):
+    async def aclose(self) -> None:
         await self.http_client.aclose()
 
 
-class MockOpenAIChatAgent(object):
+class MockOpenAIChatAgent:
     """Mock агент для тестового режима без внешних вызовов OpenAI."""
 
-    async def chat(self, messages, model=None):
+    async def chat(self, messages: Any, model: str | None = None) -> str | None:
         if isinstance(messages, str):
             return messages
         if isinstance(messages, list):
@@ -186,34 +168,25 @@ class MockOpenAIChatAgent(object):
         return None
 
 
-class Reminder(object):
-    """Напоминания о задачах."""
+class Reminder:
+    """Reminder orchestration for designer notifications."""
 
     def __init__(
-            self,
-            task_repository,
-            openai_agent: ChatAdapter,
-            helper_character,
-            tg_bot_token=None,
-            people_manager=None,
-            mock_openai=False,
-            mock_telegram=False,
-            telegram_adapter: MessageAdapter = None,
-            enhance_concurrency=4,
-            send_retry_attempts=3,
-            send_retry_backoff_seconds=0.5,
-            send_retry_backoff_multiplier=2.0,
-            sleep_func=None,
-    ):
-        """Инициализация напоминаний о задачах.
-
-        Args:
-            task_repository (TaskRepository): Репозиторий задач.
-            openai_agent (AsyncOpenAIChatAgent): Агент для чатов с OpenAI.
-            helper_character (str): Промт для персонажа-помощника.
-            tg_bot_token (str): Токен бота Telegram.
-            people_manager (PeopleManager): Менеджер людей.
-        """
+        self,
+        task_repository: Any,
+        openai_agent: ChatAdapter,
+        helper_character: str,
+        tg_bot_token: str | None = None,
+        people_manager: Any = None,
+        mock_openai: bool = False,
+        mock_telegram: bool = False,
+        telegram_adapter: MessageAdapter | None = None,
+        enhance_concurrency: int = 4,
+        send_retry_attempts: int = 3,
+        send_retry_backoff_seconds: float = 0.5,
+        send_retry_backoff_multiplier: float = 2.0,
+        sleep_func: Callable[[float], Any] | None = None,
+    ) -> None:
         self.task_repository = task_repository
         self.openai_agent = openai_agent
         self.mock_openai = bool(mock_openai)
@@ -238,7 +211,7 @@ class Reminder(object):
         self.delivery_counters = {}
         self.reset_delivery_counters()
 
-    def reset_delivery_counters(self):
+    def reset_delivery_counters(self) -> None:
         self.delivery_counters = {
             "candidates_total": 0,
             "sent": 0,
@@ -256,55 +229,50 @@ class Reminder(object):
             "send_error_unknown": 0,
         }
 
-    def _inc_delivery_counter(self, key, value=1):
+    def _inc_delivery_counter(self, key: str, value: int = 1) -> None:
         self.delivery_counters[key] = int(self.delivery_counters.get(key, 0)) + int(value)
 
-    def get_delivery_counters(self):
+    def get_delivery_counters(self) -> dict[str, int]:
         return dict(self.delivery_counters)
 
-    def _build_reminder_context(self):
+    def _build_reminder_context(self) -> tuple[pd.Timestamp, pd.Timestamp, dict[str, list[Any]], dict[str, list[Any]]]:
         today, next_work_day = self.calculate_dates()
         tasks_today = self.distribute_tasks(today)
         tasks_next_day = self.distribute_tasks(next_work_day)
         return today, next_work_day, tasks_today, tasks_next_day
 
     @staticmethod
-    def _collect_designers(tasks_today, tasks_next_day):
+    def _collect_designers(
+        tasks_today: Mapping[str, list[Any]],
+        tasks_next_day: Mapping[str, list[Any]],
+    ) -> list[str]:
         return sorted(set(tasks_today.keys()) | set(tasks_next_day.keys()))
 
-    async def get_tasks_for_date(self, date):
-        """Получить задачи на конкретную дату.
-
-        Args:
-            date (pd.Timestamp): Дата.
-
-        Returns:
-            list: Список задач.
-        """
+    async def get_tasks_for_date(self, date: pd.Timestamp) -> list[Any]:
         return self.task_repository.get_tasks_by_date(date)
 
-    async def _build_designer_message(self, designer, tasks_today, tasks_next_day):
+    async def _build_designer_message(
+        self,
+        designer: str,
+        tasks_today: Mapping[str, list[Any]],
+        tasks_next_day: Mapping[str, list[Any]],
+    ) -> str | None:
         return await self.get_enhanced_message(
             designer,
             tasks_today.get(designer, []),
             tasks_next_day.get(designer, []),
         )
 
-    async def _enhance_message_limited(self, message):
+    async def _enhance_message_limited(self, message: str) -> str | None:
         async with self.enhance_semaphore:
             return await self.enhance_message(message)
 
-    async def get_enhanced_message(self, designer, tasks_today, tasks_next_day):
-        """Получить улучшенное сообщение для дизайнера.
-
-        Args:
-            designer (str): Имя дизайнера.
-            tasks_today (list): Список задач на сегодня.
-            tasks_next_day (list): Список задач на завтра.
-
-        Returns:
-            str: Улучшенное сообщение.
-        """
+    async def get_enhanced_message(
+        self,
+        designer: str,
+        tasks_today: list[Any],
+        tasks_next_day: list[Any],
+    ) -> str | None:
         draft = self.generate_draft_message(designer, tasks_today, tasks_next_day)
         if draft:
             self.draft_messages[designer] = draft  # Сохраняем черновое сообщение
@@ -326,57 +294,41 @@ class Reminder(object):
 
         return None
 
-    def calculate_dates(self):
-        """Рассчитать даты.
-
-        Returns:
-            tuple: Кортеж из сегодняшней даты и даты следующего рабочего дня.
-        """
+    def calculate_dates(self) -> tuple[pd.Timestamp, pd.Timestamp]:
         self.today = pd.Timestamp.today().normalize()
         dow = self.today.dayofweek
         day = pd.Timedelta(days=1)
         self.next_work_day = self.today + day * (7-dow) if dow in {4, 5} else self.today + day
         return self.today, self.next_work_day
 
-    def distribute_tasks(self, date):
-        """Распределить задачи по дизайнерам.
-
-        Args:
-            date (pd.Timestamp): Дата.
-
-        Returns:
-            dict: Словарь задач по дизайнерам.
-        """
+    def distribute_tasks(self, date: pd.Timestamp) -> dict[str, list[Any]]:
         tasks = self.task_repository.get_tasks_by_date(date)
         tasks_by_designer = defaultdict(list)
         for task in tasks:
             tasks_by_designer[task.designer].append(task)
         return tasks_by_designer
 
-    def day_messages(self, tasks, day):
-        """Сформировать сообщение для дизайнера на конкретный день.
-
-        Args:
-            tasks (list): Список задач.
-            day (pd.Timestamp): Дата.
-
-        Returns:
-            list: Список сообщений.
-        """
-        day_messages = []
+    def day_messages(self, tasks: Iterable[Any], day: pd.Timestamp) -> list[str]:
+        """Build lines for one day section in reminder draft."""
+        day_lines: list[str] = []
         idx = 1
         for task in tasks:
             format_ = task.format_.split('\n')[0]
             stages = filter_stages(task.timing[day])
             if stages:
                 stages = ', '.join(stages)
-                day_messages.append(
+                day_lines.append(
                     f'{idx}. {task.brand} // {format_} // для проекта «{task.project_name}» - сдаём «{stages}»',
                 )
                 idx += 1
-        return day_messages
+        return day_lines
 
-    def generate_draft_message(self, designer, tasks_today, tasks_next_day):
+    def generate_draft_message(
+        self,
+        designer: str,
+        tasks_today: list[Any],
+        tasks_next_day: list[Any],
+    ) -> str | None:
         """Сформировать черновое сообщение для дизайнера.
 
         Args:
@@ -406,7 +358,7 @@ class Reminder(object):
 
         return None if m == intro else m
 
-    async def enhance_message(self, message):
+    async def enhance_message(self, message: str) -> str | None:
         """Улучшение сообщения с помощью GPT.
 
         Args:
@@ -422,7 +374,7 @@ class Reminder(object):
         user_input = {'role': 'user', 'content': message}
         return await self.openai_agent.chat(messages=[instruction, user_input])
 
-    async def get_reminders(self):
+    async def get_reminders(self) -> dict[str, str | None]:
         """Получить напоминания.
 
         Returns:
@@ -441,7 +393,7 @@ class Reminder(object):
 
         return self.enhanced_messages
 
-    def _resolve_delivery_message(self, designer_name, message):
+    def _resolve_delivery_message(self, designer_name: str, message: str | None) -> str | None:
         if message:
             return message
 
@@ -455,7 +407,7 @@ class Reminder(object):
         self._inc_delivery_counter("skipped_no_message")
         return None
 
-    def _resolve_delivery_target(self, designer_name, mode):
+    def _resolve_delivery_target(self, designer_name: str, mode: str) -> tuple[Any, Any, bool]:
         designer = self.people_manager.get_person(designer_name)
         if not designer:
             self._inc_delivery_counter("skipped_no_person")
@@ -472,7 +424,7 @@ class Reminder(object):
         can_send = bool(self.tg_bot)
         return designer, chat_id, can_send
 
-    async def _deliver_message(self, designer_name, chat_id, message):
+    async def _deliver_message(self, designer_name: str, chat_id: Any, message: str) -> None:
         delivery_key = self._build_delivery_key(designer_name, chat_id, message)
         if delivery_key in self.sent_delivery_keys:
             _safe_print(f"duplicate_reminder_skip: {designer_name} chat_id={chat_id}")
@@ -511,11 +463,11 @@ class Reminder(object):
                 self._inc_delivery_counter("send_errors")
                 return
 
-    def _get_retry_backoff_delay(self, failed_attempt):
+    def _get_retry_backoff_delay(self, failed_attempt: int) -> float:
         return self.send_retry_backoff_seconds * (self.send_retry_backoff_multiplier ** (failed_attempt - 1))
 
     @staticmethod
-    def _classify_send_error(error):
+    def _classify_send_error(error: Exception) -> dict[str, Any]:
         if isinstance(error, (asyncio.TimeoutError, TimeoutError, aiohttp.ClientError, httpx.TransportError)):
             return {"is_transient": True, "kind": "timeout_or_transport"}
         error_name = type(error).__name__
@@ -569,7 +521,7 @@ class Reminder(object):
 
         return {"is_transient": False, "kind": "unknown"}
 
-    def _track_send_error_kind(self, classification):
+    def _track_send_error_kind(self, classification: Mapping[str, Any]) -> None:
         if classification["is_transient"]:
             self._inc_delivery_counter("send_error_transient")
             return
@@ -578,7 +530,7 @@ class Reminder(object):
             return
         self._inc_delivery_counter("send_error_permanent")
 
-    async def send_reminders(self, mode='test'):
+    async def send_reminders(self, mode: str = 'test') -> None:
         """Отправить напоминания.
 
         Args:
@@ -602,7 +554,7 @@ class Reminder(object):
                 await self._deliver_message(designer_name, chat_id, resolved_message)
         _safe_print(f"reminder_delivery_counters={json.dumps(self.delivery_counters, ensure_ascii=False, sort_keys=True)}")
 
-    def _build_delivery_key(self, designer_name, chat_id, message):
+    def _build_delivery_key(self, designer_name: str, chat_id: Any, message: str) -> str:
         normalized_day = (
             str(self.today.date())
             if isinstance(self.today, pd.Timestamp)
