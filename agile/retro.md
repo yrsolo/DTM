@@ -1,38 +1,28 @@
 # Sprint Retro
 
-## What Went Well
-- Clear branch and merge discipline.
-- Faster iterations due to explicit status reporting.
-- Stage boundary communication became decision-ready (`past/next/estimate/go-no-go`).
+## Latest Retro (Stage 20)
 
-## What Was Hard
-- Legacy behavior comparison takes manual effort.
-- Process rules were spread across multiple files.
+### What Went Well
+- Production-readiness hardening finished without feature churn.
+- Release gate is explicit: local smoke + cloud manual checks.
+- Documentation became shorter and easier to navigate.
 
-## Improvements
-- Keep one active sprint board in `agile/sprint_current.md`.
-- Trigger owner notifications immediately on blockers requiring decision.
-- Keep Telegram notifications intent-explicit: `blocked` only when execution is paused, `info` when execution continues.
+### What Was Hard
+- Historical process evidence was spread across many long files.
+- Overloaded `agile/tasks` root reduced discoverability.
 
-## Stage 11 Detailed Retrospective Scope
-1. Build full timeline from Stage 0 to Stage 10 (decisions, incidents, fixes).
-2. Group root causes into categories:
-   - process gaps,
-   - configuration drift,
-   - runtime/environment mismatch,
-   - insufficient tests/smoke coverage.
-3. For each repeated issue, record:
-   - first seen date,
-   - recurrence count,
-   - impact/cost,
-   - existing mitigation quality.
-4. Convert findings into corrective tasks with:
-   - owner,
-   - deadline,
-   - measurable verification signal.
-5. Approve final retrospective package before Stage 12 start.
+### Improvements Applied
+- `agile/tasks` is now structured by stage ranges and foundation tasks.
+- Active agile docs were compacted; historical snapshots archived.
+- Stage closeout notifications now clearly separate `info` vs `blocked` semantics.
+
+## Next Retro Focus (Stage 21)
+- Measure whether provider SLI thresholds reduce noisy alerts.
+- Verify that runbook steps are actionable during real incidents.
+- Keep sprint board concise (latest focus only, no long historical dumps).
 
 ## Ceremony Checklist Template
-- Review completed sprint goals and blockers.
-- Confirm follow-up Jira items for unresolved risks.
-- Monthly (first retro of month): run alert-threshold drift review using recent baseline bundles and `alert_evaluation.json`, then record decision (`no tuning` / `tuning proposed`) in sprint notes.
+- Confirm sprint goal and WIP=1 adherence.
+- Verify evidence links for all done tasks.
+- Confirm blocker notifications were sent immediately when needed.
+- Decide go/no-go for next stage with task-count estimate.

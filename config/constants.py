@@ -10,6 +10,8 @@ from typing import Mapping
 from dotenv import load_dotenv
 
 ALLOWED_ENVS = frozenset({"dev", "test", "prod"})
+ALLOWED_LLM_PROVIDERS = frozenset({"openai", "google", "yandex"})
+ALLOWED_LLM_FAILOVER_MODES = frozenset({"draft_only", "provider"})
 
 
 def _env(name: str, default: str = "") -> str:
@@ -45,8 +47,39 @@ RUNTIME_ENV = _load_runtime_env()
 STRICT_ENV_GUARD = _env_flag("STRICT_ENV_GUARD")
 
 TG = os.environ.get("TG_TOKEN")
+TG_BOT_USERNAME = _env("TG_BOT_USERNAME")
 OPENAI = os.environ.get("OPENAI_TOKEN")
 ORG = os.environ.get("ORG_TOKEN")
+LLM_PROVIDER = _env("LLM_PROVIDER", "openai").lower()
+if LLM_PROVIDER not in ALLOWED_LLM_PROVIDERS:
+    raise ValueError(
+        f"Unsupported LLM_PROVIDER={LLM_PROVIDER!r}. "
+        "Allowed values: openai, google, yandex."
+    )
+OPENAI_MODEL = _env("OPENAI_MODEL", "")
+GOOGLE_LLM_API_KEY = _env("GOOGLE_LLM_API_KEY")
+GOOGLE_LLM_MODEL = _env("GOOGLE_LLM_MODEL", "gemini-2.0-flash")
+YANDEX_LLM_API_KEY = _env("YANDEX_LLM_API_KEY")
+YANDEX_LLM_MODEL_URI = _env("YANDEX_LLM_MODEL_URI")
+LLM_HTTP_TIMEOUT_SECONDS = float(_env("LLM_HTTP_TIMEOUT_SECONDS", "25"))
+LLM_HTTP_RETRY_ATTEMPTS = max(1, int(_env("LLM_HTTP_RETRY_ATTEMPTS", "2")))
+LLM_HTTP_RETRY_BACKOFF_SECONDS = max(0.0, float(_env("LLM_HTTP_RETRY_BACKOFF_SECONDS", "0.8")))
+LLM_FAILOVER_MODE = _env("LLM_FAILOVER_MODE", "draft_only").lower()
+if LLM_FAILOVER_MODE not in ALLOWED_LLM_FAILOVER_MODES:
+    raise ValueError(
+        f"Unsupported LLM_FAILOVER_MODE={LLM_FAILOVER_MODE!r}. "
+        "Allowed values: draft_only, provider."
+    )
+LLM_FAILOVER_PROVIDER = _env("LLM_FAILOVER_PROVIDER", "").lower()
+if LLM_FAILOVER_PROVIDER and LLM_FAILOVER_PROVIDER not in ALLOWED_LLM_PROVIDERS:
+    raise ValueError(
+        f"Unsupported LLM_FAILOVER_PROVIDER={LLM_FAILOVER_PROVIDER!r}. "
+        "Allowed values: openai, google, yandex."
+    )
+if not YANDEX_LLM_MODEL_URI:
+    yc_folder_id = _env("YC_FOLDER_ID")
+    if yc_folder_id:
+        YANDEX_LLM_MODEL_URI = f"gpt://{yc_folder_id}/yandexgpt/latest"
 PROXY = _env("PROXY_URL")
 PROXIES: Mapping[str, str] = MapProxy({"https://": PROXY}) if PROXY else MapProxy({})
 
@@ -202,9 +235,10 @@ COLORS = MapProxy(
 )
 
 
+# MODEL is kept for backward compatibility with older code paths.
 # MODEL = 'o1-preview'
 # MODEL = 'gpt-4o'
-MODEL = "gpt-5"
+MODEL = OPENAI_MODEL or "gpt-5"
 # MODEL = 'o1-mini'
 
 HELPER_CHARACTER = """

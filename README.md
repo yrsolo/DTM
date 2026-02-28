@@ -6,7 +6,8 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Reads task data from Google Sheets.
 - Builds visual planning views for a design team (timeline and designer-focused boards).
 - Sends morning reminders to designers via Telegram.
-- Uses OpenAI to improve reminder text style, with automatic fallback to draft text when enhancer is unavailable.
+- Responds in group chat when bot is mentioned/commanded with current tasks or nearest deadlines.
+- Uses configurable LLM provider to improve reminder text style (`openai` / `google` / `yandex`), with automatic fallback to draft text when enhancer is unavailable.
 - Reminder delivery has in-run duplicate guard (idempotent send key) to prevent repeated sends in one runtime cycle.
 - Reminder text enhancement is processed in parallel with bounded concurrency for faster multi-designer runs.
 - Reminder delivery now applies bounded retry/backoff for transient Telegram send failures.
@@ -24,6 +25,8 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Google Sheets / Drive API
 - Telegram Bot API
 - OpenAI API
+- Google Generative Language API (optional provider)
+- Yandex Foundation Models API (optional provider)
 - Yandex Cloud / Object Storage
 
 ## Engineering focus
@@ -36,18 +39,12 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Production workflow is active.
 - Architecture is under phased reconstruction.
 - Legacy snapshot is kept in `old/` for controlled comparison during migration.
-- Stage 6 read-model JSON contract draft is documented in `doc/stages/11_stage6_read_model_contract.md`.
-- Stage 6 read-model builder is available in `core/read_model.py` (from current runtime artifacts).
-- Stage 6 UI baseline view specification is documented in `doc/stages/12_stage6_ui_view_spec.md`.
-- Stage 6 closeout and handoff checklist is documented in `doc/stages/13_stage6_closeout_and_handoff.md`.
-- Stage 7 execution plan and dynamic estimate baseline are documented in `doc/stages/14_stage7_execution_plan.md`.
-- Stage 7 consumer/storage policy is documented in `doc/stages/15_stage7_read_model_consumer_policy.md` (Object Storage primary for serverless runtime).
-- Stage 7 UI migration spike scope and acceptance checklist are documented in `doc/stages/16_stage7_ui_spike_scope_and_acceptance.md`.
-- Stage 7 shadow-run readiness checklist is documented in `doc/stages/17_stage7_shadow_run_readiness_checklist.md`.
-- Stage 7 closeout and Stage 8 handoff package is documented in `doc/stages/18_stage7_closeout_and_stage8_handoff.md`.
-- Stage 8 execution plan is documented in `doc/stages/19_stage8_execution_plan.md`.
-- Stage 8 closeout and Stage 9 handoff package is documented in `doc/stages/20_stage8_closeout_and_stage9_handoff.md`.
-- Stage 9 main auto-deploy setup for Yandex Cloud Function is documented in `doc/ops/stage9_main_autodeploy_setup.md`.
+- Stage 0-19 status and evidence index are tracked in `doc/03_reconstruction_backlog.md`.
+- Current sprint/task execution state is tracked in `agile/sprint_current.md`.
+- Main serverless deploy setup is in `doc/ops/stage9_main_autodeploy_setup.md`.
+- Deployment smoke and rollback runbooks are in:
+  - `doc/ops/stage9_deployment_smoke_checklist.md`
+  - `doc/ops/stage10_function_rollback_drill.md`
 - Stage 8 prototype loader utility: `agent/load_prototype_payload.py` (filesystem/Object Storage + schema gate).
 - Stage 8 static prototype assets: `web_prototype/static` (run local preview with `.venv\Scripts\python.exe agent\run_web_prototype_server.py`).
 - Stage 8 payload preparation helper: `.venv\Scripts\python.exe agent\prepare_web_prototype_payload.py --source-mode auto` (writes `web_prototype/static/prototype_payload.json`).
@@ -142,6 +139,31 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `GOOGLE_KEY_JSON_B64` (base64 JSON text)
   - `GOOGLE_KEY_JSON` (raw JSON text)
   - fallback local file in `key/...json` (dev/local only)
+- LLM provider contour:
+  - `LLM_PROVIDER=openai|google|yandex` (default: `openai`)
+  - OpenAI: `OPENAI_TOKEN`, optional `OPENAI_MODEL` (fallback `gpt-5`)
+  - Google: `GOOGLE_LLM_API_KEY`, optional `GOOGLE_LLM_MODEL` (default `gemini-2.0-flash`)
+  - Yandex: `YANDEX_LLM_API_KEY`, `YANDEX_LLM_MODEL_URI`
+    - if `YANDEX_LLM_MODEL_URI` is empty and `YC_FOLDER_ID` is set, fallback is `gpt://<YC_FOLDER_ID>/yandexgpt/latest`
+  - Reliability knobs (all providers):
+    - `LLM_HTTP_TIMEOUT_SECONDS` (default `25`)
+    - `LLM_HTTP_RETRY_ATTEMPTS` (default `2`)
+    - `LLM_HTTP_RETRY_BACKOFF_SECONDS` (default `0.8`)
+  - Failover policy knobs:
+    - `LLM_FAILOVER_MODE=draft_only|provider` (default `draft_only`)
+    - `LLM_FAILOVER_PROVIDER=openai|google|yandex` (used when mode=`provider` and different from primary provider)
+- Group chat query contour:
+  - `TG_BOT_USERNAME` (without `@`) to enable mention parsing in group messages.
+
+## Group Chat Query (new)
+- Works in `group` / `supergroup` chats where bot receives updates.
+- Supported commands:
+  - `/tasks` or `/tasks@<bot_username>` (`/задачи` alias)
+  - `/deadlines` or `/deadlines@<bot_username>` (`/дедлайны` alias)
+- Mention mode (requires `TG_BOT_USERNAME`):
+  - `@<bot_username> покажи задачи`
+  - `@<bot_username> покажи дедлайны`
+- Bot replies in the same group chat.
 - Optional safety guard: set `STRICT_ENV_GUARD=1` to enforce that for `ENV=dev/test` `SOURCE_SHEET_NAME` and `TARGET_SHEET_NAME` are different.
 - Templates:
   - `.env.example` (base)

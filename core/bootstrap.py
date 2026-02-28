@@ -5,11 +5,37 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Mapping
 
-from config import HELPER_CHARACTER, MODEL, OPENAI, ORG, PROXIES, SOURCE_SHEET_INFO, TG
+from config import (
+    GOOGLE_LLM_API_KEY,
+    GOOGLE_LLM_MODEL,
+    HELPER_CHARACTER,
+    LLM_FAILOVER_MODE,
+    LLM_FAILOVER_PROVIDER,
+    LLM_HTTP_RETRY_ATTEMPTS,
+    LLM_HTTP_RETRY_BACKOFF_SECONDS,
+    LLM_HTTP_TIMEOUT_SECONDS,
+    LLM_PROVIDER,
+    MODEL,
+    OPENAI,
+    ORG,
+    PROXIES,
+    SOURCE_SHEET_INFO,
+    TG,
+    YANDEX_LLM_API_KEY,
+    YANDEX_LLM_MODEL_URI,
+)
 from core.adapters import ChatAdapter, MessageAdapter, SheetRenderAdapter
 from core.manager import CalendarManager, TaskCalendarManager, TaskManager, TaskTimingProcessor
 from core.people import PeopleManager
-from core.reminder import AsyncOpenAIChatAgent, MockOpenAIChatAgent, Reminder, TelegramNotifier
+from core.reminder import (
+    AsyncGoogleLLMChatAgent,
+    AsyncOpenAIChatAgent,
+    AsyncYandexLLMChatAgent,
+    FallbackChatAdapter,
+    MockOpenAIChatAgent,
+    Reminder,
+    TelegramNotifier,
+)
 from core.repository import GoogleSheetsTaskRepository
 from core.sheet_renderer import ServiceSheetRenderAdapter
 from utils.service import GoogleSheetInfo, GoogleSheetsService
@@ -46,16 +72,81 @@ def _build_renderer(
     )
 
 
+def _build_single_chat_adapter(provider: str) -> ChatAdapter:
+    provider = str(provider or "").lower()
+    if provider == "openai":
+        return AsyncOpenAIChatAgent(
+            api_key=OPENAI,
+            organization=ORG,
+            proxies=PROXIES,
+            model=MODEL,
+            timeout_seconds=LLM_HTTP_TIMEOUT_SECONDS,
+            retry_attempts=LLM_HTTP_RETRY_ATTEMPTS,
+            retry_backoff_seconds=LLM_HTTP_RETRY_BACKOFF_SECONDS,
+        )
+    if provider == "google":
+        return AsyncGoogleLLMChatAgent(
+            api_key=GOOGLE_LLM_API_KEY,
+            model=GOOGLE_LLM_MODEL,
+            timeout_seconds=LLM_HTTP_TIMEOUT_SECONDS,
+            retry_attempts=LLM_HTTP_RETRY_ATTEMPTS,
+            retry_backoff_seconds=LLM_HTTP_RETRY_BACKOFF_SECONDS,
+        )
+    if provider == "yandex":
+        return AsyncYandexLLMChatAgent(
+            api_key=YANDEX_LLM_API_KEY,
+            model_uri=YANDEX_LLM_MODEL_URI,
+            timeout_seconds=LLM_HTTP_TIMEOUT_SECONDS,
+            retry_attempts=LLM_HTTP_RETRY_ATTEMPTS,
+            retry_backoff_seconds=LLM_HTTP_RETRY_BACKOFF_SECONDS,
+        )
+
+    raise ValueError(
+        f"Unsupported LLM_PROVIDER={provider!r}. Allowed values: openai, google, yandex."
+    )
+
 def _build_chat_adapter(mock_external: bool) -> ChatAdapter:
-    """Create OpenAI chat adapter according to runtime mode."""
+    """Create chat adapter according to selected provider/runtime/failover mode."""
 
     if mock_external:
         return MockOpenAIChatAgent()
-    return AsyncOpenAIChatAgent(
-        api_key=OPENAI,
-        organization=ORG,
-        proxies=PROXIES,
-        model=MODEL,
+
+    provider = LLM_PROVIDER.lower()
+    primary = _build_single_chat_adapter(provider)
+    failover_mode = LLM_FAILOVER_MODE.lower()
+    failover_provider = LLM_FAILOVER_PROVIDER.lower()
+    if failover_mode != "provider":
+        return FallbackChatAdapter(
+            primary=primary,
+            primary_provider=provider,
+            mode=failover_mode,
+            fallback=None,
+            fallback_provider="",
+        )
+
+    if not failover_provider:
+        return FallbackChatAdapter(
+            primary=primary,
+            primary_provider=provider,
+            mode="draft_only",
+            fallback=None,
+            fallback_provider="",
+        )
+    if failover_provider == provider:
+        return FallbackChatAdapter(
+            primary=primary,
+            primary_provider=provider,
+            mode="draft_only",
+            fallback=None,
+            fallback_provider="",
+        )
+    fallback = _build_single_chat_adapter(failover_provider)
+    return FallbackChatAdapter(
+        primary=primary,
+        primary_provider=provider,
+        mode="provider",
+        fallback=fallback,
+        fallback_provider=failover_provider,
     )
 
 
@@ -107,6 +198,7 @@ def build_planner_dependencies(
         mock_openai=mock_external,
         mock_telegram=mock_external,
         telegram_adapter=telegram_adapter,
+        llm_provider_name=LLM_PROVIDER,
     )
 
     return PlannerDependencies(

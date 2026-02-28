@@ -65,6 +65,9 @@ async def run() -> None:
     assert "Alice" in enhanced_messages
     assert enhanced_messages["Alice"] is not None
     assert enhanced_messages["Alice"] == reminder.draft_messages["Alice"]
+    enhancement_counters = reminder.get_enhancement_counters()
+    assert enhancement_counters["attempted"] == 1
+    assert enhancement_counters["fallback_empty"] == 1
 
     await reminder.send_reminders(mode="test")
     print("reminder_fallback_smoke_ok")

@@ -11,6 +11,7 @@
 /data/__pycache__/
 /core/__pycache__/
 /utils/__pycache__/
+/web_prototype/__pycache__/
 /notebooks/
 /.idea/
 /venv/
