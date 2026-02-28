@@ -1,21 +1,26 @@
 # Sprint Current
 
 ## Sprint Goal
-Execute full code quality sweep (style/typing/docstrings/readability) without adding new features.
+Run Stage 13 kickoff and establish executable architecture/operations baseline for the next delivery cycle.
 
 ## Capacity
 1 active task (strict WIP=1).
 
 ## Now
-- [DONE] DTM-156 - Stage 12 closeout and Stage 13 handoff package.
+- [DONE] DTM-161 - Stage 13 closeout and Stage 14 handoff package.
 
-## Stage 12 Estimate (Dynamic)
-- Baseline estimate: 57 tasks (kickoff, matrix, transition, 53 module tasks, closeout).
-- Done: 57
+## Stage 13 Estimate (Dynamic)
+- Baseline estimate: 5 tasks (kickoff, 3 execution slices, closeout).
+- Done: 5
 - Remaining: 0
-- Rule: update `Done/Remaining` after each completed Stage 12 task.
+- Rule: update `Done/Remaining` after each completed Stage 13 task.
 
 ## Done
+- [DONE] DTM-161 - Stage 13 closeout and Stage 14 handoff package.
+- [DONE] DTM-160 - Stage 13 smoke suite normalization and runbook refresh.
+- [DONE] DTM-159 - Stage 13 runtime profile matrix and guardrails.
+- [DONE] DTM-158 - Stage 13 source-of-truth contour and data flow map.
+- [DONE] DTM-157 - Stage 13 kickoff and execution baseline.
 - [DONE] DTM-156 - Stage 12 closeout and Stage 13 handoff package.
 - [DONE] DTM-155 - Stage 12 deep module cleanup completed for `agent.web_prototype_assets_smoke`.
 - [DONE] DTM-154 - Stage 12 deep module cleanup completed for `agent.schema_snapshot_smoke`.
@@ -101,11 +106,11 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 13 kickoff: create Jira execution queue and set active key.
-- [TODO] Stage 13 kickoff: publish execution plan and entry criteria.
+- [TODO] Stage 14 kickoff: create Jira execution queue and active key.
+- [TODO] Stage 14 kickoff: publish execution plan and entry criteria.
 
 ## Active Task Files
-- `agile/tasks/DTM-156_stage12-closeout-and-stage13-handoff.md`
+- `agile/tasks/DTM-161_stage13-closeout-and-stage14-handoff.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`

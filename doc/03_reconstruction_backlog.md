@@ -19,6 +19,7 @@ Safe, incremental migration of DTM from legacy tightly coupled automation to mai
 | 10 | operations hardening and evidence normalization | done | `doc/stages/21_stage9_closeout_and_stage10_handoff.md`, `doc/stages/22_stage10_execution_plan.md`, `doc/stages/23_stage10_closeout_and_stage11_handoff.md` |
 | 11 | detailed retrospective and corrective backlog | done | `doc/stages/24_stage11_retrospective_execution_plan.md`, `doc/stages/30_stage11_closeout_and_stage12_handoff.md`, `agile/retro.md` |
 | 12 | full code quality sweep (no feature work) | done | `doc/stages/31_stage12_code_quality_execution_plan.md`, `doc/governance/stage12_code_quality_standard.md`, `doc/stages/33_stage12_closeout_and_stage13_handoff.md` |
+| 13 | post-sweep operating baseline and guardrails refresh | done | `doc/stages/34_stage13_execution_plan.md`, `doc/stages/38_stage13_closeout_and_stage14_handoff.md` |
 
 ## Stage 9 Progress
 Completed:
@@ -103,7 +104,12 @@ Planned next:
 - `DTM-154` (`agent.schema_snapshot_smoke`) completed.
 - `DTM-155` (`agent.web_prototype_assets_smoke`) completed.
 - `DTM-156` (Stage 12 closeout and Stage 13 handoff) completed.
-- Active execution task: none (Stage 12 closed, pending Stage 13 kickoff).
+- `DTM-157` (Stage 13 kickoff and execution baseline) completed.
+- `DTM-158` (Stage 13 source-of-truth contour and data flow map) completed.
+- `DTM-159` (Stage 13 runtime profile matrix and guardrails) completed.
+- `DTM-160` (Stage 13 smoke suite normalization and runbook refresh) completed.
+- `DTM-161` (Stage 13 closeout and Stage 14 handoff) completed.
+- Active execution task: none (Stage 13 closed, pending Stage 14 kickoff).
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).
