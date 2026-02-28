@@ -5,11 +5,31 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Mapping
 
-from config import HELPER_CHARACTER, MODEL, OPENAI, ORG, PROXIES, SOURCE_SHEET_INFO, TG
+from config import (
+    GOOGLE_LLM_API_KEY,
+    GOOGLE_LLM_MODEL,
+    HELPER_CHARACTER,
+    LLM_PROVIDER,
+    MODEL,
+    OPENAI,
+    ORG,
+    PROXIES,
+    SOURCE_SHEET_INFO,
+    TG,
+    YANDEX_LLM_API_KEY,
+    YANDEX_LLM_MODEL_URI,
+)
 from core.adapters import ChatAdapter, MessageAdapter, SheetRenderAdapter
 from core.manager import CalendarManager, TaskCalendarManager, TaskManager, TaskTimingProcessor
 from core.people import PeopleManager
-from core.reminder import AsyncOpenAIChatAgent, MockOpenAIChatAgent, Reminder, TelegramNotifier
+from core.reminder import (
+    AsyncGoogleLLMChatAgent,
+    AsyncOpenAIChatAgent,
+    AsyncYandexLLMChatAgent,
+    MockOpenAIChatAgent,
+    Reminder,
+    TelegramNotifier,
+)
 from core.repository import GoogleSheetsTaskRepository
 from core.sheet_renderer import ServiceSheetRenderAdapter
 from utils.service import GoogleSheetInfo, GoogleSheetsService
@@ -47,15 +67,32 @@ def _build_renderer(
 
 
 def _build_chat_adapter(mock_external: bool) -> ChatAdapter:
-    """Create OpenAI chat adapter according to runtime mode."""
+    """Create chat adapter according to selected provider and runtime mode."""
 
     if mock_external:
         return MockOpenAIChatAgent()
-    return AsyncOpenAIChatAgent(
-        api_key=OPENAI,
-        organization=ORG,
-        proxies=PROXIES,
-        model=MODEL,
+
+    provider = LLM_PROVIDER.lower()
+    if provider == "openai":
+        return AsyncOpenAIChatAgent(
+            api_key=OPENAI,
+            organization=ORG,
+            proxies=PROXIES,
+            model=MODEL,
+        )
+    if provider == "google":
+        return AsyncGoogleLLMChatAgent(
+            api_key=GOOGLE_LLM_API_KEY,
+            model=GOOGLE_LLM_MODEL,
+        )
+    if provider == "yandex":
+        return AsyncYandexLLMChatAgent(
+            api_key=YANDEX_LLM_API_KEY,
+            model_uri=YANDEX_LLM_MODEL_URI,
+        )
+
+    raise ValueError(
+        f"Unsupported LLM_PROVIDER={provider!r}. Allowed values: openai, google, yandex."
     )
 
 

@@ -10,6 +10,7 @@ from typing import Mapping
 from dotenv import load_dotenv
 
 ALLOWED_ENVS = frozenset({"dev", "test", "prod"})
+ALLOWED_LLM_PROVIDERS = frozenset({"openai", "google", "yandex"})
 
 
 def _env(name: str, default: str = "") -> str:
@@ -47,6 +48,21 @@ STRICT_ENV_GUARD = _env_flag("STRICT_ENV_GUARD")
 TG = os.environ.get("TG_TOKEN")
 OPENAI = os.environ.get("OPENAI_TOKEN")
 ORG = os.environ.get("ORG_TOKEN")
+LLM_PROVIDER = _env("LLM_PROVIDER", "openai").lower()
+if LLM_PROVIDER not in ALLOWED_LLM_PROVIDERS:
+    raise ValueError(
+        f"Unsupported LLM_PROVIDER={LLM_PROVIDER!r}. "
+        "Allowed values: openai, google, yandex."
+    )
+OPENAI_MODEL = _env("OPENAI_MODEL", "")
+GOOGLE_LLM_API_KEY = _env("GOOGLE_LLM_API_KEY")
+GOOGLE_LLM_MODEL = _env("GOOGLE_LLM_MODEL", "gemini-2.0-flash")
+YANDEX_LLM_API_KEY = _env("YANDEX_LLM_API_KEY")
+YANDEX_LLM_MODEL_URI = _env("YANDEX_LLM_MODEL_URI")
+if not YANDEX_LLM_MODEL_URI:
+    yc_folder_id = _env("YC_FOLDER_ID")
+    if yc_folder_id:
+        YANDEX_LLM_MODEL_URI = f"gpt://{yc_folder_id}/yandexgpt/latest"
 PROXY = _env("PROXY_URL")
 PROXIES: Mapping[str, str] = MapProxy({"https://": PROXY}) if PROXY else MapProxy({})
 
@@ -202,9 +218,10 @@ COLORS = MapProxy(
 )
 
 
+# MODEL is kept for backward compatibility with older code paths.
 # MODEL = 'o1-preview'
 # MODEL = 'gpt-4o'
-MODEL = "gpt-5"
+MODEL = OPENAI_MODEL or "gpt-5"
 # MODEL = 'o1-mini'
 
 HELPER_CHARACTER = """

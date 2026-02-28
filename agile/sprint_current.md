@@ -1,21 +1,26 @@
 # Sprint Current
 
 ## Sprint Goal
-Complete Stage 15 cloud render verification hardening: deploy readiness wait-gate and timestamp freshness criterion for real sheet updates.
+Complete Stage 16 multi-LLM reminder adapter expansion: OpenAI + Google + Yandex provider support with local bootstrap smoke coverage.
 
 ## Capacity
 1 active task (strict WIP=1).
 
 ## Now
-- [DONE] DTM-171 - Stage 15 closeout and Stage 16 handoff package.
+- [DONE] DTM-176 - Stage 16 closeout and Stage 17 handoff package.
 
-## Stage 15 Estimate (Dynamic)
+## Stage 16 Estimate (Dynamic)
 - Baseline estimate: 5 tasks (kickoff, 3 execution slices, closeout).
 - Done: 5
 - Remaining: 0
-- Rule: update `Done/Remaining` after each completed Stage 15 task.
+- Rule: update `Done/Remaining` after each completed Stage 16 task.
 
 ## Done
+- [DONE] DTM-176 - Stage 16 closeout and Stage 17 handoff package.
+- [DONE] DTM-175 - Stage 16 docs and runbook refresh for multi-LLM contour.
+- [DONE] DTM-174 - Stage 16 smoke coverage for provider bootstrap selection.
+- [DONE] DTM-173 - Stage 16 runtime adapter expansion for OpenAI/Google/Yandex.
+- [DONE] DTM-172 - Stage 16 kickoff and bounded queue.
 - [DONE] DTM-171 - Stage 15 closeout and Stage 16 handoff package.
 - [DONE] DTM-170 - Stage 15 ops checklist update for freshness criterion.
 - [DONE] DTM-169 - Stage 15 live render freshness smoke by corner timestamp.
@@ -116,11 +121,11 @@ Complete Stage 15 cloud render verification hardening: deploy readiness wait-gat
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 16 kickoff: define semantic render correctness objective and success metric.
-- [TODO] Stage 16 kickoff: publish execution plan and bounded queue.
+- [TODO] Stage 17 kickoff: define provider failover/health policy and rollout constraints.
+- [TODO] Stage 17 kickoff: publish execution plan and bounded queue.
 
 ## Active Task Files
-- `agile/tasks/DTM-171_stage15-closeout-and-stage16-handoff.md`
+- `agile/tasks/DTM-176_stage16-closeout-and-stage17-handoff.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`

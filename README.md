@@ -6,7 +6,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Reads task data from Google Sheets.
 - Builds visual planning views for a design team (timeline and designer-focused boards).
 - Sends morning reminders to designers via Telegram.
-- Uses OpenAI to improve reminder text style, with automatic fallback to draft text when enhancer is unavailable.
+- Uses configurable LLM provider to improve reminder text style (`openai` / `google` / `yandex`), with automatic fallback to draft text when enhancer is unavailable.
 - Reminder delivery has in-run duplicate guard (idempotent send key) to prevent repeated sends in one runtime cycle.
 - Reminder text enhancement is processed in parallel with bounded concurrency for faster multi-designer runs.
 - Reminder delivery now applies bounded retry/backoff for transient Telegram send failures.
@@ -24,6 +24,8 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Google Sheets / Drive API
 - Telegram Bot API
 - OpenAI API
+- Google Generative Language API (optional provider)
+- Yandex Foundation Models API (optional provider)
 - Yandex Cloud / Object Storage
 
 ## Engineering focus
@@ -142,6 +144,12 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `GOOGLE_KEY_JSON_B64` (base64 JSON text)
   - `GOOGLE_KEY_JSON` (raw JSON text)
   - fallback local file in `key/...json` (dev/local only)
+- LLM provider contour:
+  - `LLM_PROVIDER=openai|google|yandex` (default: `openai`)
+  - OpenAI: `OPENAI_TOKEN`, optional `OPENAI_MODEL` (fallback `gpt-5`)
+  - Google: `GOOGLE_LLM_API_KEY`, optional `GOOGLE_LLM_MODEL` (default `gemini-2.0-flash`)
+  - Yandex: `YANDEX_LLM_API_KEY`, `YANDEX_LLM_MODEL_URI`
+    - if `YANDEX_LLM_MODEL_URI` is empty and `YC_FOLDER_ID` is set, fallback is `gpt://<YC_FOLDER_ID>/yandexgpt/latest`
 - Optional safety guard: set `STRICT_ENV_GUARD=1` to enforce that for `ENV=dev/test` `SOURCE_SHEET_NAME` and `TARGET_SHEET_NAME` are different.
 - Templates:
   - `.env.example` (base)

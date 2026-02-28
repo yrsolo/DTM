@@ -155,6 +155,141 @@ class AsyncOpenAIChatAgent:
         await self.http_client.aclose()
 
 
+def _normalize_chat_messages(messages: Any) -> list[dict[str, str]]:
+    """Return chat messages as normalized role/content dictionaries."""
+
+    if isinstance(messages, str):
+        return [{"role": "user", "content": messages}]
+    if not isinstance(messages, list):
+        return []
+
+    normalized: list[dict[str, str]] = []
+    for item in messages:
+        if not isinstance(item, Mapping):
+            continue
+        role = str(item.get("role", "user"))
+        content = str(item.get("content", ""))
+        normalized.append({"role": role, "content": content})
+    return normalized
+
+
+class AsyncGoogleLLMChatAgent:
+    """Async Google Gemini adapter via Generative Language API."""
+
+    def __init__(
+        self,
+        api_key: str,
+        model: str,
+        logger: LoggerAdapter | None = None,
+    ) -> None:
+        self.api_key = str(api_key or "")
+        self.model = str(model or "gemini-2.0-flash")
+        self.logger = logger or NullLogger()
+        self.endpoint = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
+        )
+        self.http_client = httpx.AsyncClient()
+
+    async def chat(self, messages: Any, model: str | None = None) -> str | None:
+        normalized = _normalize_chat_messages(messages)
+        if not normalized:
+            return None
+
+        system_parts = [item["content"] for item in normalized if item["role"] == "system"]
+        regular_parts = [item["content"] for item in normalized if item["role"] != "system"]
+        request_body: dict[str, Any] = {
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [{"text": "\n\n".join(regular_parts)}],
+                }
+            ]
+        }
+        if system_parts:
+            request_body["systemInstruction"] = {"parts": [{"text": "\n\n".join(system_parts)}]}
+
+        resolved_model = str(model or self.model or "gemini-2.0-flash")
+        endpoint = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/"
+            f"{resolved_model}:generateContent"
+        )
+        params = {"key": self.api_key}
+        try:
+            response = await self.http_client.post(endpoint, params=params, json=request_body)
+            response.raise_for_status()
+            payload = response.json()
+            candidates = payload.get("candidates") or []
+            if not candidates:
+                return None
+            parts = ((candidates[0].get("content") or {}).get("parts")) or []
+            if not parts:
+                return None
+            return str(parts[0].get("text") or "")
+        except Exception as error:
+            self.logger.log(f"Google LLM chat error: {error}")
+            return None
+
+    async def aclose(self) -> None:
+        await self.http_client.aclose()
+
+
+class AsyncYandexLLMChatAgent:
+    """Async YandexGPT adapter via Foundation Models completion API."""
+
+    def __init__(
+        self,
+        api_key: str,
+        model_uri: str,
+        logger: LoggerAdapter | None = None,
+    ) -> None:
+        self.api_key = str(api_key or "")
+        self.model_uri = str(model_uri or "")
+        self.logger = logger or NullLogger()
+        self.endpoint = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
+        self.http_client = httpx.AsyncClient()
+
+    async def chat(self, messages: Any, model: str | None = None) -> str | None:
+        normalized = _normalize_chat_messages(messages)
+        if not normalized:
+            return None
+
+        model_uri = str(model or self.model_uri)
+        request_messages = [
+            {
+                "role": str(item["role"]),
+                "text": str(item["content"]),
+            }
+            for item in normalized
+        ]
+        request_body = {
+            "modelUri": model_uri,
+            "completionOptions": {
+                "stream": False,
+                "temperature": 0.2,
+                "maxTokens": "3000",
+            },
+            "messages": request_messages,
+        }
+        headers = {
+            "Authorization": f"Api-Key {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        try:
+            response = await self.http_client.post(self.endpoint, headers=headers, json=request_body)
+            response.raise_for_status()
+            payload = response.json()
+            alternatives = ((payload.get("result") or {}).get("alternatives")) or []
+            if not alternatives:
+                return None
+            return str(((alternatives[0].get("message") or {}).get("text")) or "")
+        except Exception as error:
+            self.logger.log(f"Yandex LLM chat error: {error}")
+            return None
+
+    async def aclose(self) -> None:
+        await self.http_client.aclose()
+
+
 class MockOpenAIChatAgent:
     """Mock агент для тестового режима без внешних вызовов OpenAI."""
 
