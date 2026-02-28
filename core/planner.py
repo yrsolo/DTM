@@ -118,6 +118,7 @@ class GoogleSheetPlanner:
         task_row_issues = [str(issue) for issue in getattr(self.task_repository, "row_issues", [])]
         people_row_issues = [str(issue) for issue in getattr(self.people_manager, "row_issues", [])]
         reminder_delivery_counters = getattr(self.reminder, "get_delivery_counters", lambda: {})()
+        reminder_enhancement_counters = getattr(self.reminder, "get_enhancement_counters", lambda: {})()
         timing_parse_issues = [
             str(issue) for issue in getattr(self.task_repository.timing_parser, "parse_issues", [])
         ]
@@ -153,10 +154,36 @@ class GoogleSheetPlanner:
                     reminder_delivery_counters,
                     "send_error_unknown",
                 ),
+                "reminder_enhancer_provider": reminder_enhancement_counters.get("provider", ""),
+                "reminder_enhancer_candidate_count": _counter_value(
+                    reminder_enhancement_counters,
+                    "candidates_total",
+                ),
+                "reminder_enhancer_attempt_count": _counter_value(
+                    reminder_enhancement_counters,
+                    "attempted",
+                ),
+                "reminder_enhancer_success_count": _counter_value(
+                    reminder_enhancement_counters,
+                    "succeeded",
+                ),
+                "reminder_enhancer_fallback_empty_count": _counter_value(
+                    reminder_enhancement_counters,
+                    "fallback_empty",
+                ),
+                "reminder_enhancer_fallback_exception_count": _counter_value(
+                    reminder_enhancement_counters,
+                    "fallback_exception",
+                ),
+                "reminder_enhancer_skipped_mock_count": _counter_value(
+                    reminder_enhancement_counters,
+                    "skipped_mock",
+                ),
                 **reminder_sli_summary,
             },
             "task_row_issues": task_row_issues,
             "people_row_issues": people_row_issues,
             "timing_parse_issues": timing_parse_issues,
             "reminder_delivery_counters": reminder_delivery_counters,
+            "reminder_enhancement_counters": reminder_enhancement_counters,
         }

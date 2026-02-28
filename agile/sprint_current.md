@@ -1,21 +1,26 @@
 # Sprint Current
 
 ## Sprint Goal
-Complete Stage 17 group-chat bot query flow: mention/command in group returns current tasks or nearest deadlines in the same chat.
+Complete Stage 18 multi-LLM reliability contour: timeout/retry guardrails and provider-level enhancer counters.
 
 ## Capacity
 1 active task (strict WIP=1).
 
 ## Now
-- [DONE] DTM-181 - Stage 17 closeout and Stage 18 handoff package.
+- [DONE] DTM-186 - Stage 18 closeout and Stage 19 handoff package.
 
-## Stage 17 Estimate (Dynamic)
+## Stage 18 Estimate (Dynamic)
 - Baseline estimate: 5 tasks (kickoff, 3 execution slices, closeout).
 - Done: 5
 - Remaining: 0
-- Rule: update `Done/Remaining` after each completed Stage 17 task.
+- Rule: update `Done/Remaining` after each completed Stage 18 task.
 
 ## Done
+- [DONE] DTM-186 - Stage 18 closeout and Stage 19 handoff package.
+- [DONE] DTM-185 - Stage 18 docs and runbook refresh for reliability contour.
+- [DONE] DTM-184 - Stage 18 smoke coverage for enhancer counters and provider bootstrap.
+- [DONE] DTM-183 - Stage 18 reliability runtime guardrails (timeout/retry) and enhancer counters.
+- [DONE] DTM-182 - Stage 18 kickoff and bounded queue.
 - [DONE] DTM-181 - Stage 17 closeout and Stage 18 handoff package.
 - [DONE] DTM-180 - Stage 17 docs and runbook refresh for group query contour.
 - [DONE] DTM-179 - Stage 17 smoke coverage for group query parsing/rendering.
@@ -126,11 +131,11 @@ Complete Stage 17 group-chat bot query flow: mention/command in group returns cu
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 18 kickoff: provider reliability policy and failover constraints.
-- [TODO] Stage 18 kickoff: publish execution plan and bounded queue.
+- [TODO] Stage 19 kickoff: provider failover policy (draft-only vs alternate-provider).
+- [TODO] Stage 19 kickoff: publish execution plan and bounded queue.
 
 ## Active Task Files
-- `agile/tasks/DTM-181_stage17-closeout-and-stage18-handoff.md`
+- `agile/tasks/DTM-186_stage18-closeout-and-stage19-handoff.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`

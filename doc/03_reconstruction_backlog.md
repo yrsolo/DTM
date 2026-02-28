@@ -24,6 +24,7 @@ Safe, incremental migration of DTM from legacy tightly coupled automation to mai
 | 15 | cloud render verification hardening (deploy wait-gate + timestamp freshness) | done | `doc/stages/43_stage15_execution_plan.md`, `doc/stages/46_stage15_closeout_and_stage16_handoff.md` |
 | 16 | multi-LLM reminder runtime expansion (OpenAI/Google/Yandex) | done | `doc/stages/47_stage16_execution_plan.md`, `doc/stages/50_stage16_closeout_and_stage17_handoff.md` |
 | 17 | group-chat bot query for tasks and nearest deadlines | done | `doc/stages/51_stage17_execution_plan.md`, `doc/stages/54_stage17_closeout_and_stage18_handoff.md` |
+| 18 | provider reliability guardrails (timeout/retry + enhancer counters) | done | `doc/stages/55_stage18_execution_plan.md`, `doc/stages/58_stage18_closeout_and_stage19_handoff.md` |
 
 ## Stage 9 Progress
 Completed:
@@ -123,7 +124,7 @@ Planned next:
 - `DTM-169` (Stage 15 live render freshness smoke) completed.
 - `DTM-170` (Stage 15 ops checklist freshness update) completed.
 - `DTM-171` (Stage 15 closeout and Stage 16 handoff) completed.
-- Active execution task: none (Stage 17 closed, pending Stage 18 kickoff).
+- Active execution task: none (Stage 18 closed, pending Stage 19 kickoff).
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).

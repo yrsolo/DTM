@@ -9,6 +9,9 @@ from config import (
     GOOGLE_LLM_API_KEY,
     GOOGLE_LLM_MODEL,
     HELPER_CHARACTER,
+    LLM_HTTP_RETRY_ATTEMPTS,
+    LLM_HTTP_RETRY_BACKOFF_SECONDS,
+    LLM_HTTP_TIMEOUT_SECONDS,
     LLM_PROVIDER,
     MODEL,
     OPENAI,
@@ -79,16 +82,25 @@ def _build_chat_adapter(mock_external: bool) -> ChatAdapter:
             organization=ORG,
             proxies=PROXIES,
             model=MODEL,
+            timeout_seconds=LLM_HTTP_TIMEOUT_SECONDS,
+            retry_attempts=LLM_HTTP_RETRY_ATTEMPTS,
+            retry_backoff_seconds=LLM_HTTP_RETRY_BACKOFF_SECONDS,
         )
     if provider == "google":
         return AsyncGoogleLLMChatAgent(
             api_key=GOOGLE_LLM_API_KEY,
             model=GOOGLE_LLM_MODEL,
+            timeout_seconds=LLM_HTTP_TIMEOUT_SECONDS,
+            retry_attempts=LLM_HTTP_RETRY_ATTEMPTS,
+            retry_backoff_seconds=LLM_HTTP_RETRY_BACKOFF_SECONDS,
         )
     if provider == "yandex":
         return AsyncYandexLLMChatAgent(
             api_key=YANDEX_LLM_API_KEY,
             model_uri=YANDEX_LLM_MODEL_URI,
+            timeout_seconds=LLM_HTTP_TIMEOUT_SECONDS,
+            retry_attempts=LLM_HTTP_RETRY_ATTEMPTS,
+            retry_backoff_seconds=LLM_HTTP_RETRY_BACKOFF_SECONDS,
         )
 
     raise ValueError(
@@ -144,6 +156,7 @@ def build_planner_dependencies(
         mock_openai=mock_external,
         mock_telegram=mock_external,
         telegram_adapter=telegram_adapter,
+        llm_provider_name=LLM_PROVIDER,
     )
 
     return PlannerDependencies(

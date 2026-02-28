@@ -151,6 +151,10 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - Google: `GOOGLE_LLM_API_KEY`, optional `GOOGLE_LLM_MODEL` (default `gemini-2.0-flash`)
   - Yandex: `YANDEX_LLM_API_KEY`, `YANDEX_LLM_MODEL_URI`
     - if `YANDEX_LLM_MODEL_URI` is empty and `YC_FOLDER_ID` is set, fallback is `gpt://<YC_FOLDER_ID>/yandexgpt/latest`
+  - Reliability knobs (all providers):
+    - `LLM_HTTP_TIMEOUT_SECONDS` (default `25`)
+    - `LLM_HTTP_RETRY_ATTEMPTS` (default `2`)
+    - `LLM_HTTP_RETRY_BACKOFF_SECONDS` (default `0.8`)
 - Group chat query contour:
   - `TG_BOT_USERNAME` (without `@`) to enable mention parsing in group messages.
 

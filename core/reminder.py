@@ -86,6 +86,9 @@ class AsyncOpenAIChatAgent:
         model: str | None = None,
         organization: str | None = None,
         logger: LoggerAdapter | None = None,
+        timeout_seconds: float = 25.0,
+        retry_attempts: int = 2,
+        retry_backoff_seconds: float = 0.8,
     ) -> None:
 
         self.api_key = api_key
@@ -94,8 +97,11 @@ class AsyncOpenAIChatAgent:
         self.endpoint = 'https://api.openai.com/v1/chat/completions'
         self.model = model
         self.logger = logger or NullLogger()
+        self.timeout_seconds = max(1.0, float(timeout_seconds))
+        self.retry_attempts = max(1, int(retry_attempts))
+        self.retry_backoff_seconds = max(0.0, float(retry_backoff_seconds))
         proxy_url = _sanitize_proxy_url(self.proxies.get("https://") or self.proxies.get("http://"))
-        client_kwargs = {}
+        client_kwargs = {"timeout": self.timeout_seconds}
         if proxy_url:
             # httpx>=0.28 uses singular "proxy" argument.
             client_kwargs["proxy"] = proxy_url
@@ -107,48 +113,42 @@ class AsyncOpenAIChatAgent:
 
 
     async def chat(self, messages: Any, model: str | None = None) -> str | None:
-        """Чат с OpenAI GPT.
-
-        Args:
-            messages (list): Список сообщений.
-            model: GPT-model.
-
-        Returns:
-            str: Ответ OpenAI.
-
-        Raises:
-            Exception: Если запрос к OpenAI не удался.
-        """
+        """Call OpenAI chat completion with transient retry guard."""
 
         _safe_print(f"openai_proxies={self.proxies}")
 
         if isinstance(messages, str):
-            messages = [{'role': 'user', 'content': messages}]
-
+            messages = [{"role": "user", "content": messages}]
 
         if not model:
             model = self.model
-
         if not model:
-            model = 'gpt-3.5-turbo'
+            model = "gpt-3.5-turbo"
 
         _safe_print(f"openai_messages={messages}")
 
-        try:
-            completion = await self.client.chat.completions.create(
-                model=model,
-                messages=messages,
-            )
-        except Exception as e:
-            error_text = f"""Ошибка при обращении к OpenAI:
-            {e}
-            {messages}
-            """
-            _safe_print(e)
-            self.logger.log(error_text)
+        completion = None
+        for attempt in range(1, self.retry_attempts + 1):
+            try:
+                completion = await self.client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                )
+                break
+            except Exception as error:
+                transient = _is_transient_llm_error(error)
+                can_retry = transient and attempt < self.retry_attempts
+                if can_retry:
+                    await asyncio.sleep(self.retry_backoff_seconds * (2 ** (attempt - 1)))
+                    continue
+                self.logger.log(
+                    "OpenAI chat error: "
+                    f"attempt={attempt}/{self.retry_attempts} transient={transient} error={error}",
+                )
+                return None
 
+        if completion is None:
             return None
-
         return completion.choices[0].message.content
 
     async def aclose(self) -> None:
@@ -173,6 +173,41 @@ def _normalize_chat_messages(messages: Any) -> list[dict[str, str]]:
     return normalized
 
 
+def _extract_status_code(error: Exception) -> int | None:
+    status_code = getattr(error, "status_code", None)
+    if status_code is None:
+        response = getattr(error, "response", None)
+        if response is not None:
+            status_code = getattr(response, "status_code", None)
+    try:
+        return int(status_code) if status_code is not None else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _is_transient_llm_error(error: Exception) -> bool:
+    if isinstance(error, (asyncio.TimeoutError, TimeoutError, aiohttp.ClientError, httpx.TransportError)):
+        return True
+    status_code = _extract_status_code(error)
+    if status_code in {408, 425, 429, 500, 502, 503, 504}:
+        return True
+    error_text = str(error).lower()
+    return any(
+        token in error_text
+        for token in (
+            "timeout",
+            "timed out",
+            "temporary",
+            "temporarily",
+            "rate limit",
+            "too many requests",
+            "bad gateway",
+            "service unavailable",
+            "gateway timeout",
+        )
+    )
+
+
 class AsyncGoogleLLMChatAgent:
     """Async Google Gemini adapter via Generative Language API."""
 
@@ -181,14 +216,17 @@ class AsyncGoogleLLMChatAgent:
         api_key: str,
         model: str,
         logger: LoggerAdapter | None = None,
+        timeout_seconds: float = 25.0,
+        retry_attempts: int = 2,
+        retry_backoff_seconds: float = 0.8,
     ) -> None:
         self.api_key = str(api_key or "")
         self.model = str(model or "gemini-2.0-flash")
         self.logger = logger or NullLogger()
-        self.endpoint = (
-            f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
-        )
-        self.http_client = httpx.AsyncClient()
+        self.timeout_seconds = max(1.0, float(timeout_seconds))
+        self.retry_attempts = max(1, int(retry_attempts))
+        self.retry_backoff_seconds = max(0.0, float(retry_backoff_seconds))
+        self.http_client = httpx.AsyncClient(timeout=self.timeout_seconds)
 
     async def chat(self, messages: Any, model: str | None = None) -> str | None:
         normalized = _normalize_chat_messages(messages)
@@ -214,20 +252,30 @@ class AsyncGoogleLLMChatAgent:
             f"{resolved_model}:generateContent"
         )
         params = {"key": self.api_key}
-        try:
-            response = await self.http_client.post(endpoint, params=params, json=request_body)
-            response.raise_for_status()
-            payload = response.json()
-            candidates = payload.get("candidates") or []
-            if not candidates:
+        for attempt in range(1, self.retry_attempts + 1):
+            try:
+                response = await self.http_client.post(endpoint, params=params, json=request_body)
+                response.raise_for_status()
+                payload = response.json()
+                candidates = payload.get("candidates") or []
+                if not candidates:
+                    return None
+                parts = ((candidates[0].get("content") or {}).get("parts")) or []
+                if not parts:
+                    return None
+                return str(parts[0].get("text") or "")
+            except Exception as error:
+                transient = _is_transient_llm_error(error)
+                can_retry = transient and attempt < self.retry_attempts
+                if can_retry:
+                    await asyncio.sleep(self.retry_backoff_seconds * (2 ** (attempt - 1)))
+                    continue
+                self.logger.log(
+                    "Google LLM chat error: "
+                    f"attempt={attempt}/{self.retry_attempts} transient={transient} error={error}",
+                )
                 return None
-            parts = ((candidates[0].get("content") or {}).get("parts")) or []
-            if not parts:
-                return None
-            return str(parts[0].get("text") or "")
-        except Exception as error:
-            self.logger.log(f"Google LLM chat error: {error}")
-            return None
+        return None
 
     async def aclose(self) -> None:
         await self.http_client.aclose()
@@ -241,12 +289,18 @@ class AsyncYandexLLMChatAgent:
         api_key: str,
         model_uri: str,
         logger: LoggerAdapter | None = None,
+        timeout_seconds: float = 25.0,
+        retry_attempts: int = 2,
+        retry_backoff_seconds: float = 0.8,
     ) -> None:
         self.api_key = str(api_key or "")
         self.model_uri = str(model_uri or "")
         self.logger = logger or NullLogger()
+        self.timeout_seconds = max(1.0, float(timeout_seconds))
+        self.retry_attempts = max(1, int(retry_attempts))
+        self.retry_backoff_seconds = max(0.0, float(retry_backoff_seconds))
         self.endpoint = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
-        self.http_client = httpx.AsyncClient()
+        self.http_client = httpx.AsyncClient(timeout=self.timeout_seconds)
 
     async def chat(self, messages: Any, model: str | None = None) -> str | None:
         normalized = _normalize_chat_messages(messages)
@@ -274,17 +328,27 @@ class AsyncYandexLLMChatAgent:
             "Authorization": f"Api-Key {self.api_key}",
             "Content-Type": "application/json",
         }
-        try:
-            response = await self.http_client.post(self.endpoint, headers=headers, json=request_body)
-            response.raise_for_status()
-            payload = response.json()
-            alternatives = ((payload.get("result") or {}).get("alternatives")) or []
-            if not alternatives:
+        for attempt in range(1, self.retry_attempts + 1):
+            try:
+                response = await self.http_client.post(self.endpoint, headers=headers, json=request_body)
+                response.raise_for_status()
+                payload = response.json()
+                alternatives = ((payload.get("result") or {}).get("alternatives")) or []
+                if not alternatives:
+                    return None
+                return str(((alternatives[0].get("message") or {}).get("text")) or "")
+            except Exception as error:
+                transient = _is_transient_llm_error(error)
+                can_retry = transient and attempt < self.retry_attempts
+                if can_retry:
+                    await asyncio.sleep(self.retry_backoff_seconds * (2 ** (attempt - 1)))
+                    continue
+                self.logger.log(
+                    "Yandex LLM chat error: "
+                    f"attempt={attempt}/{self.retry_attempts} transient={transient} error={error}",
+                )
                 return None
-            return str(((alternatives[0].get("message") or {}).get("text")) or "")
-        except Exception as error:
-            self.logger.log(f"Yandex LLM chat error: {error}")
-            return None
+        return None
 
     async def aclose(self) -> None:
         await self.http_client.aclose()
@@ -321,6 +385,7 @@ class Reminder:
         send_retry_backoff_seconds: float = 0.5,
         send_retry_backoff_multiplier: float = 2.0,
         sleep_func: Callable[[float], Any] | None = None,
+        llm_provider_name: str = "openai",
     ) -> None:
         self.task_repository = task_repository
         self.openai_agent = openai_agent
@@ -331,6 +396,7 @@ class Reminder:
         else:
             self.tg_bot = telegram_adapter or TelegramNotifier(tg_bot_token)
         self.helper_character = helper_character
+        self.llm_provider_name = str(llm_provider_name or "openai")
         self.draft_messages = {}
         self.enhanced_messages = {}
         self.sent_delivery_keys = set()
@@ -344,7 +410,9 @@ class Reminder:
         self.send_retry_backoff_multiplier = max(1.0, float(send_retry_backoff_multiplier))
         self._sleep = sleep_func or asyncio.sleep
         self.delivery_counters = {}
+        self.enhancement_counters = {}
         self.reset_delivery_counters()
+        self.reset_enhancement_counters()
 
     def reset_delivery_counters(self) -> None:
         self.delivery_counters = {
@@ -369,6 +437,25 @@ class Reminder:
 
     def get_delivery_counters(self) -> dict[str, int]:
         return dict(self.delivery_counters)
+
+    def reset_enhancement_counters(self) -> None:
+        self.enhancement_counters = {
+            "provider": self.llm_provider_name,
+            "candidates_total": 0,
+            "attempted": 0,
+            "succeeded": 0,
+            "fallback_empty": 0,
+            "fallback_exception": 0,
+            "skipped_mock": 0,
+        }
+
+    def _inc_enhancement_counter(self, key: str, value: int = 1) -> None:
+        if key == "provider":
+            return
+        self.enhancement_counters[key] = int(self.enhancement_counters.get(key, 0)) + int(value)
+
+    def get_enhancement_counters(self) -> dict[str, Any]:
+        return dict(self.enhancement_counters)
 
     def _build_reminder_context(self) -> tuple[pd.Timestamp, pd.Timestamp, dict[str, list[Any]], dict[str, list[Any]]]:
         today, next_work_day = self.calculate_dates()
@@ -413,17 +500,23 @@ class Reminder:
             self.draft_messages[designer] = draft  # Сохраняем черновое сообщение
             if self.mock_openai:
                 self.enhanced_messages[designer] = draft
+                self._inc_enhancement_counter("skipped_mock")
                 return draft
+            self._inc_enhancement_counter("attempted")
             try:
                 enhanced = await self._enhance_message_limited(draft)
                 if not enhanced:
                     _safe_print("chat_enhancer_empty_response: fallback_to_draft")
                     enhanced = draft
+                    self._inc_enhancement_counter("fallback_empty")
+                else:
+                    self._inc_enhancement_counter("succeeded")
                 self.enhanced_messages[designer] = enhanced  # Сохраняем улучшенное сообщение
                 return enhanced
             except Exception as e:
                 # В случае ошибки при обращении к серверу, вернуть исходное сообщение
                 _safe_print(f"chat_enhancer_error: {e}")
+                self._inc_enhancement_counter("fallback_exception")
                 self.enhanced_messages[designer] = draft
                 return draft
 
@@ -515,8 +608,10 @@ class Reminder:
         Returns:
             dict: Словарь улучшенных сообщений.
         """
+        self.reset_enhancement_counters()
         _, _, tasks_today, tasks_next_day = self._build_reminder_context()
         designers = self._collect_designers(tasks_today, tasks_next_day)
+        self._inc_enhancement_counter("candidates_total", len(designers))
         tasks = [
             self._build_designer_message(designer, tasks_today, tasks_next_day)
             for designer in designers
@@ -697,3 +792,5 @@ class Reminder:
         )
         msg_hash = hashlib.sha256(str(message).encode("utf-8")).hexdigest()[:16]
         return f"{normalized_day}|{designer_name}|{chat_id}|{msg_hash}"
+
+

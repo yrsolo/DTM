@@ -149,3 +149,4 @@
 - Stage 5 SLI kickoff increment: planner quality report now derives reminder SLI metrics (`reminder_delivery_attemptable_count`, `reminder_delivery_attempted_count`, `reminder_delivery_rate`, `reminder_failure_rate`) from delivery counters; deterministic formula smoke added in `agent/reminder_sli_summary_smoke.py`.
 - Stage 16 increment: reminder enhancer supports multiple LLM providers (`openai`/`google`/`yandex`) via `LLM_PROVIDER` switch in bootstrap.
 - Stage 17 increment: cloud HTTP handler now supports Telegram group query requests (commands/mentions) and replies in same group chat; parser/render helpers are isolated in `core/group_query.py` with deterministic smoke `agent/group_query_smoke.py`.
+- Stage 18 increment: reminder enhancer adapters now use explicit timeout/retry/backoff guardrails (`LLM_HTTP_*`) and planner quality report exposes enhancer counters by provider.
