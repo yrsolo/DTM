@@ -3,8 +3,19 @@
 from dataclasses import dataclass
 from typing import Any
 
+OPTIONAL_FIELDS = (
+    "note",
+    "color",
+    "text_color",
+    "col",
+    "row",
+    "bold",
+    "italic",
+    "font_size",
+)
 
-@dataclass
+
+@dataclass(slots=True)
 class RenderCell:
     """Typed payload used by sheet renderers before calling update_cell."""
 
@@ -19,23 +30,13 @@ class RenderCell:
     font_size: int | None = None
 
     def to_cell_data(self) -> dict[str, Any]:
+        """Convert dataclass payload to sparse renderer cell dict."""
+
         payload: dict[str, Any] = {}
         if self.value is not None:
             payload["value"] = self.value
-        if self.note is not None:
-            payload["note"] = self.note
-        if self.color is not None:
-            payload["color"] = self.color
-        if self.text_color is not None:
-            payload["text_color"] = self.text_color
-        if self.col is not None:
-            payload["col"] = self.col
-        if self.row is not None:
-            payload["row"] = self.row
-        if self.bold is not None:
-            payload["bold"] = self.bold
-        if self.italic is not None:
-            payload["italic"] = self.italic
-        if self.font_size is not None:
-            payload["font_size"] = self.font_size
+        for field_name in OPTIONAL_FIELDS:
+            field_value = getattr(self, field_name)
+            if field_value is not None:
+                payload[field_name] = field_value
         return payload

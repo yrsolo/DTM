@@ -32,6 +32,33 @@ class PlannerDependencies:
     reminder: Reminder
 
 
+def _build_renderer(
+    service: GoogleSheetsService,
+    sheet_info: GoogleSheetInfo,
+    sheet_key: str,
+) -> SheetRenderAdapter:
+    """Create typed sheet renderer bound to target sheet key."""
+
+    return ServiceSheetRenderAdapter(
+        service=service,
+        spreadsheet_name=sheet_info.spreadsheet_name,
+        sheet_name=sheet_info.get_sheet_name(sheet_key),
+    )
+
+
+def _build_chat_adapter(mock_external: bool) -> ChatAdapter:
+    """Create OpenAI chat adapter according to runtime mode."""
+
+    if mock_external:
+        return MockOpenAIChatAgent()
+    return AsyncOpenAIChatAgent(
+        api_key=OPENAI,
+        organization=ORG,
+        proxies=PROXIES,
+        model=MODEL,
+    )
+
+
 def build_planner_dependencies(
     key_json: str,
     sheet_info_data: Mapping[str, str],
@@ -43,36 +70,23 @@ def build_planner_dependencies(
     source_sheet_info = GoogleSheetInfo(**SOURCE_SHEET_INFO)
 
     service = GoogleSheetsService(key_json, dry_run=dry_run)
-    timing_processor = TaskTimingProcessor()
     task_repository = GoogleSheetsTaskRepository(
         sheet_info,
         service,
         source_sheet_info=source_sheet_info,
     )
-    designers_renderer: SheetRenderAdapter = ServiceSheetRenderAdapter(
-        service=service,
-        spreadsheet_name=sheet_info.spreadsheet_name,
-        sheet_name=sheet_info.get_sheet_name("designers"),
-    )
-    task_manager = TaskManager(
-        task_repository,
-        renderer=designers_renderer,
-    )
-    calendar_renderer: SheetRenderAdapter = ServiceSheetRenderAdapter(
-        service=service,
-        spreadsheet_name=sheet_info.spreadsheet_name,
-        sheet_name=sheet_info.get_sheet_name("calendar"),
-    )
+    timing_processor = TaskTimingProcessor()
+
+    designers_renderer = _build_renderer(service, sheet_info, "designers")
+    calendar_renderer = _build_renderer(service, sheet_info, "calendar")
+    task_calendar_renderer = _build_renderer(service, sheet_info, "task_calendar")
+
+    task_manager = TaskManager(task_repository, renderer=designers_renderer)
     calendar_manager = CalendarManager(
         sheet_info,
         service,
         task_repository,
         renderer=calendar_renderer,
-    )
-    task_calendar_renderer: SheetRenderAdapter = ServiceSheetRenderAdapter(
-        service=service,
-        spreadsheet_name=sheet_info.spreadsheet_name,
-        sheet_name=sheet_info.get_sheet_name("task_calendar"),
     )
     task_calendar_manager = TaskCalendarManager(
         sheet_info,
@@ -81,16 +95,7 @@ def build_planner_dependencies(
         renderer=task_calendar_renderer,
     )
 
-    openai_agent: ChatAdapter = (
-        MockOpenAIChatAgent()
-        if mock_external
-        else AsyncOpenAIChatAgent(
-            api_key=OPENAI,
-            organization=ORG,
-            proxies=PROXIES,
-            model=MODEL,
-        )
-    )
+    openai_agent = _build_chat_adapter(mock_external)
     telegram_adapter: MessageAdapter | None = None if mock_external else TelegramNotifier(TG)
     people_manager = PeopleManager(service=service, sheet_info=source_sheet_info)
     reminder = Reminder(

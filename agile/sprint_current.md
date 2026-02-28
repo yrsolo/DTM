@@ -7,15 +7,31 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 1 active task (strict WIP=1).
 
 ## Now
-- [IN_PROGRESS] DTM-141 - Stage 12 deep module cleanup: `agent.run_web_prototype_server`.
+- [DONE] DTM-156 - Stage 12 closeout and Stage 13 handoff package.
 
 ## Stage 12 Estimate (Dynamic)
 - Baseline estimate: 57 tasks (kickoff, matrix, transition, 53 module tasks, closeout).
-- Done: 41
-- Remaining: 16
+- Done: 57
+- Remaining: 0
 - Rule: update `Done/Remaining` after each completed Stage 12 task.
 
 ## Done
+- [DONE] DTM-156 - Stage 12 closeout and Stage 13 handoff package.
+- [DONE] DTM-155 - Stage 12 deep module cleanup completed for `agent.web_prototype_assets_smoke`.
+- [DONE] DTM-154 - Stage 12 deep module cleanup completed for `agent.schema_snapshot_smoke`.
+- [DONE] DTM-153 - Stage 12 deep module cleanup completed for `agent.reminder_sli_summary_smoke`.
+- [DONE] DTM-152 - Stage 12 deep module cleanup completed for `agent.reminder_alert_review_flow_smoke`.
+- [DONE] DTM-151 - Stage 12 deep module cleanup completed for `agent.read_model_publication_smoke`.
+- [DONE] DTM-150 - Stage 12 deep module cleanup completed for `agent.read_model_contract_compat_smoke`.
+- [DONE] DTM-149 - Stage 12 deep module cleanup completed for `agent.read_model_builder_smoke`.
+- [DONE] DTM-148 - Stage 12 deep module cleanup completed for `agent.fixture_bundle_smoke`.
+- [DONE] DTM-147 - Stage 12 deep module cleanup completed for `agent.deploy_run_evidence_report_smoke`.
+- [DONE] DTM-146 - Stage 12 deep module cleanup completed for `core.use_cases`.
+- [DONE] DTM-145 - Stage 12 deep module cleanup completed for `core.render_contracts`.
+- [DONE] DTM-144 - Stage 12 deep module cleanup completed for `core.bootstrap`.
+- [DONE] DTM-143 - Stage 12 deep module cleanup completed for `config.constants`.
+- [DONE] DTM-142 - Stage 12 deep module cleanup completed for `agent.stage8_shadow_run_evidence_smoke`.
+- [DONE] DTM-141 - Stage 12 deep module cleanup completed for `agent.run_web_prototype_server`.
 - [DONE] DTM-140 - Stage 12 deep module cleanup completed for `agent.reminder_sli_trend_persistence_smoke`.
 - [DONE] DTM-139 - Stage 12 deep module cleanup completed for `agent.reminder_alert_evaluator_smoke`.
 - [DONE] DTM-138 - Stage 12 deep module cleanup completed for `agent.prototype_loader_smoke`.
@@ -85,11 +101,11 @@ Execute full code quality sweep (style/typing/docstrings/readability) without ad
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-142: deep module cleanup `agent.stage8_shadow_run_evidence_smoke`.
-- [TODO] DTM-143: deep module cleanup `config.constants`.
+- [TODO] Stage 13 kickoff: create Jira execution queue and set active key.
+- [TODO] Stage 13 kickoff: publish execution plan and entry criteria.
 
 ## Active Task Files
-- `agile/tasks/DTM-141_stage12-module-agent-run-web-prototype-server.md`
+- `agile/tasks/DTM-156_stage12-closeout-and-stage13-handoff.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`

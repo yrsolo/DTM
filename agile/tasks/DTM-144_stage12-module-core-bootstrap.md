@@ -1,4 +1,4 @@
-# DTM-144: Stage 12 deep cleanup for module `core.bootstrap`
+﻿# DTM-144: Stage 12 deep cleanup for module `core.bootstrap`
 
 ## Context
 - Stage 12 switched to deep per-module execution model.
@@ -24,15 +24,17 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-144`).
-- [x] Jira status set to `? ??????????`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `??????`.
-- [ ] Telegram completion sent.
+- [x] Jira status set to `В работе`.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `core.bootstrap`.
+- 2026-02-28: Extracted `_build_renderer` and `_build_chat_adapter` helpers to simplify dependency wiring and reduce repetition in `build_planner_dependencies`.
+- 2026-02-28: Checks: `python -m compileall core`, `python -c "from core.bootstrap import build_planner_dependencies"`, `.venv\Scripts\python.exe agent\render_adapter_smoke.py`.
 
 ## Links
 - Jira: DTM-144

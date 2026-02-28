@@ -24,15 +24,18 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-142`).
-- [x] Jira status set to `? ??????????`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `??????`.
-- [ ] Telegram completion sent.
+- [x] Jira status set to `В работе`.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `agent.stage8_shadow_run_evidence_smoke`.
+- 2026-02-28: Refactored smoke harness with typed constants/helpers, resilient subprocess decoding (`errors=\"replace\"`), and deterministic baseline preparation from existing `artifacts/baseline` (fallback preserved).
+- 2026-02-28: Hardened `--require-cloud-keys` negative test by forcing empty cloud-key env values for child run.
+- 2026-02-28: Checks: `python -m compileall agent`, `.venv\Scripts\python.exe agent\stage8_shadow_run_evidence_smoke.py`.
 
 ## Links
 - Jira: DTM-142

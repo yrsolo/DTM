@@ -11,10 +11,15 @@ if str(ROOT_DIR) not in sys.path:
 
 from core.read_model import READ_MODEL_SCHEMA_VERSION, build_read_model
 
+SMOKE_BUILD_ID = "smoke-build"
+SMOKE_MODE = "reminders-only"
 
-def run() -> None:
+
+def _smoke_inputs() -> tuple[dict[str, object], dict[str, object]]:
+    """Return deterministic quality and alert payloads for smoke."""
+
     quality_report = {
-        "mode": "reminders-only",
+        "mode": SMOKE_MODE,
         "dry_run": True,
         "summary": {
             "task_row_issue_count": 1,
@@ -36,17 +41,24 @@ def run() -> None:
             "reminder_send_error_count": 1,
         },
     }
+    return quality_report, alert_evaluation
+
+
+def run() -> None:
+    """Execute deterministic read-model builder smoke checks."""
+
+    quality_report, alert_evaluation = _smoke_inputs()
 
     read_model = build_read_model(
         quality_report=quality_report,
         alert_evaluation=alert_evaluation,
-        build_id="smoke-build",
+        build_id=SMOKE_BUILD_ID,
     )
 
     assert read_model["schema_version"] == READ_MODEL_SCHEMA_VERSION, read_model
-    assert read_model["source"]["mode"] == "reminders-only", read_model
+    assert read_model["source"]["mode"] == SMOKE_MODE, read_model
     assert read_model["source"]["dry_run"] is True, read_model
-    assert read_model["source"]["build_id"] == "smoke-build", read_model
+    assert read_model["source"]["build_id"] == SMOKE_BUILD_ID, read_model
     assert isinstance(read_model["generated_at_utc"], str) and read_model["generated_at_utc"].endswith("Z"), read_model
     assert read_model["board"]["timeline"] == [], read_model
     assert read_model["board"]["by_designer"] == [], read_model

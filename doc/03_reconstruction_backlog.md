@@ -18,7 +18,7 @@ Safe, incremental migration of DTM from legacy tightly coupled automation to mai
 | 9 | serverless deploy contour and cloud runtime wiring | done | `doc/ops/stage9_main_autodeploy_setup.md`, `doc/ops/stage9_deployment_smoke_checklist.md`, `agile/sprint_current.md` |
 | 10 | operations hardening and evidence normalization | done | `doc/stages/21_stage9_closeout_and_stage10_handoff.md`, `doc/stages/22_stage10_execution_plan.md`, `doc/stages/23_stage10_closeout_and_stage11_handoff.md` |
 | 11 | detailed retrospective and corrective backlog | done | `doc/stages/24_stage11_retrospective_execution_plan.md`, `doc/stages/30_stage11_closeout_and_stage12_handoff.md`, `agile/retro.md` |
-| 12 | full code quality sweep (no feature work) | in progress | `doc/stages/31_stage12_code_quality_execution_plan.md`, `doc/governance/stage12_code_quality_standard.md`, `agile/sprint_current.md` |
+| 12 | full code quality sweep (no feature work) | done | `doc/stages/31_stage12_code_quality_execution_plan.md`, `doc/governance/stage12_code_quality_standard.md`, `doc/stages/33_stage12_closeout_and_stage13_handoff.md` |
 
 ## Stage 9 Progress
 Completed:
@@ -87,7 +87,23 @@ Planned next:
 - `DTM-138` (`agent.prototype_loader_smoke`) completed.
 - `DTM-139` (`agent.reminder_alert_evaluator_smoke`) completed.
 - `DTM-140` (`agent.reminder_sli_trend_persistence_smoke`) completed.
-- Active execution task: `DTM-141` (`agent.run_web_prototype_server`).
+- `DTM-141` (`agent.run_web_prototype_server`) completed.
+- `DTM-142` (`agent.stage8_shadow_run_evidence_smoke`) completed.
+- `DTM-143` (`config.constants`) completed.
+- `DTM-144` (`core.bootstrap`) completed.
+- `DTM-145` (`core.render_contracts`) completed.
+- `DTM-146` (`core.use_cases`) completed.
+- `DTM-147` (`agent.deploy_run_evidence_report_smoke`) completed.
+- `DTM-148` (`agent.fixture_bundle_smoke`) completed.
+- `DTM-149` (`agent.read_model_builder_smoke`) completed.
+- `DTM-150` (`agent.read_model_contract_compat_smoke`) completed.
+- `DTM-151` (`agent.read_model_publication_smoke`) completed.
+- `DTM-152` (`agent.reminder_alert_review_flow_smoke`) completed.
+- `DTM-153` (`agent.reminder_sli_summary_smoke`) completed.
+- `DTM-154` (`agent.schema_snapshot_smoke`) completed.
+- `DTM-155` (`agent.web_prototype_assets_smoke`) completed.
+- `DTM-156` (Stage 12 closeout and Stage 13 handoff) completed.
+- Active execution task: none (Stage 12 closed, pending Stage 13 kickoff).
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).

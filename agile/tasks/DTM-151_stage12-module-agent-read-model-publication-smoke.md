@@ -1,8 +1,8 @@
-# DTM-151: Stage 12 deep cleanup for module `agent.read_model_publication_smoke`
+﻿# DTM-151: Stage 12 deep cleanup for module `agent.read_model_publication_smoke`
 
 ## Context
 - Stage 12 switched to deep per-module execution model.
-- Module baseline from audit matrix: `agent.read_model_publication_smoke` (`1` items).
+- Module baseline from audit matrix: `agent.read_model_publication_smoke` (`1` item).
 
 ## Goal
 - Perform deep quality cleanup for this module without feature behavior changes:
@@ -24,15 +24,17 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-151`).
-- [x] Jira status set to `? ??????????`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `??????`.
-- [ ] Telegram completion sent.
+- [x] Jira status set to `В работе`.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `agent.read_model_publication_smoke`.
+- 2026-02-28: Added explicit smoke constants and checked subprocess helper, preserving assertions and local-run publication flow.
+- 2026-02-28: Checks: `python -m compileall agent`, `.venv\Scripts\python.exe agent\read_model_publication_smoke.py`.
 
 ## Links
 - Jira: DTM-151

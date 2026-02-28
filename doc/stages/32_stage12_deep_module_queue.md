@@ -4,7 +4,8 @@ Generated from `doc/governance/stage12_module_jira_map.json`.
 
 ## Baseline
 - Module tasks created: 53.
-- Active module: `DTM-141` / `agent.run_web_prototype_server`.
+- Active module queue status: complete (`DTM-103..DTM-155` all done).
+- Non-module closeout task `DTM-156`: done.
 - Rule: one active module task at a time (WIP=1), others stay in `todo`.
 
 ## Queue
@@ -48,18 +49,18 @@ Generated from `doc/governance/stage12_module_jira_map.json`.
 | 36 | `DTM-138` | `agent.prototype_loader_smoke` | 2 | `done` | `agile/tasks/DTM-138_stage12-module-agent-prototype_loader_smoke.md` |
 | 37 | `DTM-139` | `agent.reminder_alert_evaluator_smoke` | 2 | `done` | `agile/tasks/DTM-139_stage12-module-agent-reminder_alert_evaluator_smoke.md` |
 | 38 | `DTM-140` | `agent.reminder_sli_trend_persistence_smoke` | 2 | `done` | `agile/tasks/DTM-140_stage12-module-agent-reminder_sli_trend_persistence_smoke.md` |
-| 39 | `DTM-141` | `agent.run_web_prototype_server` | 2 | `in_progress` | `agile/tasks/DTM-141_stage12-module-agent-run_web_prototype_server.md` |
-| 40 | `DTM-142` | `agent.stage8_shadow_run_evidence_smoke` | 2 | `todo` | `agile/tasks/DTM-142_stage12-module-agent-stage8_shadow_run_evidence_smoke.md` |
-| 41 | `DTM-143` | `config.constants` | 2 | `todo` | `agile/tasks/DTM-143_stage12-module-config-constants.md` |
-| 42 | `DTM-144` | `core.bootstrap` | 2 | `todo` | `agile/tasks/DTM-144_stage12-module-core-bootstrap.md` |
-| 43 | `DTM-145` | `core.render_contracts` | 2 | `todo` | `agile/tasks/DTM-145_stage12-module-core-render_contracts.md` |
-| 44 | `DTM-146` | `core.use_cases` | 2 | `todo` | `agile/tasks/DTM-146_stage12-module-core-use_cases.md` |
-| 45 | `DTM-147` | `agent.deploy_run_evidence_report_smoke` | 1 | `todo` | `agile/tasks/DTM-147_stage12-module-agent-deploy_run_evidence_report_smoke.md` |
-| 46 | `DTM-148` | `agent.fixture_bundle_smoke` | 1 | `todo` | `agile/tasks/DTM-148_stage12-module-agent-fixture_bundle_smoke.md` |
-| 47 | `DTM-149` | `agent.read_model_builder_smoke` | 1 | `todo` | `agile/tasks/DTM-149_stage12-module-agent-read_model_builder_smoke.md` |
-| 48 | `DTM-150` | `agent.read_model_contract_compat_smoke` | 1 | `todo` | `agile/tasks/DTM-150_stage12-module-agent-read_model_contract_compat_smoke.md` |
-| 49 | `DTM-151` | `agent.read_model_publication_smoke` | 1 | `todo` | `agile/tasks/DTM-151_stage12-module-agent-read_model_publication_smoke.md` |
-| 50 | `DTM-152` | `agent.reminder_alert_review_flow_smoke` | 1 | `todo` | `agile/tasks/DTM-152_stage12-module-agent-reminder_alert_review_flow_smoke.md` |
-| 51 | `DTM-153` | `agent.reminder_sli_summary_smoke` | 1 | `todo` | `agile/tasks/DTM-153_stage12-module-agent-reminder_sli_summary_smoke.md` |
-| 52 | `DTM-154` | `agent.schema_snapshot_smoke` | 1 | `todo` | `agile/tasks/DTM-154_stage12-module-agent-schema_snapshot_smoke.md` |
-| 53 | `DTM-155` | `agent.web_prototype_assets_smoke` | 1 | `todo` | `agile/tasks/DTM-155_stage12-module-agent-web_prototype_assets_smoke.md` |
+| 39 | `DTM-141` | `agent.run_web_prototype_server` | 2 | `done` | `agile/tasks/DTM-141_stage12-module-agent-run_web_prototype_server.md` |
+| 40 | `DTM-142` | `agent.stage8_shadow_run_evidence_smoke` | 2 | `done` | `agile/tasks/DTM-142_stage12-module-agent-stage8_shadow_run_evidence_smoke.md` |
+| 41 | `DTM-143` | `config.constants` | 2 | `done` | `agile/tasks/DTM-143_stage12-module-config-constants.md` |
+| 42 | `DTM-144` | `core.bootstrap` | 2 | `done` | `agile/tasks/DTM-144_stage12-module-core-bootstrap.md` |
+| 43 | `DTM-145` | `core.render_contracts` | 2 | `done` | `agile/tasks/DTM-145_stage12-module-core-render_contracts.md` |
+| 44 | `DTM-146` | `core.use_cases` | 2 | `done` | `agile/tasks/DTM-146_stage12-module-core-use_cases.md` |
+| 45 | `DTM-147` | `agent.deploy_run_evidence_report_smoke` | 1 | `done` | `agile/tasks/DTM-147_stage12-module-agent-deploy_run_evidence_report_smoke.md` |
+| 46 | `DTM-148` | `agent.fixture_bundle_smoke` | 1 | `done` | `agile/tasks/DTM-148_stage12-module-agent-fixture_bundle_smoke.md` |
+| 47 | `DTM-149` | `agent.read_model_builder_smoke` | 1 | `done` | `agile/tasks/DTM-149_stage12-module-agent-read_model_builder_smoke.md` |
+| 48 | `DTM-150` | `agent.read_model_contract_compat_smoke` | 1 | `done` | `agile/tasks/DTM-150_stage12-module-agent-read_model_contract_compat_smoke.md` |
+| 49 | `DTM-151` | `agent.read_model_publication_smoke` | 1 | `done` | `agile/tasks/DTM-151_stage12-module-agent-read_model_publication_smoke.md` |
+| 50 | `DTM-152` | `agent.reminder_alert_review_flow_smoke` | 1 | `done` | `agile/tasks/DTM-152_stage12-module-agent-reminder_alert_review_flow_smoke.md` |
+| 51 | `DTM-153` | `agent.reminder_sli_summary_smoke` | 1 | `done` | `agile/tasks/DTM-153_stage12-module-agent-reminder_sli_summary_smoke.md` |
+| 52 | `DTM-154` | `agent.schema_snapshot_smoke` | 1 | `done` | `agile/tasks/DTM-154_stage12-module-agent-schema_snapshot_smoke.md` |
+| 53 | `DTM-155` | `agent.web_prototype_assets_smoke` | 1 | `done` | `agile/tasks/DTM-155_stage12-module-agent-web_prototype_assets_smoke.md` |

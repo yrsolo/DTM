@@ -1,4 +1,4 @@
-# DTM-146: Stage 12 deep cleanup for module `core.use_cases`
+﻿# DTM-146: Stage 12 deep cleanup for module `core.use_cases`
 
 ## Context
 - Stage 12 switched to deep per-module execution model.
@@ -24,15 +24,17 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-146`).
-- [x] Jira status set to `? ??????????`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `??????`.
-- [ ] Telegram completion sent.
+- [x] Jira status set to `В работе`.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `core.use_cases`.
+- 2026-02-28: Added `PlannerRuntimeProtocol`, extracted event mode resolver helper, and clarified reminder branch conditions with explicit `MOSCOW_TZ` and workday flag.
+- 2026-02-28: Checks: `python -m compileall core`, `python -c "from core.use_cases import run_planner_use_case"`, `.venv\Scripts\python.exe agent\reminder_fallback_smoke.py`.
 
 ## Links
 - Jira: DTM-146

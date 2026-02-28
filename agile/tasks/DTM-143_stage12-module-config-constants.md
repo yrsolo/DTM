@@ -24,15 +24,17 @@
 
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-143`).
-- [x] Jira status set to `? ??????????`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `??????`.
-- [ ] Telegram completion sent.
+- [x] Jira status set to `В работе`.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `config.constants`.
+- 2026-02-28: Refactored env parsing helpers (`_env`, `_env_flag`), introduced `ALLOWED_ENVS`, and normalized proxy/key-path resolution paths without behavior changes.
+- 2026-02-28: Checks: `python -m compileall config`, `python -c \"import config.constants\"`, `.venv\Scripts\python.exe agent\read_model_builder_smoke.py`.
 
 ## Links
 - Jira: DTM-143
