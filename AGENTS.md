@@ -19,13 +19,10 @@ Operational rules for AI agents working in this repository.
 - Keep changes small, reversible, and testable.
 - Do not delete files/folders without explicit user approval.
 
-## Jira Is Mandatory Control Plane
-- Jira is the default source of execution state (task creation, status transitions, assignment, comments with evidence).
-- Any execution task must have a Jira key before implementation starts.
-- If Jira access is unavailable, agent must immediately escalate owner and request one of:
-  - restore Jira access, or
-  - explicit temporary waiver: `LOCAL_ONLY_MODE until <date>`.
-- Without Jira access or explicit waiver, execution work is blocked.
+## Task Tracking Control Plane
+- Jira is preferred for execution state (task creation, status transitions, comments with evidence), but it is not mandatory.
+- If Jira is unavailable or does not add value for current work, use local tracking in `agile/sprint_current.md` and `agile/tasks/*.md`.
+- Execution is allowed without Jira key when local tracking is kept up to date.
 
 ## Autonomous Commits
 - Agent may create small safe commits in `dev` without waiting for user confirmation when all are true:
@@ -43,7 +40,7 @@ After each meaningful iteration, agent must report:
 3. Proposed commit message (if ready).
 4. Is it ready for merge/push to `main`? (`yes/no` with reason).
 5. Documentation status (`updated/not needed`) with affected files.
-6. Jira update status (`done/blocked`) with concrete actions (created issue, status changed, comment added).
+6. Tracking update status (`done/blocked`) with concrete actions (Jira or local files updated).
 
 Use this template:
 - `Status: ...`
@@ -51,7 +48,14 @@ Use this template:
 - `Proposed commit message: ...`
 - `Ready for main: yes/no`
 - `Docs status: updated/not needed (...)`
-- `Jira: done/blocked (...)`
+- `Tracking: done/blocked (...)`
+
+## Stage Transition Summary (Mandatory)
+When a stage is completed, the agent must provide a plain-language transition summary before starting next stage:
+1. What was done in the completed stage and why it matters.
+2. What is planned for the next stage and why it is needed.
+3. Planned task count for the next stage (initial estimate), plus note that estimate may be adjusted during execution.
+4. Explicit owner decision request: continue to next stage now (`yes/no`).
 
 ## Quality Gate Before Commit
 - Changed code runs for relevant flow (`run_timer.cmd` for timer changes).
@@ -85,7 +89,7 @@ Use this template:
 ## Owner Decision Escalation
 - If progress is blocked and owner input is required, mark task as blocked and notify owner.
 - Preferred command:
-  - `python agent/notify_owner.py --title "Decision required" --details "<question>" --options "1) ...; 2) ..." --context "<task/branch>"`
+  - `python agent/notify_owner.py --mode blocked --title "Decision required" --details "<question>" --options "1) ...; 2) ..." --context "<task/branch>"`
 - Waiting for owner/agent reply is treated as blocked by default; notification is mandatory immediately.
 - Every escalation message must include explicit next action for owner:
   - `1) create a new chat for <task>`

@@ -241,6 +241,8 @@ def maybe_notify_owner(
     cmd = [
         sys.executable,
         "agent/notify_owner.py",
+        "--mode",
+        "info",
         "--title",
         payload["title"],
         "--details",

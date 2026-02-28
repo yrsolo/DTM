@@ -1,7 +1,7 @@
-﻿"""Send owner decision request notifications to Telegram.
+"""Send owner notifications to Telegram.
 
 Usage:
-    python agent/notify_owner.py --title "❓ Нужен выбор" --details "Опиши решение"
+    python agent/notify_owner.py --mode blocked --title "❓ Нужен выбор" --details "Опиши решение"
 """
 
 from __future__ import annotations
@@ -22,8 +22,14 @@ LATIN_PATTERN = re.compile(r"[A-Za-z]")
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Notify repository owner via Telegram")
-    parser.add_argument("--title", required=True, help="Short title of required decision")
-    parser.add_argument("--details", required=True, help="What decision is needed")
+    parser.add_argument(
+        "--mode",
+        choices=("blocked", "info"),
+        default="blocked",
+        help="Notification mode: blocked=owner action required, info=for awareness only.",
+    )
+    parser.add_argument("--title", required=True, help="Short notification title")
+    parser.add_argument("--details", required=True, help="Notification details")
     parser.add_argument(
         "--options",
         default="",
@@ -62,6 +68,24 @@ def _validate_ru_payload(args: argparse.Namespace) -> None:
     _validate_ru_field("details", args.details, required=True)
     _validate_ru_field("options", args.options, required=False)
     _validate_ru_field("context", args.context, required=False)
+
+
+def _build_message(args: argparse.Namespace) -> str:
+    if args.mode == "blocked":
+        lead = "DTM агент: 🚨 требуется участие владельца (работа остановлена)"
+    else:
+        lead = "DTM агент: ✅ информационное обновление (участие не требуется)"
+
+    lines = [
+        lead,
+        f"Заголовок: {args.title}",
+        f"Детали: {args.details}",
+    ]
+    if args.options:
+        lines.append(f"Варианты: {args.options}")
+    if args.context:
+        lines.append(f"Контекст: {args.context}")
+    return "\n".join(lines)
 
 
 def _require_env(name: str) -> str:
@@ -113,16 +137,7 @@ def main() -> int:
         _safe_print(str(exc))
         return 2
 
-    lines = [
-        "DTM агент: требуется решение владельца",
-        f"Заголовок: {args.title}",
-        f"Детали: {args.details}",
-    ]
-    if args.options:
-        lines.append(f"Варианты: {args.options}")
-    if args.context:
-        lines.append(f"Контекст: {args.context}")
-    message = "\n".join(lines)
+    message = _build_message(args)
 
     try:
         _send_message(token=token, chat_id=chat_id, message=message)

@@ -20,6 +20,7 @@ Safe, incremental migration of DTM from legacy tightly coupled automation to mai
 | 11 | detailed retrospective and corrective backlog | done | `doc/stages/24_stage11_retrospective_execution_plan.md`, `doc/stages/30_stage11_closeout_and_stage12_handoff.md`, `agile/retro.md` |
 | 12 | full code quality sweep (no feature work) | done | `doc/stages/31_stage12_code_quality_execution_plan.md`, `doc/governance/stage12_code_quality_standard.md`, `doc/stages/33_stage12_closeout_and_stage13_handoff.md` |
 | 13 | post-sweep operating baseline and guardrails refresh | done | `doc/stages/34_stage13_execution_plan.md`, `doc/stages/38_stage13_closeout_and_stage14_handoff.md` |
+| 14 | delivery-control clarity (tracking + notification + stage-transition standard) | done | `doc/stages/39_stage14_execution_plan.md`, `doc/stages/42_stage14_closeout_and_stage15_handoff.md` |
 
 ## Stage 9 Progress
 Completed:
@@ -109,11 +110,16 @@ Planned next:
 - `DTM-159` (Stage 13 runtime profile matrix and guardrails) completed.
 - `DTM-160` (Stage 13 smoke suite normalization and runbook refresh) completed.
 - `DTM-161` (Stage 13 closeout and Stage 14 handoff) completed.
-- Active execution task: none (Stage 13 closed, pending Stage 14 kickoff).
+- `DTM-162` (Stage 14 kickoff and bounded execution queue) completed.
+- `DTM-163` (Stage 14 tracking policy convergence) completed.
+- `DTM-164` (Stage 14 notification semantics split) completed.
+- `DTM-165` (Stage 14 stage-transition summary standard) completed.
+- `DTM-166` (Stage 14 closeout and Stage 15 handoff) completed.
+- Active execution task: none (Stage 14 closed, pending Stage 15 kickoff).
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).
-- Jira is mandatory lifecycle control plane for each execution task.
+- Jira is optional; local tracking in `agile/sprint_current.md` + `agile/tasks/*.md` is valid control plane.
 - Text docs are hypotheses until freshness/trust check is recorded in `agile/context_registry.md`.
 - Historical verbose logs are archived; active docs stay short and readable.
 

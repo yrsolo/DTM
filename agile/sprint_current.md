@@ -1,21 +1,26 @@
 # Sprint Current
 
 ## Sprint Goal
-Run Stage 13 kickoff and establish executable architecture/operations baseline for the next delivery cycle.
+Complete Stage 14 process-clarity rollout so owner-facing control, tracking, and escalation semantics are explicit and reproducible.
 
 ## Capacity
 1 active task (strict WIP=1).
 
 ## Now
-- [DONE] DTM-161 - Stage 13 closeout and Stage 14 handoff package.
+- [DONE] DTM-166 - Stage 14 closeout and Stage 15 handoff package.
 
-## Stage 13 Estimate (Dynamic)
+## Stage 14 Estimate (Dynamic)
 - Baseline estimate: 5 tasks (kickoff, 3 execution slices, closeout).
 - Done: 5
 - Remaining: 0
-- Rule: update `Done/Remaining` after each completed Stage 13 task.
+- Rule: update `Done/Remaining` after each completed Stage 14 task.
 
 ## Done
+- [DONE] DTM-166 - Stage 14 closeout and Stage 15 handoff package.
+- [DONE] DTM-165 - Stage 14 stage-transition summary standard and owner decision gate.
+- [DONE] DTM-164 - Stage 14 notification semantics split (`blocked` vs `info`) and rollout.
+- [DONE] DTM-163 - Stage 14 tracking policy convergence (Jira optional, local tracking first-class).
+- [DONE] DTM-162 - Stage 14 kickoff and bounded execution queue.
 - [DONE] DTM-161 - Stage 13 closeout and Stage 14 handoff package.
 - [DONE] DTM-160 - Stage 13 smoke suite normalization and runbook refresh.
 - [DONE] DTM-159 - Stage 13 runtime profile matrix and guardrails.
@@ -106,11 +111,11 @@ Run Stage 13 kickoff and establish executable architecture/operations baseline f
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 14 kickoff: create Jira execution queue and active key.
-- [TODO] Stage 14 kickoff: publish execution plan and entry criteria.
+- [TODO] Stage 15 kickoff: define objective, success metric, and bounded execution queue.
+- [TODO] Stage 15 kickoff: publish execution plan and entry criteria.
 
 ## Active Task Files
-- `agile/tasks/DTM-161_stage13-closeout-and-stage14-handoff.md`
+- `agile/tasks/DTM-166_stage14-closeout-and-stage15-handoff.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`
@@ -120,4 +125,6 @@ Run Stage 13 kickoff and establish executable architecture/operations baseline f
 ## Notes / Decisions
 - Keep top-level `doc/` minimal and strategy-first.
 - Move operational/history/stage-package docs into subfolders to remove numbered clutter.
-- Jira remains mandatory lifecycle control plane for all execution tasks.
+- Jira is optional; tracking can run fully in `agile/sprint_current.md` + `agile/tasks/*.md`.
+- Stage-close communication must include owner-friendly summary of previous stage, next stage, task estimate, and explicit go/no-go request.
+
