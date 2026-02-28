@@ -6,6 +6,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Reads task data from Google Sheets.
 - Builds visual planning views for a design team (timeline and designer-focused boards).
 - Sends morning reminders to designers via Telegram.
+- Responds in group chat when bot is mentioned/commanded with current tasks or nearest deadlines.
 - Uses configurable LLM provider to improve reminder text style (`openai` / `google` / `yandex`), with automatic fallback to draft text when enhancer is unavailable.
 - Reminder delivery has in-run duplicate guard (idempotent send key) to prevent repeated sends in one runtime cycle.
 - Reminder text enhancement is processed in parallel with bounded concurrency for faster multi-designer runs.
@@ -150,6 +151,18 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - Google: `GOOGLE_LLM_API_KEY`, optional `GOOGLE_LLM_MODEL` (default `gemini-2.0-flash`)
   - Yandex: `YANDEX_LLM_API_KEY`, `YANDEX_LLM_MODEL_URI`
     - if `YANDEX_LLM_MODEL_URI` is empty and `YC_FOLDER_ID` is set, fallback is `gpt://<YC_FOLDER_ID>/yandexgpt/latest`
+- Group chat query contour:
+  - `TG_BOT_USERNAME` (without `@`) to enable mention parsing in group messages.
+
+## Group Chat Query (new)
+- Works in `group` / `supergroup` chats where bot receives updates.
+- Supported commands:
+  - `/tasks` or `/tasks@<bot_username>` (`/задачи` alias)
+  - `/deadlines` or `/deadlines@<bot_username>` (`/дедлайны` alias)
+- Mention mode (requires `TG_BOT_USERNAME`):
+  - `@<bot_username> покажи задачи`
+  - `@<bot_username> покажи дедлайны`
+- Bot replies in the same group chat.
 - Optional safety guard: set `STRICT_ENV_GUARD=1` to enforce that for `ENV=dev/test` `SOURCE_SHEET_NAME` and `TARGET_SHEET_NAME` are different.
 - Templates:
   - `.env.example` (base)

@@ -1,21 +1,26 @@
 # Sprint Current
 
 ## Sprint Goal
-Complete Stage 16 multi-LLM reminder adapter expansion: OpenAI + Google + Yandex provider support with local bootstrap smoke coverage.
+Complete Stage 17 group-chat bot query flow: mention/command in group returns current tasks or nearest deadlines in the same chat.
 
 ## Capacity
 1 active task (strict WIP=1).
 
 ## Now
-- [DONE] DTM-176 - Stage 16 closeout and Stage 17 handoff package.
+- [DONE] DTM-181 - Stage 17 closeout and Stage 18 handoff package.
 
-## Stage 16 Estimate (Dynamic)
+## Stage 17 Estimate (Dynamic)
 - Baseline estimate: 5 tasks (kickoff, 3 execution slices, closeout).
 - Done: 5
 - Remaining: 0
-- Rule: update `Done/Remaining` after each completed Stage 16 task.
+- Rule: update `Done/Remaining` after each completed Stage 17 task.
 
 ## Done
+- [DONE] DTM-181 - Stage 17 closeout and Stage 18 handoff package.
+- [DONE] DTM-180 - Stage 17 docs and runbook refresh for group query contour.
+- [DONE] DTM-179 - Stage 17 smoke coverage for group query parsing/rendering.
+- [DONE] DTM-178 - Stage 17 group query runtime path in cloud handler.
+- [DONE] DTM-177 - Stage 17 kickoff and bounded queue.
 - [DONE] DTM-176 - Stage 16 closeout and Stage 17 handoff package.
 - [DONE] DTM-175 - Stage 16 docs and runbook refresh for multi-LLM contour.
 - [DONE] DTM-174 - Stage 16 smoke coverage for provider bootstrap selection.
@@ -121,11 +126,11 @@ Complete Stage 16 multi-LLM reminder adapter expansion: OpenAI + Google + Yandex
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 17 kickoff: define provider failover/health policy and rollout constraints.
-- [TODO] Stage 17 kickoff: publish execution plan and bounded queue.
+- [TODO] Stage 18 kickoff: provider reliability policy and failover constraints.
+- [TODO] Stage 18 kickoff: publish execution plan and bounded queue.
 
 ## Active Task Files
-- `agile/tasks/DTM-176_stage16-closeout-and-stage17-handoff.md`
+- `agile/tasks/DTM-181_stage17-closeout-and-stage18-handoff.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`

@@ -48,3 +48,7 @@
 - Низкая тестопригодность (нет автоматизированного тестового контура).
 - Много "магических" правил и констант в одном месте.
 - Низкая формализация регрессионной проверки визуализации (эталонные снимки/диффы пока вручную).
+
+## 2026-02-28 update
+- Added group-chat request path: when bot is mentioned/commanded in Telegram group, it replies in the same chat with current tasks or nearest deadlines.
+- Added optional env key `TG_BOT_USERNAME` for mention-based parsing.

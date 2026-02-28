@@ -46,6 +46,7 @@ RUNTIME_ENV = _load_runtime_env()
 STRICT_ENV_GUARD = _env_flag("STRICT_ENV_GUARD")
 
 TG = os.environ.get("TG_TOKEN")
+TG_BOT_USERNAME = _env("TG_BOT_USERNAME")
 OPENAI = os.environ.get("OPENAI_TOKEN")
 ORG = os.environ.get("ORG_TOKEN")
 LLM_PROVIDER = _env("LLM_PROVIDER", "openai").lower()
