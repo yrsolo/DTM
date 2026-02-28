@@ -25,14 +25,19 @@
 ## Checklist (DoD)
 - [x] Jira key exists (`DTM-134`).
 - [x] Jira status set to `В работе`.
-- [ ] Module cleanup patch applied.
-- [ ] Relevant checks passed.
-- [ ] Jira evidence comment added.
-- [ ] Jira moved to `Готово`.
-- [ ] Telegram completion sent.
+- [x] Module cleanup patch applied.
+- [x] Relevant checks passed.
+- [x] Jira evidence comment added.
+- [x] Jira moved to `Готово`.
+- [x] Telegram completion sent.
 
 ## Work log
 - 2026-02-28: Task generated from Stage 12 module queue and linked to module `core.schema_snapshot`.
+- 2026-02-28: Added UTC timestamp helper and concise schema/type helper docstrings with no behavior changes.
+- 2026-02-28: Ran checks:
+  - `python -m compileall core`
+  - `.venv\\Scripts\\python.exe agent\\schema_snapshot_smoke.py`
+- 2026-02-28: Added Jira evidence, moved issue to `Готово`, owner completion notification sent.
 
 ## Links
 - Jira: DTM-134

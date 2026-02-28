@@ -80,7 +80,8 @@ Planned next:
 - `DTM-131` (`agent.build_fixture_bundle`) completed.
 - `DTM-132` (`agent.notify_owner_payload_smoke`) completed.
 - `DTM-133` (`core.fixture_bundle`) completed.
-- Active execution task: `DTM-134` (`core.schema_snapshot`).
+- `DTM-134` (`core.schema_snapshot`) completed.
+- Active execution task: `DTM-135` (`agent.invoke_function_smoke`).
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).

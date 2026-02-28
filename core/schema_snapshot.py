@@ -6,7 +6,13 @@ from datetime import datetime, timezone
 from typing import Any
 
 
+def _utc_now_iso() -> str:
+    """Return UTC timestamp in canonical schema artifact format."""
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
 def _type_name(value: Any) -> str:
+    """Map runtime value to stable schema type label."""
     if value is None:
         return "null"
     if isinstance(value, bool):
@@ -25,6 +31,7 @@ def _type_name(value: Any) -> str:
 
 
 def _collect_schema(value: Any) -> Any:
+    """Build recursive deterministic schema signature for JSON-like payload."""
     if isinstance(value, dict):
         return {key: _collect_schema(value[key]) for key in sorted(value.keys())}
     if isinstance(value, list):
@@ -39,7 +46,7 @@ def build_schema_snapshot(read_model: dict[str, Any], build_id: str | None = Non
     source = dict(read_model.get("source", {}))
     return {
         "artifact": "read_model_schema_snapshot",
-        "generated_at_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "generated_at_utc": _utc_now_iso(),
         "schema_version": read_model.get("schema_version", "unknown"),
         "source_build_id": source.get("build_id") or build_id or "",
         "required_top_level_fields": sorted(read_model.keys()),

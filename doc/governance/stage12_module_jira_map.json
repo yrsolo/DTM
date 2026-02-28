@@ -1,8 +1,8 @@
 {
   "created": 53,
   "total": 53,
-  "active_key": "DTM-134",
-  "active_module": "core.schema_snapshot",
+  "active_key": "DTM-135",
+  "active_module": "agent.invoke_function_smoke",
   "mapping": [
     {
       "module": "core.reminder",
@@ -194,13 +194,13 @@
       "module": "core.schema_snapshot",
       "items": 3,
       "key": "DTM-134",
-      "status": "in_progress"
+      "status": "done"
     },
     {
       "module": "agent.invoke_function_smoke",
       "items": 2,
       "key": "DTM-135",
-      "status": "todo"
+      "status": "in_progress"
     },
     {
       "module": "agent.load_prototype_payload",
