@@ -21,6 +21,7 @@ Safe, incremental migration of DTM from legacy tightly coupled automation to mai
 | 12 | full code quality sweep (no feature work) | done | `doc/stages/31_stage12_code_quality_execution_plan.md`, `doc/governance/stage12_code_quality_standard.md`, `doc/stages/33_stage12_closeout_and_stage13_handoff.md` |
 | 13 | post-sweep operating baseline and guardrails refresh | done | `doc/stages/34_stage13_execution_plan.md`, `doc/stages/38_stage13_closeout_and_stage14_handoff.md` |
 | 14 | delivery-control clarity (tracking + notification + stage-transition standard) | done | `doc/stages/39_stage14_execution_plan.md`, `doc/stages/42_stage14_closeout_and_stage15_handoff.md` |
+| 15 | cloud render verification hardening (deploy wait-gate + timestamp freshness) | done | `doc/stages/43_stage15_execution_plan.md`, `doc/stages/46_stage15_closeout_and_stage16_handoff.md` |
 
 ## Stage 9 Progress
 Completed:
@@ -115,7 +116,12 @@ Planned next:
 - `DTM-164` (Stage 14 notification semantics split) completed.
 - `DTM-165` (Stage 14 stage-transition summary standard) completed.
 - `DTM-166` (Stage 14 closeout and Stage 15 handoff) completed.
-- Active execution task: none (Stage 14 closed, pending Stage 15 kickoff).
+- `DTM-167` (Stage 15 kickoff and bounded queue) completed.
+- `DTM-168` (Stage 15 deploy readiness wait-gate) completed.
+- `DTM-169` (Stage 15 live render freshness smoke) completed.
+- `DTM-170` (Stage 15 ops checklist freshness update) completed.
+- `DTM-171` (Stage 15 closeout and Stage 16 handoff) completed.
+- Active execution task: none (Stage 15 closed, pending Stage 16 kickoff).
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).

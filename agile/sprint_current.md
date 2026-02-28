@@ -1,21 +1,26 @@
 # Sprint Current
 
 ## Sprint Goal
-Complete Stage 14 process-clarity rollout so owner-facing control, tracking, and escalation semantics are explicit and reproducible.
+Complete Stage 15 cloud render verification hardening: deploy readiness wait-gate and timestamp freshness criterion for real sheet updates.
 
 ## Capacity
 1 active task (strict WIP=1).
 
 ## Now
-- [DONE] DTM-166 - Stage 14 closeout and Stage 15 handoff package.
+- [DONE] DTM-171 - Stage 15 closeout and Stage 16 handoff package.
 
-## Stage 14 Estimate (Dynamic)
+## Stage 15 Estimate (Dynamic)
 - Baseline estimate: 5 tasks (kickoff, 3 execution slices, closeout).
 - Done: 5
 - Remaining: 0
-- Rule: update `Done/Remaining` after each completed Stage 14 task.
+- Rule: update `Done/Remaining` after each completed Stage 15 task.
 
 ## Done
+- [DONE] DTM-171 - Stage 15 closeout and Stage 16 handoff package.
+- [DONE] DTM-170 - Stage 15 ops checklist update for freshness criterion.
+- [DONE] DTM-169 - Stage 15 live render freshness smoke by corner timestamp.
+- [DONE] DTM-168 - Stage 15 deploy readiness wait-gate.
+- [DONE] DTM-167 - Stage 15 kickoff and bounded queue.
 - [DONE] DTM-166 - Stage 14 closeout and Stage 15 handoff package.
 - [DONE] DTM-165 - Stage 14 stage-transition summary standard and owner decision gate.
 - [DONE] DTM-164 - Stage 14 notification semantics split (`blocked` vs `info`) and rollout.
@@ -111,11 +116,11 @@ Complete Stage 14 process-clarity rollout so owner-facing control, tracking, and
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 15 kickoff: define objective, success metric, and bounded execution queue.
-- [TODO] Stage 15 kickoff: publish execution plan and entry criteria.
+- [TODO] Stage 16 kickoff: define semantic render correctness objective and success metric.
+- [TODO] Stage 16 kickoff: publish execution plan and bounded queue.
 
 ## Active Task Files
-- `agile/tasks/DTM-166_stage14-closeout-and-stage15-handoff.md`
+- `agile/tasks/DTM-171_stage15-closeout-and-stage16-handoff.md`
 
 ## Archive References
 - `agile/archive/sprint_current_2026-02-27.pre_hygiene.md`
@@ -127,4 +132,5 @@ Complete Stage 14 process-clarity rollout so owner-facing control, tracking, and
 - Move operational/history/stage-package docs into subfolders to remove numbered clutter.
 - Jira is optional; tracking can run fully in `agile/sprint_current.md` + `agile/tasks/*.md`.
 - Stage-close communication must include owner-friendly summary of previous stage, next stage, task estimate, and explicit go/no-go request.
+- Minimal cloud render acceptance includes fresh corner timestamp (not stale) after live invoke.
 
