@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      git_ref:
+        description: "Git ref to deploy to test contour"
+        required: false
+        default: "main"
 
 permissions:
   id-token: write
@@ -17,6 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.git_ref || github.ref_name }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
