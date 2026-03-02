@@ -1,0 +1,35 @@
+{
+  "body": "",
+  "headers": {},
+  "httpMethod": "GET",
+  "isBase64Encoded": false,
+  "multiValueHeaders": {},
+  "multiValueParams": {
+    "queryString": {
+      "statuses": ["work,pre_done"],
+      "limit": ["100"],
+      "include_people": ["true"]
+    }
+  },
+  "multiValueQueryStringParameters": {
+    "statuses": ["work,pre_done"],
+    "limit": ["100"],
+    "include_people": ["true"]
+  },
+  "params": {
+    "proxy": "api/v1/frontend"
+  },
+  "path": "/{proxy+}",
+  "pathParams": {
+    "proxy": "api/v1/frontend"
+  },
+  "queryStringParameters": null,
+  "requestContext": {
+    "httpMethod": "GET",
+    "identity": {},
+    "requestId": "test-request-id",
+    "requestTime": "02/Mar/2026:20:50:00 +0000",
+    "requestTimeEpoch": 1762452600000
+  },
+  "url": "https://dtm-api-test.solofarm.ru/api/v1/frontend?statuses=work,pre_done&limit=100&include_people=true"
+}

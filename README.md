@@ -184,6 +184,8 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `.venv\Scripts\python.exe agent\deploy_api_gateway_domain.py --mode prod`
 - Frontend HTTP API contract:
   - `doc/ops/frontend_api_contract.md`
+  - `docs/api/frontend-v2.md`
+  - `docs/api/changelog.md`
 - Cloud-side follow-up: publish function version with Lockbox `--secret` mappings and grant runtime service account role `lockbox.payloadViewer` for secret `DTM`.
 
 ## Environment contour
@@ -231,6 +233,8 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `GET /api/v1/frontend` (main payload)
   - `GET /api/v1/read-model` (alias)
   - `GET /api/v1/frontend/doc` (machine-readable contract)
+  - `GET /api/v2/frontend` (normalized v2 payload)
+  - `GET /api/v2/frontend/doc` (v2 contract page)
 - Optional safety guard: set `STRICT_ENV_GUARD=1` to enforce that for `ENV=dev/test` `SOURCE_SHEET_NAME` and `TARGET_SHEET_NAME` are different.
 - Templates:
   - `.env.example` (base)
