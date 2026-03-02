@@ -5,7 +5,8 @@
 !.env.example
 !.env.*.example
 /TABLE_PARSE.zip
-/__pycache__/
+__pycache__/
+*.pyc
 /agent/__pycache__/
 /config/__pycache__/
 /data/__pycache__/
