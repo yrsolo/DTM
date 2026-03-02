@@ -38,6 +38,7 @@ from core.group_query import (
 from core.reminder import TelegramNotifier
 from main import main
 from src.adapters.store_ydb import build_operational_store, store_records_to_tasks
+from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
 DEBUG_HTTP_EVENT = os.getenv("DEBUG_HTTP_EVENT", os.getenv("DEBUG_API_EVENT_SHAPE", "0")).strip().lower() in {
@@ -984,6 +985,44 @@ def _handle_frontend_api_v2_if_requested(event: dict[str, Any], is_http_event: b
             message=str(window_error.get("message", "Invalid time window")),
             details=window_error.get("details", {}),
         )
+
+    if READMODEL_SOURCE == "ydb":
+        repo = FrontendReadmodelRepo(
+            endpoint=YDB_ENDPOINT,
+            database=YDB_DATABASE,
+            ensure_schema=False,
+        )
+        row = repo.get_readmodel("frontend_v2:default")
+        if row is None:
+            return _error_response(
+                503,
+                code="readmodel_unavailable",
+                message="frontend_v2 readmodel snapshot is not built yet.",
+            )
+        payload = row.payload()
+        if not isinstance(payload, dict):
+            return _error_response(
+                500,
+                code="readmodel_payload_invalid",
+                message="Stored readmodel payload is not a valid JSON object.",
+            )
+        payload.setdefault("meta", {})
+        payload["meta"]["readmodelSource"] = "ydb"
+        payload["meta"]["readmodelId"] = row.readmodel_id
+        payload["meta"]["readmodelHash"] = row.payload_hash
+        payload["meta"]["builtFromSourceHash"] = row.built_from_source_hash
+        if any(
+            [
+                designer,
+                limit != 200,
+                include_people is not True,
+                window_data.get("enabled", False),
+                statuses != ["work", "pre_done"],
+            ]
+        ):
+            payload["meta"]["queryFilterApplied"] = False
+            payload["meta"]["queryFilterNote"] = "YDB readmodel endpoint returns stored snapshot without per-request rebuild."
+        return _json_response(200, payload)
 
     dependencies = build_planner_dependencies(
         KEY_JSON,
