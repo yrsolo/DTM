@@ -203,6 +203,7 @@ class YdbOperationalStore:
         self.table_path = table_path
         self._driver = None
         self._session_pool = None
+        self._retry_settings = None
 
     @staticmethod
     def _normalize_endpoint(endpoint: str) -> str:
@@ -242,6 +243,12 @@ class YdbOperationalStore:
         driver.wait(fail_fast=True, timeout=5)
         self._driver = driver
         self._session_pool = ydb.SessionPool(driver)
+        self._retry_settings = ydb.RetrySettings(
+            max_retries=1,
+            max_session_acquire_timeout=5,
+            get_session_client_timeout=5,
+            idempotent=True,
+        )
         self._ensure_schema()
 
     def _ensure_schema(self) -> None:
@@ -263,7 +270,7 @@ class YdbOperationalStore:
                     return
                 raise
 
-        self._session_pool.retry_operation_sync(_create)
+        self._session_pool.retry_operation_sync(_create, retry_settings=self._retry_settings)
 
     def upsert_tasks(self, tasks: list[dict[str, Any]]) -> dict[str, Any]:
         self._ensure_client()
@@ -293,7 +300,7 @@ class YdbOperationalStore:
                 )
                 inserted += 1
 
-        self._session_pool.retry_operation_sync(_upsert)
+        self._session_pool.retry_operation_sync(_upsert, retry_settings=self._retry_settings)
         return {"tasks_upserted": inserted, "backend": "ydb", "table_path": self.table_path}
 
     def list_tasks(self) -> list[dict[str, Any]]:
@@ -322,7 +329,7 @@ class YdbOperationalStore:
                 loaded.append(payload)
             return loaded
 
-        rows = self._session_pool.retry_operation_sync(_load)
+        rows = self._session_pool.retry_operation_sync(_load, retry_settings=self._retry_settings)
         return rows
 
 

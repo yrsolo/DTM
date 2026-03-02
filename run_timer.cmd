@@ -18,7 +18,9 @@ if not exist ".venv\Scripts\activate.bat" (
 )
 
 python local_run.py --mode timer
-pause
+if "%RUN_TIMER_PAUSE%"=="1" (
+  pause
+)
 set EXIT_CODE=%ERRORLEVEL%
 
 endlocal & exit /b %EXIT_CODE%
