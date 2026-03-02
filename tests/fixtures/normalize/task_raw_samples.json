@@ -1,0 +1,32 @@
+[
+  {
+    "source_file_id": "sheet-001",
+    "source_sheet_name": "ТАБЛИЧКА",
+    "source_row_id": "row-10",
+    "title_raw": "Промо ролик / проект А",
+    "designer_raw": "Ирина",
+    "timings_raw": "05.03, 08.03",
+    "stages_raw": "Черновик 05.03; Финал 08.03",
+    "status_raw": "work"
+  },
+  {
+    "source_file_id": "sheet-001",
+    "source_sheet_name": "ТАБЛИЧКА",
+    "source_row_id": "row-11",
+    "title_raw": "Карточки спецпроекта",
+    "designer_raw": "Оля",
+    "timings_raw": "31.12, 02.01",
+    "stages_raw": "Концепт 31.12\nФинал 02.01",
+    "status_raw": "pre_done"
+  },
+  {
+    "source_file_id": "sheet-001",
+    "source_sheet_name": "ТАБЛИЧКА",
+    "source_row_id": "row-12",
+    "title_raw": "Тест невалидной даты",
+    "designer_raw": "Тест",
+    "timings_raw": "",
+    "stages_raw": "Стадия xx.yy; Без даты",
+    "status_raw": "work"
+  }
+]
