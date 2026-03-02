@@ -7,6 +7,7 @@ import os
 import re
 import time
 import traceback
+from datetime import datetime
 from typing import Any
 from urllib.parse import parse_qsl, urlparse
 
@@ -238,6 +239,19 @@ def _json_response(status_code: int, payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _error_response(status_code: int, *, code: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
+    return _json_response(
+        status_code,
+        {
+            "error": {
+                "code": code,
+                "message": message,
+                "details": details or {},
+            }
+        },
+    )
+
+
 def _debug_http_shape(event: dict[str, Any], is_http_event: bool) -> None:
     if not DEBUG_HTTP_EVENT:
         return
@@ -298,6 +312,73 @@ def _parse_bool(raw: str, default: bool = True) -> bool:
     return str(raw).strip().lower() in {"1", "true", "yes", "y"}
 
 
+def _parse_window_query(params: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    window_start_raw = str(params.get("window_start", "")).strip()
+    window_end_raw = str(params.get("window_end", "")).strip()
+    window_mode = str(params.get("window_mode", "")).strip() or "intersects"
+
+    if not window_start_raw and not window_end_raw:
+        return (
+            {
+                "enabled": False,
+                "start": None,
+                "end": None,
+                "mode": window_mode,
+            },
+            None,
+        )
+
+    if not window_start_raw or not window_end_raw:
+        return {}, {
+            "code": "invalid_window",
+            "message": "Both window_start and window_end are required when window is enabled.",
+            "details": {
+                "window_start": window_start_raw or None,
+                "window_end": window_end_raw or None,
+            },
+        }
+
+    if window_mode != "intersects":
+        return {}, {
+            "code": "invalid_window",
+            "message": "Unsupported window_mode. Allowed value: intersects.",
+            "details": {"window_mode": window_mode},
+        }
+
+    try:
+        window_start = datetime.strptime(window_start_raw, "%Y-%m-%d").date()
+        window_end = datetime.strptime(window_end_raw, "%Y-%m-%d").date()
+    except ValueError:
+        return {}, {
+            "code": "invalid_window",
+            "message": "window_start/window_end must use YYYY-MM-DD format.",
+            "details": {
+                "window_start": window_start_raw,
+                "window_end": window_end_raw,
+            },
+        }
+
+    if window_start > window_end:
+        return {}, {
+            "code": "invalid_window",
+            "message": "window_start must be less than or equal to window_end.",
+            "details": {
+                "window_start": window_start_raw,
+                "window_end": window_end_raw,
+            },
+        }
+
+    return (
+        {
+            "enabled": True,
+            "start": window_start,
+            "end": window_end,
+            "mode": window_mode,
+        },
+        None,
+    )
+
+
 def _extract_run_mode(
     event: dict[str, Any],
     request_payload: dict[str, Any],
@@ -356,7 +437,8 @@ def _frontend_api_doc() -> dict[str, Any]:
 def _frontend_api_v2_doc() -> dict[str, Any]:
     return {
         "artifact": "dtm_frontend_api_v2_doc",
-        "version": "2.0.0",
+        "version": "2.0.1",
+        "default_root_doc_version": "v2",
         "endpoints": [
             {
                 "method": "GET",
@@ -399,8 +481,38 @@ def _frontend_api_v2_doc() -> dict[str, Any]:
                 "accepted_values": ["1", "0", "true", "false", "yes", "no"],
                 "description": "Добавлять блок entities.people в ответ.",
             },
+            "window_start": {
+                "type": "string",
+                "format": "YYYY-MM-DD",
+                "default": None,
+                "description": "Начало временного окна (включительно) для фильтра задач.",
+            },
+            "window_end": {
+                "type": "string",
+                "format": "YYYY-MM-DD",
+                "default": None,
+                "description": "Конец временного окна (включительно) для фильтра задач.",
+            },
+            "window_mode": {
+                "type": "string",
+                "default": "intersects",
+                "allowed_values": ["intersects"],
+                "description": "Режим окна: start или end задачи должен попадать в окно.",
+            },
         },
         "top_level": ["meta", "filters", "summary", "entities", "tasks"],
+        "field_status": {
+            "meta": "implemented",
+            "filters": "implemented",
+            "summary": "implemented",
+            "entities": "implemented",
+            "tasks": "implemented",
+            "tasks[].milestones": "implemented",
+            "tasks[].hash": "reserved",
+            "tasks[].revision": "reserved",
+            "tasks[].links.sheetRowUrl": "reserved",
+            "entities.tags[]": "reserved",
+        },
         "response_fields": {
             "meta": {
                 "artifact": "string (dtm_frontend_api_v2)",
@@ -425,12 +537,20 @@ def _frontend_api_v2_doc() -> dict[str, Any]:
                 "statuses": "string[]",
                 "designer": "string",
                 "limit": "int",
-                "includePeople": "bool",
+                "include_people": "bool",
+                "window": {
+                    "enabled": "bool",
+                    "start": "YYYY-MM-DD|null",
+                    "end": "YYYY-MM-DD|null",
+                    "mode": "string(intersects)",
+                },
             },
             "summary": {
+                "tasksTotal": "int",
                 "tasksReturned": "int",
-                "peopleReturned": "int",
-                "groupsReturned": "int",
+                "peopleTotal": "int",
+                "groupsTotal": "int",
+                "milestonesTotal": "int",
             },
             "entities": {
                 "people[]": {
@@ -462,6 +582,12 @@ def _frontend_api_v2_doc() -> dict[str, Any]:
                 "revision": "string|int|null (reserved)",
                 "links.sheetRowUrl": "string|null",
                 "links.self": "string",
+                "milestones[]": {
+                    "type": "string",
+                    "planned": "YYYY-MM-DD|null",
+                    "actual": "YYYY-MM-DD|null",
+                    "status": "planned|done|unknown|skipped",
+                },
             },
         },
         "task_fields": [
@@ -576,7 +702,7 @@ def _frontend_api_v2_doc_html() -> str:
   <div class="wrap">
     <div class="card">
       <h1>DTM Frontend API v2</h1>
-      <p>Контракт: <code>2.0.0</code></p>
+      <p>Контракт: <code>2.0.1</code></p>
       <p>Структура ответа: <code>meta + filters + summary + entities + tasks</code>.</p>
     </div>
     <div class="card">
@@ -599,51 +725,59 @@ def _frontend_api_v2_doc_html() -> str:
           <tr><td><code>designer</code></td><td>string</td><td><code></code></td><td>Фильтр по имени дизайнера (без учета регистра).</td></tr>
           <tr><td><code>limit</code></td><td>int</td><td><code>200</code></td><td>Лимит задач в ответе, диапазон <code>1..1000</code>.</td></tr>
           <tr><td><code>include_people</code></td><td>bool</td><td><code>true</code></td><td>Включать/исключать блок <code>entities.people</code>.</td></tr>
+          <tr><td><code>window_start</code></td><td>string</td><td><code>null</code></td><td>Начало окна в формате <code>YYYY-MM-DD</code>.</td></tr>
+          <tr><td><code>window_end</code></td><td>string</td><td><code>null</code></td><td>Конец окна в формате <code>YYYY-MM-DD</code>.</td></tr>
+          <tr><td><code>window_mode</code></td><td>string</td><td><code>intersects</code></td><td>Включает задачу, если <code>start</code> или <code>end</code> попадает в окно.</td></tr>
         </tbody>
       </table>
     </div>
     <div class="card">
       <h2>Поля ответа</h2>
       <table>
-        <thead><tr><th>Поле</th><th>Тип</th><th>Описание</th></tr></thead>
+        <thead><tr><th>Поле</th><th>Тип</th><th>Статус</th><th>Описание</th></tr></thead>
         <tbody>
-          <tr><td><code>meta</code></td><td>object</td><td>Метаданные ответа: версия контракта, время генерации, hash, source и paging.</td></tr>
-          <tr><td><code>meta.artifact</code></td><td>string</td><td>Идентификатор артефакта: <code>dtm_frontend_api_v2</code>.</td></tr>
-          <tr><td><code>meta.contractVersion</code></td><td>string</td><td>Версия контракта API v2.</td></tr>
-          <tr><td><code>meta.generatedAt</code></td><td>datetime</td><td>UTC время генерации payload.</td></tr>
-          <tr><td><code>meta.syncedAt</code></td><td>datetime</td><td>UTC время последней синхронизации источника.</td></tr>
-          <tr><td><code>meta.source</code></td><td>object</td><td>Контур, id источника, имя и ссылка на таблицу (если доступны).</td></tr>
-          <tr><td><code>meta.hash</code></td><td>string</td><td>SHA256 от стабильной сериализации payload.</td></tr>
-          <tr><td><code>filters</code></td><td>object</td><td>Echo примененных параметров запроса.</td></tr>
-          <tr><td><code>summary</code></td><td>object</td><td>Счетчики: задачи, люди, группы.</td></tr>
-          <tr><td><code>entities.people[]</code></td><td>array</td><td>Справочник людей: <code>id</code>, <code>name</code>, <code>position</code>, <code>links.self</code>.</td></tr>
-          <tr><td><code>entities.groups[]</code></td><td>array</td><td>Справочник групп/проектов: <code>id</code>, <code>name</code>, <code>links.self</code>.</td></tr>
-          <tr><td><code>entities.tags[]</code></td><td>array</td><td>Теги в payload (если есть).</td></tr>
-          <tr><td><code>entities.enums</code></td><td>object</td><td>Словари статусов и групп статусов для UI.</td></tr>
-          <tr><td><code>tasks[]</code></td><td>array</td><td>Основной список задач.</td></tr>
-          <tr><td><code>tasks[].id</code></td><td>string</td><td>Стабильный идентификатор задачи.</td></tr>
-          <tr><td><code>tasks[].title</code></td><td>string</td><td>Название задачи.</td></tr>
-          <tr><td><code>tasks[].ownerId</code></td><td>string|null</td><td>ID владельца из <code>entities.people</code>.</td></tr>
-          <tr><td><code>tasks[].groupId</code></td><td>string|null</td><td>ID группы из <code>entities.groups</code>.</td></tr>
-          <tr><td><code>tasks[].status</code></td><td>string</td><td>Нормализованный статус задачи.</td></tr>
-          <tr><td><code>tasks[].date.start/end/nextDue</code></td><td>date|null</td><td>Ключевые даты задачи в формате <code>YYYY-MM-DD</code>.</td></tr>
-          <tr><td><code>tasks[].tags</code></td><td>array</td><td>Теги задачи.</td></tr>
-          <tr><td><code>tasks[].hash</code></td><td>string|null</td><td>Резерв под hash задачи для инкрементальных обновлений.</td></tr>
-          <tr><td><code>tasks[].revision</code></td><td>string|int|null</td><td>Резерв под версию/ревизию задачи.</td></tr>
-          <tr><td><code>tasks[].links</code></td><td>object</td><td>Ссылки на self endpoint и source row (если доступно).</td></tr>
+          <tr><td><code>meta</code></td><td>object</td><td>implemented</td><td>Метаданные ответа: версия контракта, время генерации, hash, source и paging.</td></tr>
+          <tr><td><code>meta.artifact</code></td><td>string</td><td>implemented</td><td>Идентификатор артефакта: <code>dtm_frontend_api_v2</code>.</td></tr>
+          <tr><td><code>meta.contractVersion</code></td><td>string</td><td>implemented</td><td>Версия контракта API v2.</td></tr>
+          <tr><td><code>meta.generatedAt</code></td><td>datetime</td><td>implemented</td><td>UTC время генерации payload.</td></tr>
+          <tr><td><code>meta.syncedAt</code></td><td>datetime</td><td>implemented</td><td>UTC время последней синхронизации источника.</td></tr>
+          <tr><td><code>meta.source</code></td><td>object</td><td>implemented</td><td>Контур, id источника, имя и ссылка на таблицу (если доступны).</td></tr>
+          <tr><td><code>meta.hash</code></td><td>string</td><td>implemented</td><td>SHA256 от стабильной сериализации payload.</td></tr>
+          <tr><td><code>filters</code></td><td>object</td><td>implemented</td><td>Echo примененных параметров запроса.</td></tr>
+          <tr><td><code>summary</code></td><td>object</td><td>implemented</td><td>Счетчики: задачи, люди, группы.</td></tr>
+          <tr><td><code>entities.people[]</code></td><td>array</td><td>implemented</td><td>Справочник людей: <code>id</code>, <code>name</code>, <code>position</code>, <code>links.self</code>.</td></tr>
+          <tr><td><code>entities.groups[]</code></td><td>array</td><td>implemented</td><td>Справочник групп/проектов: <code>id</code>, <code>name</code>, <code>links.self</code>.</td></tr>
+          <tr><td><code>entities.tags[]</code></td><td>array</td><td>reserved</td><td>Теги в payload (зарезервировано, пока отдается пустым).</td></tr>
+          <tr><td><code>entities.enums</code></td><td>object</td><td>implemented</td><td>Словари статусов и групп статусов для UI.</td></tr>
+          <tr><td><code>tasks[]</code></td><td>array</td><td>implemented</td><td>Основной список задач.</td></tr>
+          <tr><td><code>tasks[].id</code></td><td>string</td><td>implemented</td><td>Стабильный идентификатор задачи.</td></tr>
+          <tr><td><code>tasks[].title</code></td><td>string</td><td>implemented</td><td>Название задачи.</td></tr>
+          <tr><td><code>tasks[].ownerId</code></td><td>string|null</td><td>implemented</td><td>ID владельца из <code>entities.people</code>.</td></tr>
+          <tr><td><code>tasks[].groupId</code></td><td>string|null</td><td>implemented</td><td>ID группы из <code>entities.groups</code>.</td></tr>
+          <tr><td><code>tasks[].status</code></td><td>string</td><td>implemented</td><td>Нормализованный статус задачи.</td></tr>
+          <tr><td><code>tasks[].date.start/end/nextDue</code></td><td>date|null</td><td>implemented</td><td>Ключевые даты задачи в формате <code>YYYY-MM-DD</code>.</td></tr>
+          <tr><td><code>tasks[].tags</code></td><td>array</td><td>implemented</td><td>Теги задачи.</td></tr>
+          <tr><td><code>tasks[].hash</code></td><td>string|null</td><td>reserved</td><td>Резерв под hash задачи для инкрементальных обновлений (сейчас <code>null</code>).</td></tr>
+          <tr><td><code>tasks[].revision</code></td><td>string|int|null</td><td>reserved</td><td>Резерв под версию/ревизию задачи (сейчас <code>null</code>).</td></tr>
+          <tr><td><code>tasks[].links</code></td><td>object</td><td>implemented</td><td>Ссылки на self endpoint и source row (если доступно).</td></tr>
+          <tr><td><code>tasks[].milestones[]</code></td><td>array</td><td>implemented</td><td>Milestones задачи, всегда присутствует (если нет данных — <code>[]</code>).</td></tr>
+          <tr><td><code>tasks[].milestones[].type</code></td><td>string</td><td>implemented</td><td>Тип milestone, например <code>storyboard</code> или <code>animatic</code>.</td></tr>
+          <tr><td><code>tasks[].milestones[].planned</code></td><td>date|null</td><td>implemented</td><td>Плановая дата milestone.</td></tr>
+          <tr><td><code>tasks[].milestones[].actual</code></td><td>date|null</td><td>implemented</td><td>Фактическая дата milestone (если есть).</td></tr>
+          <tr><td><code>tasks[].milestones[].status</code></td><td>string</td><td>implemented</td><td><code>planned|done|unknown|skipped</code>.</td></tr>
         </tbody>
       </table>
     </div>
     <div class="card">
       <h2>Пример запроса</h2>
-      <pre>GET /api/v2/frontend?statuses=work,pre_done&limit=100&include_people=true</pre>
+      <pre>GET /api/v2/frontend?statuses=work,pre_done&limit=100&include_people=true&window_start=2026-03-01&window_end=2026-03-31</pre>
     </div>
     <div class="card">
       <h2>Минимальный пример ответа</h2>
       <pre>{
-  "meta": {"artifact": "dtm_frontend_api_v2", "contractVersion": "2.0.0"},
-  "filters": {"statuses": ["work", "pre_done"], "designer": "", "limit": 100, "includePeople": true},
-  "summary": {"tasksReturned": 0, "peopleReturned": 0, "groupsReturned": 0},
+  "meta": {"artifact": "dtm_frontend_api_v2", "contractVersion": "2.0.1"},
+  "filters": {"statuses": ["work", "pre_done"], "designer": null, "limit": 100, "include_people": true, "window": {"enabled": false, "start": null, "end": null, "mode": "intersects"}},
+  "summary": {"tasksTotal": 0, "tasksReturned": 0, "peopleTotal": 0, "groupsTotal": 0, "milestonesTotal": 0},
   "entities": {"people": [], "groups": [], "tags": [], "enums": {"status": {}, "statusGroups": {}}},
   "tasks": []
 }</pre>
@@ -772,6 +906,14 @@ def _handle_frontend_api_v2_if_requested(event: dict[str, Any], is_http_event: b
     designer = str(params.get("designer", "")).strip()
     limit = _parse_limit(params.get("limit", "200"))
     include_people = _parse_bool(params.get("include_people"), default=True)
+    window_data, window_error = _parse_window_query(params)
+    if window_error is not None:
+        return _error_response(
+            400,
+            code=str(window_error.get("code", "invalid_window")),
+            message=str(window_error.get("message", "Invalid time window")),
+            details=window_error.get("details", {}),
+        )
 
     dependencies = build_planner_dependencies(
         KEY_JSON,
@@ -794,6 +936,9 @@ def _handle_frontend_api_v2_if_requested(event: dict[str, Any], is_http_event: b
         limit=limit,
         include_people=include_people,
         designer_filter=designer,
+        window_start=window_data.get("start"),
+        window_end=window_data.get("end"),
+        window_mode=str(window_data.get("mode", "intersects")),
     )
     duration_ms = int((time.perf_counter() - started) * 1000)
     print(
@@ -821,9 +966,7 @@ def _handle_api_root_if_requested(event: dict[str, Any], is_http_event: bool) ->
         return None
     params = _query_params(event)
     as_json = str(params.get("format", "")).strip().lower() == "json"
-    if FRONTEND_API_DEFAULT_VERSION == "v2":
-        return _json_response(200, _frontend_api_v2_doc()) if as_json else _html_response(200, _frontend_api_v2_doc_html())
-    return _json_response(200, _frontend_api_doc()) if as_json else _html_response(200, _frontend_api_doc_html())
+    return _json_response(200, _frontend_api_v2_doc()) if as_json else _html_response(200, _frontend_api_v2_doc_html())
 
 
 async def handler(event: Any, _: Any) -> dict[str, Any]:

@@ -76,7 +76,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         index.build_frontend_api_payload_v2 = lambda **kwargs: {
             "meta": {
                 "artifact": "dtm_frontend_api_v2",
-                "contractVersion": "2.0.0",
+                "contractVersion": "2.0.1",
                 "generatedAt": "2026-03-02T00:00:00Z",
                 "syncedAt": "2026-03-02T00:00:00Z",
             },
@@ -142,6 +142,49 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertIn("Параметры запроса", body)
         self.assertIn("Поля ответа", body)
         self.assertIn("tasks[].revision", body)
+        self.assertIn("reserved", body)
+        self.assertIn("implemented", body)
+
+    def test_v2_doc_json_contains_field_status(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend/doc"
+        event["params"]["proxy"] = "api/v2/frontend/doc"
+        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend/doc?format=json"
+        event["queryStringParameters"] = {"format": "json"}
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response.get("body", "{}"))
+        field_status = payload.get("field_status", {})
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(field_status.get("tasks[].hash"), "reserved")
+        self.assertEqual(field_status.get("summary"), "implemented")
+
+    def test_v2_window_validation_requires_both_bounds(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend?window_start=2026-03-01"
+        event["queryStringParameters"] = {"window_start": "2026-03-01"}
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response.get("body", "{}"))
+        self.assertEqual(response["statusCode"], 400)
+        self.assertEqual(payload.get("error", {}).get("code"), "invalid_window")
+
+    def test_v2_window_validation_rejects_invalid_range(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = (
+            "https://dtm-api-test.solofarm.ru/api/v2/frontend?"
+            "window_start=2026-04-01&window_end=2026-03-01"
+        )
+        event["queryStringParameters"] = {
+            "window_start": "2026-04-01",
+            "window_end": "2026-03-01",
+        }
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response.get("body", "{}"))
+        self.assertEqual(response["statusCode"], 400)
+        self.assertEqual(payload.get("error", {}).get("code"), "invalid_window")
 
 
 if __name__ == "__main__":

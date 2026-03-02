@@ -12,6 +12,49 @@ from config import SHEET_NAMES
 from utils.func import color_to_rgb, color_to_str, parse_range
 
 
+def _dataframe_from_worksheet_values(
+    worksheet_values: list[list[str]],
+    *,
+    header: bool = True,
+) -> pd.DataFrame:
+    """Build DataFrame from raw worksheet values with tolerant row/header normalization.
+
+    Google Sheets API can return rows with more populated cells than the header row
+    (for example, when new source columns are filled but header cells are blank).
+    This helper keeps parsing resilient by extending generated columns and padding
+    shorter rows so pandas constructor cannot fail on uneven row width.
+    """
+    if not worksheet_values:
+        return pd.DataFrame()
+
+    if not header:
+        return pd.DataFrame(worksheet_values)
+
+    raw_columns = list(worksheet_values[0] or [])
+    data_rows = [list(row or []) for row in worksheet_values[1:]]
+    if not data_rows:
+        return pd.DataFrame(columns=raw_columns)
+
+    target_width = max(len(raw_columns), max((len(row) for row in data_rows), default=0))
+
+    normalized_columns = list(raw_columns)
+    if len(normalized_columns) < target_width:
+        for idx in range(len(normalized_columns), target_width):
+            normalized_columns.append(f"__extra_col_{idx + 1}")
+    else:
+        normalized_columns = normalized_columns[:target_width]
+
+    normalized_rows: list[list[str]] = []
+    for row in data_rows:
+        if len(row) < target_width:
+            row = row + [""] * (target_width - len(row))
+        elif len(row) > target_width:
+            row = row[:target_width]
+        normalized_rows.append(row)
+
+    return pd.DataFrame(normalized_rows, columns=normalized_columns)
+
+
 class GoogleSheetInfo:
     """Information about Google Spreadsheet."""
 
@@ -177,9 +220,7 @@ class GoogleSheetsService:
             .execute()
         )
         worksheet_values = result.get("values", [])
-        columns = worksheet_values[0] if header else None
-        df = pd.DataFrame(worksheet_values[1:], columns=columns)  # expected header in first row
-        return df
+        return _dataframe_from_worksheet_values(worksheet_values, header=header)
 
     def get_cell_colors(
         self,
