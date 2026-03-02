@@ -161,6 +161,8 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `doc/ops/stage9_main_autodeploy_setup.md`
 - Direct cloud endpoint smoke invoke:
   - `.venv\Scripts\python.exe agent\invoke_function_smoke.py --url <function_url> --healthcheck`
+- Migration M3 hash-gate smoke:
+  - `.venv\Scripts\python.exe agent\sync_hash_gate_smoke.py`
 - Lockbox sync helper for full `.env` payload:
   - `.venv\Scripts\python.exe agent\sync_lockbox_from_env.py --secret-name DTM`
 - Prod release prep helper (validates required prod keys + syncs Lockbox):

@@ -7,6 +7,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-206 - M2-M3 feature flags and hash-gate smoke.
 - [DONE] DTM-205 - M1 normalize fixtures and unit tests.
 - [DONE] DTM-204 - Migration blueprint package (docs/*) + M1-M3 scaffolding in src/*.
 - [DONE] DTM-203 - API doc endpoint rendered as HTML mini-page and robust gateway path matching.
@@ -16,11 +17,12 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 
 ## Stage 21 Estimate (Dynamic)
-- Baseline estimate: 7 tasks.
-- Done: 7
+- Baseline estimate: 8 tasks.
+- Done: 8
 - Remaining: 0
 
 ## Done (Latest)
+- [DONE] DTM-206 - M2-M3 feature flags and hash-gate smoke.
 - [DONE] DTM-205 - M1 normalize fixtures and unit tests.
 - [DONE] DTM-204 - Migration blueprint package (docs/*) + M1-M3 scaffolding in src/*.
 - [DONE] DTM-203 - API doc endpoint rendered as HTML mini-page and robust gateway path matching.
@@ -43,7 +45,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 
 ## Active Task Files
-- `agile/tasks/stage_20_plus/DTM-205_stage21_m1-normalize-fixtures-and-unit-tests.md`
+- `agile/tasks/stage_20_plus/DTM-206_stage21_m2-m3-feature-flags-and-hash-gate-smoke.md`
 
 ## Task Folder Structure
 - `agile/tasks/stage_00_09/` - stage 0-9 execution tasks.
