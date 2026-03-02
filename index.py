@@ -331,6 +331,10 @@ def _handle_frontend_api_if_requested(event: dict[str, Any], is_http_event: bool
         # Some API Gateway integrations omit explicit HTTP method in event payload.
         # Browser/API usage for frontend endpoint is read-only GET.
         method = "GET"
+    if method == "ANY":
+        # Yandex API Gateway with x-yc-apigateway-any-method can pass "ANY" as method.
+        # Frontend endpoints are read-only, so treat it as GET.
+        method = "GET"
     if method != "GET":
         return None
 
