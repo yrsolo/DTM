@@ -20,6 +20,18 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 ## Documentation entrypoint
 - Start with `doc/00_documentation_map.md` for readable navigation and recommended read order.
 
+## Architecture & Migration Plan
+- Target architecture (layered, strangler migration):
+  - `docs/architecture/target-architecture.md`
+- Stage-by-stage migration plan (M1..M8):
+  - `docs/migration/plan.md`
+- Atomic tasks by stage:
+  - `docs/migration/tasks.md`
+- Data contracts (raw/normalized/read-model):
+  - `docs/contracts/data-contracts.md`
+- Engineering standards:
+  - `docs/standards/engineering-standards.md`
+
 ## Tech stack
 - Python
 - Google Sheets / Drive API
@@ -56,6 +68,15 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
     - `python agent/read_model_contract_compat_smoke.py`
     - `python agent/schema_snapshot_smoke.py`
 - Manual production release workflow: `.github/workflows/release_yc_function_prod.yml`.
+
+### Migration checklist (current)
+- [x] Legacy runtime is stable and deployed in test/prod contours.
+- [x] API/read-model contract baseline exists for current frontend integration.
+- [x] Migration documentation package added (`docs/architecture|migration|contracts|standards`).
+- [x] M1-M3 scaffolding added under `src/` (core models/normalize + sync hash gate).
+- [ ] M1 wired to current runtime path.
+- [ ] M2 sync/render split wired to handlers.
+- [ ] M3 source-hash gate enabled in production flow.
 
 ## Local run (current)
 - Preferred: `run_timer.cmd` (uses project virtualenv and runs timer mode).

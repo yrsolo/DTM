@@ -29,8 +29,10 @@ Safe, incremental migration of DTM from legacy tightly coupled automation to mai
 | 20 | production-readiness hardening (docs freshness, repo hygiene, release evidence) | done | `doc/stages/63_stage20_execution_plan.md`, `doc/stages/66_stage20_closeout_and_stage21_handoff.md` |
 
 ## Current Focus (Post Stage 20)
-- Active execution task: `DTM-198` completed (Stage 21 kickoff).
-- Stage 21 focus: deploy contour split (test auto / prod manual) and API domain tooling.
+- Active execution tasks completed in Stage 21:
+  - deploy contour split (test auto / prod manual),
+  - API domain tooling and frontend API contract/doc endpoint,
+  - migration blueprint package (`docs/*`) and M1-M3 scaffolding (`src/*`).
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).

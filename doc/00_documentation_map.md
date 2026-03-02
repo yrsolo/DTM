@@ -15,12 +15,18 @@ This file explains where to read first and where to go for details.
 - Plan and architecture:
   - `doc/03_reconstruction_backlog.md`
   - `doc/04_target_architecture.md`
+  - `docs/architecture/target-architecture.md`
+  - `docs/migration/plan.md`
+  - `docs/migration/tasks.md`
+  - `docs/contracts/data-contracts.md`
+  - `docs/standards/engineering-standards.md`
 - Risk and process:
   - `doc/05_risk_register.md`
   - `doc/09_git_workflow.md`
 
 ## Folder Meaning
 - `doc/` (top level): only active strategic docs.
+- `docs/`: migration blueprint package (target architecture, staged plan, contracts, engineering standards).
 - `doc/ops/`: operational runbooks and deployment setup.
 - `doc/governance/`: publication/governance/security records.
 - `doc/stages/`: stage packages and handoff documents.
