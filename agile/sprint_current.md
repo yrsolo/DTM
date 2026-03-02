@@ -1,20 +1,21 @@
 # Sprint Current
 
 ## Sprint Goal
-Stage 20 closed. Keep repository production-ready and start Stage 21 only after explicit owner go/no-go.
+Start Stage 21 delivery contour split: test auto-deploy + manual prod release + API/domain tooling.
 
 ## Capacity
 1 active execution task (WIP=1).
 
 ## Now
-- [DONE] DTM-197 - Agile folder structure and freshness cleanup.
+- [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 
-## Stage 20 Estimate (Dynamic)
-- Baseline estimate: 5 tasks.
-- Done: 5
-- Remaining: 0
+## Stage 21 Estimate (Dynamic)
+- Baseline estimate: 3 tasks.
+- Done: 1
+- Remaining: 2
 
 ## Done (Latest)
+- [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 - [DONE] DTM-197 - Agile folder structure and freshness cleanup.
 - [DONE] DTM-196 - Stage 20 closeout and Stage 21 handoff package.
 - [DONE] DTM-195 - Stage 20 pre-prod smoke and release-readiness package.
@@ -27,13 +28,12 @@ Stage 20 closed. Keep repository production-ready and start Stage 21 only after 
 - [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Stage 21 kickoff: provider-level SLI threshold policy for OpenAI/Google/Yandex.
-- [TODO] Stage 21: alert profile tuning and provider incident runbook refresh.
-- [TODO] Stage 21: provider SLI regression smoke and evidence package.
-- [TODO] Stage 21: closeout and Stage 22 handoff package.
+- [TODO] DTM-199 - Stage 21 API gateway live bind smoke for test/prod domains.
+- [TODO] DTM-200 - Stage 21 release runbook (owner step-by-step + rollback).
+- [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 
 ## Active Task Files
-- `agile/tasks/stage_20_plus/DTM-197_agile-folder-structure-and-freshness-cleanup.md`
+- `agile/tasks/stage_20_plus/DTM-198_stage21_deploy-contour-split-test-prod-and-api-domain-tooling.md`
 
 ## Task Folder Structure
 - `agile/tasks/stage_00_09/` - stage 0-9 execution tasks.
@@ -48,6 +48,6 @@ Stage 20 closed. Keep repository production-ready and start Stage 21 only after 
 - `doc/archive/03_reconstruction_backlog_2026-02-27.pre_readability.md`
 
 ## Notes / Decisions
-- Stage 20 production-readiness hardening completed.
-- Stage 21 starts only with explicit owner go/no-go.
-- Active agile files stay compact; verbose history stays in archive.
+- Stage 21 started by explicit owner request for release contour split.
+- Main branch keeps auto deploy for test contour only.
+- Production deploy remains manual via `workflow_dispatch`.

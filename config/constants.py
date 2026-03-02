@@ -45,6 +45,10 @@ def _load_runtime_env() -> str:
 
 RUNTIME_ENV = _load_runtime_env()
 STRICT_ENV_GUARD = _env_flag("STRICT_ENV_GUARD")
+WEB_DOMAIN = _env("WEB_DOMAIN")
+API_DOMAIN_TEST = _env("API_DOMAIN_TEST")
+API_DOMAIN_PROD = _env("API_DOMAIN_PROD")
+API_DOMAIN = API_DOMAIN_PROD if RUNTIME_ENV == "prod" else API_DOMAIN_TEST
 
 TG = os.environ.get("TG_TOKEN")
 TG_BOT_USERNAME = _env("TG_BOT_USERNAME")
@@ -115,7 +119,11 @@ KEY_JSON = _resolve_google_key_json_path()
 DEFAULT_CHAT_ID = os.environ.get("DEFAULT_CHAT_ID", "-4083724311")
 
 SOURCE_SHEET_NAME = os.environ.get("SOURCE_SHEET_NAME", "Спонсорские ТНТ")
-TARGET_SHEET_NAME = os.environ.get("TARGET_SHEET_NAME", "Спонсорские ТНТ ТЕСТ")
+TARGET_SHEET_NAME = os.environ.get("TARGET_SHEET_NAME", "").strip()
+if not TARGET_SHEET_NAME and RUNTIME_ENV == "prod":
+    TARGET_SHEET_NAME = os.environ.get("TARGET_SHEET_NAME_PROD", "").strip()
+if not TARGET_SHEET_NAME:
+    TARGET_SHEET_NAME = "Спонсорские ТНТ ТЕСТ"
 if (
     STRICT_ENV_GUARD
     and RUNTIME_ENV in {"dev", "test"}

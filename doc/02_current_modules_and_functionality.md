@@ -26,8 +26,14 @@
   - optional override из `.env.<ENV>` при наличии файла.
 - Разделение таблиц:
   - `SOURCE_SHEET_NAME` (чтение),
-  - `TARGET_SHEET_NAME` (запись),
+  - `TARGET_SHEET_NAME` (запись, primary),
+  - `TARGET_SHEET_NAME_PROD` (prod fallback, используется при `ENV=prod`, если `TARGET_SHEET_NAME` пустой),
   - `SHEET_NAMES` (карта листов).
+- Доменный контур API/Web:
+  - `WEB_DOMAIN`,
+  - `API_DOMAIN_TEST`,
+  - `API_DOMAIN_PROD`,
+  - `API_DOMAIN` вычисляется по `ENV` (`prod` -> `API_DOMAIN_PROD`, иначе `API_DOMAIN_TEST`).
 - Guard безопасности:
   - при `STRICT_ENV_GUARD=1` и `ENV=dev/test` `SOURCE_SHEET_NAME` и `TARGET_SHEET_NAME` обязаны различаться (fail-fast на старте).
 - Маппинги колонок задач и людей (`TASK_FIELD_MAP`, `PEOPLE_FIELD_MAP`).

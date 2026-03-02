@@ -3,10 +3,10 @@
 ## Objective
 Deliver DTM to stable production operation with clear, maintainable process artifacts.
 
-## Current Focus (Stage 21 candidate)
-1. Provider-level SLI policy for OpenAI/Google/Yandex.
-2. Alert tuning and runbook hardening for provider incidents.
-3. Keep documentation and delivery tracking concise and trustworthy.
+## Current Focus (Stage 21)
+1. Split release contour: test auto-deploy vs manual prod release.
+2. Stabilize API/domain contour for test (`dtm-api-test`) and prod (`dtm-api`).
+3. Keep release docs/runbooks concise and trustworthy.
 
 ## Delivery Rules
 - WIP=1 for execution tasks.

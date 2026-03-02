@@ -72,6 +72,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Print payload keys without creating new Lockbox version.",
     )
+    parser.add_argument(
+        "--require-key",
+        action="append",
+        default=[],
+        help="Require presence of key in resulting payload. Repeat for multiple keys.",
+    )
     return parser.parse_args()
 
 
@@ -120,6 +126,10 @@ def main() -> int:
     env_map = _parse_env_file(args.env_file)
     payload = _build_payload_entries(env_map, args.google_key_file)
     payload_keys = sorted({entry["key"] for entry in payload})
+    missing_required = sorted(key for key in args.require_key if key not in payload_keys)
+    if missing_required:
+        joined = ",".join(missing_required)
+        raise RuntimeError(f"lockbox_missing_required_keys={joined}")
 
     if args.dry_run:
         _safe_print(f"lockbox_sync_secret={args.secret_name}")

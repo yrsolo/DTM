@@ -22,6 +22,9 @@ Purpose: track freshness and trust of planning sources before execution tasking.
 | Stage 20 doc hardening package | 2026-02-28 | TeamLead | published `doc/stages/63..66` + `doc/ops/stage20_*` | high | production-readiness evidence complete |
 | Stage 20 smoke evidence (`compileall`, provider/failover/group-query/reminder smokes) | 2026-02-28 | TeamLead | all checks passed during Stage 20 execution | high | ready for manual cloud go/no-go checks |
 | Cloud runtime baseline (`index.py`, `core/reminder.py`, `utils/service.py`) | 2026-02-27 | TeamLead | prior runtime token/import crash fixed; healthcheck invoke stable | high | serverless startup path stable |
+| Deploy contour split sources (`.github/workflows/deploy_yc_function_main.yml`, `.github/workflows/release_yc_function_prod.yml`) | 2026-03-02 | TeamLead | verified triggers/required vars and test-vs-prod runtime env mapping in workflow files | high | main->test auto, prod->manual |
+| Release prep and secret sync (`agent/prepare_prod_release.py`, `agent/sync_lockbox_from_env.py`) | 2026-03-02 | TeamLead | required-key gate added and checked in local dry-run flow | high | release keys cannot be silently missed |
+| API domain tooling (`agent/deploy_api_gateway_domain.py`) | 2026-03-02 | TeamLead | verified mode split, function/gateway resolution, domain+certificate input guards | medium | live cloud bind smoke pending in DTM-199 |
 
 ## Archive
 - `agile/archive/context_registry_2026-02-27.pre_hygiene.md`
