@@ -38,6 +38,7 @@ def load_last_hash(state_file: str | Path) -> str | None:
 def save_last_hash(state_file: str | Path, source_id: str, source_hash: str) -> None:
     """Persist source hash decision state."""
     path = Path(state_file)
+    path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "source_id": source_id,
         "source_hash": source_hash,
@@ -55,4 +56,3 @@ def evaluate_hash_gate(source_payload: Any, state_file: str | Path) -> HashGateD
         previous_hash=previous_hash,
         should_sync=(source_hash != previous_hash),
     )
-
