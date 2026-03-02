@@ -7,6 +7,11 @@ Deliver DTM to stable production operation with clear, maintainable process arti
 1. Split release contour: test auto-deploy vs manual prod release.
 2. Stabilize API/domain contour for test (`dtm-api-test`) and prod (`dtm-api`).
 3. Keep release docs/runbooks concise and trustworthy.
+4. Treat delivery as three equal product blocks:
+   - Frontend API
+   - Sheet Render
+   - Notifications
+   Each block must have explicit contract, smoke checks, and rollout knobs.
 
 ## Delivery Rules
 - WIP=1 for execution tasks.
@@ -22,3 +27,7 @@ Deliver DTM to stable production operation with clear, maintainable process arti
 - Deployment smoke pass rate.
 - Reminder delivery SLI stability.
 - Lead time from task start to done.
+- Per-block readiness:
+  - Frontend API: contract stability + endpoint smoke.
+  - Sheet Render: fresh table timestamp + render smoke.
+  - Notifications: delivery success/retry/error counters.
