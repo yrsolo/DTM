@@ -10,6 +10,7 @@ Purpose: track freshness and trust of planning sources before execution tasking.
 ## Active Registry
 | source | last_verified_at | verified_by | evidence | trust_level | notes |
 |---|---|---|---|---|---|
+| Store source switching for tri-block runtime (`main.py`, `src/adapters/store_ydb.py`) | 2026-03-02 | TeamLead | added `StoreTaskRepository` and `_apply_task_source_switches`; tested render+notify rebind and store repository filtering via unit tests | high | render/notify can now read from YDB under `RENDER_SOURCE/NOTIFY_SOURCE` flags while sync write remains source-sheet based |
 | Shared task query contract (`core/task_query_contract.py`) consumed by API/render/reminder paths | 2026-03-02 | TeamLead | verified code wiring in `core/api_payload.py`, `core/api_payload_v2.py`, `core/manager.py`, `core/planner.py`, `core/reminder.py`; local tests passed: `tests/test_task_query_contract.py`, `tests/api/test_frontend_api_v2_payload.py`, `tests/api/test_frontend_api_routing.py` | high | single source for statuses/designer/window/milestone filtering; reduced duplication across product blocks |
 | `agent/OPERATING_CONTRACT.md`, `AGENTS.md`, `agent/teamlead.md` | 2026-02-28 | TeamLead | runtime start gate completed in chat (`CONTRACT CHECK: OK`) | high | process source of truth |
 | `agile/sprint_current.md` | 2026-02-28 | TeamLead | compacted board to latest-stage focus; Stage 20 counters and Stage 21 queue aligned | high | active sprint control plane |

@@ -37,7 +37,7 @@ from core.group_query import (
 )
 from core.reminder import TelegramNotifier
 from main import main
-from src.adapters.store_ydb import build_operational_store
+from src.adapters.store_ydb import build_operational_store, store_records_to_tasks
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
 DEBUG_HTTP_EVENT = os.getenv("DEBUG_HTTP_EVENT", os.getenv("DEBUG_API_EVENT_SHAPE", "0")).strip().lower() in {
@@ -410,53 +410,28 @@ class _ApiStoreTaskView:
         return max(self.timing.keys()) if self.timing else None
 
 
-def _parse_store_timing(rows: Any) -> dict[pd.Timestamp, list[str]]:
-    if not isinstance(rows, list):
-        return {}
-    parsed: dict[pd.Timestamp, list[str]] = {}
-    for item in rows:
-        if not isinstance(item, dict):
-            continue
-        date_text = str(item.get("date", "")).strip()
-        if not date_text:
-            continue
-        try:
-            date_value = pd.Timestamp(date_text)
-        except Exception:
-            continue
-        stages = item.get("stages", [])
-        if not isinstance(stages, list):
-            stages = [str(stages)]
-        parsed[date_value] = [str(stage) for stage in stages]
-    return parsed
-
-
 def _tasks_from_store_records(records: list[dict[str, Any]], statuses: list[str]) -> list[_ApiStoreTaskView]:
     target_statuses = {str(status).strip().lower() for status in statuses if str(status).strip()}
     tasks: list[_ApiStoreTaskView] = []
-    for record in records:
-        if not isinstance(record, dict):
-            continue
-        color_status = str(record.get("color_status", record.get("status", ""))).strip().lower()
+    for task in store_records_to_tasks(records):
+        color_status = str(getattr(task, "color_status", "")).strip().lower()
         if target_statuses and color_status not in target_statuses:
             continue
-        timing = _parse_store_timing(record.get("timing"))
-        task = _ApiStoreTaskView(
-            id=str(record.get("task_id", "")).strip(),
-            name=str(record.get("name", "")).strip(),
-            designer=str(record.get("designer", "")).strip(),
-            status=str(record.get("status", "")).strip(),
-            color_status=color_status or "work",
-            brand=str(record.get("brand", "")).strip(),
-            format_=str(record.get("format_", "")).strip(),
-            project_name=str(record.get("project_name", "")).strip(),
-            customer=str(record.get("customer", "")).strip(),
-            raw_timing=str(record.get("raw_timing", "")).strip(),
-            timing=timing,
+        tasks.append(
+            _ApiStoreTaskView(
+                id=str(task.id),
+                name=str(task.name),
+                designer=str(task.designer),
+                status=str(task.status),
+                color_status=color_status or "work",
+                brand=str(task.brand),
+                format_=str(task.format_),
+                project_name=str(task.project_name),
+                customer=str(task.customer),
+                raw_timing=str(task.raw_timing),
+                timing=dict(task.timing),
+            )
         )
-        if not task.id:
-            continue
-        tasks.append(task)
     return tasks
 
 

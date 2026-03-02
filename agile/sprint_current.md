@@ -112,3 +112,4 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - Stage 21 started by explicit owner request for release contour split.
 - Main branch keeps auto deploy for test contour only.
 - Production deploy remains manual via `workflow_dispatch`.
+- Runtime source switches are set to YDB contour (`STORE_MODE=ydb_primary`, `READMODEL_SOURCE=ydb`, `NOTIFY_SOURCE=ydb`, `RENDER_SOURCE=ydb`) for validation cycle.

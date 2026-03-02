@@ -8,6 +8,8 @@ from config import (
     MIGRATION_ENABLE_SOURCE_HASH_GATE,
     MIGRATION_HASH_GATE_STATE_FILE,
     MIGRATION_STORE_FILE,
+    NOTIFY_SOURCE,
+    RENDER_SOURCE,
     STORE_MODE,
     RUNTIME_ENV,
     YDB_DATABASE,
@@ -18,7 +20,7 @@ from config import (
 from core.bootstrap import build_planner_dependencies
 from core.planner import GoogleSheetPlanner
 from core.use_cases import resolve_run_mode, run_planner_use_case
-from src.adapters.store_ydb import build_operational_store
+from src.adapters.store_ydb import StoreTaskRepository, build_operational_store
 from src.services.sync.hash_basis import build_hash_basis
 from src.services.sync.hash_gate import evaluate_hash_gate, save_last_hash
 
@@ -68,6 +70,36 @@ def _task_to_store_record(task) -> dict[str, object]:
     }
 
 
+def _build_ydb_task_repository() -> StoreTaskRepository:
+    read_store = build_operational_store(
+        "ydb_only",
+        env_name=RUNTIME_ENV,
+        ydb_endpoint=YDB_ENDPOINT,
+        ydb_database=YDB_DATABASE,
+        json_file_path=MIGRATION_STORE_FILE,
+    )
+    return StoreTaskRepository(read_store)
+
+
+def _apply_task_source_switches(planner: GoogleSheetPlanner, mode: str) -> tuple[bool, bool]:
+    render_reads_ydb = RENDER_SOURCE == "ydb" and mode in {"timer", "test", "sync-only"}
+    notify_reads_ydb = NOTIFY_SOURCE == "ydb" and mode in {"morning", "test", "reminders-only"}
+    if not (render_reads_ydb or notify_reads_ydb):
+        return False, False
+
+    ydb_repository = _build_ydb_task_repository()
+    if render_reads_ydb:
+        planner.task_repository = ydb_repository
+        planner.task_manager.repository = ydb_repository
+        planner.calendar_manager.repository = ydb_repository
+        planner.task_calendar_manager.repository = ydb_repository
+        print("render_source_switch=applied source=ydb")
+    if notify_reads_ydb:
+        planner.reminder.task_repository = ydb_repository
+        print("notify_source_switch=applied source=ydb")
+    return render_reads_ydb, notify_reads_ydb
+
+
 async def main(**kwargs):
     """Основная функция для запуска планировщика задач.
 
@@ -90,6 +122,7 @@ async def main(**kwargs):
         dry_run=dry_run,
         mock_external=mock_external,
     )
+    source_task_repository = dependencies.task_repository
     planner = GoogleSheetPlanner(
         KEY_JSON,
         SHEET_INFO,
@@ -98,11 +131,12 @@ async def main(**kwargs):
         mock_external=mock_external,
         dependencies=dependencies,
     )
+    _apply_task_source_switches(planner, mode)
 
     allow_sync = True
     if MIGRATION_ENABLE_SOURCE_HASH_GATE and mode in {"timer", "test", "sync-only"}:
         rows = []
-        for task in dependencies.task_repository.get_all_tasks():
+        for task in source_task_repository.get_all_tasks():
             rows.append(
                 {
                     "id": task.id,
@@ -135,7 +169,7 @@ async def main(**kwargs):
     quality_report = await run_planner_use_case(planner, mode, allow_sync=allow_sync)
 
     if STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"} and mode in {"timer", "test", "sync-only"} and allow_sync:
-        tasks = dependencies.task_repository.get_all_tasks()
+        tasks = source_task_repository.get_all_tasks()
         records = [_task_to_store_record(task) for task in tasks]
         store = build_operational_store(
             STORE_MODE,

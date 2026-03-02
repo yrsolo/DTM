@@ -10,12 +10,134 @@ import json
 from pathlib import Path
 from typing import Any, Protocol
 
+import pandas as pd
+
 
 class OperationalStore(Protocol):
     """Store contract for normalized task upserts."""
 
     def upsert_tasks(self, tasks: list[dict[str, Any]]) -> dict[str, Any]: ...
     def list_tasks(self) -> list[dict[str, Any]]: ...
+
+
+class _StoreTimingDiagnostics:
+    """Compatibility shim for planner quality report counters."""
+
+    def __init__(self) -> None:
+        self.parse_issues: list[str] = []
+        self.total_parse_errors: int = 0
+
+
+class StoreTaskView:
+    """Task-like projection over operational store records."""
+
+    def __init__(
+        self,
+        task_id: str,
+        name: str,
+        designer: str,
+        status: str,
+        color_status: str,
+        brand: str,
+        format_: str,
+        project_name: str,
+        customer: str,
+        raw_timing: str,
+        timing: dict[pd.Timestamp, list[str]],
+    ) -> None:
+        self.id = task_id
+        self.name = name
+        self.designer = designer
+        self.status = status
+        self.color_status = color_status
+        self.brand = brand
+        self.format_ = format_
+        self.project_name = project_name
+        self.customer = customer
+        self.raw_timing = raw_timing
+        self.timing = timing
+
+    @property
+    def min_date(self) -> pd.Timestamp | None:
+        return min(self.timing.keys()) if self.timing else None
+
+    @property
+    def max_date(self) -> pd.Timestamp | None:
+        return max(self.timing.keys()) if self.timing else None
+
+
+def parse_store_timing(rows: Any) -> dict[pd.Timestamp, list[str]]:
+    """Parse serialized timing list from operational store record."""
+    if not isinstance(rows, list):
+        return {}
+    parsed: dict[pd.Timestamp, list[str]] = {}
+    for item in rows:
+        if not isinstance(item, dict):
+            continue
+        date_text = str(item.get("date", "")).strip()
+        if not date_text:
+            continue
+        try:
+            date_value = pd.Timestamp(date_text)
+        except Exception:
+            continue
+        stages = item.get("stages", [])
+        if not isinstance(stages, list):
+            stages = [str(stages)]
+        parsed[date_value] = [str(stage) for stage in stages]
+    return parsed
+
+
+def store_records_to_tasks(records: list[dict[str, Any]]) -> list[StoreTaskView]:
+    """Convert operational store payloads into task-like rows."""
+    tasks: list[StoreTaskView] = []
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+        task_id = str(record.get("task_id", "")).strip()
+        if not task_id:
+            continue
+        color_status = str(record.get("color_status", record.get("status", ""))).strip().lower() or "work"
+        tasks.append(
+            StoreTaskView(
+                task_id=task_id,
+                name=str(record.get("name", "")).strip(),
+                designer=str(record.get("designer", "")).strip(),
+                status=str(record.get("status", "")).strip(),
+                color_status=color_status,
+                brand=str(record.get("brand", "")).strip(),
+                format_=str(record.get("format_", "")).strip(),
+                project_name=str(record.get("project_name", "")).strip(),
+                customer=str(record.get("customer", "")).strip(),
+                raw_timing=str(record.get("raw_timing", "")).strip(),
+                timing=parse_store_timing(record.get("timing")),
+            )
+        )
+    return tasks
+
+
+class StoreTaskRepository:
+    """Read-only task repository over OperationalStore."""
+
+    def __init__(self, store: OperationalStore) -> None:
+        self.store = store
+        self.row_issues: list[str] = []
+        self.timing_parser = _StoreTimingDiagnostics()
+
+    def get_all_tasks(self) -> list[StoreTaskView]:
+        return store_records_to_tasks(self.store.list_tasks())
+
+    def get_task_by_color_status(self, color_status: Any) -> list[StoreTaskView]:
+        values = color_status if isinstance(color_status, (list, tuple, set)) else [color_status]
+        target = {str(item).strip().lower() for item in values if str(item).strip()}
+        tasks = self.get_all_tasks()
+        if not target:
+            return tasks
+        return [task for task in tasks if str(task.color_status).strip().lower() in target]
+
+    def get_tasks_by_date(self, date: pd.Timestamp) -> list[StoreTaskView]:
+        tasks = self.get_task_by_color_status(["work"])
+        return [task for task in tasks if date in task.timing]
 
 
 class JsonOperationalStore:
