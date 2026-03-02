@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import traceback
 from typing import Any
 
@@ -25,6 +26,7 @@ from core.reminder import TelegramNotifier
 from main import main
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
+DEBUG_API_EVENT_SHAPE = os.getenv("DEBUG_API_EVENT_SHAPE", "0").strip().lower() in {"1", "true", "yes"}
 
 
 def _extract_payload(event: Any) -> tuple[dict[str, Any], bool]:
@@ -185,6 +187,30 @@ def _json_response(status_code: int, payload: dict[str, Any]) -> dict[str, Any]:
         "headers": {"Content-Type": "application/json; charset=utf-8"},
         "body": json.dumps(payload, ensure_ascii=False),
     }
+
+
+def _debug_http_shape(event: dict[str, Any], is_http_event: bool) -> None:
+    if not DEBUG_API_EVENT_SHAPE:
+        return
+    if not isinstance(event, dict):
+        print("api_debug non_dict_event")
+        return
+    request_context = event.get("requestContext")
+    rc_keys = sorted(request_context.keys()) if isinstance(request_context, dict) else []
+    params = event.get("params")
+    params_keys = sorted(params.keys()) if isinstance(params, dict) else []
+    qs = _query_params(event)
+    print(
+        "api_debug "
+        f"is_http={is_http_event} "
+        f"method={_http_method(event)!r} "
+        f"path={_http_path(event)!r} "
+        f"norm_path={_normalize_path(_http_path(event))!r} "
+        f"event_keys={sorted(event.keys())} "
+        f"request_context_keys={rc_keys} "
+        f"params_keys={params_keys} "
+        f"query_keys={sorted(qs.keys()) if isinstance(qs, dict) else []}"
+    )
 
 
 def _html_response(status_code: int, html: str) -> dict[str, Any]:
@@ -452,6 +478,7 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         return frontend_response
 
     event_dict = event if isinstance(event, dict) else {}
+    _debug_http_shape(event_dict, is_http_event)
     run_mode = _extract_run_mode(event_dict, request_payload, is_http_event)
     trigger_mode = _resolve_trigger_mode(event_dict)
     if not run_mode and trigger_mode:
