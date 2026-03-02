@@ -37,6 +37,7 @@ Purpose: track freshness and trust of planning sources before execution tasking.
 | M2 sync handler wiring (`src/handlers/sync.py`, `tests/handlers/test_sync_handler.py`) | 2026-03-02 | TeamLead | replaced placeholder with working hash-gated handler over `SyncService`; unit test confirms first run executes and second unchanged run skips | high | new handler boundary is runnable while prod entrypoints remain unchanged |
 | M3 hash basis contract (`src/services/sync/hash_basis.py`, `tests/services/test_hash_basis.py`) | 2026-03-02 | TeamLead | added deterministic hash basis builder with explicit fields and sort order; tests verify stable hash on row reorder and hash change on tracked field update | high | explicit hash basis is now codified before live source-reader wiring |
 | M3 optional runtime gate wiring (`main.py`, `core/use_cases.py`) | 2026-03-02 | TeamLead | source hash gate now optionally evaluated in current runtime behind `MIGRATION_ENABLE_SOURCE_HASH_GATE`; sync branch receives `allow_sync` and can be skipped safely when source unchanged | high | default behavior preserved (flag off), migration path can be validated incrementally |
+| M4 minimal store adapter (`src/adapters/store_ydb.py`, `tests/adapters/test_json_store_adapter.py`) | 2026-03-02 | TeamLead | replaced placeholder with JSON-backed operational store adapter and upsert-by-task-id behavior; idempotency test confirms stable overwrite semantics | high | provides concrete store boundary before YDB integration |
 
 ## Archive
 - `agile/archive/context_registry_2026-02-27.pre_hygiene.md`
