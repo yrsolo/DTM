@@ -17,6 +17,7 @@ from telegram.ext import Application
 
 from config import DEFAULT_CHAT_ID, TG
 from core.adapters import ChatAdapter, LoggerAdapter, MessageAdapter, NullLogger
+from core.task_query_contract import TimeWindow, apply_task_query, milestones_in_window, project_tasks
 from utils.func import filter_stages
 
 
@@ -539,8 +540,24 @@ class Reminder:
     ) -> list[str]:
         return sorted(set(tasks_today.keys()) | set(tasks_next_day.keys()))
 
+    def _get_tasks_for_date_sync(self, date: pd.Timestamp) -> list[Any]:
+        tasks = self.task_repository.get_all_tasks()
+        projections = project_tasks(tasks)
+        window = TimeWindow(start=date.date(), end=date.date(), mode="intersects")
+        filtered = apply_task_query(
+            projections,
+            statuses=["work"],
+            window=window,
+            limit=10**9,
+        )
+        return [
+            item.source_task
+            for item in filtered
+            if item.source_task is not None and milestones_in_window(item, window)
+        ]
+
     async def get_tasks_for_date(self, date: pd.Timestamp) -> list[Any]:
-        return self.task_repository.get_tasks_by_date(date)
+        return self._get_tasks_for_date_sync(date)
 
     async def _build_designer_message(
         self,
@@ -599,7 +616,7 @@ class Reminder:
         return self.today, self.next_work_day
 
     def distribute_tasks(self, date: pd.Timestamp) -> dict[str, list[Any]]:
-        tasks = self.task_repository.get_tasks_by_date(date)
+        tasks = self._get_tasks_for_date_sync(date)
         tasks_by_designer = defaultdict(list)
         for task in tasks:
             tasks_by_designer[task.designer].append(task)

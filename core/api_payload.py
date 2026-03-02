@@ -9,6 +9,7 @@ import pandas as pd
 
 from core.people import Person
 from core.repository import Task
+from core.task_query_contract import TimeWindow, apply_task_query, project_tasks
 
 
 def _now_utc_iso() -> str:
@@ -19,19 +20,13 @@ def _to_str(value: Any) -> str:
     return str(value or "").strip()
 
 
-def _task_due_date(task: Task, today: pd.Timestamp) -> pd.Timestamp | None:
-    future_dates = [date for date in task.timing.keys() if date >= today]
-    if future_dates:
-        return min(future_dates)
-    return task.max_date
-
-
-def _serialize_task(task: Task, today: pd.Timestamp) -> dict[str, Any]:
+def _serialize_task(task: Any, today: pd.Timestamp) -> dict[str, Any]:
+    _ = today
     timing_rows = sorted(task.timing.items(), key=lambda item: item[0])
-    next_due = _task_due_date(task, today)
+    next_due = task.next_due
     return {
-        "id": str(task.id),
-        "name": _to_str(task.name),
+        "id": str(task.task_id),
+        "name": _to_str(task.title),
         "designer": _to_str(task.designer),
         "status": _to_str(task.status),
         "color_status": _to_str(task.color_status),
@@ -63,34 +58,18 @@ def _serialize_person(person: Person) -> dict[str, Any]:
     }
 
 
-def _task_designer_values(task: Task) -> set[str]:
-    return {
-        _to_str(item).casefold()
-        for item in str(task.designer or "").split("\n")
-        if _to_str(item)
-    }
-
-
-def _filter_tasks(tasks: Iterable[Task], designer: str = "") -> list[Task]:
-    task_list = list(tasks)
-    target = _to_str(designer).casefold()
-    if not target:
-        return task_list
-    return [task for task in task_list if target in _task_designer_values(task)]
-
-
-def _build_deadlines(tasks: list[Task], today: pd.Timestamp, limit: int) -> list[dict[str, Any]]:
+def _build_deadlines(tasks: list[Any], today: pd.Timestamp, limit: int) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for task in tasks:
-        due_date = _task_due_date(task, today)
+        due_date = task.next_due
         if due_date is None:
             continue
         stages = task.timing.get(due_date, [])
         rows.append(
             {
                 "date": due_date.strftime("%Y-%m-%d"),
-                "task_id": str(task.id),
-                "task_name": _to_str(task.name),
+                "task_id": str(task.task_id),
+                "task_name": _to_str(task.title),
                 "designer": _to_str(task.designer),
                 "stages": [str(stage) for stage in stages],
             }
@@ -112,9 +91,14 @@ def build_frontend_api_payload(
 ) -> dict[str, Any]:
     """Build deterministic frontend payload for HTTP API."""
     today = pd.Timestamp.today().normalize()
-    task_list = list(tasks)
-    tasks_filtered = _filter_tasks(task_list, designer=designer_filter)
-    tasks_filtered.sort(key=lambda task: (_task_due_date(task, today) or pd.Timestamp.max, _to_str(task.name)))
+    task_list = project_tasks(tasks)
+    tasks_filtered = apply_task_query(
+        task_list,
+        statuses=statuses,
+        designer=designer_filter,
+        limit=10**9,
+        window=TimeWindow(),
+    )
     tasks_limited = tasks_filtered[: max(limit, 0)]
     task_payload = [_serialize_task(task, today) for task in tasks_limited]
 

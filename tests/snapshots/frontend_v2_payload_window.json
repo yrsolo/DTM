@@ -10,7 +10,7 @@
       "sheetName": "SourceSheet",
       "sheetUrl": null
     },
-    "hash": "6b0f7d4e94745314a2b2f389a13ca2dc2546d59b1731d8f893623fbf5c6a1993",
+    "hash": "7094b6c8da4af104dfa0b54576e7832df8c8a25cb639554d74b8091c87b68f74",
     "features": {
       "taskHash": true,
       "taskRevision": true,
@@ -91,14 +91,14 @@
         ]
       },
       "milestoneType": {
-        "animatic": "аниматик",
-        "storyboard": "раскадровка"
+        "animatic": "animatic",
+        "storyboard": "storyboard"
       },
       "milestoneStatus": {
-        "planned": "Запланировано",
-        "done": "Готово",
-        "unknown": "Неизвестно",
-        "skipped": "Пропущено"
+        "planned": "Planned",
+        "done": "Done",
+        "unknown": "Unknown",
+        "skipped": "Skipped"
       }
     }
   },
@@ -110,8 +110,8 @@
       "groupId": "9f33f1e54cc26a14",
       "status": "work",
       "date": {
-        "start": "2026-03-02",
-        "end": "2026-03-15",
+        "start": "2026-03-03",
+        "end": "2026-03-11",
         "nextDue": "2026-03-03"
       },
       "tags": [],

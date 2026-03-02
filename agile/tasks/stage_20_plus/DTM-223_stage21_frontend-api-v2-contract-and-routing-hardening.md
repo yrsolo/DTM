@@ -26,6 +26,7 @@
 - [x] `/api/v2/frontend` and `/api/v2/frontend/doc` implemented and documented.
 - [x] v2 payload includes stable `meta.hash` and optional `tasks[].hash/revision` placeholders.
 - [x] tests added: routing/query parser, v2 snapshot, v1 backward smoke.
+- [x] shared task query contract introduced and reused across API payloads, sheet render, and reminder date selection.
 - [x] README updated with v1/v2 endpoint references.
 - [ ] Cloud verification pending test deploy (`git_ref=dev`).
 
@@ -42,6 +43,8 @@
   - `tests/snapshots/frontend_v2_payload.json`
 - 2026-03-02: Added `FRONTEND_API_DEFAULT_VERSION` + `DEBUG_HTTP_EVENT` env contour and updated `.env.example`.
 - 2026-03-02: Added lightweight Actions deps split `requirements.actions.txt` and switched deploy/release workflows.
+- 2026-03-02: Added shared query contract module `core/task_query_contract.py` and removed duplicated status/designer/window/milestone filtering from `core/api_payload.py`, `core/api_payload_v2.py`, `core/manager.py`, `core/planner.py`, and `core/reminder.py`.
+- 2026-03-02: Added contract test `tests/test_task_query_contract.py` and refreshed v2 snapshots.
 
 ## Links
 - `index.py`

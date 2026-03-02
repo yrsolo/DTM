@@ -10,6 +10,7 @@ Purpose: track freshness and trust of planning sources before execution tasking.
 ## Active Registry
 | source | last_verified_at | verified_by | evidence | trust_level | notes |
 |---|---|---|---|---|---|
+| Shared task query contract (`core/task_query_contract.py`) consumed by API/render/reminder paths | 2026-03-02 | TeamLead | verified code wiring in `core/api_payload.py`, `core/api_payload_v2.py`, `core/manager.py`, `core/planner.py`, `core/reminder.py`; local tests passed: `tests/test_task_query_contract.py`, `tests/api/test_frontend_api_v2_payload.py`, `tests/api/test_frontend_api_routing.py` | high | single source for statuses/designer/window/milestone filtering; reduced duplication across product blocks |
 | `agent/OPERATING_CONTRACT.md`, `AGENTS.md`, `agent/teamlead.md` | 2026-02-28 | TeamLead | runtime start gate completed in chat (`CONTRACT CHECK: OK`) | high | process source of truth |
 | `agile/sprint_current.md` | 2026-02-28 | TeamLead | compacted board to latest-stage focus; Stage 20 counters and Stage 21 queue aligned | high | active sprint control plane |
 | `agile/tasks/**` structure (`DTM-197`) | 2026-02-28 | TeamLead | moved task files from one flat folder into staged subfolders (`stage_00_09`, `stage_10_19`, `stage_20_plus`, `foundation_misc`) and added `agile/tasks/README.md` | high | improves navigation without data loss |

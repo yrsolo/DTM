@@ -13,7 +13,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
-- [BLOCKED] DTM-223 - Frontend API v2 contract + routing hardening done in code; cloud verification pending manual test deploy.
+- [BLOCKED] DTM-223 - Frontend API v2 + shared task query contract across API/render/reminder done in code; cloud verification pending manual test deploy.
 - [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
 - [DONE] DTM-221 - Frontend API event-shape hardening + Actions requirements split.
 - [DONE] DTM-220 - API gateway ANY-method compatibility hotfix.
