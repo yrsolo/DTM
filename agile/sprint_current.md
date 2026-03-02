@@ -55,7 +55,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-191 - Stage 19 closeout and Stage 20 handoff package.
 
 ## Blocked
-- [BLOCKED] none.
+- [BLOCKED] DTM-215 - need owner decision: operational store target (JSON interim vs YDB now) and migration-flag rollout policy (test/prod enable gates).
 
 ## Next 3-5 Tasks (Groomed)
 - [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
