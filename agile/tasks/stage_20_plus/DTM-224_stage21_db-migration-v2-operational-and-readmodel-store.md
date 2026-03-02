@@ -43,6 +43,11 @@
   - `python -m compileall src/adapters/ydb src/services/sync_service.py src/services/readmodel_builder.py index.py`
   - `run_timer.cmd` with `RENDER_SOURCE=ydb`
   - direct YDB smoke (`operational upsert + readmodel build + readmodel fetch`) returned `readmodel_exists=True`.
+- 2026-03-02: Wired main runtime to execute YDB migration pipeline (`source-range hash gate -> operational sync -> readmodel build`) in parallel-safe mode under `STORE_MODE in {dual_write,ydb_primary,ydb_only}`.
+- 2026-03-02: Removed N+1 milestone replacement by adding bulk replacement path in `OperationalTaskRepo` and switched sync service to one bulk milestone operation.
+- 2026-03-02: Fixed Windows console encoding crash in migration logs with safe-print.
+- 2026-03-02: Verified API v2 consumes readmodel snapshot from YDB (`readmodelSource=ydb`, `readmodelId=frontend_v2:default`).
+- 2026-03-02: Observed transient YDB `RESOURCE_EXHAUSTED` in timer-integrated run; separate retry smoke for readmodel build succeeded and refreshed snapshot (`tasks=14`).
 
 ## Links
 - `src/adapters/ydb/schema.py`

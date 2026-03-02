@@ -23,6 +23,8 @@
 ### Stage 3: API v2 read from readmodel
 - Set `READMODEL_SOURCE=ydb`.
 - Verify API v2 does one readmodel query and returns stored `payload_json`.
+- Current implementation note:
+  - API v2 YDB mode returns stored snapshot as-is (no per-request rebuild/filtering).
 
 ### Stage 4: Render/Notify source switch
 - Move render and notify to YDB-backed operational/readmodel sources.
@@ -36,4 +38,5 @@
 - Use bounded retries and backoff for `RESOURCE_EXHAUSTED`.
 - Keep schema creation idempotent (`ensure_tables`).
 - Keep cloud verification evidence in sprint/task logs before promotion to prod.
-
+- Runtime note:
+  - Timer flow triggers migration pipeline (`sync_state` + operational + readmodel), and transient YDB exhaustion is logged without stopping legacy render path.

@@ -39,6 +39,8 @@ class SyncRunResult:
     no_changes: bool
     tasks_upserted: int
     milestones_upserted: int
+    ydb_queries_count: int
+    ydb_error_code: str
 
 
 class YdbSyncService:
@@ -59,10 +61,12 @@ class YdbSyncService:
                 no_changes=True,
                 tasks_upserted=0,
                 milestones_upserted=0,
+                ydb_queries_count=self.repo.client.stats.ydb_queries_count,
+                ydb_error_code=self.repo.client.stats.error_code,
             )
 
         task_rows: list[dict[str, Any]] = []
-        milestones_total = 0
+        milestones_by_task: dict[str, list[dict[str, Any]]] = {}
         for task in normalized_tasks:
             task_id = str(task.get("task_id", task.get("id", ""))).strip()
             if not task_id:
@@ -107,8 +111,9 @@ class YdbSyncService:
                     "raw_payload": task,
                 }
             )
-            milestones_total += self.repo.replace_task_milestones(task_id, milestones if isinstance(milestones, list) else [])
+            milestones_by_task[task_id] = milestones if isinstance(milestones, list) else []
 
+        milestones_total = self.repo.replace_task_milestones_bulk(milestones_by_task)
         tasks_upserted = self.repo.upsert_tasks_batch(task_rows)
         self.repo.set_sync_state(source_id=source_id, source_hash=source_hash)
         return SyncRunResult(
@@ -118,5 +123,6 @@ class YdbSyncService:
             no_changes=False,
             tasks_upserted=tasks_upserted,
             milestones_upserted=milestones_total,
+            ydb_queries_count=self.repo.client.stats.ydb_queries_count,
+            ydb_error_code=self.repo.client.stats.error_code,
         )
-

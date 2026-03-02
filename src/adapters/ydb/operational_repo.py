@@ -174,6 +174,63 @@ class OperationalTaskRepo:
         self.client.execute(query, {"$rows": rows})
         return len(rows)
 
+    def replace_task_milestones_bulk(self, payload_by_task: dict[str, list[dict[str, Any]]]) -> int:
+        """Replace milestones for many tasks with bounded query count."""
+        task_ids = [str(task_id).strip() for task_id in payload_by_task.keys() if str(task_id).strip()]
+        if not task_ids:
+            return 0
+
+        # Full table replace is acceptable because sync reads full source range.
+        delete_query = f"DELETE FROM `{self.milestones_table}`;"
+        self.client.query(delete_query)
+
+        rows: list[dict[str, Any]] = []
+        for task_id, milestones in payload_by_task.items():
+            normalized_task_id = str(task_id).strip()
+            if not normalized_task_id:
+                continue
+            for index, milestone in enumerate(milestones):
+                rows.append(
+                    {
+                        "task_id": normalized_task_id,
+                        "idx": int(milestone.get("idx", index)),
+                        "type": str(milestone.get("type", "")).strip() or "unknown",
+                        "planned_date": _to_date(milestone.get("planned_date", milestone.get("planned"))),
+                        "actual_date": _to_date(milestone.get("actual_date", milestone.get("actual"))),
+                        "status": str(milestone.get("status", "unknown")).strip() or "unknown",
+                        "raw_text": str(milestone.get("raw_text", "")).strip() or None,
+                        "confidence": float(milestone.get("confidence", 0.0) or 0.0),
+                        "inference_rule": str(milestone.get("inference_rule", "")).strip() or None,
+                    }
+                )
+
+        if not rows:
+            return 0
+
+        upsert_query = f"""
+        DECLARE $rows AS List<
+            Struct<
+                task_id:Utf8,
+                idx:Uint32,
+                type:Utf8,
+                planned_date:Date?,
+                actual_date:Date?,
+                status:Utf8,
+                raw_text:Utf8?,
+                confidence:Double,
+                inference_rule:Utf8?
+            >
+        >;
+        UPSERT INTO `{self.milestones_table}` (
+            task_id, idx, type, planned_date, actual_date, status, raw_text, confidence, inference_rule
+        )
+        SELECT
+            task_id, idx, type, planned_date, actual_date, status, raw_text, confidence, inference_rule
+        FROM AS_TABLE($rows);
+        """
+        self.client.execute(upsert_query, {"$rows": rows})
+        return len(rows)
+
     def get_sync_state(self, source_id: str) -> SyncStateRow | None:
         query = f"""
         DECLARE $source_id AS Utf8;

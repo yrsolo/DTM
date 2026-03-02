@@ -95,12 +95,6 @@ class FrontendReadmodelBuilderService:
             )
 
         task_rows = self.operational_repo.list_tasks()
-        milestone_rows = self.operational_repo.list_milestones()
-        by_task: dict[str, list[dict[str, Any]]] = {}
-        for item in milestone_rows:
-            by_task.setdefault(str(item.get("task_id", "")).strip(), []).append(item)
-        for values in by_task.values():
-            values.sort(key=lambda row: int(row.get("idx", 0)))
 
         task_views: list[_TaskView] = []
         for row in task_rows:
@@ -108,11 +102,24 @@ class FrontendReadmodelBuilderService:
             if not task_id:
                 continue
             timing: dict[Any, list[str]] = {}
-            for milestone in by_task.get(task_id, []):
-                planned = milestone.get("planned_date")
-                if planned is None:
-                    continue
-                timing.setdefault(planned, []).append(str(milestone.get("type", "unknown")))
+            raw_payload_text = str(row.get("raw_payload", "") or "")
+            raw_payload: dict[str, Any] = {}
+            if raw_payload_text:
+                try:
+                    parsed = json.loads(raw_payload_text)
+                    if isinstance(parsed, dict):
+                        raw_payload = parsed
+                except json.JSONDecodeError:
+                    raw_payload = {}
+            milestones = raw_payload.get("milestones", [])
+            if isinstance(milestones, list):
+                for milestone in milestones:
+                    if not isinstance(milestone, dict):
+                        continue
+                    planned = milestone.get("planned") or milestone.get("planned_date")
+                    if not planned:
+                        continue
+                    timing.setdefault(planned, []).append(str(milestone.get("type", "unknown")))
             task_views.append(
                 _TaskView(
                     id=task_id,
@@ -124,7 +131,7 @@ class FrontendReadmodelBuilderService:
                     format_="",
                     project_name=str(row.get("group_id", "")).strip(),
                     customer="",
-                    raw_timing=str(row.get("raw_payload", ""))[:2000],
+                    raw_timing=raw_payload_text[:2000],
                     timing=timing,
                 )
             )
@@ -134,8 +141,8 @@ class FrontendReadmodelBuilderService:
             people=[],
             env_name=self.env_name,
             source_sheet_name=self.source_sheet_name,
-            statuses=["work", "pre_done", "wait", "done"],
-            limit=1000,
+            statuses=["work", "pre_done"],
+            limit=500,
             include_people=False,
             designer_filter="",
         )

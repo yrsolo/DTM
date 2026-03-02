@@ -1,6 +1,9 @@
 """Основной файл для запуска планировщика задач."""
 
 import asyncio
+import hashlib
+import json
+import traceback
 from pathlib import Path
 
 from config import (
@@ -21,6 +24,10 @@ from core.bootstrap import build_planner_dependencies
 from core.planner import GoogleSheetPlanner
 from core.use_cases import resolve_run_mode, run_planner_use_case
 from src.adapters.store_ydb import StoreTaskRepository, build_operational_store
+from src.adapters.ydb.operational_repo import OperationalTaskRepo
+from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
+from src.services.readmodel_builder import FrontendReadmodelBuilderService
+from src.services.sync_service import YdbSyncService
 from src.services.sync.hash_basis import build_hash_basis
 from src.services.sync.hash_gate import evaluate_hash_gate, save_last_hash
 
@@ -46,6 +53,10 @@ def _print_quality_report(report):
     )
 
 
+def _safe_print(text: str) -> None:
+    print(str(text).encode("ascii", "backslashreplace").decode("ascii"))
+
+
 def _task_to_store_record(task) -> dict[str, object]:
     timing_rows = []
     for dt, stages in sorted(task.timing.items(), key=lambda item: item[0]):
@@ -68,6 +79,65 @@ def _task_to_store_record(task) -> dict[str, object]:
         "raw_timing": task.raw_timing,
         "timing": timing_rows,
     }
+
+
+def _task_to_operational_payload(task) -> dict[str, object]:
+    milestones = []
+    for idx, (dt, stages) in enumerate(sorted(task.timing.items(), key=lambda item: item[0])):
+        planned = dt.date().isoformat()
+        for stage in stages:
+            milestones.append(
+                {
+                    "idx": idx,
+                    "type": str(stage).strip().lower() or "unknown",
+                    "planned": planned,
+                    "actual": None,
+                    "status": "planned",
+                    "raw_text": str(stage),
+                }
+            )
+
+    start_date = task.min_date.date().isoformat() if task.min_date is not None else None
+    end_date = task.max_date.date().isoformat() if task.max_date is not None else None
+    next_due_date = task.min_date.date().isoformat() if task.min_date is not None else None
+    task_hash_basis = {
+        "id": str(task.id),
+        "name": task.name,
+        "designer": task.designer,
+        "status": task.color_status,
+        "raw_timing": task.raw_timing,
+        "milestones": milestones,
+    }
+    task_hash = hashlib.sha256(
+        json.dumps(task_hash_basis, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+    return {
+        "task_id": str(task.id),
+        "title": task.name,
+        "owner_id": task.designer,
+        "group_id": task.project_name,
+        "status": task.color_status,
+        "start_date": start_date,
+        "end_date": end_date,
+        "next_due_date": next_due_date,
+        "tags": [],
+        "links": {},
+        "task_hash": task_hash,
+        "task_revision": 1,
+        "raw_payload": task_hash_basis,
+        "milestones": milestones,
+    }
+
+
+def _read_source_range_values(source_task_repository) -> list[list[str]]:
+    spreadsheet_name = source_task_repository.source_sheet_info.spreadsheet_name
+    sheet_name = source_task_repository.source_sheet_info.get_sheet_name("tasks")
+    return source_task_repository.service.get_worksheet_values(
+        spreadsheet_name=spreadsheet_name,
+        worksheet_name=sheet_name,
+        worksheet_range="A1:Z2000",
+    )
 
 
 def _build_ydb_task_repository() -> StoreTaskRepository:
@@ -186,6 +256,62 @@ async def main(**kwargs):
             f"records={len(records)} "
             f"result={store_result}"
         )
+        try:
+            source_id = (
+                "sheet:"
+                f"{source_task_repository.source_sheet_info.spreadsheet_name}:"
+                f"{source_task_repository.source_sheet_info.get_sheet_name('tasks')}:A1:Z2000"
+            )
+            operational_repo = OperationalTaskRepo(
+                endpoint=YDB_ENDPOINT,
+                database=YDB_DATABASE,
+                ensure_schema=True,
+            )
+            sync_service = YdbSyncService(operational_repo)
+            source_values = _read_source_range_values(source_task_repository)
+            normalized_tasks = [_task_to_operational_payload(task) for task in tasks]
+            sync_result = sync_service.run(
+                source_id=source_id,
+                source_range_values=source_values,
+                normalized_tasks=normalized_tasks,
+            )
+            _safe_print(
+                "migration_operational_sync="
+                f"source_id={sync_result.source_id} "
+                f"source_hash={sync_result.source_hash} "
+                f"previous_hash={sync_result.previous_hash} "
+                f"no_changes={sync_result.no_changes} "
+                f"tasks_upserted={sync_result.tasks_upserted} "
+                f"milestones_upserted={sync_result.milestones_upserted} "
+                f"ydb_queries_count={sync_result.ydb_queries_count} "
+                f"error_code={sync_result.ydb_error_code}"
+            )
+            readmodel_repo = FrontendReadmodelRepo(
+                endpoint=YDB_ENDPOINT,
+                database=YDB_DATABASE,
+                ensure_schema=False,
+            )
+            readmodel_builder = FrontendReadmodelBuilderService(
+                operational_repo=operational_repo,
+                readmodel_repo=readmodel_repo,
+                source_id=source_id,
+                env_name=RUNTIME_ENV,
+                source_sheet_name=source_task_repository.source_sheet_info.spreadsheet_name,
+            )
+            readmodel_result = readmodel_builder.run(readmodel_id="frontend_v2:default")
+            _safe_print(
+                "migration_readmodel_build="
+                f"readmodel_id={readmodel_result.readmodel_id} "
+                f"source_hash={readmodel_result.source_hash} "
+                f"changed={readmodel_result.changed} "
+                f"tasks_count={readmodel_result.tasks_count} "
+                f"ydb_queries_count={readmodel_result.ydb_queries_count}"
+            )
+        except Exception as exc:
+            safe_error = str(exc).encode("ascii", "backslashreplace").decode("ascii")
+            _safe_print(f"migration_ydb_pipeline_error={safe_error}")
+            safe_trace = traceback.format_exc().encode("ascii", "backslashreplace").decode("ascii")
+            _safe_print(f"migration_ydb_pipeline_trace={safe_trace}")
     _print_quality_report(quality_report)
     return quality_report
 
