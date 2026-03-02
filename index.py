@@ -646,6 +646,24 @@ def _handle_frontend_api_v2_if_requested(event: dict[str, Any], is_http_event: b
     return _json_response(200, payload)
 
 
+def _handle_api_root_if_requested(event: dict[str, Any], is_http_event: bool) -> dict[str, Any] | None:
+    if not is_http_event:
+        return None
+    method = _http_method(event) or "GET"
+    if method == "ANY":
+        method = "GET"
+    if method != "GET":
+        return None
+    path = _normalize_path(_http_path(event))
+    if path not in {"/"}:
+        return None
+    params = _query_params(event)
+    as_json = str(params.get("format", "")).strip().lower() == "json"
+    if FRONTEND_API_DEFAULT_VERSION == "v2":
+        return _json_response(200, _frontend_api_v2_doc()) if as_json else _html_response(200, _frontend_api_v2_doc_html())
+    return _json_response(200, _frontend_api_doc()) if as_json else _html_response(200, _frontend_api_doc_html())
+
+
 async def handler(event: Any, _: Any) -> dict[str, Any]:
     """Yandex Cloud handler."""
     request_payload, is_http_event = _extract_payload(event)
@@ -660,6 +678,10 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
             "statusCode": 200,
             "body": "!GROUP_QUERY_OK!",
         }
+
+    root_response = _handle_api_root_if_requested(event if isinstance(event, dict) else {}, is_http_event)
+    if root_response is not None:
+        return root_response
 
     frontend_v2_response = _handle_frontend_api_v2_if_requested(event if isinstance(event, dict) else {}, is_http_event)
     if frontend_v2_response is not None:
