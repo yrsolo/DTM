@@ -1,0 +1,146 @@
+"""HTTP API payload builder for frontend consumers."""
+
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from typing import Any, Iterable
+
+import pandas as pd
+
+from core.people import Person
+from core.repository import Task
+
+
+def _now_utc_iso() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def _to_str(value: Any) -> str:
+    return str(value or "").strip()
+
+
+def _task_due_date(task: Task, today: pd.Timestamp) -> pd.Timestamp | None:
+    future_dates = [date for date in task.timing.keys() if date >= today]
+    if future_dates:
+        return min(future_dates)
+    return task.max_date
+
+
+def _serialize_task(task: Task, today: pd.Timestamp) -> dict[str, Any]:
+    timing_rows = sorted(task.timing.items(), key=lambda item: item[0])
+    next_due = _task_due_date(task, today)
+    return {
+        "id": str(task.id),
+        "name": _to_str(task.name),
+        "designer": _to_str(task.designer),
+        "status": _to_str(task.status),
+        "color_status": _to_str(task.color_status),
+        "brand": _to_str(task.brand),
+        "format": _to_str(task.format_),
+        "project_name": _to_str(task.project_name),
+        "customer": _to_str(task.customer),
+        "min_date": task.min_date.strftime("%Y-%m-%d") if task.min_date is not None else None,
+        "max_date": task.max_date.strftime("%Y-%m-%d") if task.max_date is not None else None,
+        "next_due_date": next_due.strftime("%Y-%m-%d") if next_due is not None else None,
+        "timing": [
+            {
+                "date": date.strftime("%Y-%m-%d"),
+                "stages": [str(stage) for stage in stages],
+            }
+            for date, stages in timing_rows
+        ],
+    }
+
+
+def _serialize_person(person: Person) -> dict[str, Any]:
+    return {
+        "id": _to_str(person.id),
+        "name": _to_str(person.name),
+        "position": _to_str(person.position),
+        "vacation": _to_str(person.vacation),
+        "telegram_id": _to_str(person.telegram_id),
+        "chat_id": _to_str(person.chat_id),
+    }
+
+
+def _task_designer_values(task: Task) -> set[str]:
+    return {
+        _to_str(item).casefold()
+        for item in str(task.designer or "").split("\n")
+        if _to_str(item)
+    }
+
+
+def _filter_tasks(tasks: Iterable[Task], designer: str = "") -> list[Task]:
+    task_list = list(tasks)
+    target = _to_str(designer).casefold()
+    if not target:
+        return task_list
+    return [task for task in task_list if target in _task_designer_values(task)]
+
+
+def _build_deadlines(tasks: list[Task], today: pd.Timestamp, limit: int) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for task in tasks:
+        due_date = _task_due_date(task, today)
+        if due_date is None:
+            continue
+        stages = task.timing.get(due_date, [])
+        rows.append(
+            {
+                "date": due_date.strftime("%Y-%m-%d"),
+                "task_id": str(task.id),
+                "task_name": _to_str(task.name),
+                "designer": _to_str(task.designer),
+                "stages": [str(stage) for stage in stages],
+            }
+        )
+    rows.sort(key=lambda item: item["date"])
+    return rows[: max(limit, 0)]
+
+
+def build_frontend_api_payload(
+    tasks: Iterable[Task],
+    people: Iterable[Person],
+    *,
+    env_name: str,
+    source_sheet_name: str,
+    statuses: list[str],
+    limit: int,
+    include_people: bool,
+    designer_filter: str = "",
+) -> dict[str, Any]:
+    """Build deterministic frontend payload for HTTP API."""
+    today = pd.Timestamp.today().normalize()
+    task_list = list(tasks)
+    tasks_filtered = _filter_tasks(task_list, designer=designer_filter)
+    tasks_filtered.sort(key=lambda task: (_task_due_date(task, today) or pd.Timestamp.max, _to_str(task.name)))
+    tasks_limited = tasks_filtered[: max(limit, 0)]
+    task_payload = [_serialize_task(task, today) for task in tasks_limited]
+
+    payload: dict[str, Any] = {
+        "artifact": "dtm_frontend_api_payload",
+        "generated_at_utc": _now_utc_iso(),
+        "source": {
+            "env": env_name,
+            "source_sheet_name": source_sheet_name,
+        },
+        "filters": {
+            "statuses": statuses,
+            "designer": _to_str(designer_filter),
+            "limit": limit,
+            "include_people": include_people,
+        },
+        "summary": {
+            "tasks_total": len(task_list),
+            "tasks_filtered": len(tasks_filtered),
+            "tasks_returned": len(task_payload),
+        },
+        "tasks": task_payload,
+        "deadlines": _build_deadlines(tasks_filtered, today=today, limit=min(limit, 50)),
+    }
+    if include_people:
+        people_list = list(people)
+        payload["people"] = [_serialize_person(person) for person in people_list]
+        payload["summary"]["people_total"] = len(people_list)
+    return payload
