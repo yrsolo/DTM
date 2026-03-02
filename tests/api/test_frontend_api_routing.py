@@ -130,6 +130,19 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 200)
         self.assertIn("DTM Frontend API v2", response.get("body", ""))
 
+    def test_v2_doc_contains_endpoints_query_and_response_fields(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend/doc"
+        event["params"]["proxy"] = "api/v2/frontend/doc"
+        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend/doc"
+        response = asyncio.run(index.handler(event, None))
+        body = response.get("body", "")
+        self.assertEqual(response["statusCode"], 200)
+        self.assertIn("Endpoints", body)
+        self.assertIn("Параметры запроса", body)
+        self.assertIn("Поля ответа", body)
+        self.assertIn("tasks[].revision", body)
+
 
 if __name__ == "__main__":
     unittest.main()
