@@ -5,14 +5,17 @@ from pathlib import Path
 
 from config import (
     KEY_JSON,
+    MIGRATION_DUAL_WRITE_STORE,
     MIGRATION_ENABLE_SOURCE_HASH_GATE,
     MIGRATION_HASH_GATE_STATE_FILE,
+    MIGRATION_STORE_FILE,
     SHEET_INFO,
     TRIGGERS,
 )
 from core.bootstrap import build_planner_dependencies
 from core.planner import GoogleSheetPlanner
 from core.use_cases import resolve_run_mode, run_planner_use_case
+from src.adapters.store_ydb import JsonOperationalStore
 from src.services.sync.hash_basis import build_hash_basis
 from src.services.sync.hash_gate import evaluate_hash_gate, save_last_hash
 
@@ -36,6 +39,29 @@ def _print_quality_report(report):
         f"reminder_delivery_rate={summary.get('reminder_delivery_rate')} "
         f"reminder_failure_rate={summary.get('reminder_failure_rate')}"
     )
+
+
+def _task_to_store_record(task) -> dict[str, object]:
+    timing_rows = []
+    for dt, stages in sorted(task.timing.items(), key=lambda item: item[0]):
+        timing_rows.append(
+            {
+                "date": dt.date().isoformat(),
+                "stages": list(stages),
+            }
+        )
+    return {
+        "task_id": str(task.id),
+        "name": task.name,
+        "brand": task.brand,
+        "format_": task.format_,
+        "project_name": task.project_name,
+        "customer": task.customer,
+        "designer": task.designer,
+        "status": task.status,
+        "raw_timing": task.raw_timing,
+        "timing": timing_rows,
+    }
 
 
 async def main(**kwargs):
@@ -103,6 +129,18 @@ async def main(**kwargs):
             )
 
     quality_report = await run_planner_use_case(planner, mode, allow_sync=allow_sync)
+
+    if MIGRATION_DUAL_WRITE_STORE and mode in {"timer", "test", "sync-only"} and allow_sync:
+        tasks = dependencies.task_repository.get_all_tasks()
+        records = [_task_to_store_record(task) for task in tasks]
+        store = JsonOperationalStore(MIGRATION_STORE_FILE)
+        store.upsert_tasks(records)
+        print(
+            "migration_dual_write_store="
+            f"enabled=1 "
+            f"store_file={MIGRATION_STORE_FILE} "
+            f"records={len(records)}"
+        )
     _print_quality_report(quality_report)
     return quality_report
 

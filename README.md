@@ -76,6 +76,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - [x] M1-M3 scaffolding added under `src/` (core models/normalize + sync hash gate).
 - [x] M1 normalize fixtures and unit tests added (`tests/core/normalize`, `tests/fixtures/normalize`).
 - [x] M3 optional runtime source hash gate wiring added (feature-flagged).
+- [x] M4 optional dual-write to JSON operational store added (feature-flagged).
 - [ ] M1 wired to current runtime path.
 - [ ] M2 sync/render split wired to handlers.
 - [ ] M3 source-hash gate enabled in production flow.

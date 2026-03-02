@@ -58,6 +58,7 @@ MIGRATION_DUAL_WRITE_STORE = _env_flag("MIGRATION_DUAL_WRITE_STORE")
 MIGRATION_HASH_GATE_STATE_FILE = _env(
     "MIGRATION_HASH_GATE_STATE_FILE", "artifacts/tmp/source_hash_gate_state.json"
 )
+MIGRATION_STORE_FILE = _env("MIGRATION_STORE_FILE", "artifacts/tmp/normalized_store.json")
 
 TG = os.environ.get("TG_TOKEN")
 TG_BOT_USERNAME = _env("TG_BOT_USERNAME")
