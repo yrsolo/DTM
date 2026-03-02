@@ -7,16 +7,18 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-202 - Runtime trigger gate + release workflow source-of-truth hotfix.
 - [DONE] DTM-200 - Frontend API endpoint and request/response contract doc.
 - [DONE] DTM-199 - Stage 21 API gateway live bind smoke for test/prod domains.
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 
 ## Stage 21 Estimate (Dynamic)
-- Baseline estimate: 3 tasks.
-- Done: 3
+- Baseline estimate: 4 tasks.
+- Done: 4
 - Remaining: 0
 
 ## Done (Latest)
+- [DONE] DTM-202 - Runtime trigger gate + release workflow source-of-truth hotfix.
 - [DONE] DTM-199 - Stage 21 API gateway live bind smoke for test/prod domains.
 - [DONE] DTM-200 - Frontend API endpoint and request/response contract doc.
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
@@ -35,7 +37,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 
 ## Active Task Files
-- `agile/tasks/stage_20_plus/DTM-200_stage21_frontend-api-endpoint-and-contract-doc.md`
+- `agile/tasks/stage_20_plus/DTM-202_stage21_runtime-trigger-gate-and-release-preflight-hotfix.md`
 
 ## Task Folder Structure
 - `agile/tasks/stage_00_09/` - stage 0-9 execution tasks.

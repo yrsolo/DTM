@@ -6,7 +6,14 @@ import json
 import traceback
 from typing import Any
 
-from config import KEY_JSON, RUNTIME_ENV, SHEET_INFO, SOURCE_SHEET_NAME, TG_BOT_USERNAME
+from config import (
+    KEY_JSON,
+    RUNTIME_ENV,
+    SHEET_INFO,
+    SOURCE_SHEET_NAME,
+    TG_BOT_USERNAME,
+    TRIGGERS,
+)
 from core.api_payload import build_frontend_api_payload
 from core.bootstrap import build_planner_dependencies
 from core.group_query import (
@@ -16,6 +23,8 @@ from core.group_query import (
 )
 from core.reminder import TelegramNotifier
 from main import main
+
+ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
 
 
 def _extract_payload(event: Any) -> tuple[dict[str, Any], bool]:
@@ -119,6 +128,15 @@ def _json_response(status_code: int, payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _resolve_trigger_mode(event: Any) -> str:
+    try:
+        messages = event.get("messages")
+        trigger_id = str(messages[0]["details"]["trigger_id"]).strip()
+    except (TypeError, KeyError, IndexError):
+        return ""
+    return str(TRIGGERS.get(trigger_id, "")).strip().lower()
+
+
 def _parse_statuses(raw: str) -> list[str]:
     items = [part.strip() for part in str(raw or "").split(",") if part.strip()]
     return items or ["work", "pre_done"]
@@ -136,6 +154,20 @@ def _parse_bool(raw: str, default: bool = True) -> bool:
     if raw is None:
         return default
     return str(raw).strip().lower() in {"1", "true", "yes", "y"}
+
+
+def _extract_run_mode(
+    event: dict[str, Any],
+    request_payload: dict[str, Any],
+    is_http_event: bool,
+) -> str:
+    raw_mode = str(request_payload.get("mode", "")).strip().lower()
+    if not raw_mode and is_http_event:
+        params = _query_params(event)
+        raw_mode = str(params.get("mode", "")).strip().lower()
+    if raw_mode not in ALLOWED_RUN_MODES:
+        return ""
+    return raw_mode
 
 
 def _frontend_api_doc() -> dict[str, Any]:
@@ -242,7 +274,26 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
     if frontend_response is not None:
         return frontend_response
 
-    run_mode = request_payload.get("mode")
+    event_dict = event if isinstance(event, dict) else {}
+    run_mode = _extract_run_mode(event_dict, request_payload, is_http_event)
+    trigger_mode = _resolve_trigger_mode(event_dict)
+    if not run_mode and trigger_mode:
+        run_mode = trigger_mode
+    if is_http_event and not run_mode:
+        return _json_response(
+            200,
+            {
+                "artifact": "dtm_runtime_noop",
+                "message": "HTTP request does not trigger planner without explicit mode.",
+                "allowed_modes": sorted(ALLOWED_RUN_MODES),
+            },
+        )
+    if not is_http_event and not run_mode:
+        return {
+            "statusCode": 200,
+            "body": "!NOOP!",
+        }
+
     dry_run = bool(request_payload.get("dry_run", False))
     mock_external = request_payload.get("mock_external")
     planner_event = request_payload.get("event")

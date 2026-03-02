@@ -72,7 +72,6 @@ jobs:
           service-account: ${{ vars.YC_RUNTIME_SERVICE_ACCOUNT_ID || secrets.YC_RUNTIME_SERVICE_ACCOUNT_ID || vars.YC_SERVICE_ACCOUNT_ID || secrets.YC_SERVICE_ACCOUNT_ID }}
           environment: |
             ENV=${{ vars.ENV || 'test' }}
-            SOURCE_SHEET_NAME=${{ vars.SOURCE_SHEET_NAME || 'Спонсорские ТНТ' }}
             TARGET_SHEET_NAME=${{ vars.TARGET_SHEET_NAME || 'Спонсорские ТНТ ТЕСТ' }}
             STRICT_ENV_GUARD=${{ vars.STRICT_ENV_GUARD || '1' }}
           secrets: |
@@ -82,6 +81,7 @@ jobs:
             PROXY_URL=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/PROXY_URL
             GOOGLE_KEY_JSON=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/GOOGLE_KEY_JSON
             DEFAULT_CHAT_ID=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/DEFAULT_CHAT_ID
+            SOURCE_SHEET_NAME=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/SOURCE_SHEET_NAME
             WEB_DOMAIN=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/WEB_DOMAIN
             API_DOMAIN_TEST=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/API_DOMAIN_TEST
             API_DOMAIN_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/API_DOMAIN_PROD

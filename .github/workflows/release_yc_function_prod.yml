@@ -69,7 +69,6 @@ jobs:
           YC_LOCKBOX_SECRET_ID: ${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}
           YC_SERVICE_ACCOUNT_ID: ${{ vars.YC_SERVICE_ACCOUNT_ID || secrets.YC_SERVICE_ACCOUNT_ID }}
           YC_RUNTIME_SERVICE_ACCOUNT_ID: ${{ vars.YC_RUNTIME_SERVICE_ACCOUNT_ID || secrets.YC_RUNTIME_SERVICE_ACCOUNT_ID }}
-          SOURCE_SHEET_NAME: ${{ vars.SOURCE_SHEET_NAME || secrets.SOURCE_SHEET_NAME }}
         run: |
           set -euo pipefail
           if [ -z "${YC_LOCKBOX_SECRET_ID}" ]; then
@@ -78,10 +77,6 @@ jobs:
           fi
           if [ -z "${YC_SERVICE_ACCOUNT_ID}" ] && [ -z "${YC_RUNTIME_SERVICE_ACCOUNT_ID}" ]; then
             echo "Missing runtime service account variable: set YC_RUNTIME_SERVICE_ACCOUNT_ID or YC_SERVICE_ACCOUNT_ID" >&2
-            exit 1
-          fi
-          if [ -z "${SOURCE_SHEET_NAME}" ]; then
-            echo "Missing required repository variable: SOURCE_SHEET_NAME" >&2
             exit 1
           fi
 
@@ -99,7 +94,6 @@ jobs:
           service-account: ${{ vars.YC_RUNTIME_SERVICE_ACCOUNT_ID || secrets.YC_RUNTIME_SERVICE_ACCOUNT_ID || vars.YC_SERVICE_ACCOUNT_ID || secrets.YC_SERVICE_ACCOUNT_ID }}
           environment: |
             ENV=prod
-            SOURCE_SHEET_NAME=${{ vars.SOURCE_SHEET_NAME || secrets.SOURCE_SHEET_NAME }}
             STRICT_ENV_GUARD=0
             RELEASE_DRY_RUN=${{ inputs.dry_run_release }}
           secrets: |
@@ -109,6 +103,7 @@ jobs:
             PROXY_URL=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/PROXY_URL
             GOOGLE_KEY_JSON=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/GOOGLE_KEY_JSON
             DEFAULT_CHAT_ID=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/DEFAULT_CHAT_ID
+            SOURCE_SHEET_NAME=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/SOURCE_SHEET_NAME
             TARGET_SHEET_NAME=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/TARGET_SHEET_NAME_PROD
             TARGET_SHEET_NAME_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/TARGET_SHEET_NAME_PROD
             WEB_DOMAIN=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/WEB_DOMAIN
