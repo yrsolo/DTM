@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import json
 import os
+import re
+import time
 import traceback
 from typing import Any
 from urllib.parse import parse_qsl, urlparse
 
 from config import (
     KEY_JSON,
+    FRONTEND_API_DEFAULT_VERSION,
     RUNTIME_ENV,
     SHEET_INFO,
     SOURCE_SHEET_NAME,
@@ -17,6 +20,7 @@ from config import (
     TRIGGERS,
 )
 from core.api_payload import build_frontend_api_payload
+from core.api_payload_v2 import build_frontend_api_payload_v2
 from core.bootstrap import build_planner_dependencies
 from core.group_query import (
     build_deadlines_reply,
@@ -27,7 +31,11 @@ from core.reminder import TelegramNotifier
 from main import main
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
-DEBUG_API_EVENT_SHAPE = os.getenv("DEBUG_API_EVENT_SHAPE", "0").strip().lower() in {"1", "true", "yes"}
+DEBUG_HTTP_EVENT = os.getenv("DEBUG_HTTP_EVENT", os.getenv("DEBUG_API_EVENT_SHAPE", "0")).strip().lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
 
 def _extract_payload(event: Any) -> tuple[dict[str, Any], bool]:
@@ -124,6 +132,9 @@ def _http_path(event: dict[str, Any]) -> str:
         proxy = _normalize_proxy_path(params.get("proxy"))
         if proxy:
             return proxy
+        params_path = _normalize_proxy_path(params.get("path"))
+        if params_path:
+            return params_path
         path_map = params.get("path")
         if isinstance(path_map, dict):
             for key in ("proxy", "path"):
@@ -228,7 +239,7 @@ def _json_response(status_code: int, payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _debug_http_shape(event: dict[str, Any], is_http_event: bool) -> None:
-    if not DEBUG_API_EVENT_SHAPE:
+    if not DEBUG_HTTP_EVENT:
         return
     if not isinstance(event, dict):
         print("api_debug non_dict_event")
@@ -342,6 +353,31 @@ def _frontend_api_doc() -> dict[str, Any]:
     }
 
 
+def _frontend_api_v2_doc() -> dict[str, Any]:
+    return {
+        "artifact": "dtm_frontend_api_v2_doc",
+        "version": "2.0.0",
+        "endpoints": [
+            {"method": "GET", "path": "/api/v2/frontend"},
+            {"method": "GET", "path": "/api/v2/frontend/doc"},
+            {"method": "GET", "path": "/api/v2/frontend/doc?format=json"},
+        ],
+        "top_level": ["meta", "filters", "summary", "entities", "tasks"],
+        "task_fields": [
+            "id",
+            "title",
+            "ownerId",
+            "groupId",
+            "status",
+            "date",
+            "tags",
+            "hash",
+            "revision",
+            "links",
+        ],
+    }
+
+
 def _frontend_api_doc_html() -> str:
     return """<!doctype html>
 <html lang="ru">
@@ -416,6 +452,46 @@ def _frontend_api_doc_html() -> str:
 """
 
 
+def _frontend_api_v2_doc_html() -> str:
+    return """<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DTM Frontend API v2</title>
+  <style>
+    body { margin: 0; font-family: Segoe UI, Arial, sans-serif; background: #f6f8fb; color: #17212b; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 24px; }
+    .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 16px rgba(0,0,0,.06); margin-bottom: 16px; }
+    code { background: #eef2f7; padding: 2px 6px; border-radius: 6px; }
+    pre { margin: 0; padding: 12px; background: #0f172a; color: #e2e8f0; border-radius: 10px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>DTM Frontend API v2</h1>
+      <p>Контракт: <code>2.0.0</code></p>
+      <p>Структура ответа: <code>meta + filters + summary + entities + tasks</code>.</p>
+    </div>
+    <div class="card">
+      <h2>Endpoints</h2>
+      <ul>
+        <li><code>GET /api/v2/frontend</code></li>
+        <li><code>GET /api/v2/frontend/doc</code></li>
+        <li><code>GET /api/v2/frontend/doc?format=json</code></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Пример запроса</h2>
+      <pre>GET /api/v2/frontend?statuses=work,pre_done&limit=100&include_people=true</pre>
+    </div>
+  </div>
+</body>
+</html>
+"""
+
+
 def _normalize_path(path: str) -> str:
     value = str(path or "").strip()
     if not value:
@@ -425,6 +501,7 @@ def _normalize_path(path: str) -> str:
         value = value[marker:] if marker != -1 else "/"
     if "?" in value:
         value = value.split("?", 1)[0]
+    value = re.sub(r"/{2,}", "/", value)
     if not value.startswith("/"):
         value = "/" + value
     if len(value) > 1 and value.endswith("/"):
@@ -459,6 +536,7 @@ def _handle_frontend_api_if_requested(event: dict[str, Any], is_http_event: bool
     doc_paths = {"/", "/api", "/api/v1", "/api/v1/frontend/doc", "/api/v1/read-model/doc"}
     data_paths = {"/api/v1/frontend", "/api/v1/read-model"}
 
+    started = time.perf_counter()
     if _path_matches(path, doc_paths):
         if str(params.get("format", "")).strip().lower() == "json":
             return _json_response(200, _frontend_api_doc())
@@ -493,6 +571,78 @@ def _handle_frontend_api_if_requested(event: dict[str, Any], is_http_event: bool
         include_people=include_people,
         designer_filter=designer,
     )
+    duration_ms = int((time.perf_counter() - started) * 1000)
+    print(
+        "api_response "
+        f"artifact={payload.get('artifact', '')} "
+        "contractVersion=1.0.0 "
+        f"generatedAt={payload.get('generated_at_utc', '')} "
+        "syncedAt= "
+        f"tasksReturned={payload.get('summary', {}).get('tasks_returned', 0)} "
+        f"duration_ms={duration_ms}"
+    )
+    return _json_response(200, payload)
+
+
+def _handle_frontend_api_v2_if_requested(event: dict[str, Any], is_http_event: bool) -> dict[str, Any] | None:
+    if not is_http_event:
+        return None
+    path = _normalize_path(_http_path(event))
+    method = _http_method(event) or "GET"
+    if method == "ANY":
+        method = "GET"
+    if method != "GET":
+        return None
+
+    params = _query_params(event)
+    doc_paths = {"/api/v2/frontend/doc"}
+    data_paths = {"/api/v2/frontend"}
+
+    if _path_matches(path, doc_paths):
+        if str(params.get("format", "")).strip().lower() == "json":
+            return _json_response(200, _frontend_api_v2_doc())
+        return _html_response(200, _frontend_api_v2_doc_html())
+    if not _path_matches(path, data_paths):
+        return None
+
+    started = time.perf_counter()
+    statuses = _parse_statuses(params.get("statuses", "work,pre_done"))
+    designer = str(params.get("designer", "")).strip()
+    limit = _parse_limit(params.get("limit", "200"))
+    include_people = _parse_bool(params.get("include_people"), default=True)
+
+    dependencies = build_planner_dependencies(
+        KEY_JSON,
+        SHEET_INFO,
+        dry_run=True,
+        mock_external=True,
+    )
+    tasks = dependencies.task_repository.get_task_by_color_status(statuses)
+    people = []
+    if include_people:
+        dependencies.people_manager.get_designers()
+        people = list(dependencies.people_manager.people.values())
+
+    payload = build_frontend_api_payload_v2(
+        tasks=tasks,
+        people=people,
+        env_name=RUNTIME_ENV,
+        source_sheet_name=SOURCE_SHEET_NAME,
+        statuses=statuses,
+        limit=limit,
+        include_people=include_people,
+        designer_filter=designer,
+    )
+    duration_ms = int((time.perf_counter() - started) * 1000)
+    print(
+        "api_response "
+        f"artifact={payload.get('meta', {}).get('artifact', '')} "
+        f"contractVersion={payload.get('meta', {}).get('contractVersion', '')} "
+        f"generatedAt={payload.get('meta', {}).get('generatedAt', '')} "
+        f"syncedAt={payload.get('meta', {}).get('syncedAt', '')} "
+        f"tasksReturned={payload.get('summary', {}).get('tasksReturned', 0)} "
+        f"duration_ms={duration_ms}"
+    )
     return _json_response(200, payload)
 
 
@@ -511,6 +661,10 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
             "body": "!GROUP_QUERY_OK!",
         }
 
+    frontend_v2_response = _handle_frontend_api_v2_if_requested(event if isinstance(event, dict) else {}, is_http_event)
+    if frontend_v2_response is not None:
+        return frontend_v2_response
+
     frontend_response = _handle_frontend_api_if_requested(event if isinstance(event, dict) else {}, is_http_event)
     if frontend_response is not None:
         return frontend_response
@@ -522,6 +676,8 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
     if not run_mode and trigger_mode:
         run_mode = trigger_mode
     if is_http_event and not run_mode:
+        # Keep future default-version knob explicit for planned generic `/api/frontend` alias.
+        _ = FRONTEND_API_DEFAULT_VERSION
         return _json_response(
             200,
             {

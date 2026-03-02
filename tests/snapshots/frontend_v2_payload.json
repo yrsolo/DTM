@@ -1,0 +1,132 @@
+{
+  "meta": {
+    "artifact": "dtm_frontend_api_v2",
+    "contractVersion": "2.0.0",
+    "generatedAt": "2026-03-02T20:00:00Z",
+    "syncedAt": "2026-03-02T19:30:00Z",
+    "source": {
+      "env": "test",
+      "sourceId": "SourceSheet",
+      "sheetName": "SourceSheet",
+      "sheetUrl": null
+    },
+    "hash": "2db149eb774d3599c58c101ebcb66708e62533c89abf70a5ee672132363943a1",
+    "features": {
+      "taskHash": true,
+      "taskRevision": true,
+      "entities": true
+    },
+    "paging": {
+      "limit": 100,
+      "nextCursor": null
+    }
+  },
+  "filters": {
+    "statuses": [
+      "work",
+      "pre_done"
+    ],
+    "designer": "",
+    "limit": 100,
+    "includePeople": true
+  },
+  "summary": {
+    "tasksReturned": 2,
+    "peopleReturned": 2,
+    "groupsReturned": 2
+  },
+  "entities": {
+    "people": [
+      {
+        "id": "p1",
+        "name": "Designer One",
+        "position": "designer",
+        "links": {
+          "self": "/api/v2/frontend/entities/people/p1"
+        }
+      },
+      {
+        "id": "p2",
+        "name": "Designer Two",
+        "position": "designer",
+        "links": {
+          "self": "/api/v2/frontend/entities/people/p2"
+        }
+      }
+    ],
+    "groups": [
+      {
+        "id": "3f41549ff6592954",
+        "name": "Project Y",
+        "links": {
+          "self": "/api/v2/frontend/entities/groups/3f41549ff6592954"
+        }
+      },
+      {
+        "id": "9f33f1e54cc26a14",
+        "name": "Project X",
+        "links": {
+          "self": "/api/v2/frontend/entities/groups/9f33f1e54cc26a14"
+        }
+      }
+    ],
+    "tags": [],
+    "enums": {
+      "status": {
+        "work": "In work",
+        "pre_done": "Pre done",
+        "wait": "Waiting",
+        "done": "Done"
+      },
+      "statusGroups": {
+        "active": [
+          "work",
+          "pre_done"
+        ],
+        "final": [
+          "done"
+        ]
+      }
+    }
+  },
+  "tasks": [
+    {
+      "id": "101",
+      "title": "Task Alpha",
+      "ownerId": "ae078c0616e907b1",
+      "groupId": "9f33f1e54cc26a14",
+      "status": "work",
+      "date": {
+        "start": null,
+        "end": null,
+        "nextDue": null
+      },
+      "tags": [],
+      "hash": null,
+      "revision": null,
+      "links": {
+        "sheetRowUrl": null,
+        "self": "/api/v2/frontend/tasks/101"
+      }
+    },
+    {
+      "id": "102",
+      "title": "Task Beta",
+      "ownerId": "4194979ffab99f87",
+      "groupId": "3f41549ff6592954",
+      "status": "pre_done",
+      "date": {
+        "start": null,
+        "end": null,
+        "nextDue": null
+      },
+      "tags": [],
+      "hash": null,
+      "revision": null,
+      "links": {
+        "sheetRowUrl": null,
+        "self": "/api/v2/frontend/tasks/102"
+      }
+    }
+  ]
+}

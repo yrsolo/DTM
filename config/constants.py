@@ -14,6 +14,7 @@ ALLOWED_LLM_PROVIDERS = frozenset({"openai", "google", "yandex"})
 ALLOWED_LLM_FAILOVER_MODES = frozenset({"draft_only", "provider"})
 ALLOWED_STORE_MODES = frozenset({"legacy", "dual_write", "ydb_primary", "ydb_only"})
 ALLOWED_READ_SOURCES = frozenset({"legacy", "ydb"})
+ALLOWED_FRONTEND_API_DEFAULT_VERSIONS = frozenset({"v1", "v2"})
 
 
 def _env(name: str, default: str = "") -> str:
@@ -51,6 +52,12 @@ WEB_DOMAIN = _env("WEB_DOMAIN")
 API_DOMAIN_TEST = _env("API_DOMAIN_TEST")
 API_DOMAIN_PROD = _env("API_DOMAIN_PROD")
 API_DOMAIN = API_DOMAIN_PROD if RUNTIME_ENV == "prod" else API_DOMAIN_TEST
+FRONTEND_API_DEFAULT_VERSION = _env("FRONTEND_API_DEFAULT_VERSION", "v1").lower()
+if FRONTEND_API_DEFAULT_VERSION not in ALLOWED_FRONTEND_API_DEFAULT_VERSIONS:
+    raise ValueError(
+        f"Unsupported FRONTEND_API_DEFAULT_VERSION={FRONTEND_API_DEFAULT_VERSION!r}. "
+        "Allowed values: v1, v2."
+    )
 
 # Operational store / readmodel rollout switches.
 STORE_MODE = _env("STORE_MODE", "legacy").lower()

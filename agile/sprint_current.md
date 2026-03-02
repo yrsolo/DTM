@@ -7,6 +7,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
+- [BLOCKED] DTM-223 - Frontend API v2 contract + routing hardening done in code; cloud verification pending manual test deploy.
 - [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
 - [DONE] DTM-221 - Frontend API event-shape hardening + Actions requirements split.
 - [DONE] DTM-220 - API gateway ANY-method compatibility hotfix.
@@ -31,9 +32,9 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 
 ## Stage 21 Estimate (Dynamic)
-- Baseline estimate: 22 tasks.
+- Baseline estimate: 23 tasks.
 - Done: 22
-- Remaining: 0
+- Remaining: 1
 
 ## Done (Latest)
 - [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
@@ -71,16 +72,18 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [BLOCKED] DTM-220 - cloud verification pending same manual test deploy.
 - [BLOCKED] DTM-221 - cloud verification pending same manual test deploy.
 - [BLOCKED] DTM-222 - cloud verification pending same manual test deploy.
+- [BLOCKED] DTM-223 - cloud verification pending same manual test deploy.
 
 ## Next 3-5 Tasks (Groomed)
 - [TODO] DTM-219 - Deploy DTM-218 fix to test contour and verify API domain response.
 - [TODO] DTM-220 - Deploy DTM-220 fix to test contour and verify API domain response.
 - [TODO] DTM-221 - Deploy DTM-221 fix to test contour and verify API domain response.
 - [TODO] DTM-222 - Deploy DTM-222 fix to test contour and verify API domain response.
+- [TODO] DTM-223 - Run cloud verification for v1/v2 endpoints after test deploy (`git_ref=dev`).
 - [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 
 ## Active Task Files
-- `agile/tasks/stage_20_plus/DTM-222_stage21_proxy-template-route-and-multivalue-query-fix.md`
+- `agile/tasks/stage_20_plus/DTM-223_stage21_frontend-api-v2-contract-and-routing-hardening.md`
 
 ## Task Folder Structure
 - `agile/tasks/stage_00_09/` - stage 0-9 execution tasks.
