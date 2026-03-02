@@ -7,6 +7,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-213 - M5 minimal read-model builder with grouping and ordering.
 - [DONE] DTM-212 - M4 feature-flagged dual-write to JSON operational store.
 - [DONE] DTM-211 - M4 minimal JSON operational store (upsert + idempotency test).
 - [DONE] DTM-210 - M3 optional runtime hash-gate wiring (feature-flagged).
@@ -23,11 +24,12 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 
 ## Stage 21 Estimate (Dynamic)
-- Baseline estimate: 14 tasks.
-- Done: 14
+- Baseline estimate: 15 tasks.
+- Done: 15
 - Remaining: 0
 
 ## Done (Latest)
+- [DONE] DTM-213 - M5 minimal read-model builder with grouping and ordering.
 - [DONE] DTM-212 - M4 feature-flagged dual-write to JSON operational store.
 - [DONE] DTM-211 - M4 minimal JSON operational store (upsert + idempotency test).
 - [DONE] DTM-210 - M3 optional runtime hash-gate wiring (feature-flagged).
@@ -57,7 +59,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 
 ## Active Task Files
-- `agile/tasks/stage_20_plus/DTM-212_stage21_m4-feature-flagged-dual-write-store.md`
+- `agile/tasks/stage_20_plus/DTM-213_stage21_m5-minimal-read-model-builder.md`
 
 ## Task Folder Structure
 - `agile/tasks/stage_00_09/` - stage 0-9 execution tasks.
