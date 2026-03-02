@@ -357,6 +357,7 @@ def _frontend_api_v2_doc() -> dict[str, Any]:
     return {
         "artifact": "dtm_frontend_api_v2_doc",
         "version": "2.0.0",
+        "default_root_doc_version": "v2",
         "endpoints": [
             {
                 "method": "GET",
@@ -401,6 +402,17 @@ def _frontend_api_v2_doc() -> dict[str, Any]:
             },
         },
         "top_level": ["meta", "filters", "summary", "entities", "tasks"],
+        "field_status": {
+            "meta": "implemented",
+            "filters": "implemented",
+            "summary": "implemented",
+            "entities": "implemented",
+            "tasks": "implemented",
+            "tasks[].hash": "reserved",
+            "tasks[].revision": "reserved",
+            "tasks[].links.sheetRowUrl": "reserved",
+            "entities.tags[]": "reserved",
+        },
         "response_fields": {
             "meta": {
                 "artifact": "string (dtm_frontend_api_v2)",
@@ -605,32 +617,32 @@ def _frontend_api_v2_doc_html() -> str:
     <div class="card">
       <h2>Поля ответа</h2>
       <table>
-        <thead><tr><th>Поле</th><th>Тип</th><th>Описание</th></tr></thead>
+        <thead><tr><th>Поле</th><th>Тип</th><th>Статус</th><th>Описание</th></tr></thead>
         <tbody>
-          <tr><td><code>meta</code></td><td>object</td><td>Метаданные ответа: версия контракта, время генерации, hash, source и paging.</td></tr>
-          <tr><td><code>meta.artifact</code></td><td>string</td><td>Идентификатор артефакта: <code>dtm_frontend_api_v2</code>.</td></tr>
-          <tr><td><code>meta.contractVersion</code></td><td>string</td><td>Версия контракта API v2.</td></tr>
-          <tr><td><code>meta.generatedAt</code></td><td>datetime</td><td>UTC время генерации payload.</td></tr>
-          <tr><td><code>meta.syncedAt</code></td><td>datetime</td><td>UTC время последней синхронизации источника.</td></tr>
-          <tr><td><code>meta.source</code></td><td>object</td><td>Контур, id источника, имя и ссылка на таблицу (если доступны).</td></tr>
-          <tr><td><code>meta.hash</code></td><td>string</td><td>SHA256 от стабильной сериализации payload.</td></tr>
-          <tr><td><code>filters</code></td><td>object</td><td>Echo примененных параметров запроса.</td></tr>
-          <tr><td><code>summary</code></td><td>object</td><td>Счетчики: задачи, люди, группы.</td></tr>
-          <tr><td><code>entities.people[]</code></td><td>array</td><td>Справочник людей: <code>id</code>, <code>name</code>, <code>position</code>, <code>links.self</code>.</td></tr>
-          <tr><td><code>entities.groups[]</code></td><td>array</td><td>Справочник групп/проектов: <code>id</code>, <code>name</code>, <code>links.self</code>.</td></tr>
-          <tr><td><code>entities.tags[]</code></td><td>array</td><td>Теги в payload (если есть).</td></tr>
-          <tr><td><code>entities.enums</code></td><td>object</td><td>Словари статусов и групп статусов для UI.</td></tr>
-          <tr><td><code>tasks[]</code></td><td>array</td><td>Основной список задач.</td></tr>
-          <tr><td><code>tasks[].id</code></td><td>string</td><td>Стабильный идентификатор задачи.</td></tr>
-          <tr><td><code>tasks[].title</code></td><td>string</td><td>Название задачи.</td></tr>
-          <tr><td><code>tasks[].ownerId</code></td><td>string|null</td><td>ID владельца из <code>entities.people</code>.</td></tr>
-          <tr><td><code>tasks[].groupId</code></td><td>string|null</td><td>ID группы из <code>entities.groups</code>.</td></tr>
-          <tr><td><code>tasks[].status</code></td><td>string</td><td>Нормализованный статус задачи.</td></tr>
-          <tr><td><code>tasks[].date.start/end/nextDue</code></td><td>date|null</td><td>Ключевые даты задачи в формате <code>YYYY-MM-DD</code>.</td></tr>
-          <tr><td><code>tasks[].tags</code></td><td>array</td><td>Теги задачи.</td></tr>
-          <tr><td><code>tasks[].hash</code></td><td>string|null</td><td>Резерв под hash задачи для инкрементальных обновлений.</td></tr>
-          <tr><td><code>tasks[].revision</code></td><td>string|int|null</td><td>Резерв под версию/ревизию задачи.</td></tr>
-          <tr><td><code>tasks[].links</code></td><td>object</td><td>Ссылки на self endpoint и source row (если доступно).</td></tr>
+          <tr><td><code>meta</code></td><td>object</td><td>implemented</td><td>Метаданные ответа: версия контракта, время генерации, hash, source и paging.</td></tr>
+          <tr><td><code>meta.artifact</code></td><td>string</td><td>implemented</td><td>Идентификатор артефакта: <code>dtm_frontend_api_v2</code>.</td></tr>
+          <tr><td><code>meta.contractVersion</code></td><td>string</td><td>implemented</td><td>Версия контракта API v2.</td></tr>
+          <tr><td><code>meta.generatedAt</code></td><td>datetime</td><td>implemented</td><td>UTC время генерации payload.</td></tr>
+          <tr><td><code>meta.syncedAt</code></td><td>datetime</td><td>implemented</td><td>UTC время последней синхронизации источника.</td></tr>
+          <tr><td><code>meta.source</code></td><td>object</td><td>implemented</td><td>Контур, id источника, имя и ссылка на таблицу (если доступны).</td></tr>
+          <tr><td><code>meta.hash</code></td><td>string</td><td>implemented</td><td>SHA256 от стабильной сериализации payload.</td></tr>
+          <tr><td><code>filters</code></td><td>object</td><td>implemented</td><td>Echo примененных параметров запроса.</td></tr>
+          <tr><td><code>summary</code></td><td>object</td><td>implemented</td><td>Счетчики: задачи, люди, группы.</td></tr>
+          <tr><td><code>entities.people[]</code></td><td>array</td><td>implemented</td><td>Справочник людей: <code>id</code>, <code>name</code>, <code>position</code>, <code>links.self</code>.</td></tr>
+          <tr><td><code>entities.groups[]</code></td><td>array</td><td>implemented</td><td>Справочник групп/проектов: <code>id</code>, <code>name</code>, <code>links.self</code>.</td></tr>
+          <tr><td><code>entities.tags[]</code></td><td>array</td><td>reserved</td><td>Теги в payload (зарезервировано, пока отдается пустым).</td></tr>
+          <tr><td><code>entities.enums</code></td><td>object</td><td>implemented</td><td>Словари статусов и групп статусов для UI.</td></tr>
+          <tr><td><code>tasks[]</code></td><td>array</td><td>implemented</td><td>Основной список задач.</td></tr>
+          <tr><td><code>tasks[].id</code></td><td>string</td><td>implemented</td><td>Стабильный идентификатор задачи.</td></tr>
+          <tr><td><code>tasks[].title</code></td><td>string</td><td>implemented</td><td>Название задачи.</td></tr>
+          <tr><td><code>tasks[].ownerId</code></td><td>string|null</td><td>implemented</td><td>ID владельца из <code>entities.people</code>.</td></tr>
+          <tr><td><code>tasks[].groupId</code></td><td>string|null</td><td>implemented</td><td>ID группы из <code>entities.groups</code>.</td></tr>
+          <tr><td><code>tasks[].status</code></td><td>string</td><td>implemented</td><td>Нормализованный статус задачи.</td></tr>
+          <tr><td><code>tasks[].date.start/end/nextDue</code></td><td>date|null</td><td>implemented</td><td>Ключевые даты задачи в формате <code>YYYY-MM-DD</code>.</td></tr>
+          <tr><td><code>tasks[].tags</code></td><td>array</td><td>implemented</td><td>Теги задачи.</td></tr>
+          <tr><td><code>tasks[].hash</code></td><td>string|null</td><td>reserved</td><td>Резерв под hash задачи для инкрементальных обновлений (сейчас <code>null</code>).</td></tr>
+          <tr><td><code>tasks[].revision</code></td><td>string|int|null</td><td>reserved</td><td>Резерв под версию/ревизию задачи (сейчас <code>null</code>).</td></tr>
+          <tr><td><code>tasks[].links</code></td><td>object</td><td>implemented</td><td>Ссылки на self endpoint и source row (если доступно).</td></tr>
         </tbody>
       </table>
     </div>
@@ -821,9 +833,7 @@ def _handle_api_root_if_requested(event: dict[str, Any], is_http_event: bool) ->
         return None
     params = _query_params(event)
     as_json = str(params.get("format", "")).strip().lower() == "json"
-    if FRONTEND_API_DEFAULT_VERSION == "v2":
-        return _json_response(200, _frontend_api_v2_doc()) if as_json else _html_response(200, _frontend_api_v2_doc_html())
-    return _json_response(200, _frontend_api_doc()) if as_json else _html_response(200, _frontend_api_doc_html())
+    return _json_response(200, _frontend_api_v2_doc()) if as_json else _html_response(200, _frontend_api_v2_doc_html())
 
 
 async def handler(event: Any, _: Any) -> dict[str, Any]:

@@ -14,6 +14,7 @@ v1 stays available in parallel.
 - `GET /api/v2/frontend`
 - `GET /api/v2/frontend/doc`
 - `GET /api/v2/frontend/doc?format=json`
+- `GET /` -> v2 doc page (default root entrypoint for API docs)
 
 ## Query Params
 - `statuses`: comma-separated statuses, default `work,pre_done`
@@ -46,10 +47,10 @@ Echo of requested filters.
 Counts for returned task/entity sections.
 
 ### entities
-- `people[]`: `id`, `name`, `position?`, `links`
-- `groups[]`: `id`, `name`, `links`
-- `tags[]`: reserved
-- `enums`: status maps and status groups
+- `people[]`: `id`, `name`, `position?`, `links` (`implemented`)
+- `groups[]`: `id`, `name`, `links` (`implemented`)
+- `tags[]`: reserved (`currently empty`)
+- `enums`: status maps and status groups (`implemented`)
 
 ### tasks
 - `id`
@@ -62,11 +63,31 @@ Counts for returned task/entity sections.
   - `end` (`YYYY-MM-DD|null`)
   - `nextDue` (`YYYY-MM-DD|null`)
 - `tags[]`
-- `hash` (`null` for now, reserved)
-- `revision` (`null` for now, reserved)
+- `hash` (`reserved`, currently `null`)
+- `revision` (`reserved`, currently `null`)
 - `links`:
-  - `sheetRowUrl`
-  - `self`
+  - `sheetRowUrl` (`reserved`, currently `null`)
+  - `self` (`implemented`)
+
+## Field Implementation Status
+
+### Implemented now
+- `meta.*` (including `hash`, `features`, `paging`)
+- `filters.*`
+- `summary.*`
+- `entities.people[]`
+- `entities.groups[]`
+- `entities.enums.*`
+- `tasks[].id`, `tasks[].title`, `tasks[].ownerId`, `tasks[].groupId`, `tasks[].status`
+- `tasks[].date.start`, `tasks[].date.end`, `tasks[].date.nextDue`
+- `tasks[].tags`
+- `tasks[].links.self`
+
+### Reserved / future stubs
+- `tasks[].hash` (always `null` currently)
+- `tasks[].revision` (always `null` currently)
+- `tasks[].links.sheetRowUrl` (always `null` currently)
+- `entities.tags[]` (currently empty)
 
 ## ID Rules
 - `task.id`: existing stable task id from source row.

@@ -25,4 +25,5 @@
 ## Rollout Policy
 - Existing clients stay on v1.
 - New clients should integrate v2.
-- Future generic alias `/api/frontend` may use `FRONTEND_API_DEFAULT_VERSION` (`v1|v2`), but explicit versioned routes remain authoritative.
+- Root `/` now serves v2 documentation by default.
+- Explicit versioned routes remain authoritative for integrations.

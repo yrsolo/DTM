@@ -142,6 +142,21 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertIn("Параметры запроса", body)
         self.assertIn("Поля ответа", body)
         self.assertIn("tasks[].revision", body)
+        self.assertIn("reserved", body)
+        self.assertIn("implemented", body)
+
+    def test_v2_doc_json_contains_field_status(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend/doc"
+        event["params"]["proxy"] = "api/v2/frontend/doc"
+        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend/doc?format=json"
+        event["queryStringParameters"] = {"format": "json"}
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response.get("body", "{}"))
+        field_status = payload.get("field_status", {})
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(field_status.get("tasks[].hash"), "reserved")
+        self.assertEqual(field_status.get("summary"), "implemented")
 
 
 if __name__ == "__main__":
