@@ -30,7 +30,22 @@ ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminde
 def _extract_payload(event: Any) -> tuple[dict[str, Any], bool]:
     if not isinstance(event, dict):
         return {}, False
-    is_http = any(key in event for key in ("httpMethod", "path", "requestContext", "queryStringParameters"))
+    is_http = any(
+        key in event
+        for key in (
+            "httpMethod",
+            "method",
+            "requestMethod",
+            "path",
+            "rawPath",
+            "raw_path",
+            "requestContext",
+            "queryStringParameters",
+            "rawQueryString",
+            "params",
+            "url",
+        )
+    )
     if "body" not in event:
         return event, is_http
 
@@ -91,8 +106,28 @@ def _http_path(event: dict[str, Any]) -> str:
     if isinstance(request_context, dict):
         http_ctx = request_context.get("http")
         if isinstance(http_ctx, dict):
-            return str(http_ctx.get("path", "")).strip()
-    return str(event.get("path", "")).strip()
+            path = str(http_ctx.get("path", "")).strip()
+            if path:
+                return path
+            raw_path = str(http_ctx.get("rawPath", "")).strip()
+            if raw_path:
+                return raw_path
+        rc_path = str(request_context.get("path", "")).strip()
+        if rc_path:
+            return rc_path
+    for key in ("path", "rawPath", "raw_path", "url"):
+        path = str(event.get(key, "")).strip()
+        if path:
+            return path
+    params = event.get("params")
+    if isinstance(params, dict):
+        path_map = params.get("path")
+        if isinstance(path_map, dict):
+            for key in ("proxy", "path"):
+                path = str(path_map.get(key, "")).strip()
+                if path:
+                    return path
+    return ""
 
 
 def _http_method(event: dict[str, Any]) -> str:
@@ -121,6 +156,21 @@ def _query_params(event: dict[str, Any]) -> dict[str, Any]:
     direct = event.get("queryStringParameters")
     if isinstance(direct, dict):
         return direct
+    raw_query = event.get("rawQueryString")
+    if isinstance(raw_query, str) and raw_query.strip():
+        parsed: dict[str, Any] = {}
+        for pair in raw_query.split("&"):
+            if not pair:
+                continue
+            if "=" in pair:
+                key, value = pair.split("=", 1)
+            else:
+                key, value = pair, ""
+            key = key.strip()
+            if key:
+                parsed[key] = value.strip()
+        if parsed:
+            return parsed
     params = event.get("params")
     if isinstance(params, dict):
         qs = params.get("queryString")
@@ -306,6 +356,9 @@ def _normalize_path(path: str) -> str:
     value = str(path or "").strip()
     if not value:
         return ""
+    if value.startswith("http://") or value.startswith("https://"):
+        marker = value.find("/", value.find("://") + 3)
+        value = value[marker:] if marker != -1 else "/"
     if "?" in value:
         value = value.split("?", 1)[0]
     if not value.startswith("/"):
