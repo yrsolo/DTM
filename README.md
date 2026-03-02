@@ -36,12 +36,13 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Security hygiene for public repository readiness.
 
 ## Project status
-- Production workflow is active.
+- Test contour auto-deploy workflow is active on `main`.
+- Production release workflow is manual (`workflow_dispatch`).
 - Architecture is under phased reconstruction.
 - Legacy snapshot is kept in `old/` for controlled comparison during migration.
 - Stage 0-19 status and evidence index are tracked in `doc/03_reconstruction_backlog.md`.
 - Current sprint/task execution state is tracked in `agile/sprint_current.md`.
-- Main serverless deploy setup is in `doc/ops/stage9_main_autodeploy_setup.md`.
+- Serverless deploy setup (test/prod split) is in `doc/ops/stage9_main_autodeploy_setup.md`.
 - Deployment smoke and rollback runbooks are in:
   - `doc/ops/stage9_deployment_smoke_checklist.md`
   - `doc/ops/stage10_function_rollback_drill.md`
@@ -50,10 +51,11 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Stage 8 payload preparation helper: `.venv\Scripts\python.exe agent\prepare_web_prototype_payload.py --source-mode auto` (writes `web_prototype/static/prototype_payload.json`).
 - Stage 8 shadow-run evidence builder: `.venv\Scripts\python.exe agent\stage8_shadow_run_evidence.py` (builds execution evidence package under `artifacts/shadow_run_stage8`).
 - Deploy run evidence report builder: `.venv\Scripts\python.exe agent\deploy_run_evidence_report.py --per-page 1 --output-file artifacts/tmp/deploy_run_evidence.json`.
-- Main-branch auto-deploy workflow: `.github/workflows/deploy_yc_function_main.yml`.
+- Main-branch test auto-deploy workflow: `.github/workflows/deploy_yc_function_main.yml`.
   - Includes contract smoke gate before deploy:
     - `python agent/read_model_contract_compat_smoke.py`
     - `python agent/schema_snapshot_smoke.py`
+- Manual production release workflow: `.github/workflows/release_yc_function_prod.yml`.
 
 ## Local run (current)
 - Preferred: `run_timer.cmd` (uses project virtualenv and runs timer mode).
@@ -114,26 +116,51 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Security audit notes:
   - `doc/governance/publication_security_audit.md`
 
-## Main Auto-Deploy (Stage 9 kickoff)
-- Workflow: `.github/workflows/deploy_yc_function_main.yml`
-- Trigger: `push` to `main`
+## Deploy workflows
+- Test contour workflow: `.github/workflows/deploy_yc_function_main.yml`
+  - trigger: `push` to `main`
+  - deploy target: `YC_CLOUD_FUNCTION_NAME`
+  - contour defaults: `ENV=test`, `API_DOMAIN=API_DOMAIN_TEST`
+- Production contour workflow: `.github/workflows/release_yc_function_prod.yml`
+  - trigger: `workflow_dispatch` (manual only)
+  - deploy target: `YC_CLOUD_FUNCTION_PROD_NAME`
+  - contour defaults: `ENV=prod`, `API_DOMAIN=API_DOMAIN_PROD`
 - Required GitHub repository variables:
-- `YC_FOLDER_ID`
-- `YC_SERVICE_ACCOUNT_ID`
-- `YC_CLOUD_FUNCTION_NAME`
-- `YC_LOCKBOX_SECRET_ID`
+  - `YC_FOLDER_ID`
+  - `YC_SERVICE_ACCOUNT_ID` or `YC_RUNTIME_SERVICE_ACCOUNT_ID`
+  - `YC_CLOUD_FUNCTION_NAME`
+  - `YC_CLOUD_FUNCTION_PROD_NAME`
+  - `YC_CLOUD_FUNCTION_PROD_ID`
+  - `YC_LOCKBOX_SECRET_ID`
+  - `SOURCE_SHEET_NAME`
+  - `API_DOMAIN_TEST`
+  - `API_DOMAIN_PROD`
 - Full setup guide:
   - `doc/ops/stage9_main_autodeploy_setup.md`
 - Direct cloud endpoint smoke invoke:
   - `.venv\Scripts\python.exe agent\invoke_function_smoke.py --url <function_url> --healthcheck`
 - Lockbox sync helper for full `.env` payload:
   - `.venv\Scripts\python.exe agent\sync_lockbox_from_env.py --secret-name DTM`
+- Prod release prep helper (validates required prod keys + syncs Lockbox):
+  - `.venv\Scripts\python.exe agent\prepare_prod_release.py`
+- API Gateway + custom domain helper (test/prod):
+  - `.venv\Scripts\python.exe agent\deploy_api_gateway_domain.py --mode test`
+  - `.venv\Scripts\python.exe agent\deploy_api_gateway_domain.py --mode prod`
+- Frontend HTTP API contract:
+  - `doc/ops/frontend_api_contract.md`
 - Cloud-side follow-up: publish function version with Lockbox `--secret` mappings and grant runtime service account role `lockbox.payloadViewer` for secret `DTM`.
 
 ## Environment contour
 - Runtime env selector: `ENV` with allowed values `dev`, `test`, `prod`.
 - Base variables are loaded from `.env`.
 - Optional profile override is auto-loaded from `.env.<ENV>` when file exists.
+- Sheet target selector:
+  - `TARGET_SHEET_NAME` is primary target.
+  - for `ENV=prod`, when `TARGET_SHEET_NAME` is empty, runtime falls back to `TARGET_SHEET_NAME_PROD`.
+- Domain selector:
+  - `WEB_DOMAIN` (site domain)
+  - `API_DOMAIN_TEST`, `API_DOMAIN_PROD`
+  - runtime uses `API_DOMAIN_TEST` for non-prod and `API_DOMAIN_PROD` for prod.
 - Google service-account key runtime source priority:
   - `GOOGLE_KEY_JSON_PATH` (existing file path)
   - `GOOGLE_KEY_JSON_B64` (base64 JSON text)
@@ -164,6 +191,10 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `@<bot_username> покажи задачи`
   - `@<bot_username> покажи дедлайны`
 - Bot replies in the same group chat.
+- HTTP API for frontend:
+  - `GET /api/v1/frontend` (main payload)
+  - `GET /api/v1/read-model` (alias)
+  - `GET /api/v1/frontend/doc` (machine-readable contract)
 - Optional safety guard: set `STRICT_ENV_GUARD=1` to enforce that for `ENV=dev/test` `SOURCE_SHEET_NAME` and `TARGET_SHEET_NAME` are different.
 - Templates:
   - `.env.example` (base)
