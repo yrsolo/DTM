@@ -170,6 +170,15 @@
 ## Hash Gate Contract
 - `source_hash` is computed only from source range fields (`raw_hash_basis`).
 - Target sheet render updates are not part of hash basis.
+- Initial hash-basis field set for migration (`M3`):
+  - `id`
+  - `brand`
+  - `format_`
+  - `project_name`
+  - `customer`
+  - `designer`
+  - `raw_timing`
+  - `status`
 - State object:
 ```json
 {
