@@ -50,7 +50,6 @@ jobs:
           YC_CLOUD_FUNCTION_PROD_ID: ${{ vars.YC_CLOUD_FUNCTION_PROD_ID || secrets.YC_CLOUD_FUNCTION_PROD_ID }}
           YC_SERVICE_ACCOUNT_ID: ${{ vars.YC_SERVICE_ACCOUNT_ID || secrets.YC_SERVICE_ACCOUNT_ID }}
           YC_RUNTIME_SERVICE_ACCOUNT_ID: ${{ vars.YC_RUNTIME_SERVICE_ACCOUNT_ID || secrets.YC_RUNTIME_SERVICE_ACCOUNT_ID }}
-          API_DOMAIN_PROD: ${{ vars.API_DOMAIN_PROD || secrets.API_DOMAIN_PROD }}
           SOURCE_SHEET_NAME: ${{ vars.SOURCE_SHEET_NAME || secrets.SOURCE_SHEET_NAME }}
         run: |
           set -euo pipefail
@@ -68,10 +67,6 @@ jobs:
           fi
           if [ -z "${YC_SERVICE_ACCOUNT_ID}" ] && [ -z "${YC_RUNTIME_SERVICE_ACCOUNT_ID}" ]; then
             echo "Missing runtime service account variable: set YC_RUNTIME_SERVICE_ACCOUNT_ID or YC_SERVICE_ACCOUNT_ID" >&2
-            exit 1
-          fi
-          if [ -z "${API_DOMAIN_PROD}" ]; then
-            echo "Missing required repository variable: API_DOMAIN_PROD" >&2
             exit 1
           fi
           if [ -z "${SOURCE_SHEET_NAME}" ]; then
@@ -94,7 +89,6 @@ jobs:
           environment: |
             ENV=prod
             WEB_DOMAIN=${{ vars.WEB_DOMAIN || 'solofarm.ru' }}
-            API_DOMAIN=${{ vars.API_DOMAIN_PROD || secrets.API_DOMAIN_PROD }}
             SOURCE_SHEET_NAME=${{ vars.SOURCE_SHEET_NAME || secrets.SOURCE_SHEET_NAME }}
             STRICT_ENV_GUARD=0
             RELEASE_DRY_RUN=${{ inputs.dry_run_release }}
@@ -107,6 +101,9 @@ jobs:
             DEFAULT_CHAT_ID=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/DEFAULT_CHAT_ID
             TARGET_SHEET_NAME=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/TARGET_SHEET_NAME_PROD
             TARGET_SHEET_NAME_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/TARGET_SHEET_NAME_PROD
+            WEB_DOMAIN=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/WEB_DOMAIN
+            API_DOMAIN_TEST=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/API_DOMAIN_TEST
+            API_DOMAIN_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/API_DOMAIN_PROD
           include: |
             **/*.py
             requirements.txt
