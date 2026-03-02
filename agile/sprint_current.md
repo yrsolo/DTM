@@ -7,6 +7,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-220 - API gateway ANY-method compatibility hotfix.
 - [DONE] DTM-218 - API HTTP method fallback hotfix (no-op to frontend route fix).
 - [DONE] DTM-217 - Lockbox YDB/rollout resync and required-key verification.
 - [DONE] DTM-216 - YDB adapter + rollout switches + lockbox/deploy wiring.
@@ -28,11 +29,12 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 
 ## Stage 21 Estimate (Dynamic)
-- Baseline estimate: 19 tasks.
-- Done: 19
+- Baseline estimate: 20 tasks.
+- Done: 20
 - Remaining: 0
 
 ## Done (Latest)
+- [DONE] DTM-220 - API gateway ANY-method compatibility hotfix.
 - [DONE] DTM-218 - API HTTP method fallback hotfix (no-op to frontend route fix).
 - [DONE] DTM-217 - Lockbox YDB/rollout resync and required-key verification.
 - [DONE] DTM-216 - YDB adapter + rollout switches + lockbox/deploy wiring.
@@ -62,13 +64,15 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 
 ## Blocked
 - [BLOCKED] DTM-219 - test contour deploy verification blocked: local token cannot trigger GitHub workflow (`403 workflow_dispatch`), owner must run workflow manually.
+- [BLOCKED] DTM-220 - cloud verification pending same manual test deploy.
 
 ## Next 3-5 Tasks (Groomed)
 - [TODO] DTM-219 - Deploy DTM-218 fix to test contour and verify API domain response.
+- [TODO] DTM-220 - Deploy DTM-220 fix to test contour and verify API domain response.
 - [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 
 ## Active Task Files
-- `agile/tasks/stage_20_plus/DTM-219_stage21_test-deploy-verification-blocked-by-github-token-scope.md`
+- `agile/tasks/stage_20_plus/DTM-220_stage21_api-gateway-any-method-compat-fix.md`
 
 ## Task Folder Structure
 - `agile/tasks/stage_00_09/` - stage 0-9 execution tasks.
