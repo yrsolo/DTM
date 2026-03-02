@@ -8,17 +8,24 @@ import re
 import time
 import traceback
 from datetime import datetime
+from dataclasses import dataclass
 from typing import Any
 from urllib.parse import parse_qsl, urlparse
+
+import pandas as pd
 
 from config import (
     KEY_JSON,
     FRONTEND_API_DEFAULT_VERSION,
+    READMODEL_SOURCE,
     RUNTIME_ENV,
     SHEET_INFO,
     SOURCE_SHEET_NAME,
     TG_BOT_USERNAME,
     TRIGGERS,
+    MIGRATION_STORE_FILE,
+    YDB_ENDPOINT,
+    YDB_DATABASE,
 )
 from core.api_payload import build_frontend_api_payload
 from core.api_payload_v2 import build_frontend_api_payload_v2
@@ -30,6 +37,7 @@ from core.group_query import (
 )
 from core.reminder import TelegramNotifier
 from main import main
+from src.adapters.store_ydb import build_operational_store, store_records_to_tasks
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
 DEBUG_HTTP_EVENT = os.getenv("DEBUG_HTTP_EVENT", os.getenv("DEBUG_API_EVENT_SHAPE", "0")).strip().lower() in {
@@ -377,6 +385,68 @@ def _parse_window_query(params: dict[str, Any]) -> tuple[dict[str, Any], dict[st
         },
         None,
     )
+
+
+@dataclass(slots=True)
+class _ApiStoreTaskView:
+    id: str
+    name: str
+    designer: str
+    status: str
+    color_status: str
+    brand: str
+    format_: str
+    project_name: str
+    customer: str
+    raw_timing: str
+    timing: dict[pd.Timestamp, list[str]]
+
+    @property
+    def min_date(self) -> pd.Timestamp | None:
+        return min(self.timing.keys()) if self.timing else None
+
+    @property
+    def max_date(self) -> pd.Timestamp | None:
+        return max(self.timing.keys()) if self.timing else None
+
+
+def _tasks_from_store_records(records: list[dict[str, Any]], statuses: list[str]) -> list[_ApiStoreTaskView]:
+    target_statuses = {str(status).strip().lower() for status in statuses if str(status).strip()}
+    tasks: list[_ApiStoreTaskView] = []
+    for task in store_records_to_tasks(records):
+        color_status = str(getattr(task, "color_status", "")).strip().lower()
+        if target_statuses and color_status not in target_statuses:
+            continue
+        tasks.append(
+            _ApiStoreTaskView(
+                id=str(task.id),
+                name=str(task.name),
+                designer=str(task.designer),
+                status=str(task.status),
+                color_status=color_status or "work",
+                brand=str(task.brand),
+                format_=str(task.format_),
+                project_name=str(task.project_name),
+                customer=str(task.customer),
+                raw_timing=str(task.raw_timing),
+                timing=dict(task.timing),
+            )
+        )
+    return tasks
+
+
+def _load_frontend_tasks(dependencies: Any, statuses: list[str]) -> list[Any]:
+    if READMODEL_SOURCE != "ydb":
+        return dependencies.task_repository.get_task_by_color_status(statuses)
+    store = build_operational_store(
+        "ydb_only",
+        env_name=RUNTIME_ENV,
+        ydb_endpoint=YDB_ENDPOINT,
+        ydb_database=YDB_DATABASE,
+        json_file_path=MIGRATION_STORE_FILE,
+    )
+    records = store.list_tasks()
+    return _tasks_from_store_records(records, statuses=statuses)
 
 
 def _extract_run_mode(
@@ -851,7 +921,7 @@ def _handle_frontend_api_if_requested(event: dict[str, Any], is_http_event: bool
         dry_run=True,
         mock_external=True,
     )
-    tasks = dependencies.task_repository.get_task_by_color_status(statuses)
+    tasks = _load_frontend_tasks(dependencies, statuses)
     people = []
     if include_people:
         dependencies.people_manager.get_designers()
@@ -921,7 +991,7 @@ def _handle_frontend_api_v2_if_requested(event: dict[str, Any], is_http_event: b
         dry_run=True,
         mock_external=True,
     )
-    tasks = dependencies.task_repository.get_task_by_color_status(statuses)
+    tasks = _load_frontend_tasks(dependencies, statuses)
     people = []
     if include_people:
         dependencies.people_manager.get_designers()

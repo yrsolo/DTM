@@ -3,11 +3,17 @@
 ## Sprint Goal
 Start Stage 21 delivery contour split: test auto-deploy + manual prod release + API/domain tooling.
 
+## Product Blocks (Equal Priority)
+- Frontend API
+- Sheet Render
+- Notifications
+- Rule: no block is considered "done for stage" if the other two are unchecked for same contour.
+
 ## Capacity
 1 active execution task (WIP=1).
 
 ## Now
-- [BLOCKED] DTM-223 - Frontend API v2 contract + routing hardening done in code; cloud verification pending manual test deploy.
+- [BLOCKED] DTM-223 - Frontend API v2 + shared task query contract across API/render/reminder done in code; cloud verification pending manual test deploy.
 - [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
 - [DONE] DTM-221 - Frontend API event-shape hardening + Actions requirements split.
 - [DONE] DTM-220 - API gateway ANY-method compatibility hotfix.
@@ -82,6 +88,11 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [TODO] DTM-223 - Run cloud verification for v1/v2 endpoints after test deploy (`git_ref=dev`).
 - [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 
+## Tri-Block Readiness Matrix (Test Contour)
+- Frontend API: in progress (v2 contract + routing ready in `dev`, cloud verification pending deploy).
+- Sheet Render: in progress (runtime path works; needs explicit contour smoke evidence and timestamp check).
+- Notifications: in progress (delivery logic works; needs contour smoke evidence under current rollout switches).
+
 ## Active Task Files
 - `agile/tasks/stage_20_plus/DTM-223_stage21_frontend-api-v2-contract-and-routing-hardening.md`
 
@@ -101,3 +112,4 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - Stage 21 started by explicit owner request for release contour split.
 - Main branch keeps auto deploy for test contour only.
 - Production deploy remains manual via `workflow_dispatch`.
+- Runtime source switches are set to YDB contour (`STORE_MODE=ydb_primary`, `READMODEL_SOURCE=ydb`, `NOTIFY_SOURCE=ydb`, `RENDER_SOURCE=ydb`) for validation cycle.

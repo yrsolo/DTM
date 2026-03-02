@@ -20,6 +20,7 @@
 - Measure whether provider SLI thresholds reduce noisy alerts.
 - Verify that runbook steps are actionable during real incidents.
 - Keep sprint board concise (latest focus only, no long historical dumps).
+- Ensure block parity: API / Render / Notifications progress reviewed as equal tracks, not sequential leftovers.
 
 ## Ceremony Checklist Template
 - Confirm sprint goal and WIP=1 adherence.

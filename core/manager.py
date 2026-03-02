@@ -12,6 +12,7 @@ from core.adapters import SheetRenderAdapter
 from core.render_contracts import RenderCell
 from core.repository import TimingParser
 from core.sheet_renderer import ServiceSheetRenderAdapter
+from core.task_query_contract import query_source_tasks
 from utils.func import GetColor, RGBColor, cell_to_indices, filter_stages
 
 
@@ -46,7 +47,7 @@ class TaskManager:
             color_status = [color_status]
 
         self.update()
-        tasks = [task for task in self.tasks if task.color_status in color_status]
+        tasks = query_source_tasks(self.tasks, statuses=color_status, limit=10**9)
         self.renderer.begin()
         if self.sheet_name:
             self.renderer.clear_cells()
@@ -332,7 +333,8 @@ class TaskCalendarManager:
         self,
         color_status: Sequence[str] = ("wait", "work", "pre_done"),
     ) -> dict[str, list[Any]]:
-        self.tasks = self.repository.get_task_by_color_status(color_status)
+        all_tasks = self.repository.get_all_tasks()
+        self.tasks = query_source_tasks(all_tasks, statuses=color_status, limit=10**9)
         self.designers = set(task.designer for task in self.tasks if task.designer)
         self.tasks_by_designer = defaultdict(list)
         for task in self.tasks:

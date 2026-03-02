@@ -26,9 +26,13 @@
 ## Checklist (DoD)
 - [x] YDB adapter implemented.
 - [x] Rollout switches added and validated.
+- [x] Real `dual_write` wrapper writes JSON+YDB with soft secondary errors.
+- [x] Read path supports `READMODEL_SOURCE=ydb` for frontend API.
+- [x] `ydb_only` has hard-fail in prod when YDB config is missing.
 - [x] Workflows read new keys from Lockbox.
 - [x] Lockbox sync executed with required keys check.
 - [ ] Cloud deploy smoke after workflow run.
+- [x] Runtime source switches wired for render/notify (`RENDER_SOURCE`/`NOTIFY_SOURCE`) and tested locally.
 
 ## Work log
 - 2026-03-02: Implemented `YdbOperationalStore` and store factory with JSON fallback for local/mock.
@@ -36,6 +40,14 @@
 - 2026-03-02: Updated deploy workflows to inject YDB and rollout keys from Lockbox.
 - 2026-03-02: Synced `.env` to Lockbox secret `DTM` with required keys check for `YDB_*` and rollout switches.
 - 2026-03-02: Added/updated tests and docs for rollout policy.
+- 2026-03-02: Added `DualWriteOperationalStore` (`JSON primary + YDB secondary`) with secondary soft-fail semantics.
+- 2026-03-02: Added `list_tasks()` read API for JSON/YDB adapters and wired frontend API read path via `READMODEL_SOURCE=ydb`.
+- 2026-03-02: Enforced strict fallback policy: `ydb_only`/`ydb_primary`/`dual_write` require YDB config in prod, fallback to JSON only in non-prod.
+- 2026-03-02: Added `StoreTaskRepository` over operational store and switched runtime source plumbing in `main.py`:
+  - render pipeline reads from YDB when `RENDER_SOURCE=ydb`,
+  - reminder pipeline reads from YDB when `NOTIFY_SOURCE=ydb`,
+  - sync write path still uses source sheet repository.
+- 2026-03-02: Added unit tests for store repository and source switching (`tests/adapters/test_store_task_repository.py`, `tests/core/test_main_source_switch.py`).
 
 ## Links
 - `src/adapters/store_ydb.py`
