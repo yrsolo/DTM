@@ -8,14 +8,16 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 
 ## Now
 - [DONE] DTM-200 - Frontend API endpoint and request/response contract doc.
+- [DONE] DTM-199 - Stage 21 API gateway live bind smoke for test/prod domains.
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 
 ## Stage 21 Estimate (Dynamic)
 - Baseline estimate: 3 tasks.
-- Done: 2
-- Remaining: 1
+- Done: 3
+- Remaining: 0
 
 ## Done (Latest)
+- [DONE] DTM-199 - Stage 21 API gateway live bind smoke for test/prod domains.
 - [DONE] DTM-200 - Frontend API endpoint and request/response contract doc.
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 - [DONE] DTM-197 - Agile folder structure and freshness cleanup.
@@ -27,10 +29,9 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-191 - Stage 19 closeout and Stage 20 handoff package.
 
 ## Blocked
-- [BLOCKED] DTM-199 - привязка `dtm-api-test.solofarm.ru` и `dtm-api.solofarm.ru` к API Gateway ожидает `ISSUED` для сертификатов `fpq8qst4i5a7kn626qoi`, `fpq7a9hcft9g03p0g4ro`.
+- [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-199 - Stage 21 API gateway live bind smoke for test/prod domains.
 - [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 
 ## Active Task Files

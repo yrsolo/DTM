@@ -187,7 +187,7 @@ def _handle_frontend_api_if_requested(event: dict[str, Any], is_http_event: bool
     if method != "GET":
         return None
 
-    if path in {"/api/v1/frontend/doc", "/api/v1/read-model/doc"}:
+    if path in {"/", "/api", "/api/v1", "/api/v1/frontend/doc", "/api/v1/read-model/doc"}:
         return _json_response(200, _frontend_api_doc())
     if path not in {"/api/v1/frontend", "/api/v1/read-model"}:
         return None

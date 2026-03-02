@@ -57,12 +57,8 @@ jobs:
             echo "Missing required repository variable: YC_LOCKBOX_SECRET_ID" >&2
             exit 1
           fi
-          if [ -z "${YC_CLOUD_FUNCTION_PROD_NAME}" ]; then
-            echo "Missing required repository variable: YC_CLOUD_FUNCTION_PROD_NAME" >&2
-            exit 1
-          fi
-          if [ -z "${YC_CLOUD_FUNCTION_PROD_ID}" ]; then
-            echo "Missing required repository variable: YC_CLOUD_FUNCTION_PROD_ID" >&2
+          if [ -z "${YC_CLOUD_FUNCTION_PROD_NAME}" ] && [ -z "${YC_CLOUD_FUNCTION_PROD_ID}" ]; then
+            echo "Missing function target: set YC_CLOUD_FUNCTION_PROD_NAME or YC_CLOUD_FUNCTION_PROD_ID" >&2
             exit 1
           fi
           if [ -z "${YC_SERVICE_ACCOUNT_ID}" ] && [ -z "${YC_RUNTIME_SERVICE_ACCOUNT_ID}" ]; then
@@ -80,7 +76,7 @@ jobs:
         with:
           yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
           folder-id: ${{ vars.YC_FOLDER_ID || secrets.YC_FOLDER_ID }}
-          function-name: ${{ vars.YC_CLOUD_FUNCTION_PROD_NAME || secrets.YC_CLOUD_FUNCTION_PROD_NAME }}
+          function-name: ${{ vars.YC_CLOUD_FUNCTION_PROD_NAME || secrets.YC_CLOUD_FUNCTION_PROD_NAME || vars.YC_CLOUD_FUNCTION_PROD_ID || secrets.YC_CLOUD_FUNCTION_PROD_ID }}
           runtime: ${{ vars.YC_FUNCTION_RUNTIME || 'python311' }}
           memory: ${{ vars.YC_FUNCTION_MEMORY || '512Mb' }}
           execution-timeout: ${{ vars.YC_FUNCTION_TIMEOUT || '60s' }}
@@ -88,7 +84,6 @@ jobs:
           service-account: ${{ vars.YC_RUNTIME_SERVICE_ACCOUNT_ID || secrets.YC_RUNTIME_SERVICE_ACCOUNT_ID || vars.YC_SERVICE_ACCOUNT_ID || secrets.YC_SERVICE_ACCOUNT_ID }}
           environment: |
             ENV=prod
-            WEB_DOMAIN=${{ vars.WEB_DOMAIN || 'solofarm.ru' }}
             SOURCE_SHEET_NAME=${{ vars.SOURCE_SHEET_NAME || secrets.SOURCE_SHEET_NAME }}
             STRICT_ENV_GUARD=0
             RELEASE_DRY_RUN=${{ inputs.dry_run_release }}
