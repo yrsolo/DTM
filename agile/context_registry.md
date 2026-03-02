@@ -34,6 +34,7 @@ Purpose: track freshness and trust of planning sources before execution tasking.
 | M1 normalize test baseline (`tests/fixtures/normalize`, `tests/core/normalize`) | 2026-03-02 | TeamLead | added fixture set and unit tests for stage parser, date inference, and normalize interface; `python -m unittest discover -s tests -p \"test_*.py\" -v` passed (8 tests) | high | migration core contracts now have executable quality baseline |
 | M2/M3 activation guards (`config/constants.py`, `.env.example`) + hash-gate smoke (`agent/sync_hash_gate_smoke.py`) | 2026-03-02 | TeamLead | added migration feature flags default-off and independent hash-gate smoke script; smoke confirmed first run executes and second run skips on unchanged payload | high | provides safe switch points and executable validation before runtime wiring |
 | M2 parity smoke (`agent/normalize_parity_smoke.py`) | 2026-03-02 | TeamLead | implemented lightweight parity check that compares planned stage dates between legacy-style parse and new normalize path on controlled fixtures | medium | scope intentionally narrow (dates only), useful pre-wire guardrail but not full behavioral parity |
+| M2 sync handler wiring (`src/handlers/sync.py`, `tests/handlers/test_sync_handler.py`) | 2026-03-02 | TeamLead | replaced placeholder with working hash-gated handler over `SyncService`; unit test confirms first run executes and second unchanged run skips | high | new handler boundary is runnable while prod entrypoints remain unchanged |
 
 ## Archive
 - `agile/archive/context_registry_2026-02-27.pre_hygiene.md`

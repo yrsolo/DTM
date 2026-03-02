@@ -7,6 +7,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-208 - M2-M3 sync handler hash-gate wiring.
 - [DONE] DTM-207 - M2 parity smoke for normalize planned dates.
 - [DONE] DTM-206 - M2-M3 feature flags and hash-gate smoke.
 - [DONE] DTM-205 - M1 normalize fixtures and unit tests.
@@ -18,11 +19,12 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 
 ## Stage 21 Estimate (Dynamic)
-- Baseline estimate: 9 tasks.
-- Done: 9
+- Baseline estimate: 10 tasks.
+- Done: 10
 - Remaining: 0
 
 ## Done (Latest)
+- [DONE] DTM-208 - M2-M3 sync handler hash-gate wiring.
 - [DONE] DTM-207 - M2 parity smoke for normalize planned dates.
 - [DONE] DTM-206 - M2-M3 feature flags and hash-gate smoke.
 - [DONE] DTM-205 - M1 normalize fixtures and unit tests.
@@ -47,7 +49,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 
 ## Active Task Files
-- `agile/tasks/stage_20_plus/DTM-207_stage21_m2-parity-smoke-for-normalize-dates.md`
+- `agile/tasks/stage_20_plus/DTM-208_stage21_m2-m3-sync-handler-hash-gate-wiring.md`
 
 ## Task Folder Structure
 - `agile/tasks/stage_00_09/` - stage 0-9 execution tasks.
