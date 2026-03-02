@@ -6,6 +6,7 @@ import json
 import os
 import traceback
 from typing import Any
+from urllib.parse import parse_qsl, urlparse
 
 from config import (
     KEY_JSON,
@@ -102,33 +103,51 @@ async def _handle_group_query_if_requested(request_payload: dict[str, Any], is_h
 
 
 def _http_path(event: dict[str, Any]) -> str:
+    def _normalize_proxy_path(value: Any) -> str:
+        raw = str(value or "").strip()
+        if not raw:
+            return ""
+        if raw == "/{proxy+}" or raw == "{proxy+}":
+            return ""
+        return raw if raw.startswith("/") else f"/{raw}"
+
     if not isinstance(event, dict):
         return ""
+    # Proxy placeholders often carry the real route in pathParams/params.proxy.
+    path_params = event.get("pathParams")
+    if isinstance(path_params, dict):
+        proxy = _normalize_proxy_path(path_params.get("proxy"))
+        if proxy:
+            return proxy
+    params = event.get("params")
+    if isinstance(params, dict):
+        proxy = _normalize_proxy_path(params.get("proxy"))
+        if proxy:
+            return proxy
+        path_map = params.get("path")
+        if isinstance(path_map, dict):
+            for key in ("proxy", "path"):
+                path = _normalize_proxy_path(path_map.get(key))
+                if path:
+                    return path
+
     request_context = event.get("requestContext")
     if isinstance(request_context, dict):
         http_ctx = request_context.get("http")
         if isinstance(http_ctx, dict):
-            path = str(http_ctx.get("path", "")).strip()
+            path = _normalize_proxy_path(http_ctx.get("path"))
             if path:
                 return path
-            raw_path = str(http_ctx.get("rawPath", "")).strip()
+            raw_path = _normalize_proxy_path(http_ctx.get("rawPath"))
             if raw_path:
                 return raw_path
-        rc_path = str(request_context.get("path", "")).strip()
+        rc_path = _normalize_proxy_path(request_context.get("path"))
         if rc_path:
             return rc_path
     for key in ("path", "rawPath", "raw_path", "url"):
-        path = str(event.get(key, "")).strip()
+        path = _normalize_proxy_path(event.get(key))
         if path:
             return path
-    params = event.get("params")
-    if isinstance(params, dict):
-        path_map = params.get("path")
-        if isinstance(path_map, dict):
-            for key in ("proxy", "path"):
-                path = str(path_map.get(key, "")).strip()
-                if path:
-                    return path
     return ""
 
 
@@ -153,31 +172,50 @@ def _http_method(event: dict[str, Any]) -> str:
 
 
 def _query_params(event: dict[str, Any]) -> dict[str, Any]:
+    def _flatten(source: dict[str, Any]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in source.items():
+            if isinstance(value, list):
+                result[key] = str(value[0]).strip() if value else ""
+            elif value is None:
+                result[key] = ""
+            else:
+                result[key] = str(value).strip()
+        return result
+
     if not isinstance(event, dict):
         return {}
     direct = event.get("queryStringParameters")
-    if isinstance(direct, dict):
-        return direct
+    if isinstance(direct, dict) and direct:
+        return _flatten(direct)
     raw_query = event.get("rawQueryString")
     if isinstance(raw_query, str) and raw_query.strip():
-        parsed: dict[str, Any] = {}
-        for pair in raw_query.split("&"):
-            if not pair:
-                continue
-            if "=" in pair:
-                key, value = pair.split("=", 1)
-            else:
-                key, value = pair, ""
-            key = key.strip()
-            if key:
-                parsed[key] = value.strip()
+        parsed = {key: value for key, value in parse_qsl(raw_query, keep_blank_values=True)}
+        if parsed:
+            return parsed
+    multi = event.get("multiValueQueryStringParameters")
+    if isinstance(multi, dict) and multi:
+        return _flatten(multi)
+    url = event.get("url")
+    if isinstance(url, str) and url.startswith(("http://", "https://")):
+        parsed_url = urlparse(url)
+        parsed = {key: value for key, value in parse_qsl(parsed_url.query, keep_blank_values=True)}
         if parsed:
             return parsed
     params = event.get("params")
     if isinstance(params, dict):
         qs = params.get("queryString")
         if isinstance(qs, dict):
-            return qs
+            flattened = _flatten(qs)
+            if flattened:
+                return flattened
+    multi_params = event.get("multiValueParams")
+    if isinstance(multi_params, dict):
+        qs = multi_params.get("queryString")
+        if isinstance(qs, dict):
+            flattened = _flatten(qs)
+            if flattened:
+                return flattened
     return {}
 
 

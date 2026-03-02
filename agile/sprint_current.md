@@ -7,6 +7,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
 - [DONE] DTM-221 - Frontend API event-shape hardening + Actions requirements split.
 - [DONE] DTM-220 - API gateway ANY-method compatibility hotfix.
 - [DONE] DTM-218 - API HTTP method fallback hotfix (no-op to frontend route fix).
@@ -30,11 +31,12 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 
 ## Stage 21 Estimate (Dynamic)
-- Baseline estimate: 21 tasks.
-- Done: 21
+- Baseline estimate: 22 tasks.
+- Done: 22
 - Remaining: 0
 
 ## Done (Latest)
+- [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
 - [DONE] DTM-221 - Frontend API event-shape hardening + Actions requirements split.
 - [DONE] DTM-220 - API gateway ANY-method compatibility hotfix.
 - [DONE] DTM-218 - API HTTP method fallback hotfix (no-op to frontend route fix).
@@ -68,15 +70,17 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [BLOCKED] DTM-219 - test contour deploy verification blocked: local token cannot trigger GitHub workflow (`403 workflow_dispatch`), owner must run workflow manually.
 - [BLOCKED] DTM-220 - cloud verification pending same manual test deploy.
 - [BLOCKED] DTM-221 - cloud verification pending same manual test deploy.
+- [BLOCKED] DTM-222 - cloud verification pending same manual test deploy.
 
 ## Next 3-5 Tasks (Groomed)
 - [TODO] DTM-219 - Deploy DTM-218 fix to test contour and verify API domain response.
 - [TODO] DTM-220 - Deploy DTM-220 fix to test contour and verify API domain response.
 - [TODO] DTM-221 - Deploy DTM-221 fix to test contour and verify API domain response.
+- [TODO] DTM-222 - Deploy DTM-222 fix to test contour and verify API domain response.
 - [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 
 ## Active Task Files
-- `agile/tasks/stage_20_plus/DTM-221_stage21_frontend-api-event-shape-hardening-and-actions-requirements-split.md`
+- `agile/tasks/stage_20_plus/DTM-222_stage21_proxy-template-route-and-multivalue-query-fix.md`
 
 ## Task Folder Structure
 - `agile/tasks/stage_00_09/` - stage 0-9 execution tasks.
