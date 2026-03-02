@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 ALLOWED_ENVS = frozenset({"dev", "test", "prod"})
 ALLOWED_LLM_PROVIDERS = frozenset({"openai", "google", "yandex"})
 ALLOWED_LLM_FAILOVER_MODES = frozenset({"draft_only", "provider"})
+ALLOWED_STORE_MODES = frozenset({"legacy", "dual_write", "ydb_primary", "ydb_only"})
+ALLOWED_READ_SOURCES = frozenset({"legacy", "ydb"})
 
 
 def _env(name: str, default: str = "") -> str:
@@ -49,6 +51,36 @@ WEB_DOMAIN = _env("WEB_DOMAIN")
 API_DOMAIN_TEST = _env("API_DOMAIN_TEST")
 API_DOMAIN_PROD = _env("API_DOMAIN_PROD")
 API_DOMAIN = API_DOMAIN_PROD if RUNTIME_ENV == "prod" else API_DOMAIN_TEST
+
+# Operational store / readmodel rollout switches.
+STORE_MODE = _env("STORE_MODE", "legacy").lower()
+if STORE_MODE not in ALLOWED_STORE_MODES:
+    raise ValueError(
+        f"Unsupported STORE_MODE={STORE_MODE!r}. "
+        "Allowed values: legacy, dual_write, ydb_primary, ydb_only."
+    )
+READMODEL_SOURCE = _env("READMODEL_SOURCE", "legacy").lower()
+if READMODEL_SOURCE not in ALLOWED_READ_SOURCES:
+    raise ValueError(
+        f"Unsupported READMODEL_SOURCE={READMODEL_SOURCE!r}. "
+        "Allowed values: legacy, ydb."
+    )
+NOTIFY_SOURCE = _env("NOTIFY_SOURCE", READMODEL_SOURCE).lower()
+if NOTIFY_SOURCE not in ALLOWED_READ_SOURCES:
+    raise ValueError(
+        f"Unsupported NOTIFY_SOURCE={NOTIFY_SOURCE!r}. "
+        "Allowed values: legacy, ydb."
+    )
+RENDER_SOURCE = _env("RENDER_SOURCE", READMODEL_SOURCE).lower()
+if RENDER_SOURCE not in ALLOWED_READ_SOURCES:
+    raise ValueError(
+        f"Unsupported RENDER_SOURCE={RENDER_SOURCE!r}. "
+        "Allowed values: legacy, ydb."
+    )
+
+YDB_ID = _env("YDB_ID")
+YDB_ENDPOINT = _env("YDB_ENDPOINT")
+YDB_DATABASE = _env("YDB_DATABASE")
 
 # Migration feature flags (safe defaults: disabled)
 MIGRATION_ENABLE_NEW_SYNC_PATH = _env_flag("MIGRATION_ENABLE_NEW_SYNC_PATH")

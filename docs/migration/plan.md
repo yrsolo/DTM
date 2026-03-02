@@ -5,6 +5,10 @@
 2. Existing flow must keep working during migration.
 3. Every stage ends with explicit entry/exit criteria and rollback plan.
 4. All contracts are explicit and versioned in docs/contracts.
+5. Rollout policy uses explicit switches:
+   - `STORE_MODE=legacy|dual_write|ydb_primary|ydb_only`
+   - `READMODEL_SOURCE=legacy|ydb`
+   - optional `NOTIFY_SOURCE`, `RENDER_SOURCE` (`legacy|ydb`)
 
 ## Stage Matrix
 
@@ -75,3 +79,7 @@
 ## Current Progress Marker
 - Current repo baseline: pre-M1 implementation with partial API/read-model work already present.
 - This package formalizes migration contracts and introduces M1-M3 skeletons for incremental adoption.
+- Approved prod rollout order:
+  1. `STORE_MODE=dual_write`
+  2. switch `READMODEL_SOURCE` / `NOTIFY_SOURCE` to `ydb`
+  3. switch store to `ydb_primary`, then `ydb_only`

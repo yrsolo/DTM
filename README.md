@@ -77,9 +77,19 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - [x] M1 normalize fixtures and unit tests added (`tests/core/normalize`, `tests/fixtures/normalize`).
 - [x] M3 optional runtime source hash gate wiring added (feature-flagged).
 - [x] M4 optional dual-write to JSON operational store added (feature-flagged).
+- [x] Rollout switches introduced: `STORE_MODE`, `READMODEL_SOURCE`, optional `NOTIFY_SOURCE`/`RENDER_SOURCE`.
 - [ ] M1 wired to current runtime path.
 - [ ] M2 sync/render split wired to handlers.
 - [ ] M3 source-hash gate enabled in production flow.
+
+### Store rollout policy
+- `STORE_MODE=legacy|dual_write|ydb_primary|ydb_only`
+- `READMODEL_SOURCE=legacy|ydb`
+- Optional: `NOTIFY_SOURCE`, `RENDER_SOURCE` (`legacy|ydb`)
+- Prod order:
+  1. `STORE_MODE=dual_write`
+  2. switch readmodel/notify sources to `ydb`
+  3. `STORE_MODE=ydb_primary`, then `STORE_MODE=ydb_only`
 
 ## Local run (current)
 - Preferred: `run_timer.cmd` (uses project virtualenv and runs timer mode).
@@ -156,9 +166,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `YC_CLOUD_FUNCTION_PROD_NAME`
   - `YC_CLOUD_FUNCTION_PROD_ID`
   - `YC_LOCKBOX_SECRET_ID`
-  - `SOURCE_SHEET_NAME`
-  - `API_DOMAIN_TEST`
-  - `API_DOMAIN_PROD`
+- Runtime app keys (including `SOURCE_SHEET_NAME`, `API_DOMAIN_*`, `YDB_*`, `STORE_MODE`, `READMODEL_SOURCE`, `NOTIFY_SOURCE`, `RENDER_SOURCE`) are read from Lockbox secret payload.
 - Full setup guide:
   - `doc/ops/stage9_main_autodeploy_setup.md`
 - Direct cloud endpoint smoke invoke:

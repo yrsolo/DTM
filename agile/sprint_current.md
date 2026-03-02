@@ -7,6 +7,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-216 - YDB adapter + rollout switches + lockbox/deploy wiring.
 - [DONE] DTM-214 - M5 read-model publication path and build handler wiring.
 - [DONE] DTM-213 - M5 minimal read-model builder with grouping and ordering.
 - [DONE] DTM-212 - M4 feature-flagged dual-write to JSON operational store.
@@ -25,11 +26,12 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 
 ## Stage 21 Estimate (Dynamic)
-- Baseline estimate: 16 tasks.
-- Done: 16
+- Baseline estimate: 17 tasks.
+- Done: 17
 - Remaining: 0
 
 ## Done (Latest)
+- [DONE] DTM-216 - YDB adapter + rollout switches + lockbox/deploy wiring.
 - [DONE] DTM-214 - M5 read-model publication path and build handler wiring.
 - [DONE] DTM-213 - M5 minimal read-model builder with grouping and ordering.
 - [DONE] DTM-212 - M4 feature-flagged dual-write to JSON operational store.
@@ -55,13 +57,13 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-191 - Stage 19 closeout and Stage 20 handoff package.
 
 ## Blocked
-- [BLOCKED] DTM-215 - need owner decision: operational store target (JSON interim vs YDB now) and migration-flag rollout policy (test/prod enable gates).
+- [BLOCKED] none.
 
 ## Next 3-5 Tasks (Groomed)
 - [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 
 ## Active Task Files
-- `agile/tasks/stage_20_plus/DTM-214_stage21_m5-read-model-publication-path.md`
+- `agile/tasks/stage_20_plus/DTM-216_stage21_ydb-adapter-and-rollout-switches.md`
 
 ## Task Folder Structure
 - `agile/tasks/stage_00_09/` - stage 0-9 execution tasks.

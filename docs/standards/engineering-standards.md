@@ -43,6 +43,14 @@
 1. Config through env vars only.
 2. Secrets only from Lockbox/Secret Manager/env injection.
 3. Never store secrets in git, logs, or docs.
+4. Rollout switches are mandatory for staged migration:
+   - `STORE_MODE=legacy|dual_write|ydb_primary|ydb_only`
+   - `READMODEL_SOURCE=legacy|ydb`
+   - optional `NOTIFY_SOURCE`, `RENDER_SOURCE`
+5. YDB config keys:
+   - `YDB_ID`
+   - `YDB_ENDPOINT`
+   - `YDB_DATABASE`
 
 ## 7. Integration Standards
 

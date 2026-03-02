@@ -109,6 +109,13 @@ jobs:
             WEB_DOMAIN=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/WEB_DOMAIN
             API_DOMAIN_TEST=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/API_DOMAIN_TEST
             API_DOMAIN_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/API_DOMAIN_PROD
+            STORE_MODE=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/STORE_MODE
+            READMODEL_SOURCE=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/READMODEL_SOURCE
+            NOTIFY_SOURCE=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/NOTIFY_SOURCE
+            RENDER_SOURCE=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/RENDER_SOURCE
+            YDB_ID=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_ID
+            YDB_ENDPOINT=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_ENDPOINT
+            YDB_DATABASE=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_DATABASE
           include: |
             **/*.py
             requirements.txt
