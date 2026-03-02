@@ -48,6 +48,8 @@
   - reminder pipeline reads from YDB when `NOTIFY_SOURCE=ydb`,
   - sync write path still uses source sheet repository.
 - 2026-03-02: Added unit tests for store repository and source switching (`tests/adapters/test_store_task_repository.py`, `tests/core/test_main_source_switch.py`).
+- 2026-03-02: Added explicit YDB auth path via `YC_SA_JSON_CREDENTIALS` (`ServiceAccountCredentials.from_content`) and endpoint normalization (strip `?database=...` from `YDB_ENDPOINT`) for local/runtime compatibility.
+- 2026-03-02: Added empty-calendar safety guard for render path when YDB has no tasks yet (`core/manager.py`) + unit test `tests/core/test_manager_calendar_empty.py`.
 
 ## Links
 - `src/adapters/store_ydb.py`

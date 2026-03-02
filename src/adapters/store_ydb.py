@@ -7,8 +7,10 @@ JSON-backed adapter remains for local tests/mocks only.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any, Protocol
+from urllib.parse import urlsplit
 
 import pandas as pd
 
@@ -196,11 +198,33 @@ class YdbOperationalStore:
     def __init__(self, endpoint: str, database: str, table_path: str = "dtm_operational_tasks") -> None:
         if not endpoint.strip() or not database.strip():
             raise ValueError("YDB endpoint/database are required for YdbOperationalStore")
-        self.endpoint = endpoint
+        self.endpoint = self._normalize_endpoint(endpoint)
         self.database = database
         self.table_path = table_path
         self._driver = None
         self._session_pool = None
+
+    @staticmethod
+    def _normalize_endpoint(endpoint: str) -> str:
+        raw = str(endpoint or "").strip()
+        if not raw:
+            return raw
+        if "://" in raw:
+            parsed = urlsplit(raw)
+            if parsed.scheme and parsed.netloc:
+                return f"{parsed.scheme}://{parsed.netloc}"
+        return raw.split("?", 1)[0]
+
+    @staticmethod
+    def _build_credentials(ydb_module: Any) -> Any:
+        """Resolve YDB credentials with explicit SA-json priority for local/dev use."""
+        sa_json = str(os.getenv("YC_SA_JSON_CREDENTIALS", "")).strip()
+        if sa_json:
+            return ydb_module.iam.ServiceAccountCredentials.from_content(sa_json)
+        sa_key_file = str(os.getenv("YC_SA_KEY_FILE", "")).strip()
+        if sa_key_file:
+            return ydb_module.iam.ServiceAccountCredentials.from_file(sa_key_file)
+        return ydb_module.credentials_from_env_variables()
 
     def _ensure_client(self) -> None:
         if self._session_pool is not None:
@@ -213,7 +237,7 @@ class YdbOperationalStore:
         driver = ydb.Driver(
             endpoint=self.endpoint,
             database=self.database,
-            credentials=ydb.credentials_from_env_variables(),
+            credentials=self._build_credentials(ydb),
         )
         driver.wait(fail_fast=True, timeout=5)
         self._driver = driver

@@ -191,6 +191,9 @@ class CalendarManager:
         return calendar
 
     def calendar_to_dataframe(self, calendar: dict[Any, Any]) -> pd.DataFrame:
+        if not calendar:
+            self.calendar = pd.DataFrame()
+            return self.calendar
         df = pd.DataFrame(calendar).T
         df.index.name = "Date"
         min_date = df.index.min()
@@ -203,6 +206,13 @@ class CalendarManager:
 
     def write_calendar_to_sheet(self, calendar: dict[Any, Any], min_date: str | None = "1W") -> None:
         df = self.calendar_to_dataframe(calendar)
+        if df.empty:
+            self.renderer.begin()
+            if self.sheet_name:
+                self.renderer.clear_cells()
+            self._write_cur_time(cell="A1")
+            self.renderer.execute_updates()
+            return
         if min_date:
             now = pd.Timestamp.now()
             min_date = now - pd.Timedelta(min_date)
