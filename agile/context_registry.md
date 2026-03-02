@@ -27,6 +27,7 @@ Purpose: track freshness and trust of planning sources before execution tasking.
 | API domain tooling (`agent/deploy_api_gateway_domain.py`) | 2026-03-02 | TeamLead | verified mode split, function/gateway resolution, domain+certificate input guards | medium | live cloud bind smoke pending in DTM-199 |
 | Stage 21 live cloud bind (`certificate-manager` + `dns` + `api-gateway`) | 2026-03-02 | TeamLead | both certs moved to `ISSUED`; test/prod domains attached to gateways; DNS CNAME records present | high | cloud domain contour for api is active |
 | Frontend API runtime contract (`index.py`, `core/api_payload.py`, `doc/ops/frontend_api_contract.md`) | 2026-03-02 | TeamLead | local invoke smoke for `GET /api/v1/frontend/doc` and `GET /api/v1/frontend` returned `200` + JSON payload marker | high | frontend can consume live task/deadline payload over HTTP |
+| Release/test workflow resiliency (`.github/workflows/release_yc_function_prod.yml`, `.github/workflows/deploy_yc_function_main.yml`) | 2026-03-02 | TeamLead | prod release target resolver now supports input/name/id/default fallback; test deploy supports manual `workflow_dispatch` by ref | high | allows test API deploy from `dev` without waiting for `main` push |
 
 ## Archive
 - `agile/archive/context_registry_2026-02-27.pre_hygiene.md`
