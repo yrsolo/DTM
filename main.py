@@ -9,6 +9,7 @@ from config import (
     MIGRATION_HASH_GATE_STATE_FILE,
     MIGRATION_STORE_FILE,
     STORE_MODE,
+    RUNTIME_ENV,
     YDB_DATABASE,
     YDB_ENDPOINT,
     SHEET_INFO,
@@ -61,6 +62,7 @@ def _task_to_store_record(task) -> dict[str, object]:
         "customer": task.customer,
         "designer": task.designer,
         "status": task.status,
+        "color_status": task.color_status,
         "raw_timing": task.raw_timing,
         "timing": timing_rows,
     }
@@ -137,6 +139,7 @@ async def main(**kwargs):
         records = [_task_to_store_record(task) for task in tasks]
         store = build_operational_store(
             STORE_MODE,
+            env_name=RUNTIME_ENV,
             ydb_endpoint=YDB_ENDPOINT,
             ydb_database=YDB_DATABASE,
             json_file_path=MIGRATION_STORE_FILE,

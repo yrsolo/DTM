@@ -63,9 +63,13 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self._orig_build_dependencies = index.build_planner_dependencies
         self._orig_build_payload_v1 = index.build_frontend_api_payload
         self._orig_build_payload_v2 = index.build_frontend_api_payload_v2
+        self._orig_build_store = index.build_operational_store
+        self._orig_readmodel_source = index.READMODEL_SOURCE
         self._orig_default_api_version = index.FRONTEND_API_DEFAULT_VERSION
         index.FRONTEND_API_DEFAULT_VERSION = "v2"
+        index.READMODEL_SOURCE = "legacy"
         index.build_planner_dependencies = lambda *args, **kwargs: _Deps()
+        index.build_operational_store = lambda *args, **kwargs: SimpleNamespace(list_tasks=lambda: [])
         index.build_frontend_api_payload = lambda **kwargs: {
             "artifact": "dtm_frontend_api_payload",
             "generated_at_utc": "2026-03-02T00:00:00Z",
@@ -90,6 +94,8 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         index.build_planner_dependencies = self._orig_build_dependencies
         index.build_frontend_api_payload = self._orig_build_payload_v1
         index.build_frontend_api_payload_v2 = self._orig_build_payload_v2
+        index.build_operational_store = self._orig_build_store
+        index.READMODEL_SOURCE = self._orig_readmodel_source
         index.FRONTEND_API_DEFAULT_VERSION = self._orig_default_api_version
 
     def test_http_path_from_proxy_template(self) -> None:
@@ -185,6 +191,31 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         payload = json.loads(response.get("body", "{}"))
         self.assertEqual(response["statusCode"], 400)
         self.assertEqual(payload.get("error", {}).get("code"), "invalid_window")
+
+    def test_v2_reads_tasks_from_store_when_readmodel_source_ydb(self) -> None:
+        index.READMODEL_SOURCE = "ydb"
+        index.build_operational_store = lambda *args, **kwargs: SimpleNamespace(
+            list_tasks=lambda: [
+                {
+                    "task_id": "501",
+                    "name": "Stored Task",
+                    "designer": "Designer One",
+                    "status": "work",
+                    "color_status": "work",
+                    "project_name": "Stored Project",
+                    "timing": [{"date": "2026-03-11", "stages": ["аниматик"]}],
+                }
+            ]
+        )
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend?statuses=work"
+        event["queryStringParameters"] = {"statuses": "work"}
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response.get("body", "{}"))
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(payload.get("summary", {}).get("tasksReturned"), 1)
 
 
 if __name__ == "__main__":

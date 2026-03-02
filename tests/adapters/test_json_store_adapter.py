@@ -6,7 +6,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from src.adapters.store_ydb import JsonOperationalStore, YdbOperationalStore, build_operational_store
+from src.adapters.store_ydb import (
+    DualWriteOperationalStore,
+    JsonOperationalStore,
+    YdbOperationalStore,
+    build_operational_store,
+)
 
 
 class JsonOperationalStoreTestCase(unittest.TestCase):
@@ -34,6 +39,7 @@ class JsonOperationalStoreTestCase(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_dir:
             store = build_operational_store(
                 "dual_write",
+                env_name="dev",
                 ydb_endpoint="",
                 ydb_database="",
                 json_file_path=str(Path(tmp_dir) / "store.json"),
@@ -43,11 +49,55 @@ class JsonOperationalStoreTestCase(unittest.TestCase):
     def test_store_factory_selects_ydb_when_settings_present(self) -> None:
         store = build_operational_store(
             "ydb_primary",
+            env_name="test",
             ydb_endpoint="grpcs://ydb.serverless.yandexcloud.net:2135/?database=/x/y",
             ydb_database="/x/y",
             json_file_path="artifacts/tmp/ignored.json",
         )
         self.assertIsInstance(store, YdbOperationalStore)
+
+    def test_store_factory_builds_dual_write_when_ydb_present(self) -> None:
+        store = build_operational_store(
+            "dual_write",
+            env_name="test",
+            ydb_endpoint="grpcs://ydb.serverless.yandexcloud.net:2135/?database=/x/y",
+            ydb_database="/x/y",
+            json_file_path="artifacts/tmp/store.json",
+        )
+        self.assertIsInstance(store, DualWriteOperationalStore)
+
+    def test_store_factory_ydb_only_raises_in_prod_without_config(self) -> None:
+        with self.assertRaises(RuntimeError):
+            build_operational_store(
+                "ydb_only",
+                env_name="prod",
+                ydb_endpoint="",
+                ydb_database="",
+                json_file_path="artifacts/tmp/store.json",
+            )
+
+    def test_dual_write_keeps_primary_success_on_secondary_error(self) -> None:
+        class _Primary:
+            def upsert_tasks(self, tasks):
+                return {"ok": True, "written": len(tasks)}
+
+            def list_tasks(self):
+                return [{"task_id": "a"}]
+
+        class _Secondary:
+            def upsert_tasks(self, tasks):
+                _ = tasks
+                raise RuntimeError("boom")
+
+            def list_tasks(self):
+                return []
+
+        store = DualWriteOperationalStore(primary=_Primary(), secondary=_Secondary())
+        result = store.upsert_tasks([{"task_id": "a"}])
+        self.assertEqual(result.get("backend"), "dual_write")
+        self.assertEqual(result.get("primary_result", {}).get("ok"), True)
+        self.assertEqual(result.get("secondary_result"), None)
+        self.assertIn("boom", str(result.get("secondary_error")))
 
 
 if __name__ == "__main__":
