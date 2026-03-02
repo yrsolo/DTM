@@ -125,9 +125,13 @@ class StoreTaskRepository:
         self.store = store
         self.row_issues: list[str] = []
         self.timing_parser = _StoreTimingDiagnostics()
+        self._tasks_cache: list[StoreTaskView] | None = None
 
     def get_all_tasks(self) -> list[StoreTaskView]:
-        return store_records_to_tasks(self.store.list_tasks())
+        if self._tasks_cache is not None:
+            return list(self._tasks_cache)
+        self._tasks_cache = store_records_to_tasks(self.store.list_tasks())
+        return list(self._tasks_cache)
 
     def get_task_by_color_status(self, color_status: Any) -> list[StoreTaskView]:
         values = color_status if isinstance(color_status, (list, tuple, set)) else [color_status]
@@ -204,6 +208,7 @@ class YdbOperationalStore:
         self._driver = None
         self._session_pool = None
         self._retry_settings = None
+        self._list_cache: list[dict[str, Any]] | None = None
 
     @staticmethod
     def _normalize_endpoint(endpoint: str) -> str:
@@ -274,36 +279,42 @@ class YdbOperationalStore:
 
     def upsert_tasks(self, tasks: list[dict[str, Any]]) -> dict[str, Any]:
         self._ensure_client()
-        inserted = 0
+        rows: list[dict[str, str]] = []
+        for task in tasks:
+            task_id = str(task.get("task_id", "")).strip()
+            if not task_id:
+                continue
+            rows.append(
+                {
+                    "task_id": task_id,
+                    "payload": json.dumps(task, ensure_ascii=False),
+                }
+            )
+
+        if not rows:
+            return {"tasks_upserted": 0, "backend": "ydb", "table_path": self.table_path}
 
         def _upsert(session) -> None:
-            nonlocal inserted
-            for task in tasks:
-                task_id = str(task.get("task_id", "")).strip()
-                if not task_id:
-                    continue
-                payload = json.dumps(task, ensure_ascii=False)
-                query = f"""
-                DECLARE $task_id AS Utf8;
-                DECLARE $payload AS Utf8;
-                UPSERT INTO `{self.table_path}` (task_id, payload)
-                VALUES ($task_id, $payload);
-                """
-                prepared = session.prepare(query)
-                session.transaction().execute(
-                    prepared,
-                    {
-                        "$task_id": task_id,
-                        "$payload": payload,
-                    },
-                    commit_tx=True,
-                )
-                inserted += 1
+            query = f"""
+            DECLARE $rows AS List<Struct<task_id:Utf8,payload:Utf8>>;
+            UPSERT INTO `{self.table_path}` (task_id, payload)
+            SELECT task_id, payload
+            FROM AS_TABLE($rows);
+            """
+            prepared = session.prepare(query)
+            session.transaction().execute(
+                prepared,
+                {"$rows": rows},
+                commit_tx=True,
+            )
 
         self._session_pool.retry_operation_sync(_upsert, retry_settings=self._retry_settings)
-        return {"tasks_upserted": inserted, "backend": "ydb", "table_path": self.table_path}
+        self._list_cache = None
+        return {"tasks_upserted": len(rows), "backend": "ydb", "table_path": self.table_path}
 
     def list_tasks(self) -> list[dict[str, Any]]:
+        if self._list_cache is not None:
+            return [dict(item) for item in self._list_cache]
         self._ensure_client()
         rows: list[dict[str, Any]] = []
 
@@ -330,6 +341,7 @@ class YdbOperationalStore:
             return loaded
 
         rows = self._session_pool.retry_operation_sync(_load, retry_settings=self._retry_settings)
+        self._list_cache = [dict(item) for item in rows]
         return rows
 
 
