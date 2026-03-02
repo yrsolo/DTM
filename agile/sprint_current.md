@@ -61,13 +61,14 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-191 - Stage 19 closeout and Stage 20 handoff package.
 
 ## Blocked
-- [BLOCKED] none.
+- [BLOCKED] DTM-219 - test contour deploy verification blocked: local token cannot trigger GitHub workflow (`403 workflow_dispatch`), owner must run workflow manually.
 
 ## Next 3-5 Tasks (Groomed)
+- [TODO] DTM-219 - Deploy DTM-218 fix to test contour and verify API domain response.
 - [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 
 ## Active Task Files
-- `agile/tasks/stage_20_plus/DTM-218_stage21_api-http-method-fallback-hotfix.md`
+- `agile/tasks/stage_20_plus/DTM-219_stage21_test-deploy-verification-blocked-by-github-token-scope.md`
 
 ## Task Folder Structure
 - `agile/tasks/stage_00_09/` - stage 0-9 execution tasks.
