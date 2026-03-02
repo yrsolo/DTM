@@ -63,6 +63,8 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self._orig_build_dependencies = index.build_planner_dependencies
         self._orig_build_payload_v1 = index.build_frontend_api_payload
         self._orig_build_payload_v2 = index.build_frontend_api_payload_v2
+        self._orig_default_api_version = index.FRONTEND_API_DEFAULT_VERSION
+        index.FRONTEND_API_DEFAULT_VERSION = "v2"
         index.build_planner_dependencies = lambda *args, **kwargs: _Deps()
         index.build_frontend_api_payload = lambda **kwargs: {
             "artifact": "dtm_frontend_api_payload",
@@ -88,6 +90,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         index.build_planner_dependencies = self._orig_build_dependencies
         index.build_frontend_api_payload = self._orig_build_payload_v1
         index.build_frontend_api_payload_v2 = self._orig_build_payload_v2
+        index.FRONTEND_API_DEFAULT_VERSION = self._orig_default_api_version
 
     def test_http_path_from_proxy_template(self) -> None:
         event = _fixture_event()
@@ -116,6 +119,29 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         payload = json.loads(response["body"])
         self.assertEqual(response["statusCode"], 200)
         self.assertEqual(payload.get("meta", {}).get("artifact"), "dtm_frontend_api_v2")
+
+    def test_root_uses_v2_doc_when_default_version_is_v2(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = ""
+        event["params"]["proxy"] = ""
+        event["path"] = "/"
+        event["url"] = "https://dtm-api-test.solofarm.ru/"
+        response = asyncio.run(index.handler(event, None))
+        self.assertEqual(response["statusCode"], 200)
+        self.assertIn("DTM Frontend API v2", response.get("body", ""))
+
+    def test_v2_doc_contains_endpoints_query_and_response_fields(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend/doc"
+        event["params"]["proxy"] = "api/v2/frontend/doc"
+        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend/doc"
+        response = asyncio.run(index.handler(event, None))
+        body = response.get("body", "")
+        self.assertEqual(response["statusCode"], 200)
+        self.assertIn("Endpoints", body)
+        self.assertIn("Параметры запроса", body)
+        self.assertIn("Поля ответа", body)
+        self.assertIn("tasks[].revision", body)
 
 
 if __name__ == "__main__":

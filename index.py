@@ -358,11 +358,112 @@ def _frontend_api_v2_doc() -> dict[str, Any]:
         "artifact": "dtm_frontend_api_v2_doc",
         "version": "2.0.0",
         "endpoints": [
-            {"method": "GET", "path": "/api/v2/frontend"},
-            {"method": "GET", "path": "/api/v2/frontend/doc"},
-            {"method": "GET", "path": "/api/v2/frontend/doc?format=json"},
+            {
+                "method": "GET",
+                "path": "/api/v2/frontend",
+                "description": "Основной endpoint для фронтенда (payload v2).",
+            },
+            {
+                "method": "GET",
+                "path": "/api/v2/frontend/doc",
+                "description": "HTML-страница с документацией по контракту v2.",
+            },
+            {
+                "method": "GET",
+                "path": "/api/v2/frontend/doc?format=json",
+                "description": "JSON-представление документации по контракту v2.",
+            },
         ],
+        "query": {
+            "statuses": {
+                "type": "string",
+                "default": "work,pre_done",
+                "description": "Список статусов через запятую.",
+                "example": "work,pre_done,wait",
+            },
+            "designer": {
+                "type": "string",
+                "default": "",
+                "description": "Фильтр по имени дизайнера (без учета регистра).",
+                "example": "Муратов Эдуард",
+            },
+            "limit": {
+                "type": "int",
+                "default": 200,
+                "range": "1..1000",
+                "description": "Максимальное количество задач в ответе.",
+            },
+            "include_people": {
+                "type": "bool",
+                "default": True,
+                "accepted_values": ["1", "0", "true", "false", "yes", "no"],
+                "description": "Добавлять блок entities.people в ответ.",
+            },
+        },
         "top_level": ["meta", "filters", "summary", "entities", "tasks"],
+        "response_fields": {
+            "meta": {
+                "artifact": "string (dtm_frontend_api_v2)",
+                "contractVersion": "string (2.x.x)",
+                "generatedAt": "ISO-8601 UTC datetime",
+                "syncedAt": "ISO-8601 UTC datetime",
+                "source": {
+                    "env": "string (dev|test|prod)",
+                    "sourceId": "string",
+                    "sheetName": "string|null",
+                    "sheetUrl": "string|null",
+                },
+                "hash": "sha256 payload hash",
+                "features": {
+                    "taskHash": "bool",
+                    "taskRevision": "bool",
+                    "entities": "bool",
+                },
+                "paging": {"limit": "int", "nextCursor": "string|null"},
+            },
+            "filters": {
+                "statuses": "string[]",
+                "designer": "string",
+                "limit": "int",
+                "includePeople": "bool",
+            },
+            "summary": {
+                "tasksReturned": "int",
+                "peopleReturned": "int",
+                "groupsReturned": "int",
+            },
+            "entities": {
+                "people[]": {
+                    "id": "string",
+                    "name": "string",
+                    "position": "string|null",
+                    "links.self": "string",
+                },
+                "groups[]": {
+                    "id": "string",
+                    "name": "string",
+                    "links.self": "string",
+                },
+                "tags[]": "string[]",
+                "enums.status": "map<string,string>",
+                "enums.statusGroups": "map<string,string[]>",
+            },
+            "tasks[]": {
+                "id": "string",
+                "title": "string",
+                "ownerId": "string|null",
+                "groupId": "string|null",
+                "status": "string",
+                "date.start": "YYYY-MM-DD|null",
+                "date.end": "YYYY-MM-DD|null",
+                "date.nextDue": "YYYY-MM-DD|null",
+                "tags": "string[]",
+                "hash": "string|null (reserved)",
+                "revision": "string|int|null (reserved)",
+                "links.sheetRowUrl": "string|null",
+                "links.self": "string",
+            },
+        },
         "task_fields": [
             "id",
             "title",
@@ -461,10 +562,14 @@ def _frontend_api_v2_doc_html() -> str:
   <title>DTM Frontend API v2</title>
   <style>
     body { margin: 0; font-family: Segoe UI, Arial, sans-serif; background: #f6f8fb; color: #17212b; }
-    .wrap { max-width: 980px; margin: 0 auto; padding: 24px; }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; }
     .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 16px rgba(0,0,0,.06); margin-bottom: 16px; }
+    h1, h2, h3 { margin: 0 0 10px; }
+    p { margin: 8px 0; line-height: 1.45; }
     code { background: #eef2f7; padding: 2px 6px; border-radius: 6px; }
     pre { margin: 0; padding: 12px; background: #0f172a; color: #e2e8f0; border-radius: 10px; overflow: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; border-bottom: 1px solid #e5e7eb; padding: 8px; vertical-align: top; }
   </style>
 </head>
 <body>
@@ -476,15 +581,72 @@ def _frontend_api_v2_doc_html() -> str:
     </div>
     <div class="card">
       <h2>Endpoints</h2>
-      <ul>
-        <li><code>GET /api/v2/frontend</code></li>
-        <li><code>GET /api/v2/frontend/doc</code></li>
-        <li><code>GET /api/v2/frontend/doc?format=json</code></li>
-      </ul>
+      <table>
+        <thead><tr><th>Method</th><th>Path</th><th>Описание</th></tr></thead>
+        <tbody>
+          <tr><td>GET</td><td><code>/api/v2/frontend</code></td><td>Основной endpoint для фронтенда (контракт v2).</td></tr>
+          <tr><td>GET</td><td><code>/api/v2/frontend/doc</code></td><td>HTML-страница с документацией.</td></tr>
+          <tr><td>GET</td><td><code>/api/v2/frontend/doc?format=json</code></td><td>JSON-представление документации.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Параметры запроса</h2>
+      <table>
+        <thead><tr><th>Параметр</th><th>Тип</th><th>Default</th><th>Описание</th></tr></thead>
+        <tbody>
+          <tr><td><code>statuses</code></td><td>string</td><td><code>work,pre_done</code></td><td>Список статусов через запятую, например <code>work,pre_done,wait</code>.</td></tr>
+          <tr><td><code>designer</code></td><td>string</td><td><code></code></td><td>Фильтр по имени дизайнера (без учета регистра).</td></tr>
+          <tr><td><code>limit</code></td><td>int</td><td><code>200</code></td><td>Лимит задач в ответе, диапазон <code>1..1000</code>.</td></tr>
+          <tr><td><code>include_people</code></td><td>bool</td><td><code>true</code></td><td>Включать/исключать блок <code>entities.people</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Поля ответа</h2>
+      <table>
+        <thead><tr><th>Поле</th><th>Тип</th><th>Описание</th></tr></thead>
+        <tbody>
+          <tr><td><code>meta</code></td><td>object</td><td>Метаданные ответа: версия контракта, время генерации, hash, source и paging.</td></tr>
+          <tr><td><code>meta.artifact</code></td><td>string</td><td>Идентификатор артефакта: <code>dtm_frontend_api_v2</code>.</td></tr>
+          <tr><td><code>meta.contractVersion</code></td><td>string</td><td>Версия контракта API v2.</td></tr>
+          <tr><td><code>meta.generatedAt</code></td><td>datetime</td><td>UTC время генерации payload.</td></tr>
+          <tr><td><code>meta.syncedAt</code></td><td>datetime</td><td>UTC время последней синхронизации источника.</td></tr>
+          <tr><td><code>meta.source</code></td><td>object</td><td>Контур, id источника, имя и ссылка на таблицу (если доступны).</td></tr>
+          <tr><td><code>meta.hash</code></td><td>string</td><td>SHA256 от стабильной сериализации payload.</td></tr>
+          <tr><td><code>filters</code></td><td>object</td><td>Echo примененных параметров запроса.</td></tr>
+          <tr><td><code>summary</code></td><td>object</td><td>Счетчики: задачи, люди, группы.</td></tr>
+          <tr><td><code>entities.people[]</code></td><td>array</td><td>Справочник людей: <code>id</code>, <code>name</code>, <code>position</code>, <code>links.self</code>.</td></tr>
+          <tr><td><code>entities.groups[]</code></td><td>array</td><td>Справочник групп/проектов: <code>id</code>, <code>name</code>, <code>links.self</code>.</td></tr>
+          <tr><td><code>entities.tags[]</code></td><td>array</td><td>Теги в payload (если есть).</td></tr>
+          <tr><td><code>entities.enums</code></td><td>object</td><td>Словари статусов и групп статусов для UI.</td></tr>
+          <tr><td><code>tasks[]</code></td><td>array</td><td>Основной список задач.</td></tr>
+          <tr><td><code>tasks[].id</code></td><td>string</td><td>Стабильный идентификатор задачи.</td></tr>
+          <tr><td><code>tasks[].title</code></td><td>string</td><td>Название задачи.</td></tr>
+          <tr><td><code>tasks[].ownerId</code></td><td>string|null</td><td>ID владельца из <code>entities.people</code>.</td></tr>
+          <tr><td><code>tasks[].groupId</code></td><td>string|null</td><td>ID группы из <code>entities.groups</code>.</td></tr>
+          <tr><td><code>tasks[].status</code></td><td>string</td><td>Нормализованный статус задачи.</td></tr>
+          <tr><td><code>tasks[].date.start/end/nextDue</code></td><td>date|null</td><td>Ключевые даты задачи в формате <code>YYYY-MM-DD</code>.</td></tr>
+          <tr><td><code>tasks[].tags</code></td><td>array</td><td>Теги задачи.</td></tr>
+          <tr><td><code>tasks[].hash</code></td><td>string|null</td><td>Резерв под hash задачи для инкрементальных обновлений.</td></tr>
+          <tr><td><code>tasks[].revision</code></td><td>string|int|null</td><td>Резерв под версию/ревизию задачи.</td></tr>
+          <tr><td><code>tasks[].links</code></td><td>object</td><td>Ссылки на self endpoint и source row (если доступно).</td></tr>
+        </tbody>
+      </table>
     </div>
     <div class="card">
       <h2>Пример запроса</h2>
       <pre>GET /api/v2/frontend?statuses=work,pre_done&limit=100&include_people=true</pre>
+    </div>
+    <div class="card">
+      <h2>Минимальный пример ответа</h2>
+      <pre>{
+  "meta": {"artifact": "dtm_frontend_api_v2", "contractVersion": "2.0.0"},
+  "filters": {"statuses": ["work", "pre_done"], "designer": "", "limit": 100, "includePeople": true},
+  "summary": {"tasksReturned": 0, "peopleReturned": 0, "groupsReturned": 0},
+  "entities": {"people": [], "groups": [], "tags": [], "enums": {"status": {}, "statusGroups": {}}},
+  "tasks": []
+}</pre>
     </div>
   </div>
 </body>
@@ -646,6 +808,24 @@ def _handle_frontend_api_v2_if_requested(event: dict[str, Any], is_http_event: b
     return _json_response(200, payload)
 
 
+def _handle_api_root_if_requested(event: dict[str, Any], is_http_event: bool) -> dict[str, Any] | None:
+    if not is_http_event:
+        return None
+    method = _http_method(event) or "GET"
+    if method == "ANY":
+        method = "GET"
+    if method != "GET":
+        return None
+    path = _normalize_path(_http_path(event))
+    if path not in {"/"}:
+        return None
+    params = _query_params(event)
+    as_json = str(params.get("format", "")).strip().lower() == "json"
+    if FRONTEND_API_DEFAULT_VERSION == "v2":
+        return _json_response(200, _frontend_api_v2_doc()) if as_json else _html_response(200, _frontend_api_v2_doc_html())
+    return _json_response(200, _frontend_api_doc()) if as_json else _html_response(200, _frontend_api_doc_html())
+
+
 async def handler(event: Any, _: Any) -> dict[str, Any]:
     """Yandex Cloud handler."""
     request_payload, is_http_event = _extract_payload(event)
@@ -660,6 +840,10 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
             "statusCode": 200,
             "body": "!GROUP_QUERY_OK!",
         }
+
+    root_response = _handle_api_root_if_requested(event if isinstance(event, dict) else {}, is_http_event)
+    if root_response is not None:
+        return root_response
 
     frontend_v2_response = _handle_frontend_api_v2_if_requested(event if isinstance(event, dict) else {}, is_http_event)
     if frontend_v2_response is not None:
