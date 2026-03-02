@@ -7,6 +7,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-218 - API HTTP method fallback hotfix (no-op to frontend route fix).
 - [DONE] DTM-217 - Lockbox YDB/rollout resync and required-key verification.
 - [DONE] DTM-216 - YDB adapter + rollout switches + lockbox/deploy wiring.
 - [DONE] DTM-214 - M5 read-model publication path and build handler wiring.
@@ -27,11 +28,12 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 
 ## Stage 21 Estimate (Dynamic)
-- Baseline estimate: 18 tasks.
-- Done: 18
+- Baseline estimate: 19 tasks.
+- Done: 19
 - Remaining: 0
 
 ## Done (Latest)
+- [DONE] DTM-218 - API HTTP method fallback hotfix (no-op to frontend route fix).
 - [DONE] DTM-217 - Lockbox YDB/rollout resync and required-key verification.
 - [DONE] DTM-216 - YDB adapter + rollout switches + lockbox/deploy wiring.
 - [DONE] DTM-214 - M5 read-model publication path and build handler wiring.
@@ -65,7 +67,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 
 ## Active Task Files
-- `agile/tasks/stage_20_plus/DTM-217_stage21_lockbox-ydb-rollout-resync-and-verify.md`
+- `agile/tasks/stage_20_plus/DTM-218_stage21_api-http-method-fallback-hotfix.md`
 
 ## Task Folder Structure
 - `agile/tasks/stage_00_09/` - stage 0-9 execution tasks.

@@ -102,8 +102,17 @@ def _http_method(event: dict[str, Any]) -> str:
     if isinstance(request_context, dict):
         http_ctx = request_context.get("http")
         if isinstance(http_ctx, dict):
-            return str(http_ctx.get("method", "")).strip().upper()
-    return str(event.get("httpMethod", "")).strip().upper()
+            method = str(http_ctx.get("method", "")).strip().upper()
+            if method:
+                return method
+        method = str(request_context.get("httpMethod", "")).strip().upper()
+        if method:
+            return method
+    for key in ("httpMethod", "method", "requestMethod"):
+        method = str(event.get(key, "")).strip().upper()
+        if method:
+            return method
+    return ""
 
 
 def _query_params(event: dict[str, Any]) -> dict[str, Any]:
@@ -318,6 +327,10 @@ def _handle_frontend_api_if_requested(event: dict[str, Any], is_http_event: bool
         return None
     path = _normalize_path(_http_path(event))
     method = _http_method(event)
+    if not method:
+        # Some API Gateway integrations omit explicit HTTP method in event payload.
+        # Browser/API usage for frontend endpoint is read-only GET.
+        method = "GET"
     if method != "GET":
         return None
 
