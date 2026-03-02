@@ -13,6 +13,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
+- [IN PROGRESS] DTM-224 - DB migration v2: normalized YDB operational tables + readmodel snapshot path.
 - [BLOCKED] DTM-223 - Frontend API v2 + shared task query contract across API/render/reminder done in code; cloud verification pending manual test deploy.
 - [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
 - [DONE] DTM-221 - Frontend API event-shape hardening + Actions requirements split.
@@ -38,9 +39,9 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 
 ## Stage 21 Estimate (Dynamic)
-- Baseline estimate: 23 tasks.
+- Baseline estimate: 24 tasks.
 - Done: 22
-- Remaining: 1
+- Remaining: 2
 
 ## Done (Latest)
 - [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
@@ -81,6 +82,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [BLOCKED] DTM-223 - cloud verification pending same manual test deploy.
 
 ## Next 3-5 Tasks (Groomed)
+- [TODO] DTM-224 - Cloud smoke for readmodel snapshot path (sync -> build readmodel -> API v2 one-query fetch).
 - [TODO] DTM-219 - Deploy DTM-218 fix to test contour and verify API domain response.
 - [TODO] DTM-220 - Deploy DTM-220 fix to test contour and verify API domain response.
 - [TODO] DTM-221 - Deploy DTM-221 fix to test contour and verify API domain response.
@@ -94,6 +96,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - Notifications: in progress (delivery logic works; needs contour smoke evidence under current rollout switches).
 
 ## Active Task Files
+- `agile/tasks/stage_20_plus/DTM-224_stage21_db-migration-v2-operational-and-readmodel-store.md`
 - `agile/tasks/stage_20_plus/DTM-223_stage21_frontend-api-v2-contract-and-routing-hardening.md`
 
 ## Task Folder Structure
