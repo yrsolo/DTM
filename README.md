@@ -30,6 +30,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - YDB schema and DB rollout plan:
   - `docs/db/schema.md`
   - `docs/db/migration-plan.md`
+  - `docs/evidence_db_migration_v2.md`
 - Data contracts (raw/normalized/read-model):
   - `docs/contracts/data-contracts.md`
 - Engineering standards:

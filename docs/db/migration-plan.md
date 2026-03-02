@@ -5,10 +5,13 @@
 - `READMODEL_SOURCE=legacy|ydb`
 - `NOTIFY_SOURCE=legacy|ydb`
 - `RENDER_SOURCE=legacy|ydb`
+- `LEGACY_BLOB_WRITE=0|1` (default `0`)
+- `YDB_MIGRATE_ON_START=0|1` (default `0`, keep off in prod hot path)
 
 ## Stage Order
 
 ### Stage 1: Dual-write baseline
+- Run one-time schema init via `RUN_MODE=db_migrate`.
 - Enable `STORE_MODE=dual_write`.
 - Keep read paths on legacy.
 - Verify:
@@ -36,7 +39,7 @@
 
 ## Safety Notes
 - Use bounded retries and backoff for `RESOURCE_EXHAUSTED`.
-- Keep schema creation idempotent (`ensure_tables`).
+- Keep schema creation idempotent (`ensure_tables`) but execute it only in explicit migrate mode (or controlled non-prod runs).
 - Keep cloud verification evidence in sprint/task logs before promotion to prod.
 - Runtime note:
   - Timer flow triggers migration pipeline (`sync_state` + operational + readmodel), and transient YDB exhaustion is logged without stopping legacy render path.

@@ -3,11 +3,18 @@
 from __future__ import annotations
 
 import os
+import random
 import time
 from dataclasses import dataclass
 from typing import Any, Callable
 from urllib.parse import urlsplit
 
+from config.constants import (
+    YDB_EXHAUSTED_BASE_BACKOFF_SECONDS,
+    YDB_EXHAUSTED_JITTER_RATIO,
+    YDB_EXHAUSTED_MAX_ATTEMPTS,
+    YDB_EXHAUSTED_MAX_BACKOFF_SECONDS,
+)
 
 def normalize_endpoint(endpoint: str) -> str:
     """Strip DSN query tail and keep plain endpoint for SDK."""
@@ -103,16 +110,31 @@ class YdbClient:
     def _run(self, call: Callable[[Any], Any]) -> Any:
         self.stats.ydb_queries_count += 1
         started = time.perf_counter()
-        try:
-            result = self._session_pool.retry_operation_sync(call, retry_settings=self._retry_settings)
-            self.stats.duration_ms += int((time.perf_counter() - started) * 1000)
-            return result
-        except Exception as exc:
-            self.stats.duration_ms += int((time.perf_counter() - started) * 1000)
-            text = str(exc).lower()
-            if "resourceexhausted" in text or "resource_exhausted" in text:
-                self.stats.error_code = "ydb_resource_exhausted"
-            else:
-                self.stats.error_code = "ydb_error"
-            raise
-
+        self.stats.error_code = ""
+        for attempt in range(1, YDB_EXHAUSTED_MAX_ATTEMPTS + 1):
+            try:
+                result = self._session_pool.retry_operation_sync(call, retry_settings=self._retry_settings)
+                self.stats.duration_ms += int((time.perf_counter() - started) * 1000)
+                return result
+            except Exception as exc:
+                text = str(exc).lower()
+                is_exhausted = "resourceexhausted" in text or "resource_exhausted" in text
+                self.stats.error_code = "ydb_resource_exhausted" if is_exhausted else "ydb_error"
+                if not is_exhausted or attempt >= YDB_EXHAUSTED_MAX_ATTEMPTS:
+                    self.stats.duration_ms += int((time.perf_counter() - started) * 1000)
+                    raise
+                base_backoff = min(
+                    YDB_EXHAUSTED_MAX_BACKOFF_SECONDS,
+                    YDB_EXHAUSTED_BASE_BACKOFF_SECONDS * (2 ** (attempt - 1)),
+                )
+                jitter = base_backoff * YDB_EXHAUSTED_JITTER_RATIO * random.random()
+                sleep_seconds = base_backoff + jitter
+                print(
+                    "ydb_backoff "
+                    f"attempt={attempt} "
+                    f"sleep_seconds={sleep_seconds:.3f} "
+                    f"error_code={self.stats.error_code}"
+                )
+                time.sleep(sleep_seconds)
+        self.stats.duration_ms += int((time.perf_counter() - started) * 1000)
+        raise RuntimeError("YDB execution failed after retry loop")

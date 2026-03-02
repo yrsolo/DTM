@@ -98,6 +98,10 @@ class YdbSyncService:
                 {
                     "task_id": task_id,
                     "title": str(task.get("title", task.get("name", ""))).strip(),
+                    "brand": str(task.get("brand", "")).strip(),
+                    "format_": str(task.get("format_", "")).strip(),
+                    "customer": str(task.get("customer", "")).strip(),
+                    "raw_timing": str(task.get("raw_timing", "")).strip(),
                     "owner_id": str(task.get("owner_id", task.get("designer", ""))).strip(),
                     "group_id": str(task.get("group_id", task.get("project_name", ""))).strip(),
                     "status": str(task.get("status", task.get("color_status", "unknown"))).strip().lower() or "unknown",

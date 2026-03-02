@@ -8,6 +8,7 @@ from pathlib import Path
 
 from config import (
     KEY_JSON,
+    LEGACY_BLOB_WRITE,
     MIGRATION_ENABLE_SOURCE_HASH_GATE,
     MIGRATION_HASH_GATE_STATE_FILE,
     MIGRATION_STORE_FILE,
@@ -15,6 +16,7 @@ from config import (
     RENDER_SOURCE,
     STORE_MODE,
     RUNTIME_ENV,
+    YDB_MIGRATE_ON_START,
     YDB_DATABASE,
     YDB_ENDPOINT,
     SHEET_INFO,
@@ -26,6 +28,8 @@ from core.use_cases import resolve_run_mode, run_planner_use_case
 from src.adapters.store_ydb import StoreTaskRepository, build_operational_store
 from src.adapters.ydb.operational_repo import OperationalTaskRepo
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
+from src.adapters.ydb.schema import ensure_tables
+from src.adapters.ydb.client import YdbClient
 from src.services.readmodel_builder import FrontendReadmodelBuilderService
 from src.services.sync_service import YdbSyncService
 from src.services.sync.hash_basis import build_hash_basis
@@ -103,6 +107,10 @@ def _task_to_operational_payload(task) -> dict[str, object]:
     task_hash_basis = {
         "id": str(task.id),
         "name": task.name,
+        "brand": task.brand,
+        "format_": task.format_,
+        "project_name": task.project_name,
+        "customer": task.customer,
         "designer": task.designer,
         "status": task.color_status,
         "raw_timing": task.raw_timing,
@@ -115,6 +123,10 @@ def _task_to_operational_payload(task) -> dict[str, object]:
     return {
         "task_id": str(task.id),
         "title": task.name,
+        "brand": task.brand,
+        "format_": task.format_,
+        "customer": task.customer,
+        "raw_timing": task.raw_timing,
         "owner_id": task.designer,
         "group_id": task.project_name,
         "status": task.color_status,
@@ -186,6 +198,20 @@ async def main(**kwargs):
         mock_external = mode == "test"
     print(f"{mode=} {dry_run=} {mock_external=}")
 
+    if mode == "db_migrate":
+        client = YdbClient(endpoint=YDB_ENDPOINT, database=YDB_DATABASE)
+        ensure_tables(client)
+        print("db_migrate_done=true")
+        return {
+            "mode": "db_migrate",
+            "summary": {
+                "db_migrate_done": True,
+                "ydb_queries_count": client.stats.ydb_queries_count,
+                "ydb_duration_ms": client.stats.duration_ms,
+                "ydb_error_code": client.stats.error_code,
+            },
+        }
+
     dependencies = build_planner_dependencies(
         KEY_JSON,
         SHEET_INFO,
@@ -237,9 +263,14 @@ async def main(**kwargs):
             )
 
     quality_report = await run_planner_use_case(planner, mode, allow_sync=allow_sync)
+    tasks = source_task_repository.get_all_tasks()
 
-    if STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"} and mode in {"timer", "test", "sync-only"} and allow_sync:
-        tasks = source_task_repository.get_all_tasks()
+    if (
+        LEGACY_BLOB_WRITE
+        and STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"}
+        and mode in {"timer", "test", "sync-only"}
+        and allow_sync
+    ):
         records = [_task_to_store_record(task) for task in tasks]
         store = build_operational_store(
             STORE_MODE,
@@ -252,20 +283,27 @@ async def main(**kwargs):
         print(
             "migration_store_write="
             f"store_mode={STORE_MODE} "
+            "write_path=dual_write_legacy "
             f"store_file={MIGRATION_STORE_FILE} "
             f"records={len(records)} "
             f"result={store_result}"
         )
+    elif STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"} and mode in {"timer", "test", "sync-only"}:
+        print("migration_store_write=skipped write_path=normalized_only reason=LEGACY_BLOB_WRITE_disabled")
+
+    if STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"} and mode in {"timer", "test", "sync-only"} and allow_sync:
+        sync_deferred = False
+        readmodel_deferred = False
+        source_id = (
+            "sheet:"
+            f"{source_task_repository.source_sheet_info.spreadsheet_name}:"
+            f"{source_task_repository.source_sheet_info.get_sheet_name('tasks')}:A1:Z2000"
+        )
         try:
-            source_id = (
-                "sheet:"
-                f"{source_task_repository.source_sheet_info.spreadsheet_name}:"
-                f"{source_task_repository.source_sheet_info.get_sheet_name('tasks')}:A1:Z2000"
-            )
             operational_repo = OperationalTaskRepo(
                 endpoint=YDB_ENDPOINT,
                 database=YDB_DATABASE,
-                ensure_schema=True,
+                ensure_schema=YDB_MIGRATE_ON_START,
             )
             sync_service = YdbSyncService(operational_repo)
             source_values = _read_source_range_values(source_task_repository)
@@ -286,32 +324,51 @@ async def main(**kwargs):
                 f"ydb_queries_count={sync_result.ydb_queries_count} "
                 f"error_code={sync_result.ydb_error_code}"
             )
-            readmodel_repo = FrontendReadmodelRepo(
-                endpoint=YDB_ENDPOINT,
-                database=YDB_DATABASE,
-                ensure_schema=False,
-            )
-            readmodel_builder = FrontendReadmodelBuilderService(
-                operational_repo=operational_repo,
-                readmodel_repo=readmodel_repo,
-                source_id=source_id,
-                env_name=RUNTIME_ENV,
-                source_sheet_name=source_task_repository.source_sheet_info.spreadsheet_name,
-            )
-            readmodel_result = readmodel_builder.run(readmodel_id="frontend_v2:default")
-            _safe_print(
-                "migration_readmodel_build="
-                f"readmodel_id={readmodel_result.readmodel_id} "
-                f"source_hash={readmodel_result.source_hash} "
-                f"changed={readmodel_result.changed} "
-                f"tasks_count={readmodel_result.tasks_count} "
-                f"ydb_queries_count={readmodel_result.ydb_queries_count}"
-            )
         except Exception as exc:
+            sync_deferred = True
             safe_error = str(exc).encode("ascii", "backslashreplace").decode("ascii")
             _safe_print(f"migration_ydb_pipeline_error={safe_error}")
             safe_trace = traceback.format_exc().encode("ascii", "backslashreplace").decode("ascii")
             _safe_print(f"migration_ydb_pipeline_trace={safe_trace}")
+        if not sync_deferred:
+            try:
+                operational_repo = OperationalTaskRepo(
+                    endpoint=YDB_ENDPOINT,
+                    database=YDB_DATABASE,
+                    ensure_schema=False,
+                )
+                readmodel_repo = FrontendReadmodelRepo(
+                    endpoint=YDB_ENDPOINT,
+                    database=YDB_DATABASE,
+                    ensure_schema=False,
+                )
+                readmodel_builder = FrontendReadmodelBuilderService(
+                    operational_repo=operational_repo,
+                    readmodel_repo=readmodel_repo,
+                    source_id=source_id,
+                    env_name=RUNTIME_ENV,
+                    source_sheet_name=source_task_repository.source_sheet_info.spreadsheet_name,
+                )
+                readmodel_result = readmodel_builder.run(readmodel_id="frontend_v2:default")
+                _safe_print(
+                    "migration_readmodel_build="
+                    f"readmodel_id={readmodel_result.readmodel_id} "
+                    f"source_hash={readmodel_result.source_hash} "
+                    f"changed={readmodel_result.changed} "
+                    f"tasks_count={readmodel_result.tasks_count} "
+                    f"ydb_queries_count={readmodel_result.ydb_queries_count}"
+                )
+            except Exception as exc:
+                readmodel_deferred = True
+                safe_error = str(exc).encode("ascii", "backslashreplace").decode("ascii")
+                _safe_print(f"migration_readmodel_error={safe_error}")
+                safe_trace = traceback.format_exc().encode("ascii", "backslashreplace").decode("ascii")
+                _safe_print(f"migration_readmodel_trace={safe_trace}")
+        print(
+            "migration_defer_status "
+            f"sync_deferred={sync_deferred} "
+            f"readmodel_deferred={readmodel_deferred}"
+        )
     _print_quality_report(quality_report)
     return quality_report
 

@@ -10,6 +10,10 @@ def _ddl_tasks(table_name: str) -> str:
     CREATE TABLE `{table_name}` (
         task_id Utf8,
         title Utf8,
+        brand Utf8,
+        format_ Utf8,
+        customer Utf8,
+        raw_timing Utf8,
         owner_id Utf8,
         group_id Utf8,
         status Utf8,
@@ -94,4 +98,3 @@ def ensure_tables(
             if "exists" in text or "already" in text:
                 continue
             raise
-

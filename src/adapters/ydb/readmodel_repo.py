@@ -43,7 +43,7 @@ class FrontendReadmodelRepo:
         tasks_table: str = "dtm_tasks",
         milestones_table: str = "dtm_task_milestones",
         sync_state_table: str = "dtm_sync_state",
-        ensure_schema: bool = True,
+        ensure_schema: bool = False,
     ) -> None:
         self.client = YdbClient(endpoint=endpoint, database=database)
         self.readmodel_table = readmodel_table
