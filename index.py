@@ -128,6 +128,14 @@ def _json_response(status_code: int, payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _html_response(status_code: int, html: str) -> dict[str, Any]:
+    return {
+        "statusCode": status_code,
+        "headers": {"Content-Type": "text/html; charset=utf-8"},
+        "body": html,
+    }
+
+
 def _resolve_trigger_mode(event: Any) -> str:
     try:
         messages = event.get("messages")
@@ -211,20 +219,119 @@ def _frontend_api_doc() -> dict[str, Any]:
     }
 
 
+def _frontend_api_doc_html() -> str:
+    return """<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DTM Frontend API</title>
+  <style>
+    :root { color-scheme: light; }
+    body { margin: 0; font-family: Segoe UI, Arial, sans-serif; background: #f6f8fb; color: #17212b; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 24px; }
+    .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 16px rgba(0,0,0,.06); margin-bottom: 16px; }
+    h1, h2, h3 { margin: 0 0 10px; }
+    p { margin: 8px 0; line-height: 1.45; }
+    code { background: #eef2f7; padding: 2px 6px; border-radius: 6px; }
+    pre { margin: 0; padding: 12px; background: #0f172a; color: #e2e8f0; border-radius: 10px; overflow: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; border-bottom: 1px solid #e5e7eb; padding: 8px; vertical-align: top; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>DTM Frontend API</h1>
+      <p>Версия контракта: <code>1.0.0</code></p>
+      <p>Назначение: отдать фронту задачи, дедлайны и людей в одном JSON.</p>
+    </div>
+    <div class="card">
+      <h2>Endpoints</h2>
+      <table>
+        <thead><tr><th>Method</th><th>Path</th><th>Назначение</th></tr></thead>
+        <tbody>
+          <tr><td>GET</td><td><code>/api/v1/frontend</code></td><td>Основной payload для UI</td></tr>
+          <tr><td>GET</td><td><code>/api/v1/read-model</code></td><td>Alias к <code>/api/v1/frontend</code></td></tr>
+          <tr><td>GET</td><td><code>/api/v1/frontend/doc</code></td><td>Эта страница</td></tr>
+          <tr><td>GET</td><td><code>/api/v1/frontend/doc?format=json</code></td><td>JSON-док с форматом</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Query params</h2>
+      <table>
+        <thead><tr><th>Param</th><th>Тип</th><th>Default</th><th>Описание</th></tr></thead>
+        <tbody>
+          <tr><td><code>statuses</code></td><td>string</td><td><code>work,pre_done</code></td><td>Фильтр статусов через запятую</td></tr>
+          <tr><td><code>designer</code></td><td>string</td><td><code></code></td><td>Фильтр по имени дизайнера (без учета регистра)</td></tr>
+          <tr><td><code>limit</code></td><td>int</td><td><code>200</code></td><td>Лимит задач, диапазон 1..1000</td></tr>
+          <tr><td><code>include_people</code></td><td>bool</td><td><code>true</code></td><td>Добавлять блок <code>people</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Пример запроса</h2>
+      <pre>GET /api/v1/frontend?statuses=work,pre_done&amp;limit=100&amp;include_people=true</pre>
+    </div>
+    <div class="card">
+      <h2>Ключевые поля ответа</h2>
+      <pre>{
+  "artifact": "dtm_frontend_api_payload",
+  "generated_at_utc": "2026-03-02T19:00:00Z",
+  "source": {"env": "test", "source_sheet_name": "Спонсорские ТНТ"},
+  "filters": {"statuses": ["work","pre_done"], "designer": "", "limit": 100, "include_people": true},
+  "summary": {"tasks_total": 0, "tasks_filtered": 0, "tasks_returned": 0, "people_total": 0},
+  "tasks": [{"id": "...", "name": "...", "designer": "...", "next_due_date": "YYYY-MM-DD|null"}],
+  "deadlines": [{"date": "YYYY-MM-DD", "task_id": "...", "task_name": "..."}],
+  "people": [{"id": "...", "name": "...", "position": "..."}]
+}</pre>
+    </div>
+  </div>
+</body>
+</html>
+"""
+
+
+def _normalize_path(path: str) -> str:
+    value = str(path or "").strip()
+    if not value:
+        return ""
+    if "?" in value:
+        value = value.split("?", 1)[0]
+    if not value.startswith("/"):
+        value = "/" + value
+    if len(value) > 1 and value.endswith("/"):
+        value = value[:-1]
+    return value
+
+
+def _path_matches(path: str, candidates: set[str]) -> bool:
+    normalized = _normalize_path(path)
+    if normalized in candidates:
+        return True
+    return any(normalized.endswith(candidate) for candidate in candidates)
+
+
 def _handle_frontend_api_if_requested(event: dict[str, Any], is_http_event: bool) -> dict[str, Any] | None:
     if not is_http_event:
         return None
-    path = _http_path(event)
+    path = _normalize_path(_http_path(event))
     method = _http_method(event)
     if method != "GET":
         return None
 
-    if path in {"/", "/api", "/api/v1", "/api/v1/frontend/doc", "/api/v1/read-model/doc"}:
-        return _json_response(200, _frontend_api_doc())
-    if path not in {"/api/v1/frontend", "/api/v1/read-model"}:
+    params = _query_params(event)
+    doc_paths = {"/", "/api", "/api/v1", "/api/v1/frontend/doc", "/api/v1/read-model/doc"}
+    data_paths = {"/api/v1/frontend", "/api/v1/read-model"}
+
+    if _path_matches(path, doc_paths):
+        if str(params.get("format", "")).strip().lower() == "json":
+            return _json_response(200, _frontend_api_doc())
+        return _html_response(200, _frontend_api_doc_html())
+    if not _path_matches(path, data_paths):
         return None
 
-    params = _query_params(event)
     statuses = _parse_statuses(params.get("statuses", "work,pre_done"))
     designer = str(params.get("designer", "")).strip()
     limit = _parse_limit(params.get("limit", "200"))

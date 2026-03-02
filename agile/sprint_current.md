@@ -7,17 +7,19 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-203 - API doc endpoint rendered as HTML mini-page and robust gateway path matching.
 - [DONE] DTM-202 - Runtime trigger gate + release workflow source-of-truth hotfix.
 - [DONE] DTM-200 - Frontend API endpoint and request/response contract doc.
 - [DONE] DTM-199 - Stage 21 API gateway live bind smoke for test/prod domains.
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 
 ## Stage 21 Estimate (Dynamic)
-- Baseline estimate: 4 tasks.
-- Done: 4
+- Baseline estimate: 5 tasks.
+- Done: 5
 - Remaining: 0
 
 ## Done (Latest)
+- [DONE] DTM-203 - API doc endpoint rendered as HTML mini-page and robust gateway path matching.
 - [DONE] DTM-202 - Runtime trigger gate + release workflow source-of-truth hotfix.
 - [DONE] DTM-199 - Stage 21 API gateway live bind smoke for test/prod domains.
 - [DONE] DTM-200 - Frontend API endpoint and request/response contract doc.
