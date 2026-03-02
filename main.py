@@ -1,11 +1,25 @@
 """Основной файл для запуска планировщика задач."""
 
 import asyncio
+from pathlib import Path
 
-from config import KEY_JSON, SHEET_INFO, TRIGGERS
+from config import (
+    KEY_JSON,
+    MIGRATION_ENABLE_SOURCE_HASH_GATE,
+    MIGRATION_HASH_GATE_STATE_FILE,
+    MIGRATION_STORE_FILE,
+    STORE_MODE,
+    YDB_DATABASE,
+    YDB_ENDPOINT,
+    SHEET_INFO,
+    TRIGGERS,
+)
 from core.bootstrap import build_planner_dependencies
 from core.planner import GoogleSheetPlanner
 from core.use_cases import resolve_run_mode, run_planner_use_case
+from src.adapters.store_ydb import build_operational_store
+from src.services.sync.hash_basis import build_hash_basis
+from src.services.sync.hash_gate import evaluate_hash_gate, save_last_hash
 
 
 def _print_quality_report(report):
@@ -27,6 +41,29 @@ def _print_quality_report(report):
         f"reminder_delivery_rate={summary.get('reminder_delivery_rate')} "
         f"reminder_failure_rate={summary.get('reminder_failure_rate')}"
     )
+
+
+def _task_to_store_record(task) -> dict[str, object]:
+    timing_rows = []
+    for dt, stages in sorted(task.timing.items(), key=lambda item: item[0]):
+        timing_rows.append(
+            {
+                "date": dt.date().isoformat(),
+                "stages": list(stages),
+            }
+        )
+    return {
+        "task_id": str(task.id),
+        "name": task.name,
+        "brand": task.brand,
+        "format_": task.format_,
+        "project_name": task.project_name,
+        "customer": task.customer,
+        "designer": task.designer,
+        "status": task.status,
+        "raw_timing": task.raw_timing,
+        "timing": timing_rows,
+    }
 
 
 async def main(**kwargs):
@@ -60,7 +97,58 @@ async def main(**kwargs):
         dependencies=dependencies,
     )
 
-    quality_report = await run_planner_use_case(planner, mode)
+    allow_sync = True
+    if MIGRATION_ENABLE_SOURCE_HASH_GATE and mode in {"timer", "test", "sync-only"}:
+        rows = []
+        for task in dependencies.task_repository.get_all_tasks():
+            rows.append(
+                {
+                    "id": task.id,
+                    "brand": task.brand,
+                    "format_": task.format_,
+                    "project_name": task.project_name,
+                    "customer": task.customer,
+                    "designer": task.designer,
+                    "raw_timing": task.raw_timing,
+                    "status": task.status,
+                }
+            )
+        basis = build_hash_basis(rows)
+        state_file = Path(MIGRATION_HASH_GATE_STATE_FILE)
+        decision = evaluate_hash_gate(source_payload=basis, state_file=state_file)
+        print(
+            "source_hash_gate="
+            f"source_hash={decision.source_hash} "
+            f"previous_hash={decision.previous_hash} "
+            f"should_sync={decision.should_sync}"
+        )
+        allow_sync = decision.should_sync
+        if decision.should_sync:
+            save_last_hash(
+                state_file=state_file,
+                source_id=SHEET_INFO.spreadsheet_name,
+                source_hash=decision.source_hash,
+            )
+
+    quality_report = await run_planner_use_case(planner, mode, allow_sync=allow_sync)
+
+    if STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"} and mode in {"timer", "test", "sync-only"} and allow_sync:
+        tasks = dependencies.task_repository.get_all_tasks()
+        records = [_task_to_store_record(task) for task in tasks]
+        store = build_operational_store(
+            STORE_MODE,
+            ydb_endpoint=YDB_ENDPOINT,
+            ydb_database=YDB_DATABASE,
+            json_file_path=MIGRATION_STORE_FILE,
+        )
+        store_result = store.upsert_tasks(records)
+        print(
+            "migration_store_write="
+            f"store_mode={STORE_MODE} "
+            f"store_file={MIGRATION_STORE_FILE} "
+            f"records={len(records)} "
+            f"result={store_result}"
+        )
     _print_quality_report(quality_report)
     return quality_report
 

@@ -20,6 +20,18 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 ## Documentation entrypoint
 - Start with `doc/00_documentation_map.md` for readable navigation and recommended read order.
 
+## Architecture & Migration Plan
+- Target architecture (layered, strangler migration):
+  - `docs/architecture/target-architecture.md`
+- Stage-by-stage migration plan (M1..M8):
+  - `docs/migration/plan.md`
+- Atomic tasks by stage:
+  - `docs/migration/tasks.md`
+- Data contracts (raw/normalized/read-model):
+  - `docs/contracts/data-contracts.md`
+- Engineering standards:
+  - `docs/standards/engineering-standards.md`
+
 ## Tech stack
 - Python
 - Google Sheets / Drive API
@@ -56,6 +68,28 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
     - `python agent/read_model_contract_compat_smoke.py`
     - `python agent/schema_snapshot_smoke.py`
 - Manual production release workflow: `.github/workflows/release_yc_function_prod.yml`.
+
+### Migration checklist (current)
+- [x] Legacy runtime is stable and deployed in test/prod contours.
+- [x] API/read-model contract baseline exists for current frontend integration.
+- [x] Migration documentation package added (`docs/architecture|migration|contracts|standards`).
+- [x] M1-M3 scaffolding added under `src/` (core models/normalize + sync hash gate).
+- [x] M1 normalize fixtures and unit tests added (`tests/core/normalize`, `tests/fixtures/normalize`).
+- [x] M3 optional runtime source hash gate wiring added (feature-flagged).
+- [x] M4 optional dual-write to JSON operational store added (feature-flagged).
+- [x] Rollout switches introduced: `STORE_MODE`, `READMODEL_SOURCE`, optional `NOTIFY_SOURCE`/`RENDER_SOURCE`.
+- [ ] M1 wired to current runtime path.
+- [ ] M2 sync/render split wired to handlers.
+- [ ] M3 source-hash gate enabled in production flow.
+
+### Store rollout policy
+- `STORE_MODE=legacy|dual_write|ydb_primary|ydb_only`
+- `READMODEL_SOURCE=legacy|ydb`
+- Optional: `NOTIFY_SOURCE`, `RENDER_SOURCE` (`legacy|ydb`)
+- Prod order:
+  1. `STORE_MODE=dual_write`
+  2. switch readmodel/notify sources to `ydb`
+  3. `STORE_MODE=ydb_primary`, then `STORE_MODE=ydb_only`
 
 ## Local run (current)
 - Preferred: `run_timer.cmd` (uses project virtualenv and runs timer mode).
@@ -132,13 +166,15 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `YC_CLOUD_FUNCTION_PROD_NAME`
   - `YC_CLOUD_FUNCTION_PROD_ID`
   - `YC_LOCKBOX_SECRET_ID`
-  - `SOURCE_SHEET_NAME`
-  - `API_DOMAIN_TEST`
-  - `API_DOMAIN_PROD`
+- Runtime app keys (including `SOURCE_SHEET_NAME`, `API_DOMAIN_*`, `YDB_*`, `STORE_MODE`, `READMODEL_SOURCE`, `NOTIFY_SOURCE`, `RENDER_SOURCE`) are read from Lockbox secret payload.
 - Full setup guide:
   - `doc/ops/stage9_main_autodeploy_setup.md`
 - Direct cloud endpoint smoke invoke:
   - `.venv\Scripts\python.exe agent\invoke_function_smoke.py --url <function_url> --healthcheck`
+- Migration M3 hash-gate smoke:
+  - `.venv\Scripts\python.exe agent\sync_hash_gate_smoke.py`
+- Migration M2 parity smoke (legacy-style date parse vs new normalize):
+  - `.venv\Scripts\python.exe agent\normalize_parity_smoke.py`
 - Lockbox sync helper for full `.env` payload:
   - `.venv\Scripts\python.exe agent\sync_lockbox_from_env.py --secret-name DTM`
 - Prod release prep helper (validates required prod keys + syncs Lockbox):

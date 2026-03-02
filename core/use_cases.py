@@ -52,9 +52,13 @@ def resolve_run_mode(
     return "test"
 
 
-async def run_planner_use_case(planner: PlannerRuntimeProtocol, mode: str) -> dict[str, Any]:
+async def run_planner_use_case(
+    planner: PlannerRuntimeProtocol,
+    mode: str,
+    allow_sync: bool = True,
+) -> dict[str, Any]:
     """Execute planner branches for the resolved mode."""
-    if mode in {"timer", "test", "sync-only"}:
+    if mode in {"timer", "test", "sync-only"} and allow_sync:
         start_time = pd.Timestamp.now()
         planner.update()
         planner.task_to_calendar()
@@ -62,6 +66,8 @@ async def run_planner_use_case(planner: PlannerRuntimeProtocol, mode: str) -> di
         planner.task_to_table()
         run_time = pd.Timestamp.now() - start_time
         print(f"Table update runtime: {run_time}")
+    elif mode in {"timer", "test", "sync-only"} and not allow_sync:
+        print("Sync branch skipped by source hash gate.")
 
     if mode in {"morning", "test", "reminders-only"}:
         start_time = pd.Timestamp.now()
