@@ -25,7 +25,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-191 - Stage 19 closeout and Stage 20 handoff package.
 
 ## Blocked
-- [BLOCKED] none.
+- [BLOCKED] DTM-199 - привязка `dtm-api-test.solofarm.ru` и `dtm-api.solofarm.ru` к API Gateway ожидает `ISSUED` для сертификатов `fpq8qst4i5a7kn626qoi`, `fpq7a9hcft9g03p0g4ro`.
 
 ## Next 3-5 Tasks (Groomed)
 - [TODO] DTM-199 - Stage 21 API gateway live bind smoke for test/prod domains.
