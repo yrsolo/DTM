@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import os
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
+from unittest import mock
 
 from src.adapters.store_ydb import (
     DualWriteOperationalStore,
@@ -98,6 +101,29 @@ class JsonOperationalStoreTestCase(unittest.TestCase):
         self.assertEqual(result.get("primary_result", {}).get("ok"), True)
         self.assertEqual(result.get("secondary_result"), None)
         self.assertIn("boom", str(result.get("secondary_error")))
+
+    def test_ydb_endpoint_normalization_strips_query_params(self) -> None:
+        store = YdbOperationalStore(
+            endpoint="grpcs://ydb.serverless.yandexcloud.net:2135/?database=/ru-central1/folder/db",
+            database="/ru-central1/folder/db",
+        )
+        self.assertEqual(store.endpoint, "grpcs://ydb.serverless.yandexcloud.net:2135")
+
+    def test_ydb_credentials_prioritize_sa_json(self) -> None:
+        fake_ydb = SimpleNamespace(
+            iam=SimpleNamespace(
+                ServiceAccountCredentials=SimpleNamespace(
+                    from_content=mock.Mock(return_value="from_content"),
+                    from_file=mock.Mock(return_value="from_file"),
+                )
+            ),
+            credentials_from_env_variables=mock.Mock(return_value="from_env"),
+        )
+        with mock.patch.dict(os.environ, {"YC_SA_JSON_CREDENTIALS": "{\"id\":\"x\"}"}, clear=False):
+            credentials = YdbOperationalStore._build_credentials(fake_ydb)
+        self.assertEqual(credentials, "from_content")
+        fake_ydb.iam.ServiceAccountCredentials.from_content.assert_called_once()
+        fake_ydb.credentials_from_env_variables.assert_not_called()
 
 
 if __name__ == "__main__":
