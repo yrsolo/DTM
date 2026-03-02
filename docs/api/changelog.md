@@ -9,12 +9,14 @@
   - `GET /api/v1/frontend/doc`
 - Contract is legacy-flat and kept stable for existing consumers.
 
-### v2 (new)
+### v2.0.1 (current)
 - Endpoints:
   - `GET /api/v2/frontend`
   - `GET /api/v2/frontend/doc`
 - Contract is normalized and extensible:
   - `meta + filters + summary + entities + tasks`
+  - default `tasks[].milestones[]`
+  - optional `window_start/window_end/window_mode` filtering
 
 ## Compatibility Rules
 1. v1 remains unchanged while v2 is introduced in parallel (Strangler Pattern).

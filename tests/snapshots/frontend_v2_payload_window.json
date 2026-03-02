@@ -10,7 +10,7 @@
       "sheetName": "SourceSheet",
       "sheetUrl": null
     },
-    "hash": "46933e16916726a3a9e5850173d48f62f511b9ef5a561f32347ec82ed66655b0",
+    "hash": "6b0f7d4e94745314a2b2f389a13ca2dc2546d59b1731d8f893623fbf5c6a1993",
     "features": {
       "taskHash": true,
       "taskRevision": true,
@@ -32,18 +32,18 @@
     "limit": 100,
     "include_people": true,
     "window": {
-      "enabled": false,
-      "start": null,
-      "end": null,
+      "enabled": true,
+      "start": "2026-03-01",
+      "end": "2026-03-31",
       "mode": "intersects"
     }
   },
   "summary": {
     "tasksTotal": 2,
-    "tasksReturned": 2,
+    "tasksReturned": 1,
     "peopleTotal": 2,
-    "groupsTotal": 2,
-    "milestonesTotal": 3
+    "groupsTotal": 1,
+    "milestonesTotal": 2
   },
   "entities": {
     "people": [
@@ -65,13 +65,6 @@
       }
     ],
     "groups": [
-      {
-        "id": "3f41549ff6592954",
-        "name": "Project Y",
-        "links": {
-          "self": "/api/v2/frontend/entities/groups/3f41549ff6592954"
-        }
-      },
       {
         "id": "9f33f1e54cc26a14",
         "name": "Project X",
@@ -99,7 +92,6 @@
       },
       "milestoneType": {
         "animatic": "аниматик",
-        "final": "финал",
         "storyboard": "раскадровка"
       },
       "milestoneStatus": {
@@ -139,33 +131,6 @@
         {
           "type": "animatic",
           "planned": "2026-03-11",
-          "actual": null,
-          "status": "planned"
-        }
-      ]
-    },
-    {
-      "id": "102",
-      "title": "Task Beta",
-      "ownerId": "4194979ffab99f87",
-      "groupId": "3f41549ff6592954",
-      "status": "pre_done",
-      "date": {
-        "start": "2026-04-10",
-        "end": "2026-04-20",
-        "nextDue": "2026-04-12"
-      },
-      "tags": [],
-      "hash": null,
-      "revision": null,
-      "links": {
-        "sheetRowUrl": null,
-        "self": "/api/v2/frontend/tasks/102"
-      },
-      "milestones": [
-        {
-          "type": "final",
-          "planned": "2026-04-12",
           "actual": null,
           "status": "planned"
         }

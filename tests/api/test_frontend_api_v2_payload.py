@@ -1,13 +1,15 @@
-"""Tests for frontend API v2 payload contract and snapshot stability."""
+"""Tests for frontend API v2 payload contract 2.0.1."""
 
 from __future__ import annotations
 
 import json
 import sys
 import unittest
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
+
+import pandas as pd
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
@@ -16,7 +18,8 @@ if str(ROOT_DIR) not in sys.path:
 from core.api_payload_v2 import build_frontend_api_payload_v2
 
 
-SNAPSHOT_PATH = Path(__file__).resolve().parents[1] / "snapshots" / "frontend_v2_payload.json"
+SNAPSHOT_BASE_PATH = Path(__file__).resolve().parents[1] / "snapshots" / "frontend_v2_payload.json"
+SNAPSHOT_WINDOW_PATH = Path(__file__).resolve().parents[1] / "snapshots" / "frontend_v2_payload_window.json"
 
 
 def _tasks() -> list[SimpleNamespace]:
@@ -31,9 +34,12 @@ def _tasks() -> list[SimpleNamespace]:
             format_="Banner",
             project_name="Project X",
             customer="Cust",
-            min_date=None,
-            max_date=None,
-            timing={},
+            min_date=pd.Timestamp("2026-03-02"),
+            max_date=pd.Timestamp("2026-03-15"),
+            timing={
+                pd.Timestamp("2026-03-03"): ["раскадровка"],
+                pd.Timestamp("2026-03-11"): ["аниматик"],
+            },
         ),
         SimpleNamespace(
             id=102,
@@ -45,9 +51,11 @@ def _tasks() -> list[SimpleNamespace]:
             format_="Video",
             project_name="Project Y",
             customer="Cust",
-            min_date=None,
-            max_date=None,
-            timing={},
+            min_date=pd.Timestamp("2026-04-10"),
+            max_date=pd.Timestamp("2026-04-20"),
+            timing={
+                pd.Timestamp("2026-04-12"): ["финал/сдача"],
+            },
         ),
     ]
 
@@ -75,10 +83,11 @@ class FrontendApiV2PayloadTestCase(unittest.TestCase):
         for key in ("meta", "filters", "summary", "entities", "tasks"):
             self.assertIn(key, payload)
         self.assertEqual(payload["meta"]["artifact"], "dtm_frontend_api_v2")
-        self.assertEqual(payload["meta"]["contractVersion"], "2.0.0")
+        self.assertEqual(payload["meta"]["contractVersion"], "2.0.1")
         self.assertIsInstance(payload["tasks"], list)
+        self.assertTrue(all("milestones" in item for item in payload["tasks"]))
 
-    def test_payload_matches_snapshot(self) -> None:
+    def test_milestone_type_enum_contains_only_used_types(self) -> None:
         payload = build_frontend_api_payload_v2(
             tasks=_tasks(),
             people=_people(),
@@ -90,7 +99,63 @@ class FrontendApiV2PayloadTestCase(unittest.TestCase):
             generated_at=datetime(2026, 3, 2, 20, 0, 0, tzinfo=timezone.utc),
             synced_at=datetime(2026, 3, 2, 19, 30, 0, tzinfo=timezone.utc),
         )
-        expected = json.loads(SNAPSHOT_PATH.read_text(encoding="utf-8"))
+        milestone_types = payload["entities"]["enums"]["milestoneType"]
+        self.assertIn("storyboard", milestone_types)
+        self.assertIn("animatic", milestone_types)
+        self.assertIn("final", milestone_types)
+        self.assertNotIn("draft", milestone_types)
+
+    def test_window_filter_by_task_dates(self) -> None:
+        payload = build_frontend_api_payload_v2(
+            tasks=_tasks(),
+            people=_people(),
+            env_name="test",
+            source_sheet_name="SourceSheet",
+            statuses=["work", "pre_done"],
+            limit=100,
+            include_people=True,
+            window_start=date(2026, 3, 1),
+            window_end=date(2026, 3, 31),
+            window_mode="intersects",
+            generated_at=datetime(2026, 3, 2, 20, 0, 0, tzinfo=timezone.utc),
+            synced_at=datetime(2026, 3, 2, 19, 30, 0, tzinfo=timezone.utc),
+        )
+        self.assertEqual(payload["summary"]["tasksTotal"], 2)
+        self.assertEqual(payload["summary"]["tasksReturned"], 1)
+        self.assertEqual(payload["tasks"][0]["id"], "101")
+        self.assertGreaterEqual(len(payload["tasks"][0]["milestones"]), 2)
+
+    def test_payload_matches_snapshot_default(self) -> None:
+        payload = build_frontend_api_payload_v2(
+            tasks=_tasks(),
+            people=_people(),
+            env_name="test",
+            source_sheet_name="SourceSheet",
+            statuses=["work", "pre_done"],
+            limit=100,
+            include_people=True,
+            generated_at=datetime(2026, 3, 2, 20, 0, 0, tzinfo=timezone.utc),
+            synced_at=datetime(2026, 3, 2, 19, 30, 0, tzinfo=timezone.utc),
+        )
+        expected = json.loads(SNAPSHOT_BASE_PATH.read_text(encoding="utf-8"))
+        self.assertEqual(payload, expected)
+
+    def test_payload_matches_snapshot_with_window(self) -> None:
+        payload = build_frontend_api_payload_v2(
+            tasks=_tasks(),
+            people=_people(),
+            env_name="test",
+            source_sheet_name="SourceSheet",
+            statuses=["work", "pre_done"],
+            limit=100,
+            include_people=True,
+            window_start=date(2026, 3, 1),
+            window_end=date(2026, 3, 31),
+            window_mode="intersects",
+            generated_at=datetime(2026, 3, 2, 20, 0, 0, tzinfo=timezone.utc),
+            synced_at=datetime(2026, 3, 2, 19, 30, 0, tzinfo=timezone.utc),
+        )
+        expected = json.loads(SNAPSHOT_WINDOW_PATH.read_text(encoding="utf-8"))
         self.assertEqual(payload, expected)
 
 
