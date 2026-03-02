@@ -50,6 +50,8 @@
 - 2026-03-02: Added unit tests for store repository and source switching (`tests/adapters/test_store_task_repository.py`, `tests/core/test_main_source_switch.py`).
 - 2026-03-02: Added explicit YDB auth path via `YC_SA_JSON_CREDENTIALS` (`ServiceAccountCredentials.from_content`) and endpoint normalization (strip `?database=...` from `YDB_ENDPOINT`) for local/runtime compatibility.
 - 2026-03-02: Added empty-calendar safety guard for render path when YDB has no tasks yet (`core/manager.py`) + unit test `tests/core/test_manager_calendar_empty.py`.
+- 2026-03-02: Added fail-fast YDB retry settings in adapter and removed unconditional `pause` from `run_timer.cmd` (now optional via `RUN_TIMER_PAUSE=1`) to eliminate "silent hanging" behavior.
+- 2026-03-02: Optimized YDB IO pressure: switched upsert from per-row RPC to batched `UPSERT ... FROM AS_TABLE($rows)` and added in-process task cache for `list_tasks()`/`StoreTaskRepository.get_all_tasks()` to avoid repeated reads in one run.
 
 ## Links
 - `src/adapters/store_ydb.py`
