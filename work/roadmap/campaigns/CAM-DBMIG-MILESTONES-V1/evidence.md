@@ -7,7 +7,7 @@
 
 ## Execution Log
 - campaign scaffold created (`charter.md`, `plan.md`, `evidence.md`)
-- queue seeded in `agile/backlog.md` and `agile/sprint_current.md`
+- queue seeded in `work/roadmap/backlog.md` and `work/now/tasks.md`
 - P01 schema/model alignment completed:
   - added `dtm_task_milestones_v` to YDB DDL (`src/adapters/ydb/schema.py`)
   - fixed repo contract alias `current_version` = `task_revision` (`src/adapters/ydb/operational_repo.py`)

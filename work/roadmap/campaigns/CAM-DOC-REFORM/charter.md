@@ -16,5 +16,4 @@
 ## Exit Criteria
 - `docs/README.md` is the single active map.
 - Legacy `doc/` tree is archived under `docs/archive/doc_legacy/` and replaced with deprecation stub.
-- `agile/` has minimal active files (`README.md`, `backlog.md`, `sprint_current.md`) with CAM IDs.
-
+- Process control plane is active in `work/` (`work/README.md`, `work/now/tasks.md`, `work/roadmap/backlog.md`) with CAM IDs.
