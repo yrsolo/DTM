@@ -13,6 +13,7 @@ Execute Stage 22 unification work: one DB query contract and one source-policy m
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-232 - Stage 22 tri-block smoke suite from unified query source.
 - [DONE] DTM-231 - Stage 22 production runbook for `db_migrate`, forced refresh, rollback and safety gates.
 - [DONE] DTM-230 - Source-policy cleanup (`READMODEL_SOURCE`/`NOTIFY_SOURCE`/`RENDER_SOURCE`) with one consumer matrix.
 - [DONE] DTM-229 - Unified DB query contract adapter for API/render/notify.
@@ -48,10 +49,11 @@ Execute Stage 22 unification work: one DB query contract and one source-policy m
 
 ## Stage 22 Estimate (Dynamic)
 - Baseline estimate: 6 tasks.
-- Done: 4
-- Remaining: 2
+- Done: 5
+- Remaining: 1
 
 ## Done (Latest)
+- [DONE] DTM-232 - Added deterministic tri-block parity smoke (`agent/stage22_tri_block_smoke.py`) + unit test; API/render/notify IDs match from one query source.
 - [DONE] DTM-231 - Published Stage 22 ops runbook for migrate/forced-refresh/rollback (`doc/ops/stage22_db_migrate_force_refresh_rollback_runbook.md`) and linked from active docs.
 - [DONE] DTM-230 - Unified source-policy matrix extracted to `src/services/source_policy.py`; wired into `main.py` and `index.py`; tests+timer smoke passed.
 - [DONE] DTM-229 - Shared query adapter layer (`core/task_query_adapter.py`) wired to API v1/v2 + planner + reminder; test and timer smoke passed.
@@ -96,7 +98,6 @@ Execute Stage 22 unification work: one DB query contract and one source-policy m
 - none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-232 - Stage 22 tri-block smoke suite from unified query source.
 - [TODO] DTM-233 - Stage 22 closeout and Stage 23 handoff package.
 
 ## Tri-Block Readiness Matrix (Test Contour)
@@ -105,6 +106,7 @@ Execute Stage 22 unification work: one DB query contract and one source-policy m
 - Notifications: in progress (delivery logic works; needs contour smoke evidence under current rollout switches).
 
 ## Active Task Files
+- `agile/tasks/stage_20_plus/DTM-232_stage22_tri-block-smoke-suite-unified-query-source.md`
 - `agile/tasks/stage_20_plus/DTM-231_stage22_prod-runbook-db-migrate-force-refresh-rollback.md`
 - `agile/tasks/stage_20_plus/DTM-230_stage22_source-policy-cleanup-matrix.md`
 - `agile/tasks/stage_20_plus/DTM-229_stage22_unified-db-query-contract-adapter.md`
