@@ -13,6 +13,7 @@ Execute Stage 23 cloud hardening rollout queue from Stage 22 unified baseline.
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-238 - Test-contour operational evidence bundle and production go/no-go input set.
 - [DONE] DTM-237 - Canary rollout checklist for source-policy switch + rollback checkpoints.
 - [DONE] DTM-236 - Readmodel freshness markers for render/notify cloud parity checks.
 - [DONE] DTM-235 - Cloud tri-block smoke automation package.
@@ -54,10 +55,11 @@ Execute Stage 23 cloud hardening rollout queue from Stage 22 unified baseline.
 
 ## Stage 23 Estimate (Dynamic)
 - Baseline estimate: 6 tasks.
-- Done: 4
-- Remaining: 2
+- Done: 5
+- Remaining: 1
 
 ## Done (Latest)
+- [DONE] DTM-238 - Published test-contour operational evidence bundle and go/no-go input set (`doc/stages/71_stage23_test_contour_operational_evidence_bundle.md`, `artifacts/tmp/stage23_operational_evidence_bundle.json`).
 - [DONE] DTM-237 - Published Stage 23 source-policy canary checklist with rollback checkpoints and production go/no-go inputs (`doc/ops/stage23_source_policy_canary_rollout_checklist.md`).
 - [DONE] DTM-236 - Added render/notify readmodel freshness runtime marker (`readmodel_freshness`) with unit tests.
 - [DONE] DTM-235 - Added cloud tri-block smoke automation (`agent/stage23_cloud_tri_block_smoke.py`) + test contour evidence artifact.
@@ -108,7 +110,6 @@ Execute Stage 23 cloud hardening rollout queue from Stage 22 unified baseline.
 - none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-238 - Test-contour operational evidence bundle and production go/no-go inputs.
 - [TODO] DTM-239 - Stage 23 closeout and Stage 24 handoff package.
 
 ## Tri-Block Readiness Matrix (Test Contour)
@@ -117,6 +118,8 @@ Execute Stage 23 cloud hardening rollout queue from Stage 22 unified baseline.
 - Notifications: in progress (delivery logic works; needs contour smoke evidence under current rollout switches).
 
 ## Active Task Files
+- `agile/tasks/stage_20_plus/DTM-238_stage23_test-contour-operational-evidence-bundle.md`
+- `agile/tasks/stage_20_plus/DTM-237_stage23_canary-rollout-checklist-source-policy-switch.md`
 - `agile/tasks/stage_20_plus/DTM-236_stage23_readmodel-freshness-markers-render-notify.md`
 - `agile/tasks/stage_20_plus/DTM-235_stage23_cloud-tri-block-smoke-automation-package.md`
 - `agile/tasks/stage_20_plus/DTM-234_stage23-kickoff-and-bounded-queue.md`

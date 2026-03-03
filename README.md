@@ -192,6 +192,8 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `.venv\Scripts\python.exe agent\stage22_tri_block_smoke.py`
 - Stage 23 cloud tri-block smoke evidence (function invoke + API v1/v2 parity):
   - `.venv\Scripts\python.exe agent\stage23_cloud_tri_block_smoke.py --function-url <function_url> --api-base <api_base_url>`
+- Stage 23 operational evidence bundle (go/no-go inputs from cloud smoke):
+  - `.venv\Scripts\python.exe agent\stage23_operational_evidence_bundle.py --smoke-file artifacts/tmp/stage23_canary_precheck.json --output-file artifacts/tmp/stage23_operational_evidence_bundle.json`
 - Lockbox sync helper for full `.env` payload:
   - `.venv\Scripts\python.exe agent\sync_lockbox_from_env.py --secret-name DTM`
 - Prod release prep helper (validates required prod keys + syncs Lockbox):
