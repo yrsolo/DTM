@@ -42,7 +42,7 @@ Files:
 Cloud note:
 - For serverless runtime (Yandex Cloud function), baseline artifact files in local filesystem are dev-only.
 - Cloud-profile artifacts should be uploaded to Yandex Object Storage (S3-compatible) as primary storage.
-- Policy reference: `doc/stages/15_stage7_read_model_consumer_policy.md`.
+- Policy reference: `docs/archive/doc_legacy/stages/15_stage7_read_model_consumer_policy.md`.
 
 ## Mandatory Comparison Points
 - Row/column counts in target sheets.
@@ -64,7 +64,7 @@ Use this cadence to keep threshold tuning reproducible and avoid ad-hoc policy d
 ### Per run
 - Execute baseline helper and confirm `quality_report.json`, `alert_evaluation.json`, `read_model.json`, `schema_snapshot.json`, and `fixture_bundle.json` exist.
 - Record evaluated level (`INFO_ONLY/WARN/CRITICAL/OK`) and core metrics in Jira evidence comment.
-- If level is `WARN` or `CRITICAL`, apply escalation policy from `doc/05_risk_register.md`.
+- If level is `WARN` or `CRITICAL`, apply escalation policy from `docs/plan/risk_register.md`.
 - Verify retry taxonomy metrics in `quality_report.summary`:
   - `reminder_send_retry_attempt_count`
   - `reminder_send_retry_exhausted_count`

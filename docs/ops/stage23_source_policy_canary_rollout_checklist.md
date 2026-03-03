@@ -63,6 +63,7 @@ Rollback actions:
 ## Evidence Artifacts
 - `artifacts/tmp/stage23_canary_precheck.json`
 - `artifacts/tmp/stage23_canary_postswitch.json` (when Gate 1 runs)
-- task log updates in:
-  - `agile/tasks/stage_20_plus/DTM-237_stage23_canary-rollout-checklist-source-policy-switch.md`
-
+- legacy task log (archive):
+  - `agile/archive/legacy_2026-03-03/tasks/stage_20_plus/DTM-237_stage23_canary-rollout-checklist-source-policy-switch.md`
+- active campaign evidence:
+  - `docs/campaigns/CAM-DBMIG-MILESTONES-V1/evidence.md`

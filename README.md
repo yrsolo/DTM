@@ -17,24 +17,21 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Demonstrate safe migration approach: preserve business behavior while improving code quality.
 - Build a foundation for moving from Google Sheets visualization to a dedicated frontend.
 
-## Documentation entrypoint
-- Start with `doc/00_documentation_map.md` for readable navigation and recommended read order.
+## Documentation entrypoints
+- Main map: `docs/README.md`
+- Campaign system: `docs/campaigns/README.md`
+- Active sprint board: `agile/sprint_current.md`
 
 ## Architecture & Migration Plan
-- Target architecture (layered, strangler migration):
+- Target architecture:
   - `docs/architecture/target-architecture.md`
-- Stage-by-stage migration plan (M1..M8):
-  - `docs/migration/plan.md`
-- Current Stage-21 DB finalization execution notes:
-  - `docs/migration_plan.md`
-- Atomic tasks by stage:
-  - `docs/migration/tasks.md`
-- YDB schema and DB rollout plan:
+- Active DB migration plan:
   - `docs/db/schema.md`
   - `docs/db/migration-plan.md`
-  - `docs/evidence_db_migration_v2.md`
-- Data contracts (raw/normalized/read-model):
-  - `docs/contracts/data-contracts.md`
+  - `docs/evidence/db_migration_v2.md`
+- Campaign planning:
+  - `docs/campaigns/CAM-DOC-REFORM/`
+  - `docs/campaigns/CAM-DBMIG-MILESTONES-V1/`
 - Engineering standards:
   - `docs/standards/engineering-standards.md`
 
@@ -58,16 +55,16 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Production release workflow is manual (`workflow_dispatch`).
 - Architecture is under phased reconstruction.
 - Legacy snapshot is kept in `old/` for controlled comparison during migration.
-- Stage 0-19 status and evidence index are tracked in `doc/03_reconstruction_backlog.md`.
-- Stage 23 closeout and Stage 24 handoff package:
-  - `doc/stages/72_stage23_closeout_and_stage24_handoff.md`
+- Legacy stage status/history is archived in:
+  - `docs/archive/doc_legacy/03_reconstruction_backlog.md`
+  - `docs/archive/doc_legacy/stages/72_stage23_closeout_and_stage24_handoff.md`
 - Current sprint/task execution state is tracked in `agile/sprint_current.md`.
-- Serverless deploy setup (test/prod split) is in `doc/ops/stage9_main_autodeploy_setup.md`.
+- Serverless deploy setup (test/prod split) is in `docs/ops/stage9_main_autodeploy_setup.md`.
 - Deployment smoke and rollback runbooks are in:
-  - `doc/ops/stage9_deployment_smoke_checklist.md`
-  - `doc/ops/stage10_function_rollback_drill.md`
-  - `doc/ops/stage22_db_migrate_force_refresh_rollback_runbook.md`
-  - `doc/ops/stage23_source_policy_canary_rollout_checklist.md`
+  - `docs/ops/stage9_deployment_smoke_checklist.md`
+  - `docs/ops/stage10_function_rollback_drill.md`
+  - `docs/ops/stage22_db_migrate_force_refresh_rollback_runbook.md`
+  - `docs/ops/stage23_source_policy_canary_rollout_checklist.md`
 - Stage 8 prototype loader utility: `agent/load_prototype_payload.py` (filesystem/Object Storage + schema gate).
 - Stage 8 static prototype assets: `web_prototype/static` (run local preview with `.venv\Scripts\python.exe agent\run_web_prototype_server.py`).
 - Stage 8 payload preparation helper: `.venv\Scripts\python.exe agent\prepare_web_prototype_payload.py --source-mode auto` (writes `web_prototype/static/prototype_payload.json`).
@@ -150,20 +147,20 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Fixture bundle helper:
   - `.venv\Scripts\python.exe agent\build_fixture_bundle.py --baseline-root artifacts\baseline`
 - Detailed process and checklist:
-  - `doc/ops/baseline_validation_and_artifacts.md`
+  - `docs/ops/baseline_validation_and_artifacts.md`
 - Routine Stage 5 cadence checklist (per-run/weekly/monthly):
-  - `doc/ops/baseline_validation_and_artifacts.md` (`Routine Ops Cadence Checklist`)
+  - `docs/ops/baseline_validation_and_artifacts.md` (`Routine Ops Cadence Checklist`)
 - Retry taxonomy metrics checklist (retry/exhausted/transient/permanent/unknown):
-  - `doc/05_risk_register.md` (`Retry taxonomy metrics checklist`)
+  - `docs/plan/risk_register.md` (`Retry taxonomy metrics checklist`)
 - Weekly retry taxonomy trend thresholds for ops review:
-  - `doc/05_risk_register.md` (`Routine cadence enforcement`)
+  - `docs/plan/risk_register.md` (`Routine cadence enforcement`)
 
 ## Secret scan gate (Stage 0.5)
 - Pre-commit gate: `detect-secrets` with `.secrets.baseline`.
 - Full-repo smoke command:
   - `.venv\Scripts\python.exe -m pre_commit run detect-secrets --all-files`
 - Security audit notes:
-  - `doc/governance/publication_security_audit.md`
+  - `docs/archive/doc_legacy/governance/publication_security_audit.md`
 
 ## Deploy workflows
 - Test contour workflow: `.github/workflows/deploy_yc_function_main.yml`
@@ -183,7 +180,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `YC_LOCKBOX_SECRET_ID`
 - Runtime app keys (including `SOURCE_SHEET_NAME`, `API_DOMAIN_*`, `YDB_*_TEST`, `YDB_*_PROD`, `STORE_MODE`, `READMODEL_SOURCE`, `NOTIFY_SOURCE`, `RENDER_SOURCE`) are read from Lockbox secret payload.
 - Full setup guide:
-  - `doc/ops/stage9_main_autodeploy_setup.md`
+  - `docs/ops/stage9_main_autodeploy_setup.md`
 - Direct cloud endpoint smoke invoke:
   - `.venv\Scripts\python.exe agent\invoke_function_smoke.py --url <function_url> --healthcheck`
 - Migration M3 hash-gate smoke:
@@ -204,7 +201,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `.venv\Scripts\python.exe agent\deploy_api_gateway_domain.py --mode test`
   - `.venv\Scripts\python.exe agent\deploy_api_gateway_domain.py --mode prod`
 - Frontend HTTP API contract:
-  - `doc/ops/frontend_api_contract.md`
+  - `docs/ops/frontend_api_contract.md`
   - `docs/api/frontend-v2.md`
   - `docs/api/changelog.md`
 - Cloud-side follow-up: publish function version with Lockbox `--secret` mappings and grant runtime service account role `lockbox.payloadViewer` for secret `DTM`.

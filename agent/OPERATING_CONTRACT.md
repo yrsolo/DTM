@@ -16,13 +16,14 @@ If step 1-4 is not completed, agent must not continue execution.
 2. This operating contract.
 3. `AGENTS.md`.
 4. Role-specific protocol (`agent/teamlead.md`).
-5. Other docs (`agile/*`, `doc/*`, `README.md`).
+5. Other docs (`docs/README.md`, `docs/campaigns/*`, `agile/*`, `README.md`).
 
 ## 2) Task Tracking Runtime Rules
 1. Jira is preferred for execution lifecycle, but not mandatory.
 2. If Jira is not used, execution lifecycle must be tracked in local files:
    - `agile/sprint_current.md` (Now/Done/Blocked),
-   - `agile/tasks/*.md` (plan, work log, evidence).
+   - `agile/backlog.md` (groomed queue),
+   - `docs/campaigns/<CAMPAIGN>/{plan,evidence}.md` (task breakdown and evidence).
 3. Required lifecycle per task (in Jira or local tracker):
    - register/start task before code changes,
    - record evidence during execution,
@@ -30,7 +31,7 @@ If step 1-4 is not completed, agent must not continue execution.
 
 ## 3) Freshness And Trust Gate
 1. Text docs are hypotheses until checked against runnable/code artifacts.
-2. Update `agile/context_registry.md` with trust/evidence before decomposition.
+2. Update active campaign evidence file `docs/campaigns/<CAMPAIGN>/evidence.md` with trust/evidence before decomposition.
 3. If source trust is `low`, execution is blocked until verification task is done.
 
 ## 4) Owner Escalation Rules
