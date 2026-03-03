@@ -27,12 +27,13 @@ Safe, incremental migration of DTM from legacy tightly coupled automation to mai
 | 18 | provider reliability guardrails (timeout/retry + enhancer counters) | done | `doc/stages/55_stage18_execution_plan.md`, `doc/stages/58_stage18_closeout_and_stage19_handoff.md` |
 | 19 | provider failover policy (`draft_only` vs `provider`) | done | `doc/stages/59_stage19_execution_plan.md`, `doc/stages/62_stage19_closeout_and_stage20_handoff.md` |
 | 20 | production-readiness hardening (docs freshness, repo hygiene, release evidence) | done | `doc/stages/63_stage20_execution_plan.md`, `doc/stages/66_stage20_closeout_and_stage21_handoff.md` |
+| 21 | deploy/API/runtime contour split + DB migration v2 finalization | done | `doc/stages/67_stage21_closeout_and_stage22_handoff.md`, `docs/db/schema.md`, `docs/evidence_db_migration_v2.md` |
 
-## Current Focus (Post Stage 20)
-- Active execution tasks completed in Stage 21:
-  - deploy contour split (test auto / prod manual),
-  - API domain tooling and frontend API contract/doc endpoint,
-  - migration blueprint package (`docs/*`) and M1-M3 scaffolding (`src/*`).
+## Current Focus (Post Stage 21)
+- Stage 22 proposed focus:
+  - unify API/render/notifications consumers over one DB query contract,
+  - finalize source-policy matrix and tri-block smoke parity package,
+  - publish Stage 22 closeout and Stage 23 handoff.
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).

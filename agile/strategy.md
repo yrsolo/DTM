@@ -3,9 +3,9 @@
 ## Objective
 Deliver DTM to stable production operation with clear, maintainable process artifacts.
 
-## Current Focus (Stage 21)
-1. Split release contour: test auto-deploy vs manual prod release.
-2. Stabilize API/domain contour for test (`dtm-api-test`) and prod (`dtm-api`).
+## Current Focus (Stage 22)
+1. Unify API/render/notification consumers over one DB query contract (single filter semantics).
+2. Consolidate source-policy matrix (`READMODEL_SOURCE`/`NOTIFY_SOURCE`/`RENDER_SOURCE`) and remove duplicated read branches.
 3. Keep release docs/runbooks concise and trustworthy.
 4. Treat delivery as three equal product blocks:
    - Frontend API

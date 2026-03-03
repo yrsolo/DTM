@@ -13,6 +13,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 - [DONE] DTM-227 - DB migration v2 finalization: versioning, preflight top-50 gate, forced refresh, and evidence package.
 - [DONE] DTM-226 - Improve milestone year inference for legacy rows (`TIMING_YEAR_MODE=legacy|anchors|chain`) with non-regression tests.
 - [DONE] DTM-225 - Split test/prod YDB contours across runtime, workflows, and Lockbox payload.
@@ -42,11 +43,12 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 
 ## Stage 21 Estimate (Dynamic)
-- Baseline estimate: 26 tasks.
-- Done: 26
+- Baseline estimate: 28 tasks.
+- Done: 28
 - Remaining: 0
 
 ## Done (Latest)
+- [DONE] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 - [DONE] DTM-227 - DB migration v2 finalization (`dtm_task_versions`, preflight top-50 + daily full-sync gate, forced refresh no-version-bump, cloud smoke evidence).
 - [DONE] DTM-226 - Timing year inference hardening (`legacy|anchors|chain`) + parser/chain regression tests.
 - [DONE] DTM-225 - Split test/prod YDB contours (`YDB_*_TEST` / `YDB_*_PROD`) in runtime + CI/CD + Lockbox sync.
@@ -86,7 +88,11 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
+- [TODO] DTM-228 - Stage 22 kickoff and bounded queue.
+- [TODO] DTM-229 - Unified DB query contract adapter for API/render/notify.
+- [TODO] DTM-230 - Source-policy cleanup for `READMODEL_SOURCE`/`NOTIFY_SOURCE`/`RENDER_SOURCE`.
+- [TODO] DTM-231 - Stage 22 production runbook for `db_migrate`/forced refresh/rollback.
+- [TODO] DTM-232 - Stage 22 tri-block smoke suite from unified query source.
 
 ## Tri-Block Readiness Matrix (Test Contour)
 - Frontend API: in progress (v1/v2/doc cloud verification passed; pending explicit YDB readmodel-source confirmation in v2 payload).
@@ -94,6 +100,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - Notifications: in progress (delivery logic works; needs contour smoke evidence under current rollout switches).
 
 ## Active Task Files
+- `agile/tasks/stage_20_plus/DTM-201_stage21-closeout-and-stage22-handoff.md`
 - `agile/tasks/stage_20_plus/DTM-227_stage21_db-migration-v2-finalization.md`
 - `agile/tasks/stage_20_plus/DTM-224_stage21_db-migration-v2-operational-and-readmodel-store.md`
 - `agile/tasks/stage_20_plus/DTM-225_stage21_split-test-prod-ydb-contours.md`
