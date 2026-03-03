@@ -71,6 +71,7 @@ class TaskProjection:
 def _normalize_milestone_type(stage_name: str) -> tuple[str, str]:
     value = _to_str(stage_name).lower()
     known_type_labels = {
+        "start": "start",
         "storyboard": "storyboard",
         "animatic": "animatic",
         "prefinal": "prefinal",

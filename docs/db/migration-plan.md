@@ -6,6 +6,7 @@
 - `NOTIFY_SOURCE=legacy|ydb`
 - `RENDER_SOURCE=legacy|ydb`
 - `LEGACY_BLOB_WRITE=0|1` (default `0`)
+- `WRITE_LEGACY_MILESTONES=0|1` (default `0`, compat-only)
 - `YDB_MIGRATE_ON_START=0|1` (default `0`, keep off in prod hot path)
 - `FORCE_REFRESH=0|1` (default `0`)
 - `READMODEL_TTL_MINUTES` (default `9`)

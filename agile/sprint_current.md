@@ -1,7 +1,7 @@
 # Sprint Current
 
 ## Sprint Goal
-Launch and execute CAM-MILESTONES-V1.1 cleanup hardening for versioned milestones source-of-truth.
+Execute CAM-MILESTONES-V1.2 hardening for milestones_v safety and quota-friendly sync path.
 
 ## Capacity
 1 active execution task (WIP=1).
@@ -34,6 +34,16 @@ Launch and execute CAM-MILESTONES-V1.1 cleanup hardening for versioned milestone
 - [DONE] `CAM-MILESTONES-V1.1-P04-T002` post-migration verification sample + evidence.
 - [DONE] `CAM-MILESTONES-V1.1-P05-T001` unit tests for safe bulk replace scope.
 - [DONE] `CAM-MILESTONES-V1.1-P05-T003` smoke + evidence closeout.
+- [DONE] `CAM-MILESTONES-V1.2-P01-T001` add WRITE_LEGACY_MILESTONES flag.
+- [DONE] `CAM-MILESTONES-V1.2-P01-T002` gate legacy milestones writes in sync.
+- [DONE] `CAM-MILESTONES-V1.2-P02-T001` builder synthetic start fallback + warnings/log.
+- [DONE] `CAM-MILESTONES-V1.2-P02-T002` sync assert on empty milestones_v write.
+- [DONE] `CAM-MILESTONES-V1.2-P03-T001` reorder version bump flow for best-effort consistency.
+- [DONE] `CAM-MILESTONES-V1.2-P03-T002` guard current_version and milestones_v presence for changed tasks.
+- [DONE] `CAM-MILESTONES-V1.2-P04-T001` unit test for synthetic start fallback.
+- [DONE] `CAM-MILESTONES-V1.2-P04-T002` unit test for milestones_write_empty failure.
+- [DONE] `CAM-MILESTONES-V1.2-P04-T003` unit test for WRITE_LEGACY_MILESTONES=false.
+- [DONE] `CAM-MILESTONES-V1.2-P04-T004` publish evidence.
 
 ## Done (Latest)
 - [DONE] `CAM-DBMIG-MILESTONES-V1-P01-T003`
@@ -55,6 +65,16 @@ Launch and execute CAM-MILESTONES-V1.1 cleanup hardening for versioned milestone
 - [DONE] `CAM-MILESTONES-V1.1-P04-T002`
 - [DONE] `CAM-MILESTONES-V1.1-P04-T001`
 - [DONE] `CAM-MILESTONES-V1.1-P02-T004`
+- [DONE] `CAM-MILESTONES-V1.2-P04-T004`
+- [DONE] `CAM-MILESTONES-V1.2-P04-T003`
+- [DONE] `CAM-MILESTONES-V1.2-P04-T002`
+- [DONE] `CAM-MILESTONES-V1.2-P04-T001`
+- [DONE] `CAM-MILESTONES-V1.2-P03-T002`
+- [DONE] `CAM-MILESTONES-V1.2-P03-T001`
+- [DONE] `CAM-MILESTONES-V1.2-P02-T002`
+- [DONE] `CAM-MILESTONES-V1.2-P02-T001`
+- [DONE] `CAM-MILESTONES-V1.2-P01-T002`
+- [DONE] `CAM-MILESTONES-V1.2-P01-T001`
 - [DONE] `CAM-DOC-REFORM-P02-T003`
 - [DONE] `CAM-DOC-REFORM-P02-T002`
 - [DONE] `CAM-DOC-REFORM-P02-T001`
@@ -67,4 +87,4 @@ Launch and execute CAM-MILESTONES-V1.1 cleanup hardening for versioned milestone
 - none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Define next campaign scope after `CAM-MILESTONES-V1.1` closeout (owner decision).
+- [TODO] Define next campaign scope after `CAM-MILESTONES-V1.2` closeout (owner decision).

@@ -37,6 +37,7 @@ class _OperationalRepoStub:
                 "group_id": "Project",
                 "status": "work",
                 "current_version": 3,
+                "created_at_utc": "2026-03-01T00:00:00Z",
             }
         ]
 
@@ -114,6 +115,30 @@ class ReadmodelUsesMilestonesTableTestCase(unittest.TestCase):
         self.assertEqual(len(tasks[0]["milestones"]), 2)
         self.assertEqual(tasks[0]["milestones"][0]["type"], "storyboard")
         self.assertEqual(tasks[0]["milestones"][1]["type"], "animatic")
+
+    def test_builder_adds_synthetic_start_when_versioned_rows_missing(self) -> None:
+        class _NoMilestonesRepo(_OperationalRepoStub):
+            def list_milestones_for_versions(self, *, task_versions=None):  # noqa: ANN001
+                self.task_versions = task_versions
+                return []
+
+        operational_repo = _NoMilestonesRepo()
+        readmodel_repo = _ReadmodelRepoStub()
+        service = FrontendReadmodelBuilderService(
+            operational_repo=operational_repo,  # type: ignore[arg-type]
+            readmodel_repo=readmodel_repo,  # type: ignore[arg-type]
+            source_id="sheet:test",
+            env_name="test",
+            source_sheet_name="Sheet",
+        )
+
+        service.run(readmodel_id="frontend_v2:default")
+        payload = readmodel_repo.saved_payload
+        tasks = payload["tasks"]
+        self.assertEqual(len(tasks), 1)
+        self.assertEqual(len(tasks[0]["milestones"]), 1)
+        self.assertEqual(tasks[0]["milestones"][0]["type"], "start")
+        self.assertIn("synthetic_start_used", payload["meta"].get("warnings", []))
 
 
 if __name__ == "__main__":
