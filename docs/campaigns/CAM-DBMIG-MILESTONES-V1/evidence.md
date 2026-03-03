@@ -8,9 +8,13 @@
 ## Execution Log
 - campaign scaffold created (`charter.md`, `plan.md`, `evidence.md`)
 - queue seeded in `agile/backlog.md` and `agile/sprint_current.md`
+- P01 schema/model alignment completed:
+  - added `dtm_task_milestones_v` to YDB DDL (`src/adapters/ydb/schema.py`)
+  - fixed repo contract alias `current_version` = `task_revision` (`src/adapters/ydb/operational_repo.py`)
+  - documented version truth and legacy milestones compatibility role (`docs/db/schema.md`, `docs/db/migration-plan.md`)
 
 ## Completion Checklist
-- [ ] P01 schema tasks done
+- [x] P01 schema tasks done
 - [ ] P02 write-path versioning tasks done
 - [ ] P03 readmodel source-of-truth tasks done
 - [ ] P04 migration/backfill tasks done

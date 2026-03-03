@@ -48,6 +48,24 @@ def _ddl_milestones(table_name: str) -> str:
     """
 
 
+def _ddl_milestones_versioned(table_name: str) -> str:
+    return f"""
+    CREATE TABLE `{table_name}` (
+        task_id Utf8,
+        version Uint64,
+        idx Uint32,
+        type Utf8,
+        planned_date Date,
+        actual_date Date,
+        status Utf8,
+        raw_text Utf8,
+        confidence Double,
+        inference_rule Utf8,
+        PRIMARY KEY (task_id, version, idx)
+    );
+    """
+
+
 def _ddl_sync_state(table_name: str) -> str:
     return f"""
     CREATE TABLE `{table_name}` (
@@ -98,6 +116,7 @@ def ensure_tables(
     *,
     tasks_table: str = "dtm_tasks",
     milestones_table: str = "dtm_task_milestones",
+    milestones_versioned_table: str = "dtm_task_milestones_v",
     versions_table: str = "dtm_task_versions",
     sync_state_table: str = "dtm_sync_state",
     readmodel_table: str = "dtm_readmodel_frontend_v2",
@@ -107,6 +126,7 @@ def ensure_tables(
     for ddl in (
         _ddl_tasks(tasks_table),
         _ddl_milestones(milestones_table),
+        _ddl_milestones_versioned(milestones_versioned_table),
         _ddl_task_versions(versions_table),
         _ddl_sync_state(sync_state_table),
         _ddl_readmodel(readmodel_table),

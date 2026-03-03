@@ -56,6 +56,7 @@ class OperationalTaskRepo:
         database: str,
         tasks_table: str = "dtm_tasks",
         milestones_table: str = "dtm_task_milestones",
+        milestones_versions_table: str = "dtm_task_milestones_v",
         versions_table: str = "dtm_task_versions",
         sync_state_table: str = "dtm_sync_state",
         readmodel_table: str = "dtm_readmodel_frontend_v2",
@@ -64,6 +65,7 @@ class OperationalTaskRepo:
         self.client = YdbClient(endpoint=endpoint, database=database)
         self.tasks_table = tasks_table
         self.milestones_table = milestones_table
+        self.milestones_versions_table = milestones_versions_table
         self.versions_table = versions_table
         self.sync_state_table = sync_state_table
         if ensure_schema:
@@ -71,6 +73,7 @@ class OperationalTaskRepo:
                 self.client,
                 tasks_table=tasks_table,
                 milestones_table=milestones_table,
+                milestones_versioned_table=milestones_versions_table,
                 versions_table=versions_table,
                 sync_state_table=sync_state_table,
                 readmodel_table=readmodel_table,
@@ -544,6 +547,7 @@ class OperationalTaskRepo:
                     "links_json": str(getattr(row, "links_json", "{}")),
                     "task_hash": str(getattr(row, "task_hash", "")) or None,
                     "task_revision": int(getattr(row, "task_revision", 0) or 0),
+                    "current_version": int(getattr(row, "task_revision", 0) or 0),
                     "updated_at_utc": getattr(row, "updated_at_utc", None),
                 }
             )

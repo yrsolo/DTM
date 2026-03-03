@@ -21,6 +21,7 @@
 - Verify:
   - task upserts land in `dtm_tasks`
   - milestones land in `dtm_task_milestones`
+  - versioned milestones table `dtm_task_milestones_v` exists (write-path switch comes later campaign phase)
   - `dtm_sync_state` updated by `preflight_hash_50` and `source_hash_full`.
   - `dtm_task_versions` captures active/archive versions.
 
@@ -51,3 +52,4 @@
 - Runtime note:
   - Timer flow triggers migration pipeline (`sync_state` + operational + readmodel), and transient YDB exhaustion is logged without stopping legacy render path.
   - forced refresh (`FORCE_REFRESH=1` or runtime flag) rebuilds data/readmodel without version increments for existing tasks.
+  - active version truth is `dtm_tasks.task_revision` (`current_version` alias in adapter contract).
