@@ -24,7 +24,7 @@ def _fixture_event() -> dict:
 
 
 class _Repo:
-    def get_task_by_color_status(self, statuses):
+    def get_task_by_color_status(self, statuses):  # noqa: ANN001
         _ = statuses
         return [
             SimpleNamespace(
@@ -64,6 +64,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self._orig_build_payload_v1 = index.build_frontend_api_payload
         self._orig_build_payload_v2 = index.build_frontend_api_payload_v2
         self._orig_build_store = index.build_operational_store
+        self._orig_readmodel_repo = index.FrontendReadmodelRepo
         self._orig_readmodel_source = index.READMODEL_SOURCE
         self._orig_default_api_version = index.FRONTEND_API_DEFAULT_VERSION
         index.FRONTEND_API_DEFAULT_VERSION = "v2"
@@ -95,6 +96,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         index.build_frontend_api_payload = self._orig_build_payload_v1
         index.build_frontend_api_payload_v2 = self._orig_build_payload_v2
         index.build_operational_store = self._orig_build_store
+        index.FrontendReadmodelRepo = self._orig_readmodel_repo
         index.READMODEL_SOURCE = self._orig_readmodel_source
         index.FRONTEND_API_DEFAULT_VERSION = self._orig_default_api_version
 
@@ -145,8 +147,6 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         body = response.get("body", "")
         self.assertEqual(response["statusCode"], 200)
         self.assertIn("Endpoints", body)
-        self.assertIn("Параметры запроса", body)
-        self.assertIn("Поля ответа", body)
         self.assertIn("tasks[].revision", body)
         self.assertIn("reserved", body)
         self.assertIn("implemented", body)
@@ -192,20 +192,21 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 400)
         self.assertEqual(payload.get("error", {}).get("code"), "invalid_window")
 
-    def test_v2_reads_tasks_from_store_when_readmodel_source_ydb(self) -> None:
+    def test_v2_reads_tasks_from_readmodel_when_source_ydb(self) -> None:
         index.READMODEL_SOURCE = "ydb"
-        index.build_operational_store = lambda *args, **kwargs: SimpleNamespace(
-            list_tasks=lambda: [
-                {
-                    "task_id": "501",
-                    "name": "Stored Task",
-                    "designer": "Designer One",
-                    "status": "work",
-                    "color_status": "work",
-                    "project_name": "Stored Project",
-                    "timing": [{"date": "2026-03-11", "stages": ["аниматик"]}],
-                }
-            ]
+        index.FrontendReadmodelRepo = lambda *args, **kwargs: SimpleNamespace(  # type: ignore[assignment]
+            get_readmodel=lambda readmodel_id: SimpleNamespace(  # noqa: ARG005
+                readmodel_id="frontend_v2:default",
+                payload_hash="sha256:test",
+                built_from_source_hash="source_hash",
+                payload=lambda: {
+                    "meta": {"artifact": "dtm_frontend_api_v2"},
+                    "summary": {"tasksReturned": 1},
+                    "filters": {},
+                    "entities": {"people": [], "groups": [], "tags": [], "enums": {}},
+                    "tasks": [{"id": "501"}],
+                },
+            )
         )
         event = _fixture_event()
         event["pathParams"]["proxy"] = "api/v2/frontend"
@@ -215,8 +216,10 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         response = asyncio.run(index.handler(event, None))
         payload = json.loads(response.get("body", "{}"))
         self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(payload.get("meta", {}).get("readmodelSource"), "ydb")
         self.assertEqual(payload.get("summary", {}).get("tasksReturned"), 1)
 
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -13,7 +13,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
-- [IN PROGRESS] DTM-224 - DB migration v2: normalized YDB operational tables + readmodel snapshot path.
+- [BLOCKED] DTM-224 - DB migration v2: normalized YDB operational tables + readmodel snapshot path; cloud smoke waits for manual test deploy of latest `dev`.
 - [BLOCKED] DTM-223 - Frontend API v2 + shared task query contract across API/render/reminder done in code; cloud verification pending manual test deploy.
 - [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
 - [DONE] DTM-221 - Frontend API event-shape hardening + Actions requirements split.
@@ -75,6 +75,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-191 - Stage 19 closeout and Stage 20 handoff package.
 
 ## Blocked
+- [BLOCKED] DTM-224 - cloud smoke blocker: test contour is on outdated function version; owner telegram sent with manual deploy next-step.
 - [BLOCKED] DTM-219 - test contour deploy verification blocked: local token cannot trigger GitHub workflow (`403 workflow_dispatch`), owner must run workflow manually.
 - [BLOCKED] DTM-220 - cloud verification pending same manual test deploy.
 - [BLOCKED] DTM-221 - cloud verification pending same manual test deploy.

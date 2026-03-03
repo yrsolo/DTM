@@ -67,6 +67,13 @@
 - 2026-03-02: Local evidence:
   - `.venv\Scripts\python.exe -m unittest tests.services.test_sync_source_hash_gate tests.services.test_readmodel_enums tests.services.test_readmodel_uses_milestones_table tests.services.test_ydb_backoff tests.api.test_frontend_api_v2_payload tests.services.test_hash_basis -v` -> OK
   - `cmd /c run_timer.cmd` -> migration sync/readmodel path OK, no deferred status.
+- 2026-03-02: Unified consumer read path for runtime blocks:
+  - `render/notify` source switch now uses normalized repo adapter (`src/adapters/ydb/task_repository.py`) over `dtm_tasks + dtm_task_milestones` (legacy `dtm_operational_tasks` path removed from runtime switch).
+  - `v1` API `READMODEL_SOURCE=ydb` path now also uses normalized task repo.
+  - Added adapter tests: `tests/adapters/test_ydb_operational_task_repository.py`.
+- 2026-03-02: Added compatibility fallback for pre-migration `dtm_tasks` schema (missing `brand/format_/customer/raw_timing`) in `OperationalTaskRepo` read/write paths; timer smoke recovered.
+- 2026-03-02: Cloud probe to test contour returned outdated response shape (`readmodelSource` missing), indicating test deployment lag.
+- 2026-03-02: Task moved to blocked pending owner manual test deploy; Telegram blocker notification sent (`agent/notify_owner.py --mode blocked ...`).
 
 ## Links
 - `src/adapters/ydb/schema.py`

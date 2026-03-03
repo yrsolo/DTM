@@ -25,9 +25,10 @@ from config import (
 from core.bootstrap import build_planner_dependencies
 from core.planner import GoogleSheetPlanner
 from core.use_cases import resolve_run_mode, run_planner_use_case
-from src.adapters.store_ydb import StoreTaskRepository, build_operational_store
+from src.adapters.store_ydb import build_operational_store
 from src.adapters.ydb.operational_repo import OperationalTaskRepo
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
+from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.adapters.ydb.schema import ensure_tables
 from src.adapters.ydb.client import YdbClient
 from src.services.readmodel_builder import FrontendReadmodelBuilderService
@@ -152,15 +153,11 @@ def _read_source_range_values(source_task_repository) -> list[list[str]]:
     )
 
 
-def _build_ydb_task_repository() -> StoreTaskRepository:
-    read_store = build_operational_store(
-        "ydb_only",
-        env_name=RUNTIME_ENV,
-        ydb_endpoint=YDB_ENDPOINT,
-        ydb_database=YDB_DATABASE,
-        json_file_path=MIGRATION_STORE_FILE,
+def _build_ydb_task_repository() -> YdbOperationalTaskRepository:
+    return YdbOperationalTaskRepository(
+        endpoint=YDB_ENDPOINT,
+        database=YDB_DATABASE,
     )
-    return StoreTaskRepository(read_store)
 
 
 def _apply_task_source_switches(planner: GoogleSheetPlanner, mode: str) -> tuple[bool, bool]:
