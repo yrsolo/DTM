@@ -33,6 +33,7 @@ from main import main
 from src.app.bootstrap import build_app_context
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
 from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
+from src.services.errors import AppError, PermanentError, TransientError, UserError
 from src.services.source_policy import build_source_policy_matrix
 
 APP_CONTEXT = build_app_context()
@@ -1140,9 +1141,20 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
             force_refresh=force_refresh,
         )
     except Exception as ex:
+        if isinstance(ex, UserError):
+            error_family = "user"
+        elif isinstance(ex, TransientError):
+            error_family = "transient"
+        elif isinstance(ex, PermanentError):
+            error_family = "permanent"
+        elif isinstance(ex, AppError):
+            error_family = "app"
+        else:
+            error_family = "unknown"
         tr = str(traceback.format_exc())
         txt = f"Runtime failure:\n{ex}\nTRACEBACK\n{tr}\n"
 
+        print(f"runtime_error_classification={error_family}")
         print(txt)
         try:
             await TelegramNotifier().alog(txt)
