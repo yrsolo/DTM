@@ -13,7 +13,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
-- [BLOCKED] DTM-224 - DB migration v2: normalized YDB operational tables + readmodel snapshot path; test deploy is live, but v2 payload still lacks YDB readmodel markers (`meta.readmodelSource/readmodelId`).
+- [BLOCKED] DTM-224 - DB migration v2: cloud source-switch confirmed (`meta.readmodelSource=ydb`); pending redeploy verification of v1 date-parsing hotfix (`1970-01-01` regression).
 - [DONE] DTM-223 - Frontend API v2 + shared task query contract across API/render/reminder; cloud verification passed on test domain.
 - [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
 - [DONE] DTM-221 - Frontend API event-shape hardening + Actions requirements split.
@@ -76,10 +76,10 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-191 - Stage 19 closeout and Stage 20 handoff package.
 
 ## Blocked
-- [BLOCKED] DTM-224 - cloud smoke pending YDB-readmodel confirmation: live v2 payload still has no `meta.readmodelSource/readmodelId`.
+- [BLOCKED] DTM-224 - cloud smoke pending v1 date output verification after YDB Date-int parsing hotfix deploy.
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-224 - Cloud smoke for readmodel snapshot path (sync -> build readmodel -> API v2 one-query fetch).
+- [TODO] DTM-224 - Deploy v1 date parsing hotfix and verify `/api/v1/frontend` dates are no longer `1970-01-01`.
 - [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 
 ## Tri-Block Readiness Matrix (Test Contour)
