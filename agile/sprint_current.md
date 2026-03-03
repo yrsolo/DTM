@@ -1,7 +1,7 @@
 # Sprint Current
 
 ## Sprint Goal
-Stage 22 is closed; prepare Stage 23 cloud hardening rollout queue (awaiting owner go/no-go for execution start).
+Execute Stage 23 cloud hardening rollout queue from Stage 22 unified baseline.
 
 ## Product Blocks (Equal Priority)
 - Frontend API
@@ -13,6 +13,7 @@ Stage 22 is closed; prepare Stage 23 cloud hardening rollout queue (awaiting own
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-234 - Stage 23 kickoff and bounded queue.
 - [DONE] DTM-233 - Stage 22 closeout and Stage 23 handoff package.
 - [DONE] DTM-232 - Stage 22 tri-block smoke suite from unified query source.
 - [DONE] DTM-231 - Stage 22 production runbook for `db_migrate`, forced refresh, rollback and safety gates.
@@ -48,12 +49,13 @@ Stage 22 is closed; prepare Stage 23 cloud hardening rollout queue (awaiting own
 - [DONE] DTM-199 - Stage 21 API gateway live bind smoke for test/prod domains.
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 
-## Stage 22 Estimate (Dynamic)
+## Stage 23 Estimate (Dynamic)
 - Baseline estimate: 6 tasks.
-- Done: 6
-- Remaining: 0
+- Done: 1
+- Remaining: 5
 
 ## Done (Latest)
+- [DONE] DTM-234 - Stage 23 kickoff and bounded queue (goal/counters/queue synchronized).
 - [DONE] DTM-233 - Published Stage 22 closeout + Stage 23 handoff package (`doc/stages/69`, `doc/stages/70`) and synchronized control-plane docs.
 - [DONE] DTM-232 - Added deterministic tri-block parity smoke (`agent/stage22_tri_block_smoke.py`) + unit test; API/render/notify IDs match from one query source.
 - [DONE] DTM-231 - Published Stage 22 ops runbook for migrate/forced-refresh/rollback (`doc/ops/stage22_db_migrate_force_refresh_rollback_runbook.md`) and linked from active docs.
@@ -100,11 +102,11 @@ Stage 22 is closed; prepare Stage 23 cloud hardening rollout queue (awaiting own
 - none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-234 - Stage 23 kickoff and bounded queue.
 - [TODO] DTM-235 - Cloud tri-block smoke automation package.
 - [TODO] DTM-236 - Readmodel freshness markers for render/notify cloud parity checks.
 - [TODO] DTM-237 - Canary rollout checklist for source-policy switch + rollback checkpoints.
 - [TODO] DTM-238 - Test-contour operational evidence bundle and production go/no-go inputs.
+- [TODO] DTM-239 - Stage 23 closeout and Stage 24 handoff package.
 
 ## Tri-Block Readiness Matrix (Test Contour)
 - Frontend API: in progress (v1/v2/doc cloud verification passed; pending explicit YDB readmodel-source confirmation in v2 payload).
@@ -112,6 +114,7 @@ Stage 22 is closed; prepare Stage 23 cloud hardening rollout queue (awaiting own
 - Notifications: in progress (delivery logic works; needs contour smoke evidence under current rollout switches).
 
 ## Active Task Files
+- `agile/tasks/stage_20_plus/DTM-234_stage23-kickoff-and-bounded-queue.md`
 - `agile/tasks/stage_20_plus/DTM-233_stage22-closeout-and-stage23-handoff.md`
 - `agile/tasks/stage_20_plus/DTM-232_stage22_tri-block-smoke-suite-unified-query-source.md`
 - `agile/tasks/stage_20_plus/DTM-231_stage22_prod-runbook-db-migrate-force-refresh-rollback.md`
