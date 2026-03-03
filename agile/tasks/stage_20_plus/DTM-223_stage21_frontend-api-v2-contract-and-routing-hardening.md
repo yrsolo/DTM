@@ -28,7 +28,7 @@
 - [x] tests added: routing/query parser, v2 snapshot, v1 backward smoke.
 - [x] shared task query contract introduced and reused across API payloads, sheet render, and reminder date selection.
 - [x] README updated with v1/v2 endpoint references.
-- [ ] Cloud verification pending test deploy (`git_ref=dev`).
+- [x] Cloud verification on test domain after deploy (`git_ref=dev`).
 
 ## Work log
 - 2026-03-02: Task created, execution started.
@@ -45,6 +45,10 @@
 - 2026-03-02: Added lightweight Actions deps split `requirements.actions.txt` and switched deploy/release workflows.
 - 2026-03-02: Added shared query contract module `core/task_query_contract.py` and removed duplicated status/designer/window/milestone filtering from `core/api_payload.py`, `core/api_payload_v2.py`, `core/manager.py`, `core/planner.py`, and `core/reminder.py`.
 - 2026-03-02: Added contract test `tests/test_task_query_contract.py` and refreshed v2 snapshots.
+- 2026-03-03: Cloud verification passed after manual test deploy:
+  - `GET https://dtm-api-test.solofarm.ru/api/v1/frontend` -> `200`, artifact `dtm_frontend_api_payload`.
+  - `GET https://dtm-api-test.solofarm.ru/api/v2/frontend` -> `200`, artifact `dtm_frontend_api_v2`, `contractVersion=2.0.1`.
+  - `GET https://dtm-api-test.solofarm.ru/api/v2/frontend/doc` -> `200`.
 
 ## Links
 - `index.py`

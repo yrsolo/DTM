@@ -13,8 +13,8 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
-- [BLOCKED] DTM-224 - DB migration v2: normalized YDB operational tables + readmodel snapshot path; cloud smoke waits for manual test deploy of latest `dev`.
-- [BLOCKED] DTM-223 - Frontend API v2 + shared task query contract across API/render/reminder done in code; cloud verification pending manual test deploy.
+- [BLOCKED] DTM-224 - DB migration v2: normalized YDB operational tables + readmodel snapshot path; test deploy is live, but v2 payload still lacks YDB readmodel markers (`meta.readmodelSource/readmodelId`).
+- [DONE] DTM-223 - Frontend API v2 + shared task query contract across API/render/reminder; cloud verification passed on test domain.
 - [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
 - [DONE] DTM-221 - Frontend API event-shape hardening + Actions requirements split.
 - [DONE] DTM-220 - API gateway ANY-method compatibility hotfix.
@@ -40,11 +40,12 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 
 ## Stage 21 Estimate (Dynamic)
 - Baseline estimate: 24 tasks.
-- Done: 22
-- Remaining: 2
+- Done: 23
+- Remaining: 1
 
 ## Done (Latest)
 - [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
+- [DONE] DTM-223 - Frontend API v2 + shared task query contract; cloud verification passed (`v1/v2/doc` = 200).
 - [DONE] DTM-221 - Frontend API event-shape hardening + Actions requirements split.
 - [DONE] DTM-220 - API gateway ANY-method compatibility hotfix.
 - [DONE] DTM-218 - API HTTP method fallback hotfix (no-op to frontend route fix).
@@ -75,30 +76,19 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-191 - Stage 19 closeout and Stage 20 handoff package.
 
 ## Blocked
-- [BLOCKED] DTM-224 - cloud smoke blocker: test contour is on outdated function version; owner telegram sent with manual deploy next-step.
-- [BLOCKED] DTM-219 - test contour deploy verification blocked: local token cannot trigger GitHub workflow (`403 workflow_dispatch`), owner must run workflow manually.
-- [BLOCKED] DTM-220 - cloud verification pending same manual test deploy.
-- [BLOCKED] DTM-221 - cloud verification pending same manual test deploy.
-- [BLOCKED] DTM-222 - cloud verification pending same manual test deploy.
-- [BLOCKED] DTM-223 - cloud verification pending same manual test deploy.
+- [BLOCKED] DTM-224 - cloud smoke pending YDB-readmodel confirmation: live v2 payload still has no `meta.readmodelSource/readmodelId`.
 
 ## Next 3-5 Tasks (Groomed)
 - [TODO] DTM-224 - Cloud smoke for readmodel snapshot path (sync -> build readmodel -> API v2 one-query fetch).
-- [TODO] DTM-219 - Deploy DTM-218 fix to test contour and verify API domain response.
-- [TODO] DTM-220 - Deploy DTM-220 fix to test contour and verify API domain response.
-- [TODO] DTM-221 - Deploy DTM-221 fix to test contour and verify API domain response.
-- [TODO] DTM-222 - Deploy DTM-222 fix to test contour and verify API domain response.
-- [TODO] DTM-223 - Run cloud verification for v1/v2 endpoints after test deploy (`git_ref=dev`).
 - [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 
 ## Tri-Block Readiness Matrix (Test Contour)
-- Frontend API: in progress (v2 contract + routing ready in `dev`, cloud verification pending deploy).
+- Frontend API: in progress (v1/v2/doc cloud verification passed; pending explicit YDB readmodel-source confirmation in v2 payload).
 - Sheet Render: in progress (runtime path works; needs explicit contour smoke evidence and timestamp check).
 - Notifications: in progress (delivery logic works; needs contour smoke evidence under current rollout switches).
 
 ## Active Task Files
 - `agile/tasks/stage_20_plus/DTM-224_stage21_db-migration-v2-operational-and-readmodel-store.md`
-- `agile/tasks/stage_20_plus/DTM-223_stage21_frontend-api-v2-contract-and-routing-hardening.md`
 
 ## Task Folder Structure
 - `agile/tasks/stage_00_09/` - stage 0-9 execution tasks.

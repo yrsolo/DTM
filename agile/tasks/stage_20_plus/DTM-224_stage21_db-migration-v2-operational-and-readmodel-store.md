@@ -74,6 +74,8 @@
 - 2026-03-02: Added compatibility fallback for pre-migration `dtm_tasks` schema (missing `brand/format_/customer/raw_timing`) in `OperationalTaskRepo` read/write paths; timer smoke recovered.
 - 2026-03-02: Cloud probe to test contour returned outdated response shape (`readmodelSource` missing), indicating test deployment lag.
 - 2026-03-02: Task moved to blocked pending owner manual test deploy; Telegram blocker notification sent (`agent/notify_owner.py --mode blocked ...`).
+- 2026-03-03: Manual test deploy confirmed by live probes (`/api/v1/frontend`, `/api/v2/frontend`, `/api/v2/frontend/doc` all `200`), but `meta.readmodelSource/readmodelId` are still absent in v2 payload, so cloud evidence still indicates non-YDB-readmodel source on test contour.
+- 2026-03-03: Owner notifications sent via `agent/notify_owner.py`: informational completion note for API cloud verification and blocker note for remaining YDB-readmodel source switch decision.
 
 ## Links
 - `src/adapters/ydb/schema.py`
