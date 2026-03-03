@@ -12,18 +12,17 @@ from typing import Any
 from urllib.parse import parse_qsl, urlparse
 
 from config import (
-    KEY_JSON,
     FRONTEND_API_DEFAULT_VERSION,
+    KEY_JSON,
     READMODEL_SOURCE,
     RUNTIME_ENV,
     SHEET_INFO,
     SOURCE_SHEET_NAME,
     TG_BOT_USERNAME,
     TRIGGERS,
-    YDB_ENDPOINT,
     YDB_DATABASE,
+    YDB_ENDPOINT,
 )
-from src.adapters.store_ydb import build_operational_store
 from core.api_payload import build_frontend_api_payload
 from core.api_payload_v2 import build_frontend_api_payload_v2
 from core.bootstrap import build_planner_dependencies
@@ -34,12 +33,14 @@ from core.group_query import (
 )
 from core.reminder import TelegramNotifier
 from main import main
-from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
+from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.services.source_policy import build_source_policy_matrix
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
-DEBUG_HTTP_EVENT = os.getenv("DEBUG_HTTP_EVENT", os.getenv("DEBUG_API_EVENT_SHAPE", "0")).strip().lower() in {
+DEBUG_HTTP_EVENT = os.getenv(
+    "DEBUG_HTTP_EVENT", os.getenv("DEBUG_API_EVENT_SHAPE", "0")
+).strip().lower() in {
     "1",
     "true",
     "yes",
@@ -91,7 +92,9 @@ def _load_work_tasks_for_group_query() -> list[Any]:
     return dependencies.task_repository.get_task_by_color_status(["work", "pre_done"])
 
 
-async def _handle_group_query_if_requested(request_payload: dict[str, Any], is_http_event: bool) -> bool:
+async def _handle_group_query_if_requested(
+    request_payload: dict[str, Any], is_http_event: bool
+) -> bool:
     if not is_http_event:
         return False
 
@@ -246,7 +249,9 @@ def _json_response(status_code: int, payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _error_response(status_code: int, *, code: str, message: str, details: dict[str, Any] | None = None) -> dict[str, Any]:
+def _error_response(
+    status_code: int, *, code: str, message: str, details: dict[str, Any] | None = None
+) -> dict[str, Any]:
     return _json_response(
         status_code,
         {
@@ -448,8 +453,18 @@ def _frontend_api_doc() -> dict[str, Any]:
             "artifact": "dtm_frontend_api_payload",
             "generated_at_utc": "ISO UTC timestamp",
             "source": {"env": "dev|test|prod", "source_sheet_name": "string"},
-            "filters": {"statuses": ["string"], "designer": "string", "limit": 200, "include_people": True},
-            "summary": {"tasks_total": 0, "tasks_filtered": 0, "tasks_returned": 0, "people_total": 0},
+            "filters": {
+                "statuses": ["string"],
+                "designer": "string",
+                "limit": 200,
+                "include_people": True,
+            },
+            "summary": {
+                "tasks_total": 0,
+                "tasks_filtered": 0,
+                "tasks_returned": 0,
+                "people_total": 0,
+            },
             "tasks": [
                 {
                     "id": "string",
@@ -845,7 +860,9 @@ def _path_matches(path: str, candidates: set[str]) -> bool:
     return any(normalized.endswith(candidate) for candidate in candidates)
 
 
-def _handle_frontend_api_if_requested(event: dict[str, Any], is_http_event: bool) -> dict[str, Any] | None:
+def _handle_frontend_api_if_requested(
+    event: dict[str, Any], is_http_event: bool
+) -> dict[str, Any] | None:
     if not is_http_event:
         return None
     path = _normalize_path(_http_path(event))
@@ -913,7 +930,9 @@ def _handle_frontend_api_if_requested(event: dict[str, Any], is_http_event: bool
     return _json_response(200, payload)
 
 
-def _handle_frontend_api_v2_if_requested(event: dict[str, Any], is_http_event: bool) -> dict[str, Any] | None:
+def _handle_frontend_api_v2_if_requested(
+    event: dict[str, Any], is_http_event: bool
+) -> dict[str, Any] | None:
     if not is_http_event:
         return None
     path = _normalize_path(_http_path(event))
@@ -988,7 +1007,9 @@ def _handle_frontend_api_v2_if_requested(event: dict[str, Any], is_http_event: b
             ]
         ):
             payload["meta"]["queryFilterApplied"] = False
-            payload["meta"]["queryFilterNote"] = "YDB readmodel endpoint returns stored snapshot without per-request rebuild."
+            payload["meta"]["queryFilterNote"] = (
+                "YDB readmodel endpoint returns stored snapshot without per-request rebuild."
+            )
         return _json_response(200, payload)
 
     dependencies = build_planner_dependencies(
@@ -1029,7 +1050,9 @@ def _handle_frontend_api_v2_if_requested(event: dict[str, Any], is_http_event: b
     return _json_response(200, payload)
 
 
-def _handle_api_root_if_requested(event: dict[str, Any], is_http_event: bool) -> dict[str, Any] | None:
+def _handle_api_root_if_requested(
+    event: dict[str, Any], is_http_event: bool
+) -> dict[str, Any] | None:
     if not is_http_event:
         return None
     method = _http_method(event) or "GET"
@@ -1042,7 +1065,11 @@ def _handle_api_root_if_requested(event: dict[str, Any], is_http_event: bool) ->
         return None
     params = _query_params(event)
     as_json = str(params.get("format", "")).strip().lower() == "json"
-    return _json_response(200, _frontend_api_v2_doc()) if as_json else _html_response(200, _frontend_api_v2_doc_html())
+    return (
+        _json_response(200, _frontend_api_v2_doc())
+        if as_json
+        else _html_response(200, _frontend_api_v2_doc_html())
+    )
 
 
 async def handler(event: Any, _: Any) -> dict[str, Any]:
@@ -1060,15 +1087,21 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
             "body": "!GROUP_QUERY_OK!",
         }
 
-    root_response = _handle_api_root_if_requested(event if isinstance(event, dict) else {}, is_http_event)
+    root_response = _handle_api_root_if_requested(
+        event if isinstance(event, dict) else {}, is_http_event
+    )
     if root_response is not None:
         return root_response
 
-    frontend_v2_response = _handle_frontend_api_v2_if_requested(event if isinstance(event, dict) else {}, is_http_event)
+    frontend_v2_response = _handle_frontend_api_v2_if_requested(
+        event if isinstance(event, dict) else {}, is_http_event
+    )
     if frontend_v2_response is not None:
         return frontend_v2_response
 
-    frontend_response = _handle_frontend_api_if_requested(event if isinstance(event, dict) else {}, is_http_event)
+    frontend_response = _handle_frontend_api_if_requested(
+        event if isinstance(event, dict) else {}, is_http_event
+    )
     if frontend_response is not None:
         return frontend_response
 
