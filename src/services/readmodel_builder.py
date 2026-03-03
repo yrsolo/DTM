@@ -94,7 +94,17 @@ class FrontendReadmodelBuilderService:
                 ydb_queries_count=self.operational_repo.client.stats.ydb_queries_count + self.readmodel_repo.client.stats.ydb_queries_count,
             )
 
-        task_rows = self.operational_repo.list_tasks()
+        task_rows = self.operational_repo.list_tasks(statuses=["work", "pre_done"])
+        task_ids = [str(row.get("task_id", "")).strip() for row in task_rows if str(row.get("task_id", "")).strip()]
+        milestone_rows = self.operational_repo.list_milestones(task_ids=task_ids)
+        milestones_by_task: dict[str, list[dict[str, Any]]] = {}
+        for item in milestone_rows:
+            task_id = str(item.get("task_id", "")).strip()
+            if not task_id:
+                continue
+            milestones_by_task.setdefault(task_id, []).append(item)
+        for rows in milestones_by_task.values():
+            rows.sort(key=lambda row: int(row.get("idx", 0)))
 
         task_views: list[_TaskView] = []
         for row in task_rows:
@@ -102,24 +112,11 @@ class FrontendReadmodelBuilderService:
             if not task_id:
                 continue
             timing: dict[Any, list[str]] = {}
-            raw_payload_text = str(row.get("raw_payload", "") or "")
-            raw_payload: dict[str, Any] = {}
-            if raw_payload_text:
-                try:
-                    parsed = json.loads(raw_payload_text)
-                    if isinstance(parsed, dict):
-                        raw_payload = parsed
-                except json.JSONDecodeError:
-                    raw_payload = {}
-            milestones = raw_payload.get("milestones", [])
-            if isinstance(milestones, list):
-                for milestone in milestones:
-                    if not isinstance(milestone, dict):
-                        continue
-                    planned = milestone.get("planned") or milestone.get("planned_date")
-                    if not planned:
-                        continue
-                    timing.setdefault(planned, []).append(str(milestone.get("type", "unknown")))
+            for milestone in milestones_by_task.get(task_id, []):
+                planned = milestone.get("planned_date")
+                if not planned:
+                    continue
+                timing.setdefault(planned, []).append(str(milestone.get("type", "unknown")))
             task_views.append(
                 _TaskView(
                     id=task_id,
@@ -127,11 +124,11 @@ class FrontendReadmodelBuilderService:
                     designer=str(row.get("owner_id", "")).strip(),
                     status=str(row.get("status", "")).strip(),
                     color_status=str(row.get("status", "")).strip(),
-                    brand="",
-                    format_="",
+                    brand=str(row.get("brand", "")).strip(),
+                    format_=str(row.get("format_", "")).strip(),
                     project_name=str(row.get("group_id", "")).strip(),
-                    customer="",
-                    raw_timing=raw_payload_text[:2000],
+                    customer=str(row.get("customer", "")).strip(),
+                    raw_timing=str(row.get("raw_timing", "")).strip(),
                     timing=timing,
                 )
             )

@@ -50,7 +50,7 @@ class OperationalTaskRepo:
         milestones_table: str = "dtm_task_milestones",
         sync_state_table: str = "dtm_sync_state",
         readmodel_table: str = "dtm_readmodel_frontend_v2",
-        ensure_schema: bool = True,
+        ensure_schema: bool = False,
     ) -> None:
         self.client = YdbClient(endpoint=endpoint, database=database)
         self.tasks_table = tasks_table
@@ -76,6 +76,10 @@ class OperationalTaskRepo:
                 {
                     "task_id": task_id,
                     "title": str(task.get("title", task.get("name", ""))).strip(),
+                    "brand": str(task.get("brand", "")).strip(),
+                    "format_": str(task.get("format_", "")).strip(),
+                    "customer": str(task.get("customer", "")).strip(),
+                    "raw_timing": str(task.get("raw_timing", "")).strip(),
                     "owner_id": str(task.get("owner_id", task.get("designer", ""))).strip(),
                     "group_id": str(task.get("group_id", task.get("project_name", ""))).strip(),
                     "status": str(task.get("status", task.get("color_status", ""))).strip().lower() or "unknown",
@@ -97,6 +101,10 @@ class OperationalTaskRepo:
             Struct<
                 task_id:Utf8,
                 title:Utf8,
+                brand:Utf8,
+                format_:Utf8,
+                customer:Utf8,
+                raw_timing:Utf8,
                 owner_id:Utf8,
                 group_id:Utf8,
                 status:Utf8,
@@ -112,15 +120,67 @@ class OperationalTaskRepo:
             >
         >;
         UPSERT INTO `{self.tasks_table}` (
-            task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
+            task_id, title, brand, format_, customer, raw_timing, owner_id, group_id, status, start_date, end_date, next_due_date,
             tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
         )
         SELECT
-            task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
+            task_id, title, brand, format_, customer, raw_timing, owner_id, group_id, status, start_date, end_date, next_due_date,
             tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
         FROM AS_TABLE($rows);
         """
-        self.client.execute(query, {"$rows": rows})
+        try:
+            self.client.execute(query, {"$rows": rows})
+        except Exception as exc:
+            if not self._is_missing_task_columns_error(exc):
+                raise
+            legacy_rows = [
+                {
+                    "task_id": item["task_id"],
+                    "title": item["title"],
+                    "owner_id": item["owner_id"],
+                    "group_id": item["group_id"],
+                    "status": item["status"],
+                    "start_date": item["start_date"],
+                    "end_date": item["end_date"],
+                    "next_due_date": item["next_due_date"],
+                    "tags_json": item["tags_json"],
+                    "links_json": item["links_json"],
+                    "task_hash": item["task_hash"],
+                    "task_revision": item["task_revision"],
+                    "raw_payload": item["raw_payload"],
+                    "updated_at_utc": item["updated_at_utc"],
+                }
+                for item in rows
+            ]
+            legacy_query = f"""
+            DECLARE $rows AS List<
+                Struct<
+                    task_id:Utf8,
+                    title:Utf8,
+                    owner_id:Utf8,
+                    group_id:Utf8,
+                    status:Utf8,
+                    start_date:Date?,
+                    end_date:Date?,
+                    next_due_date:Date?,
+                    tags_json:Utf8,
+                    links_json:Utf8,
+                    task_hash:Utf8?,
+                    task_revision:Uint64,
+                    raw_payload:Utf8,
+                    updated_at_utc:Timestamp
+                >
+            >;
+            UPSERT INTO `{self.tasks_table}` (
+                task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
+                tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
+            )
+            SELECT
+                task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
+                tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
+            FROM AS_TABLE($rows);
+            """
+            self.client.execute(legacy_query, {"$rows": legacy_rows})
         return len(rows)
 
     def replace_task_milestones(self, task_id: str, milestones: list[dict[str, Any]]) -> int:
@@ -274,14 +334,36 @@ class OperationalTaskRepo:
             },
         )
 
-    def list_tasks(self) -> list[dict[str, Any]]:
+    def list_tasks(self, *, statuses: list[str] | None = None) -> list[dict[str, Any]]:
+        status_filter = [str(item).strip().lower() for item in (statuses or []) if str(item).strip()]
         query = f"""
+        DECLARE $statuses AS List<Utf8>;
         SELECT
-            task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
-            tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
-        FROM `{self.tasks_table}`;
+            task_id, title, brand, format_, customer, raw_timing, owner_id, group_id, status, start_date, end_date, next_due_date,
+            tags_json, links_json, task_hash, task_revision, updated_at_utc
+        FROM `{self.tasks_table}`
+        WHERE
+            ListLength($statuses) = 0
+            OR status IN $statuses;
         """
-        result_sets = self.client.query(query)
+        try:
+            result_sets = self.client.execute(query, {"$statuses": status_filter})
+            missing_extended_columns = False
+        except Exception as exc:
+            if not self._is_missing_task_columns_error(exc):
+                raise
+            missing_extended_columns = True
+            legacy_query = f"""
+            DECLARE $statuses AS List<Utf8>;
+            SELECT
+                task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
+                tags_json, links_json, task_hash, task_revision, updated_at_utc
+            FROM `{self.tasks_table}`
+            WHERE
+                ListLength($statuses) = 0
+                OR status IN $statuses;
+            """
+            result_sets = self.client.execute(legacy_query, {"$statuses": status_filter})
         if not result_sets:
             return []
         rows: list[dict[str, Any]] = []
@@ -290,6 +372,10 @@ class OperationalTaskRepo:
                 {
                     "task_id": str(getattr(row, "task_id", "")),
                     "title": str(getattr(row, "title", "")),
+                    "brand": "" if missing_extended_columns else str(getattr(row, "brand", "")),
+                    "format_": "" if missing_extended_columns else str(getattr(row, "format_", "")),
+                    "customer": "" if missing_extended_columns else str(getattr(row, "customer", "")),
+                    "raw_timing": "" if missing_extended_columns else str(getattr(row, "raw_timing", "")),
                     "owner_id": str(getattr(row, "owner_id", "")),
                     "group_id": str(getattr(row, "group_id", "")),
                     "status": str(getattr(row, "status", "")),
@@ -300,18 +386,47 @@ class OperationalTaskRepo:
                     "links_json": str(getattr(row, "links_json", "{}")),
                     "task_hash": str(getattr(row, "task_hash", "")) or None,
                     "task_revision": int(getattr(row, "task_revision", 0) or 0),
-                    "raw_payload": str(getattr(row, "raw_payload", "")),
                     "updated_at_utc": getattr(row, "updated_at_utc", None),
                 }
             )
         return rows
 
-    def list_milestones(self) -> list[dict[str, Any]]:
-        query = f"""
-        SELECT task_id, idx, type, planned_date, actual_date, status, raw_text, confidence, inference_rule
-        FROM `{self.milestones_table}`;
-        """
-        result_sets = self.client.query(query)
+    @staticmethod
+    def _is_missing_task_columns_error(exc: Exception) -> bool:
+        text = str(exc).lower()
+        if "member not found" not in text:
+            return False
+        return any(
+            marker in text
+            for marker in ("brand", "format_", "customer", "raw_timing")
+        )
+
+    def list_milestones(
+        self,
+        *,
+        task_ids: list[str] | None = None,
+        include_details: bool = True,
+    ) -> list[dict[str, Any]]:
+        keys = [str(task_id).strip() for task_id in (task_ids or []) if str(task_id).strip()]
+        if include_details:
+            query = f"""
+            DECLARE $task_ids AS List<Utf8>;
+            SELECT task_id, idx, type, planned_date, actual_date, status, raw_text, confidence, inference_rule
+            FROM `{self.milestones_table}`
+            WHERE
+                ListLength($task_ids) = 0
+                OR task_id IN $task_ids;
+            """
+        else:
+            query = f"""
+            DECLARE $task_ids AS List<Utf8>;
+            SELECT task_id, idx, type, planned_date
+            FROM `{self.milestones_table}`
+            WHERE
+                ListLength($task_ids) = 0
+                OR task_id IN $task_ids;
+            """
+        result_sets = self.client.execute(query, {"$task_ids": keys})
         if not result_sets:
             return []
         rows: list[dict[str, Any]] = []
@@ -322,11 +437,11 @@ class OperationalTaskRepo:
                     "idx": int(getattr(row, "idx", 0) or 0),
                     "type": str(getattr(row, "type", "")),
                     "planned_date": getattr(row, "planned_date", None),
-                    "actual_date": getattr(row, "actual_date", None),
-                    "status": str(getattr(row, "status", "")) or "unknown",
-                    "raw_text": str(getattr(row, "raw_text", "")) or None,
-                    "confidence": float(getattr(row, "confidence", 0.0) or 0.0),
-                    "inference_rule": str(getattr(row, "inference_rule", "")) or None,
+                    "actual_date": getattr(row, "actual_date", None) if include_details else None,
+                    "status": (str(getattr(row, "status", "")) or "unknown") if include_details else "unknown",
+                    "raw_text": (str(getattr(row, "raw_text", "")) or None) if include_details else None,
+                    "confidence": float(getattr(row, "confidence", 0.0) or 0.0) if include_details else 0.0,
+                    "inference_rule": (str(getattr(row, "inference_rule", "")) or None) if include_details else None,
                 }
             )
         return rows

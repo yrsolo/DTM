@@ -8,11 +8,8 @@ import re
 import time
 import traceback
 from datetime import datetime
-from dataclasses import dataclass
 from typing import Any
 from urllib.parse import parse_qsl, urlparse
-
-import pandas as pd
 
 from config import (
     KEY_JSON,
@@ -23,10 +20,10 @@ from config import (
     SOURCE_SHEET_NAME,
     TG_BOT_USERNAME,
     TRIGGERS,
-    MIGRATION_STORE_FILE,
     YDB_ENDPOINT,
     YDB_DATABASE,
 )
+from src.adapters.store_ydb import build_operational_store
 from core.api_payload import build_frontend_api_payload
 from core.api_payload_v2 import build_frontend_api_payload_v2
 from core.bootstrap import build_planner_dependencies
@@ -37,7 +34,7 @@ from core.group_query import (
 )
 from core.reminder import TelegramNotifier
 from main import main
-from src.adapters.store_ydb import build_operational_store, store_records_to_tasks
+from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
@@ -388,66 +385,11 @@ def _parse_window_query(params: dict[str, Any]) -> tuple[dict[str, Any], dict[st
     )
 
 
-@dataclass(slots=True)
-class _ApiStoreTaskView:
-    id: str
-    name: str
-    designer: str
-    status: str
-    color_status: str
-    brand: str
-    format_: str
-    project_name: str
-    customer: str
-    raw_timing: str
-    timing: dict[pd.Timestamp, list[str]]
-
-    @property
-    def min_date(self) -> pd.Timestamp | None:
-        return min(self.timing.keys()) if self.timing else None
-
-    @property
-    def max_date(self) -> pd.Timestamp | None:
-        return max(self.timing.keys()) if self.timing else None
-
-
-def _tasks_from_store_records(records: list[dict[str, Any]], statuses: list[str]) -> list[_ApiStoreTaskView]:
-    target_statuses = {str(status).strip().lower() for status in statuses if str(status).strip()}
-    tasks: list[_ApiStoreTaskView] = []
-    for task in store_records_to_tasks(records):
-        color_status = str(getattr(task, "color_status", "")).strip().lower()
-        if target_statuses and color_status not in target_statuses:
-            continue
-        tasks.append(
-            _ApiStoreTaskView(
-                id=str(task.id),
-                name=str(task.name),
-                designer=str(task.designer),
-                status=str(task.status),
-                color_status=color_status or "work",
-                brand=str(task.brand),
-                format_=str(task.format_),
-                project_name=str(task.project_name),
-                customer=str(task.customer),
-                raw_timing=str(task.raw_timing),
-                timing=dict(task.timing),
-            )
-        )
-    return tasks
-
-
 def _load_frontend_tasks(dependencies: Any, statuses: list[str]) -> list[Any]:
     if READMODEL_SOURCE != "ydb":
         return dependencies.task_repository.get_task_by_color_status(statuses)
-    store = build_operational_store(
-        "ydb_only",
-        env_name=RUNTIME_ENV,
-        ydb_endpoint=YDB_ENDPOINT,
-        ydb_database=YDB_DATABASE,
-        json_file_path=MIGRATION_STORE_FILE,
-    )
-    records = store.list_tasks()
-    return _tasks_from_store_records(records, statuses=statuses)
+    task_repo = YdbOperationalTaskRepository(endpoint=YDB_ENDPOINT, database=YDB_DATABASE)
+    return task_repo.get_task_by_color_status(statuses)
 
 
 def _extract_run_mode(

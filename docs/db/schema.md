@@ -12,6 +12,10 @@
 - Columns:
   - `task_id` `Utf8`
   - `title` `Utf8`
+  - `brand` `Utf8`
+  - `format_` `Utf8`
+  - `customer` `Utf8`
+  - `raw_timing` `Utf8`
   - `owner_id` `Utf8`
   - `group_id` `Utf8`
   - `status` `Utf8`
@@ -62,4 +66,3 @@
 - Sync hash gate uses source-range values hash (`source_hash` in `dtm_sync_state`).
 - Readmodel build loads operational data in batched reads (tasks + milestones).
 - API v2 in YDB mode reads readmodel snapshot row (`dtm_readmodel_frontend_v2`) and returns payload.
-

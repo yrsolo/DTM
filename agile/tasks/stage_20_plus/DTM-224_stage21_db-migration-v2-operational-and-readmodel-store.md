@@ -31,7 +31,13 @@
 - [x] `src/services/readmodel_builder.py` added (operational -> readmodel snapshot).
 - [x] API v2 YDB mode reads `frontend_v2:default` from readmodel table.
 - [x] DB docs added (`docs/db/schema.md`, `docs/db/migration-plan.md`).
-- [ ] Cloud smoke for readmodel snapshot path.
+- [x] Legacy blob write path disabled by default (`LEGACY_BLOB_WRITE=0`) and explicitly logged.
+- [x] Hot-path DDL removed from runtime path (`ensure_schema` only with `YDB_MIGRATE_ON_START` / `db_migrate` mode).
+- [x] Backoff+jitter added for YDB `RESOURCE_EXHAUSTED`.
+- [x] Readmodel builder uses milestones table bulk-load (no N+1 per task reads).
+- [x] Operational payload preserves `brand/format_/customer/raw_timing`.
+- [x] Unit tests added for source-hash gate / readmodel enums / milestones source / backoff.
+- [ ] Cloud smoke for readmodel snapshot path (sync -> build -> API v2 over test domain).
 
 ## Work log
 - 2026-03-02: Created execution task from external migration arbitration prompt.
@@ -48,6 +54,26 @@
 - 2026-03-02: Fixed Windows console encoding crash in migration logs with safe-print.
 - 2026-03-02: Verified API v2 consumes readmodel snapshot from YDB (`readmodelSource=ydb`, `readmodelId=frontend_v2:default`).
 - 2026-03-02: Observed transient YDB `RESOURCE_EXHAUSTED` in timer-integrated run; separate retry smoke for readmodel build succeeded and refreshed snapshot (`tasks=14`).
+- 2026-03-02: Applied audit hardening:
+  - added runtime knobs (`LEGACY_BLOB_WRITE`, `YDB_MIGRATE_ON_START`, exhausted-backoff tuning),
+  - removed automatic ensure-schema from hot timer path,
+  - switched readmodel build timing source to `dtm_task_milestones`,
+  - added missing business fields to normalized operational payload.
+- 2026-03-02: Added tests:
+  - `tests/services/test_sync_source_hash_gate.py`
+  - `tests/services/test_readmodel_enums.py`
+  - `tests/services/test_readmodel_uses_milestones_table.py`
+  - `tests/services/test_ydb_backoff.py`
+- 2026-03-02: Local evidence:
+  - `.venv\Scripts\python.exe -m unittest tests.services.test_sync_source_hash_gate tests.services.test_readmodel_enums tests.services.test_readmodel_uses_milestones_table tests.services.test_ydb_backoff tests.api.test_frontend_api_v2_payload tests.services.test_hash_basis -v` -> OK
+  - `cmd /c run_timer.cmd` -> migration sync/readmodel path OK, no deferred status.
+- 2026-03-02: Unified consumer read path for runtime blocks:
+  - `render/notify` source switch now uses normalized repo adapter (`src/adapters/ydb/task_repository.py`) over `dtm_tasks + dtm_task_milestones` (legacy `dtm_operational_tasks` path removed from runtime switch).
+  - `v1` API `READMODEL_SOURCE=ydb` path now also uses normalized task repo.
+  - Added adapter tests: `tests/adapters/test_ydb_operational_task_repository.py`.
+- 2026-03-02: Added compatibility fallback for pre-migration `dtm_tasks` schema (missing `brand/format_/customer/raw_timing`) in `OperationalTaskRepo` read/write paths; timer smoke recovered.
+- 2026-03-02: Cloud probe to test contour returned outdated response shape (`readmodelSource` missing), indicating test deployment lag.
+- 2026-03-02: Task moved to blocked pending owner manual test deploy; Telegram blocker notification sent (`agent/notify_owner.py --mode blocked ...`).
 
 ## Links
 - `src/adapters/ydb/schema.py`
@@ -58,3 +84,4 @@
 - `index.py`
 - `docs/db/schema.md`
 - `docs/db/migration-plan.md`
+- `docs/evidence_db_migration_v2.md`
