@@ -41,6 +41,10 @@
 - Move render and notify to YDB-backed operational/readmodel sources.
 - Verify regular timer/morning flows and smoke metrics.
 
+### Stage 4.5: Milestones version backfill
+- Execute `python -m agent.backfill_milestones_versions --apply --verify-sample-size 5` after first YDB sync on target contour.
+- Verification must report `verify_mismatches=0`.
+
 ### Stage 5: Primary and strict mode
 - Switch `STORE_MODE=ydb_primary` then `STORE_MODE=ydb_only`.
 - In production `ydb_only` has no JSON fallback.

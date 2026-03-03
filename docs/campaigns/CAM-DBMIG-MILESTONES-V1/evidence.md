@@ -27,10 +27,25 @@
   - smoke path validated:
     - `.venv\Scripts\python.exe agent/cloud_smoke_db_migration_v2.py --base-url https://functions.yandexcloud.net/<YC_CLOUD_FUNCTION_ID> --api-url https://<API_DOMAIN_TEST>/api/v2/frontend`
     - result: `sync_status_code=200`, `api_status_code=200`, `api_contract_version=2.0.1`, `api_ok=true`
+- P04 migration/backfill completed:
+  - added migration utility `agent/backfill_milestones_versions.py`
+    - reads current versions from `dtm_tasks`
+    - migrates legacy rows from `dtm_task_milestones` into `dtm_task_milestones_v` keyed by `(task_id, version)`
+    - supports verification sample to detect cross-version timing mismatch
+  - fixed YDB date normalization for integer-encoded Date values in operational adapter (`src/adapters/ydb/operational_repo.py`)
+  - executed migration flow on YDB contour:
+    - `main(mode='db_migrate')` -> `db_migrate_done=true`
+    - forced sync in `STORE_MODE=ydb_primary` produced operational rows (`tasks_upserted=999`, `milestones_upserted=5732`)
+    - backfill run with verification:
+      - `rows_written=5732`
+      - `verify_sample_size=5`
+      - `verify_matches=5`, `verify_mismatches=0`, `verify_ok=true`
+  - added date-conversion regression test:
+    - `.venv\Scripts\python.exe -m tests.adapters.test_ydb_operational_repo_dates`
 
 ## Completion Checklist
 - [x] P01 schema tasks done
 - [x] P02 write-path versioning tasks done
 - [x] P03 readmodel source-of-truth tasks done
-- [ ] P04 migration/backfill tasks done
+- [x] P04 migration/backfill tasks done
 - [ ] P05 tests and evidence package done

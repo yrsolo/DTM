@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
 from src.adapters.ydb.client import YdbClient
@@ -20,6 +20,17 @@ def _to_date(value: Any) -> date | None:
         return None
     if isinstance(value, date):
         return value
+    if isinstance(value, (int, float)):
+        raw = int(value)
+        if raw <= 0:
+            return None
+        # YDB Date can be returned as days since Unix epoch.
+        if raw < 100_000:
+            return date(1970, 1, 1) + timedelta(days=raw)
+        # Fallback for epoch-like timestamps.
+        if raw > 10_000_000_000:
+            raw //= 1_000
+        return datetime.fromtimestamp(raw, tz=timezone.utc).date()
     text = str(value).strip()
     if not text:
         return None
