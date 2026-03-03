@@ -1,38 +1,47 @@
-### CAM-ENTRYPOINT-REFORM-V1 — Чистка entrypoints: `index.py` и `main.py`
+# CAM-ENTRYPOINT-REFORM-V1 — Тонкие entrypoints: index.py и main.py
 
-**Цель**
-Сделать `index.py` и `main.py` тонкими и понятными: они должны быть только “точками входа”, а не местом, где живёт бизнес-логика, разбор конфигов, orchestration и ветвления по флагам.
+## Goal
+Сделать `index.py` и `main.py` тонкими, понятными, без бизнес-логики и без инфраструктурных деталей.
 
-**Проблема сейчас**
+## Problem statement
+В entrypoints сейчас смешаны:
+- parsing event,
+- routing,
+- orchestration пайплайна,
+- доступ к YDB/Sheets,
+- флаги миграции,
+- обработка ошибок и качество данных.
 
-* В `index.py` смешаны routing, бизнес-решения, работа с хранилищами, форматирование ответов.
-* В `main.py` смешаны bootstrap, sync/build/readmodel, параметры окружения и сложное ветвление, от чего трудно безопасно менять архитектуру.
+## Scope
+- `index.py` оставить как thin HTTP router:
+  - parse event → dispatch → return response
+- `main.py` оставить как thin job runner:
+  - parse run_mode → call job
 
-**Scope**
+Вынести:
+- HTTP handlers → `src/entrypoints/http/handlers/*` или `src/handlers/*`
+- jobs → `src/entrypoints/jobs/*`
+- bootstrap → `src/app/bootstrap.py` (использует cfg из CAM-CONFIG-REFORM-V0)
 
-* Вынести orchestration/use-cases в `src/services/*`.
-* Вынести HTTP handlers в `src/entrypoints/http/*`.
-* Вынести jobs/cron/timer в `src/entrypoints/jobs/*`.
-* Создать единый composition root/bootstrapping: сборка зависимостей и конфигов в одном месте (например `src/app/bootstrap.py`).
-* Нормализовать обработку ошибок/логирование в entrypoints.
+## Non-goals
+- Не менять бизнес поведение пайплайна.
+- Не менять API payload структуру.
 
-**Non-goals**
+## Deliverables
+- `src/entrypoints/http/index_handler.py` (или аналог)
+- `src/entrypoints/jobs/{timer_job.py,db_migrate_job.py,...}`
+- `index.py` и `main.py` становятся thin wrappers.
 
-* Не переписывать бизнес-логику алгоритмов.
-* Не менять функционал API-контрактов.
-* Не делать “идеальный DI-фреймворк” — достаточно простой фабрики зависимостей.
+## Phases & tasks
+### P01 — HTTP entrypoint
+- T001: Извлечь parsing event в `src/entrypoints/http/event_parser.py`
+- T002: Извлечь routing table в `src/entrypoints/http/router.py`
+- T003: `index.py` делегирует в router и handlers.
 
-**Deliverables**
+### P02 — Job entrypoint
+- T001: `main.py` выбирает job по cfg/run_mode
+- T002: job реализован отдельным модулем и вызывает use-cases через ctx
 
-* Новый слой `src/entrypoints/` (http + jobs).
-* `index.py` превращён в thin router → handlers.
-* `main.py` превращён в thin cli/job runner → services.
-* Док: короткий `docs/system/entrypoints.md` (что где живёт и как запускается).
-
-**Definition of Done**
-
-* `index.py` читается сверху вниз за 2–3 минуты и не содержит бизнес-ветвлений.
-* `main.py` не содержит больших блоков логики: только выбор “какую job запустить” и вызов сервиса.
-* Большая часть логики перемещена в тестируемые модули (services).
-
----
+## DoD
+- `index.py` ≤ 150 строк, `main.py` ≤ 200 строк (ориентир).
+- В entrypoints нет импорта YDB schema/SQL, нет парсинга таймингов, нет readmodel builder логики.

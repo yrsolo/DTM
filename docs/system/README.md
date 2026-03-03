@@ -1,14 +1,14 @@
-# System Docs
+# System docs
 
-This section describes how DTM works now.
+## Contents
+- `architecture.md` — high-level architecture and boundaries
+- `dataflow.md` — canonical pipeline (Sheets → hash gate → normalize → version → YDB → readmodel)
+- `ydb_schema.md` — YDB tables and their meaning
+- `runtime_modes.md` — intended runtime modes
+- `entrypoints_index_main.md` — what `index.py` and `main.py` do today
+- `module_map.md` — module inventory (what exists and where)
+- `config.md` — env/config overview (current state)
+- `runbook.md` — minimal operations guide
 
-## Core references
-- Architecture: `docs/system/architecture.md`
-- Modules overview: `docs/system/modules/README.md`
-- Configuration contour: `docs/system/config.md`
-- Runtime runbook: `docs/system/runbook.md`
-
-## Supporting specs
-- API contract: `docs/api/frontend-v2.md`
-- DB schema: `docs/db/schema.md`
-- DB rollout plan: `docs/db/migration-plan.md`
+## Module notes
+`docs/system/modules/` can contain module-level notes as the codebase is refactored.
