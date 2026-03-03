@@ -24,4 +24,4 @@
 - [x] `CAM-MILESTONES-V1.2-P04-T004`
 
 ## Evidence
-- `work/roadmap/campaigns/CAM-MILESTONES-V1.2/evidence.md`
+- `work/archive/campaigns/CAM-MILESTONES-V1.2/evidence.md`

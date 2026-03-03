@@ -27,4 +27,4 @@
 - [x] `CAM-DBMIG-MILESTONES-V1-P05-T003`
 
 ## Evidence
-- `work/roadmap/campaigns/CAM-DBMIG-MILESTONES-V1/evidence.md`
+- `work/archive/campaigns/CAM-DBMIG-MILESTONES-V1/evidence.md`

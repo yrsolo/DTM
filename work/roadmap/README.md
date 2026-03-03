@@ -2,10 +2,7 @@
 
 | CAM | Goal | Priority | Status |
 | --- | --- | --- | --- |
-| CAM-MILESTONES-V1.2 | Harden milestones_v consistency and sync safety | High | done |
-| CAM-MILESTONES-V1.1 | Versioned milestones source-of-truth transition | Medium | done |
-| CAM-DBMIG-MILESTONES-V1 | DB migration milestones baseline | Medium | done |
-| CAM-DOC-REFORM | Documentation/process split baseline | High | done |
+| - | No active/planned campaign selected yet | - | pending |
 
 Detailed files:
 - `work/roadmap/campaigns/`
