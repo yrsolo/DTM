@@ -113,9 +113,9 @@ jobs:
             READMODEL_SOURCE=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/READMODEL_SOURCE
             NOTIFY_SOURCE=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/NOTIFY_SOURCE
             RENDER_SOURCE=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/RENDER_SOURCE
-            YDB_ID=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_ID
-            YDB_ENDPOINT=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_ENDPOINT
-            YDB_DATABASE=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_DATABASE
+            YDB_ID_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_ID_PROD
+            YDB_ENDPOINT_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_ENDPOINT_PROD
+            YDB_DATABASE_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_DATABASE_PROD
           include: |
             **/*.py
             requirements.txt

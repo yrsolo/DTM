@@ -29,6 +29,22 @@ def _env_flag(name: str, default: str = "0") -> bool:
     return _env(name, default).lower() in {"1", "true", "yes"}
 
 
+def _contour_env(name: str, default: str = "") -> str:
+    """Return contour-specific value with legacy fallback.
+
+    Priority:
+    - ENV=prod -> <NAME>_PROD
+    - ENV=dev/test -> <NAME>_TEST
+    - fallback -> <NAME>
+    """
+
+    suffix = "PROD" if RUNTIME_ENV == "prod" else "TEST"
+    scoped_value = _env(f"{name}_{suffix}")
+    if scoped_value:
+        return scoped_value
+    return _env(name, default)
+
+
 def _load_runtime_env() -> str:
     """Load base .env and optional profile-specific file.
 
@@ -85,9 +101,9 @@ if RENDER_SOURCE not in ALLOWED_READ_SOURCES:
         "Allowed values: legacy, ydb."
     )
 
-YDB_ID = _env("YDB_ID")
-YDB_ENDPOINT = _env("YDB_ENDPOINT")
-YDB_DATABASE = _env("YDB_DATABASE")
+YDB_ID = _contour_env("YDB_ID")
+YDB_ENDPOINT = _contour_env("YDB_ENDPOINT")
+YDB_DATABASE = _contour_env("YDB_DATABASE")
 YDB_MIGRATE_ON_START = _env_flag("YDB_MIGRATE_ON_START", "0")
 LEGACY_BLOB_WRITE = _env_flag("LEGACY_BLOB_WRITE", "0")
 YDB_EXHAUSTED_MAX_ATTEMPTS = max(1, int(_env("YDB_EXHAUSTED_MAX_ATTEMPTS", "6")))

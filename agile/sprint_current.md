@@ -13,6 +13,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-225 - Split test/prod YDB contours across runtime, workflows, and Lockbox payload.
 - [DONE] DTM-224 - DB migration v2: cloud smoke passed (`v2` reads YDB readmodel; `v1` dates fixed after hotfix deploy).
 - [DONE] DTM-223 - Frontend API v2 + shared task query contract across API/render/reminder; cloud verification passed on test domain.
 - [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
@@ -39,11 +40,12 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-198 - Stage 21 deploy contour split (test auto / prod manual) and API domain scripts.
 
 ## Stage 21 Estimate (Dynamic)
-- Baseline estimate: 24 tasks.
-- Done: 24
+- Baseline estimate: 25 tasks.
+- Done: 25
 - Remaining: 0
 
 ## Done (Latest)
+- [DONE] DTM-225 - Split test/prod YDB contours (`YDB_*_TEST` / `YDB_*_PROD`) in runtime + CI/CD + Lockbox sync.
 - [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
 - [DONE] DTM-223 - Frontend API v2 + shared task query contract; cloud verification passed (`v1/v2/doc` = 200).
 - [DONE] DTM-224 - DB migration v2 cloud smoke passed (`v2` readmodel markers confirmed; `v1` date regression fixed).
@@ -89,6 +91,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 
 ## Active Task Files
 - `agile/tasks/stage_20_plus/DTM-224_stage21_db-migration-v2-operational-and-readmodel-store.md`
+- `agile/tasks/stage_20_plus/DTM-225_stage21_split-test-prod-ydb-contours.md`
 
 ## Task Folder Structure
 - `agile/tasks/stage_00_09/` - stage 0-9 execution tasks.

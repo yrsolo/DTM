@@ -170,7 +170,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `YC_CLOUD_FUNCTION_PROD_NAME`
   - `YC_CLOUD_FUNCTION_PROD_ID`
   - `YC_LOCKBOX_SECRET_ID`
-- Runtime app keys (including `SOURCE_SHEET_NAME`, `API_DOMAIN_*`, `YDB_*`, `STORE_MODE`, `READMODEL_SOURCE`, `NOTIFY_SOURCE`, `RENDER_SOURCE`) are read from Lockbox secret payload.
+- Runtime app keys (including `SOURCE_SHEET_NAME`, `API_DOMAIN_*`, `YDB_*_TEST`, `YDB_*_PROD`, `STORE_MODE`, `READMODEL_SOURCE`, `NOTIFY_SOURCE`, `RENDER_SOURCE`) are read from Lockbox secret payload.
 - Full setup guide:
   - `doc/ops/stage9_main_autodeploy_setup.md`
 - Direct cloud endpoint smoke invoke:
@@ -203,6 +203,10 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `WEB_DOMAIN` (site domain)
   - `API_DOMAIN_TEST`, `API_DOMAIN_PROD`
   - runtime uses `API_DOMAIN_TEST` for non-prod and `API_DOMAIN_PROD` for prod.
+- YDB selector:
+  - for `ENV=dev/test` runtime prefers `YDB_ID_TEST`, `YDB_ENDPOINT_TEST`, `YDB_DATABASE_TEST`
+  - for `ENV=prod` runtime prefers `YDB_ID_PROD`, `YDB_ENDPOINT_PROD`, `YDB_DATABASE_PROD`
+  - legacy fallback `YDB_ID`, `YDB_ENDPOINT`, `YDB_DATABASE` is still supported.
 - Google service-account key runtime source priority:
   - `GOOGLE_KEY_JSON_PATH` (existing file path)
   - `GOOGLE_KEY_JSON_B64` (base64 JSON text)
