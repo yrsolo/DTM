@@ -15,6 +15,7 @@ ALLOWED_LLM_FAILOVER_MODES = frozenset({"draft_only", "provider"})
 ALLOWED_STORE_MODES = frozenset({"legacy", "dual_write", "ydb_primary", "ydb_only"})
 ALLOWED_READ_SOURCES = frozenset({"legacy", "ydb"})
 ALLOWED_FRONTEND_API_DEFAULT_VERSIONS = frozenset({"v1", "v2"})
+ALLOWED_TIMING_YEAR_MODES = frozenset({"legacy", "anchors", "chain"})
 
 
 def _env(name: str, default: str = "") -> str:
@@ -73,6 +74,12 @@ if FRONTEND_API_DEFAULT_VERSION not in ALLOWED_FRONTEND_API_DEFAULT_VERSIONS:
     raise ValueError(
         f"Unsupported FRONTEND_API_DEFAULT_VERSION={FRONTEND_API_DEFAULT_VERSION!r}. "
         "Allowed values: v1, v2."
+    )
+TIMING_YEAR_MODE = _env("TIMING_YEAR_MODE", "legacy").lower()
+if TIMING_YEAR_MODE not in ALLOWED_TIMING_YEAR_MODES:
+    raise ValueError(
+        f"Unsupported TIMING_YEAR_MODE={TIMING_YEAR_MODE!r}. "
+        "Allowed values: legacy, anchors, chain."
     )
 
 # Operational store / readmodel rollout switches.
