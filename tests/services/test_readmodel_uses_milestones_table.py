@@ -59,6 +59,14 @@ class _OperationalRepoStub:
                 "planned_date": "2026-03-11",
                 "status": "planned",
             },
+            {
+                "task_id": "42",
+                "version": 2,
+                "idx": 99,
+                "type": "wrong_version_row",
+                "planned_date": "2026-04-01",
+                "status": "planned",
+            },
         ]
 
 

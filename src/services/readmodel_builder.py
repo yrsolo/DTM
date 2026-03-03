@@ -108,6 +108,10 @@ class FrontendReadmodelBuilderService:
             task_id = str(item.get("task_id", "")).strip()
             if not task_id:
                 continue
+            row_version = int(item.get("version", 0) or 0)
+            expected_version = int(task_versions.get(task_id, 0) or 0)
+            if expected_version > 0 and row_version > 0 and row_version != expected_version:
+                continue
             milestones_by_task.setdefault(task_id, []).append(item)
         for rows in milestones_by_task.values():
             rows.sort(key=lambda row: int(row.get("idx", 0)))

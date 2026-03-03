@@ -42,10 +42,18 @@
       - `verify_matches=5`, `verify_mismatches=0`, `verify_ok=true`
   - added date-conversion regression test:
     - `.venv\Scripts\python.exe -m tests.adapters.test_ydb_operational_repo_dates`
+- P05 tests/evidence package completed:
+  - builder-level version guard is enforced and tested:
+    - mismatched milestone row versions are ignored (`src/services/readmodel_builder.py`)
+    - `.venv\Scripts\python.exe -m tests.services.test_readmodel_uses_milestones_table`
+  - forced refresh version stability regression remains green:
+    - `.venv\Scripts\python.exe -m tests.services.test_sync_source_hash_gate`
+  - runbook updated with one-time versioned milestones backfill procedure:
+    - `docs/ops/stage22_db_migrate_force_refresh_rollback_runbook.md`
 
 ## Completion Checklist
 - [x] P01 schema tasks done
 - [x] P02 write-path versioning tasks done
 - [x] P03 readmodel source-of-truth tasks done
 - [x] P04 migration/backfill tasks done
-- [ ] P05 tests and evidence package done
+- [x] P05 tests and evidence package done
