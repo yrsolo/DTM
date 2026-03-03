@@ -1,4 +1,4 @@
-﻿# Baseline Validation And Artifacts (Stage 0.4)
+# Baseline Validation And Artifacts (Stage 0.4)
 
 ## Purpose
 Define a repeatable baseline validation flow so behavior regressions are detected before merge.
@@ -64,7 +64,7 @@ Use this cadence to keep threshold tuning reproducible and avoid ad-hoc policy d
 ### Per run
 - Execute baseline helper and confirm `quality_report.json`, `alert_evaluation.json`, `read_model.json`, `schema_snapshot.json`, and `fixture_bundle.json` exist.
 - Record evaluated level (`INFO_ONLY/WARN/CRITICAL/OK`) and core metrics in Jira evidence comment.
-- If level is `WARN` or `CRITICAL`, apply escalation policy from `docs/plan/risk_register.md`.
+- If level is `WARN` or `CRITICAL`, apply escalation policy from `work/archive/roadmap_legacy/plan_legacy/risk_register.md`.
 - Verify retry taxonomy metrics in `quality_report.summary`:
   - `reminder_send_retry_attempt_count`
   - `reminder_send_retry_exhausted_count`
@@ -85,9 +85,10 @@ Use this cadence to keep threshold tuning reproducible and avoid ad-hoc policy d
   - `reminder_send_retry_exhausted_count >= 3` for the week -> create mitigation task.
   - `reminder_send_error_unknown_count >= 1` in two consecutive weekly reviews -> create classifier tuning task.
   - `reminder_send_error_permanent_count >= 3` and `permanent >= transient` -> create data quality follow-up task.
-- Update `agile/sprint_current.md` notes with summary decision (`no tuning` or `tuning proposed`).
+- Update `work/now/tasks.md` notes with summary decision (`no tuning` or `tuning proposed`).
 
 ### Monthly
 - Run a threshold drift review with trend snapshots and baseline artifacts.
 - If tuning is needed, create a dedicated Jira task (separate from notifier-behavior changes).
 - Document rationale and before/after examples in task file + Jira before applying any threshold update.
+

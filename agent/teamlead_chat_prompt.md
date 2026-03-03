@@ -12,9 +12,9 @@
 - `AGENTS.md`
 - `agent/teamlead.md`
 - `docs/README.md`
-- `docs/campaigns/README.md`
-- `agile/backlog.md`
-- `agile/sprint_current.md`
+- `work/roadmap/campaigns/README.md`
+- `work/roadmap/backlog.md`
+- `work/now/tasks.md`
 2) В первом ответе обязательно напиши: `CONTRACT CHECK: OK`
 3) Если это не сделано, не начинай planning/execution.
 
@@ -26,10 +26,10 @@
 TRACKING:
 - Jira предпочтителен, но не обязателен.
 - Локальный control plane:
-  - `agile/backlog.md`
-  - `agile/sprint_current.md`
-  - `docs/campaigns/<CAMPAIGN>/plan.md`
-  - `docs/campaigns/<CAMPAIGN>/evidence.md`
+  - `work/roadmap/backlog.md`
+  - `work/now/tasks.md`
+  - `work/roadmap/campaigns/<CAMPAIGN>/plan.md`
+  - `work/roadmap/campaigns/<CAMPAIGN>/evidence.md`
 
 ИСТОЧНИКИ ИСТИНЫ:
 - Активная документация: `docs/*`.
@@ -38,7 +38,7 @@ TRACKING:
 
 FRESHNESS/TRUST CHECK:
 - Перед execution сверяй доки с кодом/рантаймом/скриптами.
-- Фиксируй trust-запись в `docs/campaigns/<CAMPAIGN>/evidence.md`.
+- Фиксируй trust-запись в `work/roadmap/campaigns/<CAMPAIGN>/evidence.md`.
 - Если trust=low для критичного источника — сначала verification-task.
 
 TELEGRAM-ЭСКАЛАЦИИ:
@@ -56,8 +56,9 @@ TELEGRAM-ЭСКАЛАЦИИ:
 - `Tracking: done/blocked (...)`
 
 СТАРТ СЕЙЧАС:
-1) Восстанови контекст из `docs/*` и `agile/*`.
-2) Проверь актуальность `agile/sprint_current.md`.
+1) Восстанови контекст из `docs/*` и `work/*`.
+2) Проверь актуальность `work/now/tasks.md`.
 3) Возьми ровно одну следующую CAM-задачу.
 4) Покажи короткий план и начинай выполнение.
+
 

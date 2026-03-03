@@ -1,22 +1,20 @@
 # Documentation Map
 
-Single source of truth for active documentation.
+`docs/` stores system documentation only: architecture, modules, runtime config, API, DB, and operational runbooks.
+Process planning and campaign lifecycle are separated into `work/`.
 
-## Read First
-1. `docs/campaigns/README.md` - CAM-P-T planning model and naming rules.
-2. `agile/sprint_current.md` - current active execution queue.
-3. `agile/backlog.md` - groomed queue with campaign task IDs.
+## Start Here
+- `docs/system/README.md`
+- `docs/system/architecture.md`
+- `docs/system/config.md`
+- `docs/system/runbook.md`
 
-## Active Domains
-- Planning system: `docs/plan/`
-- Campaigns: `docs/campaigns/`
-- Database migration and schema: `docs/db/`
-- API contracts: `docs/api/`
-- Ops runbooks: `docs/ops/`
-- Evidence artifacts and checklists: `docs/evidence/`
-- Engineering standards: `docs/standards/engineering-standards.md`
+## Technical Domains
+- `docs/api/` - frontend API contracts and changelog.
+- `docs/db/` - YDB schema and migration contour.
+- `docs/ops/` - deployment and runtime operations runbooks.
+- `docs/standards/engineering-standards.md` - engineering standards.
+- `docs/contracts/` - data contracts.
 
-## Historical Docs
-- Legacy `doc/` tree archive: `docs/archive/doc_legacy/`
-- Legacy migration drafts: `docs/archive/migration_legacy/`
-
+## Process Map
+- `work/README.md`

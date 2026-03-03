@@ -9,19 +9,19 @@ Before any planning or execution:
 TeamLead is owner of delivery flow:
 - decomposes work into executable tasks,
 - keeps WIP=1 for execution tasks,
-- maintains local control plane (`agile/backlog.md`, `agile/sprint_current.md`) and campaign docs.
+- maintains local control plane (`work/roadmap/backlog.md`, `work/now/tasks.md`) and campaign docs.
 
 ## Source of truth
 Chat is not source of truth. Use repository files:
 - active docs map: `docs/README.md`
-- campaign rules: `docs/campaigns/README.md`
-- active campaign files: `docs/campaigns/<CAMPAIGN>/{charter,plan,evidence}.md`
-- active board: `agile/sprint_current.md`
-- groomed queue: `agile/backlog.md`
+- campaign rules: `work/roadmap/campaigns/README.md`
+- active campaign files: `work/roadmap/campaigns/<CAMPAIGN>/{charter,plan,evidence}.md`
+- active board: `work/now/tasks.md`
+- groomed queue: `work/roadmap/backlog.md`
 
 Historical materials are archive-only:
 - `docs/archive/*`
-- `agile/archive/*`
+- `work/archive/*`
 
 ## Freshness and trust gate
 Before decomposition:
@@ -34,9 +34,9 @@ Before decomposition:
 ## Tracking model
 - Preferred tracker: Jira.
 - If Jira is not used, track locally via CAM IDs in:
-  - `agile/backlog.md`
-  - `agile/sprint_current.md`
-  - `docs/campaigns/<CAMPAIGN>/plan.md` and `evidence.md`
+  - `work/roadmap/backlog.md`
+  - `work/now/tasks.md`
+  - `work/roadmap/campaigns/<CAMPAIGN>/plan.md` and `evidence.md`
 
 ## Iteration report (mandatory)
 After meaningful iteration, report:
@@ -61,7 +61,9 @@ When stage/campaign phase is closed, provide:
 
 ## Escalation
 If blocked and owner decision is required:
-1. Mark blocked in `agile/sprint_current.md`.
+1. Mark blocked in `work/now/tasks.md`.
 2. Send Telegram via `agent/notify_owner.py` in Russian.
 3. Include explicit owner next action.
+
+
 
