@@ -53,3 +53,4 @@
   - Timer flow triggers migration pipeline (`sync_state` + operational + readmodel), and transient YDB exhaustion is logged without stopping legacy render path.
   - forced refresh (`FORCE_REFRESH=1` or runtime flag) rebuilds data/readmodel without version increments for existing tasks.
   - active version truth is `dtm_tasks.task_revision` (`current_version` alias in adapter contract).
+  - versioned milestones write policy is active: rows in `dtm_task_milestones_v` are written only for content/timing version bumps; status/color-only and forced refresh paths do not write new versioned milestone rows.

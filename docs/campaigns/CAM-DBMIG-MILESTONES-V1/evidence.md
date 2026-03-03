@@ -12,10 +12,15 @@
   - added `dtm_task_milestones_v` to YDB DDL (`src/adapters/ydb/schema.py`)
   - fixed repo contract alias `current_version` = `task_revision` (`src/adapters/ydb/operational_repo.py`)
   - documented version truth and legacy milestones compatibility role (`docs/db/schema.md`, `docs/db/migration-plan.md`)
+- P02 write-path versioning completed:
+  - sync writes `milestones_v` only when `create_new_version` is true and refresh is not forced (`src/services/sync_service.py`)
+  - status/color-only update path keeps version stable and skips versioned milestones writes
+  - forced refresh path skips version table and `milestones_v` writes for existing tasks
+  - regression tests updated and passed via `python -m tests.services.test_sync_source_hash_gate`
 
 ## Completion Checklist
 - [x] P01 schema tasks done
-- [ ] P02 write-path versioning tasks done
+- [x] P02 write-path versioning tasks done
 - [ ] P03 readmodel source-of-truth tasks done
 - [ ] P04 migration/backfill tasks done
 - [ ] P05 tests and evidence package done

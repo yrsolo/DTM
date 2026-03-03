@@ -17,11 +17,17 @@ Complete CAM transition of planning/docs and start execution-ready queue for mil
 - [DONE] `CAM-DBMIG-MILESTONES-V1-P01-T001` add versioned milestones table `dtm_task_milestones_v` in schema.
 - [DONE] `CAM-DBMIG-MILESTONES-V1-P01-T002` codify `current_version` truth rule (`task_revision` alias).
 - [DONE] `CAM-DBMIG-MILESTONES-V1-P01-T003` define legacy milestones compatibility role.
+- [DONE] `CAM-DBMIG-MILESTONES-V1-P02-T001` content/timing change writes milestone versions.
+- [DONE] `CAM-DBMIG-MILESTONES-V1-P02-T002` status/color-only updates do not create milestone versions.
+- [DONE] `CAM-DBMIG-MILESTONES-V1-P02-T003` forced refresh keeps versions and skips milestones_v writes.
 
 ## Done (Latest)
 - [DONE] `CAM-DBMIG-MILESTONES-V1-P01-T003`
 - [DONE] `CAM-DBMIG-MILESTONES-V1-P01-T002`
 - [DONE] `CAM-DBMIG-MILESTONES-V1-P01-T001`
+- [DONE] `CAM-DBMIG-MILESTONES-V1-P02-T003`
+- [DONE] `CAM-DBMIG-MILESTONES-V1-P02-T002`
+- [DONE] `CAM-DBMIG-MILESTONES-V1-P02-T001`
 - [DONE] `CAM-DOC-REFORM-P02-T003`
 - [DONE] `CAM-DOC-REFORM-P02-T002`
 - [DONE] `CAM-DOC-REFORM-P02-T001`
@@ -34,8 +40,7 @@ Complete CAM transition of planning/docs and start execution-ready queue for mil
 - none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] `CAM-DBMIG-MILESTONES-V1-P02-T001` versioned write path for content/timing change.
-- [TODO] `CAM-DBMIG-MILESTONES-V1-P02-T002` status/color-only path without new milestone version rows.
-- [TODO] `CAM-DBMIG-MILESTONES-V1-P02-T003` forced refresh without version or milestones_v writes.
 - [TODO] `CAM-DBMIG-MILESTONES-V1-P03-T001` readmodel builder join by current version.
 - [TODO] `CAM-DBMIG-MILESTONES-V1-P03-T002` remove raw payload fallback as milestone source of truth.
+- [TODO] `CAM-DBMIG-MILESTONES-V1-P03-T003` smoke path sync -> build -> api/v2.
+- [TODO] `CAM-DBMIG-MILESTONES-V1-P04-T001` backfill script for milestones_v.

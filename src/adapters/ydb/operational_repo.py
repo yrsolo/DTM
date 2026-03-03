@@ -305,6 +305,64 @@ class OperationalTaskRepo:
         self.client.execute(upsert_query, {"$rows": rows})
         return len(rows)
 
+    def upsert_task_milestones_versions_bulk(
+        self,
+        payload_by_task_version: dict[tuple[str, int], list[dict[str, Any]]],
+    ) -> int:
+        """Upsert versioned milestones rows keyed by (task_id, version, idx)."""
+        if not payload_by_task_version:
+            return 0
+
+        rows: list[dict[str, Any]] = []
+        for (task_id, version), milestones in payload_by_task_version.items():
+            normalized_task_id = str(task_id).strip()
+            normalized_version = int(version or 0)
+            if not normalized_task_id or normalized_version <= 0:
+                continue
+            for index, milestone in enumerate(milestones):
+                rows.append(
+                    {
+                        "task_id": normalized_task_id,
+                        "version": normalized_version,
+                        "idx": int(milestone.get("idx", index)),
+                        "type": str(milestone.get("type", "")).strip() or "unknown",
+                        "planned_date": _to_date(milestone.get("planned_date", milestone.get("planned"))),
+                        "actual_date": _to_date(milestone.get("actual_date", milestone.get("actual"))),
+                        "status": str(milestone.get("status", "unknown")).strip() or "unknown",
+                        "raw_text": str(milestone.get("raw_text", "")).strip() or None,
+                        "confidence": float(milestone.get("confidence", 0.0) or 0.0),
+                        "inference_rule": str(milestone.get("inference_rule", "")).strip() or None,
+                    }
+                )
+
+        if not rows:
+            return 0
+
+        upsert_query = f"""
+        DECLARE $rows AS List<
+            Struct<
+                task_id:Utf8,
+                version:Uint64,
+                idx:Uint32,
+                type:Utf8,
+                planned_date:Date?,
+                actual_date:Date?,
+                status:Utf8,
+                raw_text:Utf8?,
+                confidence:Double,
+                inference_rule:Utf8?
+            >
+        >;
+        UPSERT INTO `{self.milestones_versions_table}` (
+            task_id, version, idx, type, planned_date, actual_date, status, raw_text, confidence, inference_rule
+        )
+        SELECT
+            task_id, version, idx, type, planned_date, actual_date, status, raw_text, confidence, inference_rule
+        FROM AS_TABLE($rows);
+        """
+        self.client.execute(upsert_query, {"$rows": rows})
+        return len(rows)
+
     def get_sync_state(self, source_id: str) -> SyncStateRow | None:
         query = f"""
         DECLARE $source_id AS Utf8;
