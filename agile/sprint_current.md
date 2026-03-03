@@ -13,6 +13,7 @@ Execute Stage 23 cloud hardening rollout queue from Stage 22 unified baseline.
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-239 - Stage 23 closeout and Stage 24 handoff package.
 - [DONE] DTM-238 - Test-contour operational evidence bundle and production go/no-go input set.
 - [DONE] DTM-237 - Canary rollout checklist for source-policy switch + rollback checkpoints.
 - [DONE] DTM-236 - Readmodel freshness markers for render/notify cloud parity checks.
@@ -55,10 +56,11 @@ Execute Stage 23 cloud hardening rollout queue from Stage 22 unified baseline.
 
 ## Stage 23 Estimate (Dynamic)
 - Baseline estimate: 6 tasks.
-- Done: 5
-- Remaining: 1
+- Done: 6
+- Remaining: 0
 
 ## Done (Latest)
+- [DONE] DTM-239 - Published Stage 23 closeout and Stage 24 handoff package (`doc/stages/72_stage23_closeout_and_stage24_handoff.md`).
 - [DONE] DTM-238 - Published test-contour operational evidence bundle and go/no-go input set (`doc/stages/71_stage23_test_contour_operational_evidence_bundle.md`, `artifacts/tmp/stage23_operational_evidence_bundle.json`).
 - [DONE] DTM-237 - Published Stage 23 source-policy canary checklist with rollback checkpoints and production go/no-go inputs (`doc/ops/stage23_source_policy_canary_rollout_checklist.md`).
 - [DONE] DTM-236 - Added render/notify readmodel freshness runtime marker (`readmodel_freshness`) with unit tests.
@@ -110,7 +112,11 @@ Execute Stage 23 cloud hardening rollout queue from Stage 22 unified baseline.
 - none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-239 - Stage 23 closeout and Stage 24 handoff package.
+- [TODO] DTM-240 - Stage 24 kickoff and bounded queue.
+- [TODO] DTM-241 - v2 payload readmodel source marker completion (non-empty `meta.readmodelSource`).
+- [TODO] DTM-242 - Render/notify cloud freshness evidence extraction artifact.
+- [TODO] DTM-243 - Production canary rehearsal package with rollback drill evidence.
+- [TODO] DTM-244 - Stage 24 closeout and Stage 25 handoff package.
 
 ## Tri-Block Readiness Matrix (Test Contour)
 - Frontend API: in progress (v1/v2/doc cloud verification passed; pending explicit YDB readmodel-source confirmation in v2 payload).
@@ -118,6 +124,7 @@ Execute Stage 23 cloud hardening rollout queue from Stage 22 unified baseline.
 - Notifications: in progress (delivery logic works; needs contour smoke evidence under current rollout switches).
 
 ## Active Task Files
+- `agile/tasks/stage_20_plus/DTM-239_stage23-closeout-and-stage24-handoff.md`
 - `agile/tasks/stage_20_plus/DTM-238_stage23_test-contour-operational-evidence-bundle.md`
 - `agile/tasks/stage_20_plus/DTM-237_stage23_canary-rollout-checklist-source-policy-switch.md`
 - `agile/tasks/stage_20_plus/DTM-236_stage23_readmodel-freshness-markers-render-notify.md`

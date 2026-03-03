@@ -6,7 +6,7 @@ Convert Stage 22 local parity baseline into repeatable cloud/test contour eviden
 ## Baseline
 - Stage 23 estimate baseline: 6 tasks.
 - Dynamic tracking rule: after each completed task, update `Done` and `Remaining` in `agile/sprint_current.md`.
-- Current counter: done `5`, remaining `1`.
+- Current counter: done `6`, remaining `0`.
 
 ## Stage 23 slices (initial)
 1. `DTM-234`: Stage 23 kickoff and bounded queue.

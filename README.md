@@ -59,6 +59,8 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Architecture is under phased reconstruction.
 - Legacy snapshot is kept in `old/` for controlled comparison during migration.
 - Stage 0-19 status and evidence index are tracked in `doc/03_reconstruction_backlog.md`.
+- Stage 23 closeout and Stage 24 handoff package:
+  - `doc/stages/72_stage23_closeout_and_stage24_handoff.md`
 - Current sprint/task execution state is tracked in `agile/sprint_current.md`.
 - Serverless deploy setup (test/prod split) is in `doc/ops/stage9_main_autodeploy_setup.md`.
 - Deployment smoke and rollback runbooks are in:

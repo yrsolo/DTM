@@ -51,7 +51,7 @@ This file explains where to read first and where to go for details.
 - Stage 20: `doc/stages/63_stage20_execution_plan.md` ... `doc/stages/66_stage20_closeout_and_stage21_handoff.md`
 - Stage 21: `doc/stages/67_stage21_closeout_and_stage22_handoff.md`
 - Stage 22: `doc/stages/68_stage22_execution_plan.md`, `doc/stages/69_stage22_closeout_and_stage23_handoff.md`
-- Stage 23 package: `doc/stages/70_stage23_execution_plan.md`, `doc/stages/71_stage23_test_contour_operational_evidence_bundle.md`
+- Stage 23 package: `doc/stages/70_stage23_execution_plan.md`, `doc/stages/71_stage23_test_contour_operational_evidence_bundle.md`, `doc/stages/72_stage23_closeout_and_stage24_handoff.md`
 - For current status and latest active stage, use `doc/03_reconstruction_backlog.md`.
 
 ## Historical Archives

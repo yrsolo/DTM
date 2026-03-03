@@ -3,10 +3,10 @@
 ## Objective
 Deliver DTM to stable production operation with clear, maintainable process artifacts.
 
-## Current Focus (Stage 23)
-1. Move Stage 22 local parity baseline into reproducible cloud smoke/evidence flow.
-2. Add explicit freshness markers/checkpoints for API, render, and notifications in one contour.
-3. Prepare controlled canary rollout checklist for source-policy switch and rollback.
+## Current Focus (Stage 24 Proposal)
+1. Promote Stage 23 cloud evidence into production-ready canary rehearsal package.
+2. Close remaining marker gap (`meta.readmodelSource`) in v2 payload for clearer YDB contour observability.
+3. Automate render/notify freshness evidence extraction from cloud logs.
 4. Treat delivery as three equal product blocks:
    - Frontend API
    - Sheet Render
