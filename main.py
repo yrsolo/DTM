@@ -33,6 +33,7 @@ from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
 from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.adapters.ydb.schema import ensure_tables
 from src.adapters.ydb.client import YdbClient
+from src.entrypoints.jobs.timer_job import TimerJob
 from src.services.readmodel_builder import FrontendReadmodelBuilderService
 from src.services.sync_service import YdbSyncService
 from src.services.sync.hash_basis import build_hash_basis
@@ -41,6 +42,7 @@ from src.services.source_policy import build_source_policy_matrix
 
 APP_CONTEXT = build_app_context()
 PIPELINE_CFG = APP_CONTEXT.cfg.runtime.pipeline
+TIMER_JOB_SHELL = TimerJob()
 
 
 def _print_quality_report(report):
@@ -241,6 +243,9 @@ async def main(**kwargs):
     dry_run = kwargs.get("dry_run", False)
     mock_external = kwargs.get("mock_external")
     mode = resolve_run_mode(mode=mode, event=event, triggers=TRIGGERS)
+    if mode == "timer":
+        shell_report = TIMER_JOB_SHELL.run(APP_CONTEXT)
+        print(f"timer_job_shell_steps={len(shell_report.get('steps', []))}")
     if mock_external is None:
         mock_external = mode == "test"
     force_refresh = bool(kwargs.get("force_refresh", PIPELINE_CFG.force_refresh_default))
