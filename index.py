@@ -1155,6 +1155,17 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         txt = f"Runtime failure:\n{ex}\nTRACEBACK\n{tr}\n"
 
         print(f"runtime_error_classification={error_family}")
+        if isinstance(ex, AppError) and is_http_event:
+            status_code = 500
+            if isinstance(ex, UserError):
+                status_code = 400
+            elif isinstance(ex, TransientError):
+                status_code = 503
+            return _error_response(
+                status_code,
+                code=ex.code,
+                message=str(ex),
+            )
         print(txt)
         try:
             await TelegramNotifier().alog(txt)
