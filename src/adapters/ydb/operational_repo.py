@@ -665,3 +665,76 @@ class OperationalTaskRepo:
                 }
             )
         return rows
+
+    def list_milestones_for_versions(
+        self,
+        *,
+        task_versions: dict[str, int],
+        include_details: bool = True,
+    ) -> list[dict[str, Any]]:
+        keys = [
+            {"task_id": str(task_id).strip(), "version": int(version)}
+            for task_id, version in (task_versions or {}).items()
+            if str(task_id).strip() and int(version or 0) > 0
+        ]
+        if not keys:
+            return []
+
+        if include_details:
+            query = f"""
+            DECLARE $keys AS List<Struct<task_id:Utf8, version:Uint64>>;
+            SELECT
+                m.task_id AS task_id,
+                m.version AS version,
+                m.idx AS idx,
+                m.type AS type,
+                m.planned_date AS planned_date,
+                m.actual_date AS actual_date,
+                m.status AS status,
+                m.raw_text AS raw_text,
+                m.confidence AS confidence,
+                m.inference_rule AS inference_rule
+            FROM `{self.milestones_versions_table}` AS m
+            INNER JOIN AS_TABLE($keys) AS k
+            ON m.task_id = k.task_id AND m.version = k.version;
+            """
+        else:
+            query = f"""
+            DECLARE $keys AS List<Struct<task_id:Utf8, version:Uint64>>;
+            SELECT
+                m.task_id AS task_id,
+                m.version AS version,
+                m.idx AS idx,
+                m.type AS type,
+                m.planned_date AS planned_date
+            FROM `{self.milestones_versions_table}` AS m
+            INNER JOIN AS_TABLE($keys) AS k
+            ON m.task_id = k.task_id AND m.version = k.version;
+            """
+        try:
+            result_sets = self.client.execute(query, {"$keys": keys})
+        except Exception as exc:
+            text = str(exc).lower()
+            if "path not found" in text or "table not found" in text:
+                return []
+            raise
+        if not result_sets:
+            return []
+
+        rows: list[dict[str, Any]] = []
+        for row in result_sets[0].rows:
+            rows.append(
+                {
+                    "task_id": str(getattr(row, "task_id", "")),
+                    "version": int(getattr(row, "version", 0) or 0),
+                    "idx": int(getattr(row, "idx", 0) or 0),
+                    "type": str(getattr(row, "type", "")),
+                    "planned_date": getattr(row, "planned_date", None),
+                    "actual_date": getattr(row, "actual_date", None) if include_details else None,
+                    "status": (str(getattr(row, "status", "")) or "unknown") if include_details else "unknown",
+                    "raw_text": (str(getattr(row, "raw_text", "")) or None) if include_details else None,
+                    "confidence": float(getattr(row, "confidence", 0.0) or 0.0) if include_details else 0.0,
+                    "inference_rule": (str(getattr(row, "inference_rule", "")) or None) if include_details else None,
+                }
+            )
+        return rows

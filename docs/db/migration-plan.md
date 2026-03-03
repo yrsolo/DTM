@@ -35,6 +35,7 @@
 - Verify API v2 does one readmodel query and returns stored `payload_json`.
 - Current implementation note:
   - API v2 YDB mode returns stored snapshot as-is (no per-request rebuild/filtering).
+  - readmodel snapshot itself is now built from `dtm_task_milestones_v` using `(task_id, current_version)` join; builder no longer depends on raw payload milestones.
 
 ### Stage 4: Render/Notify source switch
 - Move render and notify to YDB-backed operational/readmodel sources.

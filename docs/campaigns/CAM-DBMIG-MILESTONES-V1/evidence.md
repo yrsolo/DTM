@@ -17,10 +17,20 @@
   - status/color-only update path keeps version stable and skips versioned milestones writes
   - forced refresh path skips version table and `milestones_v` writes for existing tasks
   - regression tests updated and passed via `python -m tests.services.test_sync_source_hash_gate`
+- P03 readmodel source-of-truth completed:
+  - readmodel builder loads milestones strictly from `dtm_task_milestones_v` by `(task_id, current_version)` (`src/services/readmodel_builder.py`)
+  - operational repo got bulk versioned milestones loader (`list_milestones_for_versions`) with bounded query profile (`src/adapters/ydb/operational_repo.py`)
+  - legacy/raw payload milestone source is removed from builder hot path (no raw fallback used for v2 readmodel build)
+  - regression test updated for version-aware milestones source:
+    - `.venv\Scripts\python.exe -m tests.services.test_readmodel_uses_milestones_table`
+    - `.venv\Scripts\python.exe -m tests.services.test_sync_source_hash_gate`
+  - smoke path validated:
+    - `.venv\Scripts\python.exe agent/cloud_smoke_db_migration_v2.py --base-url https://functions.yandexcloud.net/<YC_CLOUD_FUNCTION_ID> --api-url https://<API_DOMAIN_TEST>/api/v2/frontend`
+    - result: `sync_status_code=200`, `api_status_code=200`, `api_contract_version=2.0.1`, `api_ok=true`
 
 ## Completion Checklist
 - [x] P01 schema tasks done
 - [x] P02 write-path versioning tasks done
-- [ ] P03 readmodel source-of-truth tasks done
+- [x] P03 readmodel source-of-truth tasks done
 - [ ] P04 migration/backfill tasks done
 - [ ] P05 tests and evidence package done
