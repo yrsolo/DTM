@@ -54,7 +54,7 @@ Rollback actions:
 - Required before prod canary:
   - latest test contour Gate 0 + Gate 1 evidence files,
   - explicit rollback rehearsal result from Gate 2 checklist,
-  - no unresolved blockers in `agile/sprint_current.md`.
+  - no unresolved blockers in `work/now/tasks.md`.
 - No-Go if:
   - any tri-block smoke check fails,
   - evidence missing for API/render/notify parity,
@@ -64,6 +64,7 @@ Rollback actions:
 - `artifacts/tmp/stage23_canary_precheck.json`
 - `artifacts/tmp/stage23_canary_postswitch.json` (when Gate 1 runs)
 - legacy task log (archive):
-  - `agile/archive/legacy_2026-03-03/tasks/stage_20_plus/DTM-237_stage23_canary-rollout-checklist-source-policy-switch.md`
+  - `work/archive/agile_legacy/legacy_2026-03-03/task_cards_legacy/stage_20_plus/DTM-237_stage23_canary-rollout-checklist-source-policy-switch.md`
 - active campaign evidence:
-  - `docs/campaigns/CAM-DBMIG-MILESTONES-V1/evidence.md`
+  - `work/roadmap/campaigns/CAM-DBMIG-MILESTONES-V1/evidence.md`
+

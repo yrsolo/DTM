@@ -1,12 +1,9 @@
-# Agile Control Plane (Active)
+# Agile (Deprecated)
 
-Active files:
-- `agile/backlog.md` - groomed queue with CAM IDs.
-- `agile/sprint_current.md` - current sprint focus and active tasks.
+Process tracking has moved to work/.
 
-ID model:
-- CAM-P-T system is defined in `docs/campaigns/README.md`.
-
-Historical agile materials:
-- `agile/archive/`
-
+Use:
+- work/README.md (process map)
+- work/now/README.md (active campaign)
+- work/roadmap/README.md (planned campaigns)
+- work/archive/README.md (historical archive)
