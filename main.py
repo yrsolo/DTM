@@ -22,9 +22,9 @@ from config import (
     SHEET_INFO,
     TRIGGERS,
 )
-from core.bootstrap import build_planner_dependencies
 from core.planner import GoogleSheetPlanner
-from core.use_cases import resolve_run_mode, run_planner_use_case
+from src.app.planner_bootstrap import build_planner_dependencies
+from src.services.usecases.planner_runtime import resolve_run_mode, run_planner_use_case
 from src.app.bootstrap import build_app_context
 from src.adapters.store_ydb import build_operational_store
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo

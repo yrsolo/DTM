@@ -1,21 +1,22 @@
-# CAM-ENTRYPOINT-REFORM-V1
+# CAM-CORE-CLEANUP-V1
 
 ## Status
-Activated from priority queue after CAM-PIPELINE-CLEAN-SKELETON-V1 handoff.
+Activated from priority queue after CAM-ENTRYPOINT-REFORM-V1 core scope completion.
 
 ## Goal
-Make `index.py` and `main.py` thin wrappers by moving parsing/routing/orchestration helpers to `src/entrypoints/*`.
+Keep `core/` domain-only and move infra-coupled runtime pieces to adapters/services/app layers.
 
 ## Current Phase
-P01: HTTP entrypoint extraction.
+P02: first extraction wave (compatibility-preserving).
 
 ## Important Rule
-- Keep business behavior unchanged while extracting helpers.
+- No business behavior changes during core boundary cleanup.
 
 ## Exit Criteria
-- `index.py` delegates event parsing/routing helpers to `src/entrypoints/http/*`.
-- `main.py` delegates job selection shell to `src/entrypoints/jobs/*`.
-- External API/runtime behavior remains feature-equivalent.
+- `docs/system/core_boundaries.md` lists domain vs infra-coupled core modules.
+- first extraction targets are defined and tracked in `work/now/tasks.md`.
+- extraction wave for `core/bootstrap.py` and `core/use_cases.py` is completed with shims.
+- no runtime regressions introduced by boundary work.
 
 ## Archive
 - closeouts stored in `work/archive/campaigns/*/closeout.md`.

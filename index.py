@@ -20,7 +20,6 @@ from config import (
 )
 from core.api_payload import build_frontend_api_payload
 from core.api_payload_v2 import build_frontend_api_payload_v2
-from core.bootstrap import build_planner_dependencies
 from core.group_query import (
     build_deadlines_reply,
     build_tasks_reply,
@@ -29,6 +28,7 @@ from core.group_query import (
 from core.reminder import TelegramNotifier
 from main import main
 from src.app.bootstrap import build_app_context
+from src.app.planner_bootstrap import build_planner_dependencies
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
 from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.entrypoints.http.event_parser import extract_payload as _extract_payload
