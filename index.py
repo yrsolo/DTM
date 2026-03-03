@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import os
 import re
 import time
 import traceback
@@ -12,6 +11,7 @@ from typing import Any
 from urllib.parse import parse_qsl, urlparse
 
 from config import (
+    DEBUG_HTTP_EVENT,
     FRONTEND_API_DEFAULT_VERSION,
     KEY_JSON,
     READMODEL_SOURCE,
@@ -41,14 +41,6 @@ from src.services.source_policy import build_source_policy_matrix
 APP_CONTEXT = build_app_context()
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
-DEBUG_HTTP_EVENT = os.getenv(
-    "DEBUG_HTTP_EVENT", os.getenv("DEBUG_API_EVENT_SHAPE", "0")
-).strip().lower() in {
-    "1",
-    "true",
-    "yes",
-}
-
 
 def _extract_payload(event: Any) -> tuple[dict[str, Any], bool]:
     if not isinstance(event, dict):

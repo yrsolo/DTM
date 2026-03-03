@@ -46,6 +46,7 @@ ENV_ALLOWLIST = frozenset(
         "API_DOMAIN_TEST",
         "API_DOMAIN_PROD",
         "FRONTEND_API_DEFAULT_VERSION",
+        "DEBUG_HTTP_EVENT",
         "LLM_PROVIDER",
         "OPENAI_MODEL",
         "GOOGLE_LLM_MODEL",
@@ -128,6 +129,7 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
     defaults = RuntimeConfig()
     runtime_raw = data.get("runtime", {}) if isinstance(data.get("runtime", {}), dict) else {}
     web_raw = data.get("web", {}) if isinstance(data.get("web", {}), dict) else {}
+    api_raw = data.get("api", {}) if isinstance(data.get("api", {}), dict) else {}
     pipeline_raw = data.get("pipeline", {}) if isinstance(data.get("pipeline", {}), dict) else {}
     sources_raw = data.get("sources", {}) if isinstance(data.get("sources", {}), dict) else {}
     timing_raw = data.get("timing", {}) if isinstance(data.get("timing", {}), dict) else {}
@@ -140,6 +142,7 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
     )
     defaults.runtime.timezone = str(runtime_raw.get("timezone", defaults.runtime.timezone))
     defaults.web = {str(k): v for k, v in web_raw.items()}
+    defaults.api = {str(k): v for k, v in api_raw.items()}
 
     defaults.pipeline.readmodel_ttl_minutes = int(
         pipeline_raw.get("readmodel_ttl_minutes", defaults.pipeline.readmodel_ttl_minutes)

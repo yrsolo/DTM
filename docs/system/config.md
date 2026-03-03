@@ -26,6 +26,7 @@ Entrypoints still import `config/constants.py`, but defaults are sourced from YA
 
 ## Runtime switches (YAML defaults, ENV overrides optional)
 - `FRONTEND_API_DEFAULT_VERSION`
+- `DEBUG_HTTP_EVENT`
 - `TIMING_YEAR_MODE`
 - `STORE_MODE`, `READMODEL_SOURCE`, `NOTIFY_SOURCE`, `RENDER_SOURCE`
 - `FORCE_REFRESH`, `READMODEL_TTL_MINUTES`, `PREFLIGHT_TOP_ROWS`, `FULL_SYNC_INTERVAL_HOURS`

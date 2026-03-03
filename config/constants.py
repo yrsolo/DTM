@@ -99,6 +99,9 @@ if FRONTEND_API_DEFAULT_VERSION not in ALLOWED_FRONTEND_API_DEFAULT_VERSIONS:
         f"Unsupported FRONTEND_API_DEFAULT_VERSION={FRONTEND_API_DEFAULT_VERSION!r}. "
         "Allowed values: v1, v2."
     )
+DEBUG_HTTP_EVENT = _env_flag(
+    "DEBUG_HTTP_EVENT", "1" if _RUNTIME_CFG.api.get("debug_http_event_default", False) else "0"
+)
 TIMING_YEAR_MODE = _env("TIMING_YEAR_MODE", _RUNTIME_CFG.timing.year_mode_default).lower()
 if TIMING_YEAR_MODE not in ALLOWED_TIMING_YEAR_MODES:
     raise ValueError(

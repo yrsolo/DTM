@@ -27,6 +27,9 @@ timing:
     - anchors
     - chain
 
+api:
+  debug_http_event_default: false
+
 triggers:
   a1sldapc8v2pha7dichv: timer
   a1smsif4rc82qbj1e3hf: morning

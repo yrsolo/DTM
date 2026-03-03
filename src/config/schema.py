@@ -39,6 +39,7 @@ class TimingSection:
 class RuntimeConfig:
     runtime: RuntimeSection = field(default_factory=RuntimeSection)
     web: dict[str, Any] = field(default_factory=dict)
+    api: dict[str, Any] = field(default_factory=dict)
     pipeline: PipelineSection = field(default_factory=PipelineSection)
     sources: SourcesSection = field(default_factory=SourcesSection)
     timing: TimingSection = field(default_factory=TimingSection)

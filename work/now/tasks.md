@@ -11,10 +11,11 @@
 - [x] P01-T008: reduce `.env` and `.env.example` to secrets/overrides only; remove baked non-secret constants.
 - [x] Owner review gate: confirm YAML transfer scope before first commit.
 - [x] P01-T009: remove legacy `TARGET_SHEET_NAME_PROD` requirement from runtime/release contour.
-- [ ] P02-T001: start bootstrap wiring in `index.py/main.py` (in progress).
+- [x] P02-T001: start bootstrap wiring in `index.py/main.py` (in progress).
+- [ ] P02-T002: move entrypoint env flags to YAML/config loader (`DEBUG_HTTP_EVENT` done; continue on remaining flags).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (P02-T001 started; entrypoints now initialize app context from `src/app/bootstrap.py`)
+- 2026-03-04 (P02-T001 completed; P02-T002 started with `DEBUG_HTTP_EVENT` migrated from `index.py` env read to YAML/config)
