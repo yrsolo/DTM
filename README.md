@@ -207,6 +207,11 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - for `ENV=dev/test` runtime prefers `YDB_ID_TEST`, `YDB_ENDPOINT_TEST`, `YDB_DATABASE_TEST`
   - for `ENV=prod` runtime prefers `YDB_ID_PROD`, `YDB_ENDPOINT_PROD`, `YDB_DATABASE_PROD`
   - legacy fallback `YDB_ID`, `YDB_ENDPOINT`, `YDB_DATABASE` is still supported.
+- Timing year inference mode:
+  - `TIMING_YEAR_MODE=legacy|anchors|chain` (default: `legacy`)
+  - `legacy`: old parser behavior, `next_task_date` pivot by mean.
+  - `anchors`: explicit `dd.mm.yyyy` / `dd.mm.yy` anchors + median pivot.
+  - `chain`: `anchors` plus guarded year-shift on Jan-Mar future-jump patterns in top-down chain.
 - Google service-account key runtime source priority:
   - `GOOGLE_KEY_JSON_PATH` (existing file path)
   - `GOOGLE_KEY_JSON_B64` (base64 JSON text)

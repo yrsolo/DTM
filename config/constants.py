@@ -15,6 +15,7 @@ ALLOWED_LLM_FAILOVER_MODES = frozenset({"draft_only", "provider"})
 ALLOWED_STORE_MODES = frozenset({"legacy", "dual_write", "ydb_primary", "ydb_only"})
 ALLOWED_READ_SOURCES = frozenset({"legacy", "ydb"})
 ALLOWED_FRONTEND_API_DEFAULT_VERSIONS = frozenset({"v1", "v2"})
+ALLOWED_TIMING_YEAR_MODES = frozenset({"legacy", "anchors", "chain"})
 
 
 def _env(name: str, default: str = "") -> str:
@@ -56,9 +57,7 @@ def _load_runtime_env() -> str:
     if profile_path.exists():
         load_dotenv(dotenv_path=profile_path, override=True)
     if runtime_env not in ALLOWED_ENVS:
-        raise ValueError(
-            f"Unsupported ENV={runtime_env!r}. Allowed values: dev, test, prod."
-        )
+        raise ValueError(f"Unsupported ENV={runtime_env!r}. Allowed values: dev, test, prod.")
     return runtime_env
 
 
@@ -74,6 +73,12 @@ if FRONTEND_API_DEFAULT_VERSION not in ALLOWED_FRONTEND_API_DEFAULT_VERSIONS:
         f"Unsupported FRONTEND_API_DEFAULT_VERSION={FRONTEND_API_DEFAULT_VERSION!r}. "
         "Allowed values: v1, v2."
     )
+TIMING_YEAR_MODE = _env("TIMING_YEAR_MODE", "legacy").lower()
+if TIMING_YEAR_MODE not in ALLOWED_TIMING_YEAR_MODES:
+    raise ValueError(
+        f"Unsupported TIMING_YEAR_MODE={TIMING_YEAR_MODE!r}. "
+        "Allowed values: legacy, anchors, chain."
+    )
 
 # Operational store / readmodel rollout switches.
 STORE_MODE = _env("STORE_MODE", "legacy").lower()
@@ -85,21 +90,14 @@ if STORE_MODE not in ALLOWED_STORE_MODES:
 READMODEL_SOURCE = _env("READMODEL_SOURCE", "legacy").lower()
 if READMODEL_SOURCE not in ALLOWED_READ_SOURCES:
     raise ValueError(
-        f"Unsupported READMODEL_SOURCE={READMODEL_SOURCE!r}. "
-        "Allowed values: legacy, ydb."
+        f"Unsupported READMODEL_SOURCE={READMODEL_SOURCE!r}. Allowed values: legacy, ydb."
     )
 NOTIFY_SOURCE = _env("NOTIFY_SOURCE", READMODEL_SOURCE).lower()
 if NOTIFY_SOURCE not in ALLOWED_READ_SOURCES:
-    raise ValueError(
-        f"Unsupported NOTIFY_SOURCE={NOTIFY_SOURCE!r}. "
-        "Allowed values: legacy, ydb."
-    )
+    raise ValueError(f"Unsupported NOTIFY_SOURCE={NOTIFY_SOURCE!r}. Allowed values: legacy, ydb.")
 RENDER_SOURCE = _env("RENDER_SOURCE", READMODEL_SOURCE).lower()
 if RENDER_SOURCE not in ALLOWED_READ_SOURCES:
-    raise ValueError(
-        f"Unsupported RENDER_SOURCE={RENDER_SOURCE!r}. "
-        "Allowed values: legacy, ydb."
-    )
+    raise ValueError(f"Unsupported RENDER_SOURCE={RENDER_SOURCE!r}. Allowed values: legacy, ydb.")
 
 YDB_ID = _contour_env("YDB_ID")
 YDB_ENDPOINT = _contour_env("YDB_ENDPOINT")
@@ -107,7 +105,9 @@ YDB_DATABASE = _contour_env("YDB_DATABASE")
 YDB_MIGRATE_ON_START = _env_flag("YDB_MIGRATE_ON_START", "0")
 LEGACY_BLOB_WRITE = _env_flag("LEGACY_BLOB_WRITE", "0")
 YDB_EXHAUSTED_MAX_ATTEMPTS = max(1, int(_env("YDB_EXHAUSTED_MAX_ATTEMPTS", "6")))
-YDB_EXHAUSTED_BASE_BACKOFF_SECONDS = max(0.05, float(_env("YDB_EXHAUSTED_BASE_BACKOFF_SECONDS", "0.2")))
+YDB_EXHAUSTED_BASE_BACKOFF_SECONDS = max(
+    0.05, float(_env("YDB_EXHAUSTED_BASE_BACKOFF_SECONDS", "0.2"))
+)
 YDB_EXHAUSTED_MAX_BACKOFF_SECONDS = max(
     YDB_EXHAUSTED_BASE_BACKOFF_SECONDS,
     float(_env("YDB_EXHAUSTED_MAX_BACKOFF_SECONDS", "4.0")),
@@ -131,8 +131,7 @@ ORG = os.environ.get("ORG_TOKEN")
 LLM_PROVIDER = _env("LLM_PROVIDER", "openai").lower()
 if LLM_PROVIDER not in ALLOWED_LLM_PROVIDERS:
     raise ValueError(
-        f"Unsupported LLM_PROVIDER={LLM_PROVIDER!r}. "
-        "Allowed values: openai, google, yandex."
+        f"Unsupported LLM_PROVIDER={LLM_PROVIDER!r}. Allowed values: openai, google, yandex."
     )
 OPENAI_MODEL = _env("OPENAI_MODEL", "")
 GOOGLE_LLM_API_KEY = _env("GOOGLE_LLM_API_KEY")
@@ -198,11 +197,7 @@ if not TARGET_SHEET_NAME and RUNTIME_ENV == "prod":
     TARGET_SHEET_NAME = os.environ.get("TARGET_SHEET_NAME_PROD", "").strip()
 if not TARGET_SHEET_NAME:
     TARGET_SHEET_NAME = "Спонсорские ТНТ ТЕСТ"
-if (
-    STRICT_ENV_GUARD
-    and RUNTIME_ENV in {"dev", "test"}
-    and SOURCE_SHEET_NAME == TARGET_SHEET_NAME
-):
+if STRICT_ENV_GUARD and RUNTIME_ENV in {"dev", "test"} and SOURCE_SHEET_NAME == TARGET_SHEET_NAME:
     raise ValueError(
         "Unsafe env contour: for ENV=dev/test SOURCE_SHEET_NAME and "
         "TARGET_SHEET_NAME must be different when STRICT_ENV_GUARD=1."
@@ -224,6 +219,7 @@ REPLACE_NAMES = MapProxy(
         "Время завтрака!": "ЗАВТРАК",
         "По эфиру": "ЭФИР",
         "Сокровища императора": "СОКР ИМП",
+        "Сокровища Императора ": "СОКР ИМП",
         "Выжить в Самарканде": "САМАРКАНД",
         "Наша Раша": "НР",
         "Конфетка": "КОНФ",
@@ -231,6 +227,10 @@ REPLACE_NAMES = MapProxy(
         "МОСКОВСКИЙ КАРТОФЕЛЬ": "МОСКАР",
         "КАПИТАН ВКУСОВ": "КАПИТАН",
         "Капитан вкусов": "КАПИТАН",
+        "Битва экстрасенсов": "Б_ЭКСТР",
+        "Выжить в Стамбуле ": "СТАМБУЛ",
+        "Выжить в Стамбуле": "СТАМБУЛ",
+        "Вологодский пломбир": "Пломбир",
     }
 )
 

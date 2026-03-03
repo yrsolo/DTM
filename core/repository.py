@@ -6,11 +6,12 @@ import re
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from collections.abc import Iterable
+from datetime import datetime
 from typing import Any
 
 import pandas as pd
 
-from config import COLOR_STATUS, REPLACE_NAMES, TASK_FIELD_MAP
+from config import COLOR_STATUS, REPLACE_NAMES, TASK_FIELD_MAP, TIMING_YEAR_MODE
 from core.contracts import TaskRowContract, is_nullish, normalize_text
 from core.errors import MissingRequiredColumnsError, RowValidationIssue, TimingParseIssue
 from core.reminder import TelegramNotifier
@@ -37,15 +38,21 @@ def _safe_print(text: str) -> None:
 class TimingParser:
     """Parse raw timing text into date -> stages mapping."""
 
-    def __init__(self) -> None:
-        self.date_pattern = re.compile(r"(\d{2}\.\d{2})")
+    def __init__(self, timing_year_mode: str | None = None) -> None:
+        self.legacy_date_pattern = re.compile(r"(\d{2}\.\d{2})")
+        self.date_with_year_pattern = re.compile(r"^(\d{2}\.\d{2}\.\d{4})")
+        self.date_with_short_year_pattern = re.compile(r"^(\d{2}\.\d{2}\.\d{2})(?!\d)")
+        self.date_pattern = re.compile(r"^(\d{2}\.\d{2})(?!\.\d{2,4})")
         self.logger = TelegramNotifier()
         self.parse_issues: list[TimingParseIssue] = []
         self.total_parse_errors = 0
+        self.timing_year_mode = (timing_year_mode or TIMING_YEAR_MODE).lower()
+        self.year_resolution_events: list[dict[str, Any]] = []
 
     def reset_diagnostics(self) -> None:
         self.parse_issues = []
         self.total_parse_errors = 0
+        self.year_resolution_events = []
 
     def issues_since(self, start_index: int) -> list[TimingParseIssue]:
         if start_index < 0:
@@ -59,8 +66,29 @@ class TimingParser:
         row_number: int = 0,
     ) -> dict[pd.Timestamp, list[str]]:
         """Convert timing multiline text to normalized dictionary."""
+        if self.timing_year_mode == "legacy":
+            return self._parse_legacy(
+                timing_str=timing_str,
+                next_task_date=next_task_date,
+                row_number=row_number,
+            )
+        return self._parse_with_anchors(
+            timing_str=timing_str,
+            next_task_date=next_task_date,
+            row_number=row_number,
+        )
+
+    def _parse_legacy(
+        self,
+        timing_str: str,
+        next_task_date: pd.Timestamp | None = None,
+        row_number: int = 0,
+    ) -> dict[pd.Timestamp, list[str]]:
+        """Original parser behavior preserved for regression-safe mode."""
         if next_task_date is None:
             next_task_date = pd.Timestamp.now()
+        else:
+            next_task_date = pd.Timestamp(next_task_date)
         timings = defaultdict(list)
 
         # Разбиваем строку на отдельные строки по переносам.
@@ -75,7 +103,7 @@ class TimingParser:
             line = line.strip()
 
             # Ищем дату в начале строки
-            match = self.date_pattern.match(line)
+            match = self.legacy_date_pattern.match(line)
             if not match:
                 continue
 
@@ -120,6 +148,105 @@ class TimingParser:
                 timings[date].append(stage)
 
         return dict(timings)
+
+    def _parse_with_anchors(
+        self,
+        timing_str: str,
+        next_task_date: pd.Timestamp | None = None,
+        row_number: int = 0,
+    ) -> dict[pd.Timestamp, list[str]]:
+        """Enhanced parser with explicit-year anchors plus legacy fallback rules."""
+        if next_task_date is None:
+            next_task_date = pd.Timestamp.now()
+        else:
+            next_task_date = pd.Timestamp(next_task_date)
+        timings = defaultdict(list)
+
+        if _is_nullish(timing_str):
+            return timings
+        timing_str = str(timing_str)
+        if not timing_str.strip():
+            return timings
+        lines = timing_str.strip().split("\n")
+
+        for raw_line in lines:
+            line = raw_line.strip()
+            token, source = self._extract_date_token(line)
+            if not token:
+                continue
+            stage = line[len(token) :].strip().strip("-").strip()
+            if not stage:
+                continue
+            date = self._resolve_timing_date(
+                token=token,
+                source=source,
+                next_task_date=next_task_date,
+                line=line,
+                row_number=row_number,
+            )
+            if date is None:
+                continue
+            timings[date].append(stage)
+            self.year_resolution_events.append(
+                {
+                    "row_number": row_number,
+                    "timing_line": line,
+                    "normalized_date": date.strftime("%Y-%m-%d"),
+                    "year_source": source,
+                    "confidence": "high" if source == "explicit_anchor" else "medium",
+                }
+            )
+
+        return dict(timings)
+
+    def _extract_date_token(self, line: str) -> tuple[str, str]:
+        match = self.date_with_year_pattern.match(line)
+        if match:
+            return match.group(1), "explicit_anchor"
+        match = self.date_with_short_year_pattern.match(line)
+        if match:
+            return match.group(1), "explicit_anchor"
+        match = self.date_pattern.match(line)
+        if match:
+            return match.group(1), "legacy_next_task"
+        return "", ""
+
+    def _resolve_timing_date(
+        self,
+        *,
+        token: str,
+        source: str,
+        next_task_date: pd.Timestamp,
+        line: str,
+        row_number: int,
+    ) -> pd.Timestamp | None:
+        try:
+            if source == "explicit_anchor":
+                if len(token) == 10:
+                    return pd.Timestamp(datetime.strptime(token, "%d.%m.%Y")).normalize()
+                return pd.Timestamp(datetime.strptime(token, "%d.%m.%y")).normalize()
+            year = next_task_date.year
+            month = token[3:]
+            day = token[:2]
+            date = pd.Timestamp(f"{year}-{month}-{day}")
+        except ValueError as exc:
+            if token.startswith("29.02"):
+                return None
+            issue = TimingParseIssue(
+                row_number=row_number,
+                timing_line=line,
+                normalized_date=token,
+                error=str(exc),
+            )
+            self.parse_issues.append(issue)
+            self.total_parse_errors += 1
+            return None
+
+        if date < (next_task_date - pd.DateOffset(months=5)):
+            return (date + pd.DateOffset(years=1)).normalize()
+        if date > (next_task_date + pd.DateOffset(months=5)):
+            return (date - pd.DateOffset(years=1)).normalize()
+        return date.normalize()
 
 
 class Task:
@@ -354,7 +481,15 @@ class GoogleSheetsTaskRepository(TaskRepository):
             tasks_list.append(task)
             self.tasks[task.id] = task
             issue_cursor = len(self.timing_parser.parse_issues)
-            mean_date = pd.Series(task.timing.keys()).mean()
+            task_dates = sorted(task.timing.keys())
+            if self.timing_parser.timing_year_mode == "chain":
+                task_dates = self._apply_chain_year_shift(task, task_dates, next_task_date)
+            pivot_date = None
+            if task_dates:
+                if self.timing_parser.timing_year_mode == "legacy":
+                    pivot_date = pd.Series(task_dates).mean()
+                else:
+                    pivot_date = pd.Series(task_dates).median()
             new_issues = self.timing_parser.issues_since(issue_cursor)
             if new_issues:
                 self._record_row_issue(
@@ -363,9 +498,53 @@ class GoogleSheetsTaskRepository(TaskRepository):
                     f"timing parse errors: {len(new_issues)}",
                     row_id=str(task.id),
                 )
-            if not pd.isna(mean_date):
-                next_task_date = mean_date
+            if pivot_date is not None and not pd.isna(pivot_date):
+                next_task_date = pd.Timestamp(pivot_date)
         return tasks_list
+
+    def _apply_chain_year_shift(
+        self,
+        task: Task,
+        task_dates: list[pd.Timestamp],
+        previous_task_date: pd.Timestamp | None,
+    ) -> list[pd.Timestamp]:
+        """Apply guarded year-shift for Jan-Mar future jumps in chain mode."""
+        if not task_dates or previous_task_date is None:
+            return task_dates
+        previous_task_date = pd.Timestamp(previous_task_date).normalize()
+        future_threshold = previous_task_date + pd.Timedelta(days=21)
+        future_jan_mar = [date for date in task_dates if date > future_threshold and date.month in {1, 2, 3}]
+        mostly_jan_mar = len([date for date in task_dates if date.month in {1, 2, 3}]) >= max(1, len(task_dates) // 2)
+        all_after_previous = all(date > previous_task_date for date in task_dates)
+        force_q4_rollover = previous_task_date.month >= 10 and mostly_jan_mar and all_after_previous
+        if not force_q4_rollover and len(future_jan_mar) < max(1, len(task_dates) // 2):
+            return task_dates
+
+        shifted_dates = [
+            (date - pd.DateOffset(years=1)).normalize() if date.month in {1, 2, 3} else date
+            for date in task_dates
+        ]
+        original_gap = sum(abs((date - previous_task_date).days) for date in task_dates)
+        shifted_gap = sum(abs((date - previous_task_date).days) for date in shifted_dates)
+        if not force_q4_rollover and shifted_gap + 14 >= original_gap:
+            return task_dates
+
+        timing_map = task.timing
+        shifted_map = defaultdict(list)
+        for old_date, new_date in zip(task_dates, shifted_dates):
+            shifted_map[new_date].extend(timing_map.get(old_date, []))
+        task.timing_cache = dict(shifted_map)
+        shifted_sorted = sorted(task.timing_cache.keys())
+        self.timing_parser.year_resolution_events.append(
+            {
+                "row_number": task.source_row_number,
+                "timing_line": task.raw_timing.split("\n")[0] if task.raw_timing else "",
+                "normalized_date": shifted_sorted[0].strftime("%Y-%m-%d") if shifted_sorted else "",
+                "year_source": "chain_shift",
+                "confidence": "medium",
+            }
+        )
+        return shifted_sorted
 
     def _record_row_issue(self, entity_name: str, row_number: int, reason: str, row_id: str = "") -> None:
         issue = RowValidationIssue(
