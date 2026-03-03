@@ -101,6 +101,11 @@ Steps:
 - supports “group query” flows (Telegram chat commands)
 - may call into planner logic and/or YDB readmodel repositories
 
+### Extraction progress (CAM-ENTRYPOINT-REFORM-V1)
+- event payload/path/method/query parsing moved to `src/entrypoints/http/event_parser.py`
+- HTTP dispatch chain moved to `src/entrypoints/http/router.py` (`dispatch_http`)
+- `index.py` still contains endpoint handlers, but parsing/routing boilerplate is delegated
+
 ### Intended direction (not implemented in this document)
 - `index.py` should become thin: parse + route → call `src/handlers/api.py`.
 - group-query should live in `src/handlers/group_query.py` (or similar).
