@@ -11,16 +11,8 @@ from sync_lockbox_from_env import _build_payload_entries, _default_yc_binary, _p
 
 
 REQUIRED_PROD_KEYS = (
-    "TARGET_SHEET_NAME_PROD",
     "YC_CLOUD_FUNCTION_PROD_NAME",
     "YC_CLOUD_FUNCTION_PROD_ID",
-    "WEB_DOMAIN",
-    "API_DOMAIN_PROD",
-    "API_DOMAIN_TEST",
-    "STORE_MODE",
-    "READMODEL_SOURCE",
-    "NOTIFY_SOURCE",
-    "RENDER_SOURCE",
     "YDB_ID_PROD",
     "YDB_ENDPOINT_PROD",
     "YDB_DATABASE_PROD",

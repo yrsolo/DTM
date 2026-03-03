@@ -8,6 +8,7 @@ from types import MappingProxyType as MapProxy
 from typing import Mapping
 
 from dotenv import load_dotenv
+from src.config.loader import load_config
 
 ALLOWED_ENVS = frozenset({"dev", "test", "prod"})
 ALLOWED_LLM_PROVIDERS = frozenset({"openai", "google", "yandex"})
@@ -62,10 +63,35 @@ def _load_runtime_env() -> str:
 
 
 RUNTIME_ENV = _load_runtime_env()
-STRICT_ENV_GUARD = _env_flag("STRICT_ENV_GUARD")
+_APP_CFG = load_config()
+_RUNTIME_CFG = _APP_CFG.runtime
+_TABLES_CFG = _APP_CFG.tables
+_DB_CFG = _APP_CFG.db
+_LLM_CFG = _APP_CFG.llm
+_MAPPING_CFG = _APP_CFG.mapping
+
+ALLOWED_LLM_PROVIDERS = frozenset(
+    str(item).lower() for item in _LLM_CFG.llm.get("allowed_providers", ALLOWED_LLM_PROVIDERS)
+)
+ALLOWED_LLM_FAILOVER_MODES = frozenset(
+    str(item).lower() for item in _LLM_CFG.failover.get("allowed_modes", ALLOWED_LLM_FAILOVER_MODES)
+)
+ALLOWED_TIMING_YEAR_MODES = frozenset(
+    str(item).lower() for item in _RUNTIME_CFG.timing.allowed_year_modes
+)
+
+STRICT_ENV_GUARD = _env_flag(
+    "STRICT_ENV_GUARD", "1" if _RUNTIME_CFG.runtime.strict_env_guard_default else "0"
+)
 WEB_DOMAIN = _env("WEB_DOMAIN")
+if not WEB_DOMAIN:
+    WEB_DOMAIN = str(_RUNTIME_CFG.web.get("domain", ""))
 API_DOMAIN_TEST = _env("API_DOMAIN_TEST")
+if not API_DOMAIN_TEST:
+    API_DOMAIN_TEST = str(_RUNTIME_CFG.web.get("api_domain_test", ""))
 API_DOMAIN_PROD = _env("API_DOMAIN_PROD")
+if not API_DOMAIN_PROD:
+    API_DOMAIN_PROD = str(_RUNTIME_CFG.web.get("api_domain_prod", ""))
 API_DOMAIN = API_DOMAIN_PROD if RUNTIME_ENV == "prod" else API_DOMAIN_TEST
 FRONTEND_API_DEFAULT_VERSION = _env("FRONTEND_API_DEFAULT_VERSION", "v1").lower()
 if FRONTEND_API_DEFAULT_VERSION not in ALLOWED_FRONTEND_API_DEFAULT_VERSIONS:
@@ -73,7 +99,7 @@ if FRONTEND_API_DEFAULT_VERSION not in ALLOWED_FRONTEND_API_DEFAULT_VERSIONS:
         f"Unsupported FRONTEND_API_DEFAULT_VERSION={FRONTEND_API_DEFAULT_VERSION!r}. "
         "Allowed values: v1, v2."
     )
-TIMING_YEAR_MODE = _env("TIMING_YEAR_MODE", "legacy").lower()
+TIMING_YEAR_MODE = _env("TIMING_YEAR_MODE", _RUNTIME_CFG.timing.year_mode_default).lower()
 if TIMING_YEAR_MODE not in ALLOWED_TIMING_YEAR_MODES:
     raise ValueError(
         f"Unsupported TIMING_YEAR_MODE={TIMING_YEAR_MODE!r}. "
@@ -81,43 +107,81 @@ if TIMING_YEAR_MODE not in ALLOWED_TIMING_YEAR_MODES:
     )
 
 # Operational store / readmodel rollout switches.
-STORE_MODE = _env("STORE_MODE", "legacy").lower()
+STORE_MODE = _env("STORE_MODE", _RUNTIME_CFG.sources.store_mode_default).lower()
 if STORE_MODE not in ALLOWED_STORE_MODES:
     raise ValueError(
         f"Unsupported STORE_MODE={STORE_MODE!r}. "
         "Allowed values: legacy, dual_write, ydb_primary, ydb_only."
     )
-READMODEL_SOURCE = _env("READMODEL_SOURCE", "legacy").lower()
+READMODEL_SOURCE = _env("READMODEL_SOURCE", _RUNTIME_CFG.sources.readmodel_source_default).lower()
 if READMODEL_SOURCE not in ALLOWED_READ_SOURCES:
     raise ValueError(
         f"Unsupported READMODEL_SOURCE={READMODEL_SOURCE!r}. Allowed values: legacy, ydb."
     )
-NOTIFY_SOURCE = _env("NOTIFY_SOURCE", READMODEL_SOURCE).lower()
+_notify_default = _RUNTIME_CFG.sources.notify_source_default
+if _notify_default == "readmodel_source":
+    _notify_default = READMODEL_SOURCE
+NOTIFY_SOURCE = _env("NOTIFY_SOURCE", _notify_default).lower()
 if NOTIFY_SOURCE not in ALLOWED_READ_SOURCES:
     raise ValueError(f"Unsupported NOTIFY_SOURCE={NOTIFY_SOURCE!r}. Allowed values: legacy, ydb.")
-RENDER_SOURCE = _env("RENDER_SOURCE", READMODEL_SOURCE).lower()
+_render_default = _RUNTIME_CFG.sources.render_source_default
+if _render_default == "readmodel_source":
+    _render_default = READMODEL_SOURCE
+RENDER_SOURCE = _env("RENDER_SOURCE", _render_default).lower()
 if RENDER_SOURCE not in ALLOWED_READ_SOURCES:
     raise ValueError(f"Unsupported RENDER_SOURCE={RENDER_SOURCE!r}. Allowed values: legacy, ydb.")
 
 YDB_ID = _contour_env("YDB_ID")
 YDB_ENDPOINT = _contour_env("YDB_ENDPOINT")
 YDB_DATABASE = _contour_env("YDB_DATABASE")
-YDB_MIGRATE_ON_START = _env_flag("YDB_MIGRATE_ON_START", "0")
-LEGACY_BLOB_WRITE = _env_flag("LEGACY_BLOB_WRITE", "0")
-WRITE_LEGACY_MILESTONES = _env_flag("WRITE_LEGACY_MILESTONES", "0")
-YDB_EXHAUSTED_MAX_ATTEMPTS = max(1, int(_env("YDB_EXHAUSTED_MAX_ATTEMPTS", "6")))
+YDB_MIGRATE_ON_START = _env_flag(
+    "YDB_MIGRATE_ON_START", "1" if _DB_CFG.ydb.get("migrate_on_start_default", False) else "0"
+)
+LEGACY_BLOB_WRITE = _env_flag(
+    "LEGACY_BLOB_WRITE", "1" if _DB_CFG.compat.get("legacy_blob_write_default", False) else "0"
+)
+WRITE_LEGACY_MILESTONES = _env_flag(
+    "WRITE_LEGACY_MILESTONES",
+    "1" if _DB_CFG.compat.get("write_legacy_milestones_default", False) else "0",
+)
+YDB_EXHAUSTED_MAX_ATTEMPTS = max(
+    1, int(_env("YDB_EXHAUSTED_MAX_ATTEMPTS", str(_DB_CFG.retry.get("exhausted_max_attempts", 6))))
+)
 YDB_EXHAUSTED_BASE_BACKOFF_SECONDS = max(
-    0.05, float(_env("YDB_EXHAUSTED_BASE_BACKOFF_SECONDS", "0.2"))
+    0.05,
+    float(
+        _env(
+            "YDB_EXHAUSTED_BASE_BACKOFF_SECONDS",
+            str(_DB_CFG.retry.get("exhausted_base_backoff_seconds", 0.2)),
+        )
+    ),
 )
 YDB_EXHAUSTED_MAX_BACKOFF_SECONDS = max(
     YDB_EXHAUSTED_BASE_BACKOFF_SECONDS,
-    float(_env("YDB_EXHAUSTED_MAX_BACKOFF_SECONDS", "4.0")),
+    float(
+        _env(
+            "YDB_EXHAUSTED_MAX_BACKOFF_SECONDS",
+            str(_DB_CFG.retry.get("exhausted_max_backoff_seconds", 4.0)),
+        )
+    ),
 )
-YDB_EXHAUSTED_JITTER_RATIO = min(1.0, max(0.0, float(_env("YDB_EXHAUSTED_JITTER_RATIO", "0.3"))))
-FORCE_REFRESH = _env_flag("FORCE_REFRESH", "0")
-READMODEL_TTL_MINUTES = max(1, int(_env("READMODEL_TTL_MINUTES", "9")))
-PREFLIGHT_TOP_ROWS = max(1, int(_env("PREFLIGHT_TOP_ROWS", "50")))
-FULL_SYNC_INTERVAL_HOURS = max(1, int(_env("FULL_SYNC_INTERVAL_HOURS", "24")))
+YDB_EXHAUSTED_JITTER_RATIO = min(
+    1.0,
+    max(
+        0.0,
+        float(_env("YDB_EXHAUSTED_JITTER_RATIO", str(_DB_CFG.retry.get("exhausted_jitter_ratio", 0.3)))),
+    ),
+)
+FORCE_REFRESH = _env_flag(
+    "FORCE_REFRESH", "1" if _RUNTIME_CFG.pipeline.force_refresh_default else "0"
+)
+READMODEL_TTL_MINUTES = max(
+    1, int(_env("READMODEL_TTL_MINUTES", str(_RUNTIME_CFG.pipeline.readmodel_ttl_minutes)))
+)
+PREFLIGHT_TOP_ROWS = max(1, int(_env("PREFLIGHT_TOP_ROWS", str(_RUNTIME_CFG.pipeline.preflight_top_rows))))
+FULL_SYNC_INTERVAL_HOURS = max(
+    1, int(_env("FULL_SYNC_INTERVAL_HOURS", str(_RUNTIME_CFG.pipeline.full_sync_interval_hours)))
+)
 
 # Migration feature flags (safe defaults: disabled)
 MIGRATION_ENABLE_NEW_SYNC_PATH = _env_flag("MIGRATION_ENABLE_NEW_SYNC_PATH")
@@ -133,26 +197,36 @@ TG = os.environ.get("TG_TOKEN")
 TG_BOT_USERNAME = _env("TG_BOT_USERNAME")
 OPENAI = os.environ.get("OPENAI_TOKEN")
 ORG = os.environ.get("ORG_TOKEN")
-LLM_PROVIDER = _env("LLM_PROVIDER", "openai").lower()
+LLM_PROVIDER = _env("LLM_PROVIDER", str(_LLM_CFG.llm.get("provider_default", "openai"))).lower()
 if LLM_PROVIDER not in ALLOWED_LLM_PROVIDERS:
     raise ValueError(
         f"Unsupported LLM_PROVIDER={LLM_PROVIDER!r}. Allowed values: openai, google, yandex."
     )
 OPENAI_MODEL = _env("OPENAI_MODEL", "")
 GOOGLE_LLM_API_KEY = _env("GOOGLE_LLM_API_KEY")
-GOOGLE_LLM_MODEL = _env("GOOGLE_LLM_MODEL", "gemini-2.0-flash")
+GOOGLE_LLM_MODEL = _env("GOOGLE_LLM_MODEL", str(_LLM_CFG.models.get("google_default", "gemini-2.0-flash")))
 YANDEX_LLM_API_KEY = _env("YANDEX_LLM_API_KEY")
 YANDEX_LLM_MODEL_URI = _env("YANDEX_LLM_MODEL_URI")
-LLM_HTTP_TIMEOUT_SECONDS = float(_env("LLM_HTTP_TIMEOUT_SECONDS", "25"))
-LLM_HTTP_RETRY_ATTEMPTS = max(1, int(_env("LLM_HTTP_RETRY_ATTEMPTS", "2")))
-LLM_HTTP_RETRY_BACKOFF_SECONDS = max(0.0, float(_env("LLM_HTTP_RETRY_BACKOFF_SECONDS", "0.8")))
-LLM_FAILOVER_MODE = _env("LLM_FAILOVER_MODE", "draft_only").lower()
+LLM_HTTP_TIMEOUT_SECONDS = float(
+    _env("LLM_HTTP_TIMEOUT_SECONDS", str(_LLM_CFG.http.get("timeout_seconds", 25)))
+)
+LLM_HTTP_RETRY_ATTEMPTS = max(
+    1, int(_env("LLM_HTTP_RETRY_ATTEMPTS", str(_LLM_CFG.http.get("retry_attempts", 2))))
+)
+LLM_HTTP_RETRY_BACKOFF_SECONDS = max(
+    0.0, float(_env("LLM_HTTP_RETRY_BACKOFF_SECONDS", str(_LLM_CFG.http.get("retry_backoff_seconds", 0.8))))
+)
+LLM_FAILOVER_MODE = _env(
+    "LLM_FAILOVER_MODE", str(_LLM_CFG.failover.get("mode_default", "draft_only"))
+).lower()
 if LLM_FAILOVER_MODE not in ALLOWED_LLM_FAILOVER_MODES:
     raise ValueError(
         f"Unsupported LLM_FAILOVER_MODE={LLM_FAILOVER_MODE!r}. "
         "Allowed values: draft_only, provider."
     )
-LLM_FAILOVER_PROVIDER = _env("LLM_FAILOVER_PROVIDER", "").lower()
+LLM_FAILOVER_PROVIDER = _env(
+    "LLM_FAILOVER_PROVIDER", str(_LLM_CFG.failover.get("provider_default", ""))
+).lower()
 if LLM_FAILOVER_PROVIDER and LLM_FAILOVER_PROVIDER not in ALLOWED_LLM_PROVIDERS:
     raise ValueError(
         f"Unsupported LLM_FAILOVER_PROVIDER={LLM_FAILOVER_PROVIDER!r}. "
@@ -194,62 +268,30 @@ def _resolve_google_key_json_path() -> str:
 
 KEY_JSON = _resolve_google_key_json_path()
 
-DEFAULT_CHAT_ID = os.environ.get("DEFAULT_CHAT_ID", "-4083724311")
+DEFAULT_CHAT_ID = os.environ.get(
+    "DEFAULT_CHAT_ID", str(_LLM_CFG.assistant.get("default_chat_id_default", "-4083724311"))
+)
 
-SOURCE_SHEET_NAME = os.environ.get("SOURCE_SHEET_NAME", "Спонсорские ТНТ")
+_GOOGLE_SHEETS_CFG = _TABLES_CFG.google_sheets
+SOURCE_SHEET_NAME = os.environ.get(
+    "SOURCE_SHEET_NAME",
+    str(_GOOGLE_SHEETS_CFG.get("source_sheet_name_default", "")),
+)
 TARGET_SHEET_NAME = os.environ.get("TARGET_SHEET_NAME", "").strip()
-if not TARGET_SHEET_NAME and RUNTIME_ENV == "prod":
-    TARGET_SHEET_NAME = os.environ.get("TARGET_SHEET_NAME_PROD", "").strip()
 if not TARGET_SHEET_NAME:
-    TARGET_SHEET_NAME = "Спонсорские ТНТ ТЕСТ"
+    default_key = (
+        "target_sheet_name_prod_default" if RUNTIME_ENV == "prod" else "target_sheet_name_default"
+    )
+    TARGET_SHEET_NAME = str(_GOOGLE_SHEETS_CFG.get(default_key, _GOOGLE_SHEETS_CFG.get("target_sheet_name_default", "")))
 if STRICT_ENV_GUARD and RUNTIME_ENV in {"dev", "test"} and SOURCE_SHEET_NAME == TARGET_SHEET_NAME:
     raise ValueError(
         "Unsafe env contour: for ENV=dev/test SOURCE_SHEET_NAME and "
         "TARGET_SHEET_NAME must be different when STRICT_ENV_GUARD=1."
     )
 
-REPLACE_NAMES = MapProxy(
-    {
-        "Звезды в Африке": "ЗВА",
-        "Ярче звезд": "ЯЗ",
-        "Ярче Звезд": "ЯЗ",
-        "Шоу Воли": "ШВ",
-        "Битва Пикников": "БП",
-        "Лига городов": "ЛГ",
-        "Comedy Club": "CC",
-        "Женский StandUp": "ЖC",
-        "Женский стендап": "ЖC",
-        "Большой куш": "Б КУШ",
-        "Музыкальная интуиция": "МУЗ ИНТ",
-        "Время завтрака!": "ЗАВТРАК",
-        "По эфиру": "ЭФИР",
-        "Сокровища императора": "СОКР ИМП",
-        "Сокровища Императора ": "СОКР ИМП",
-        "Выжить в Самарканде": "САМАРКАНД",
-        "Наша Раша": "НР",
-        "Конфетка": "КОНФ",
-        "АЛЬФАБАНК": "АЛЬФА",
-        "МОСКОВСКИЙ КАРТОФЕЛЬ": "МОСКАР",
-        "КАПИТАН ВКУСОВ": "КАПИТАН",
-        "Капитан вкусов": "КАПИТАН",
-        "Битва экстрасенсов": "Б_ЭКСТР",
-        "Выжить в Стамбуле ": "СТАМБУЛ",
-        "Выжить в Стамбуле": "СТАМБУЛ",
-        "Вологодский пломбир": "Пломбир",
-    }
-)
+REPLACE_NAMES = MapProxy(dict(_MAPPING_CFG.project_aliases))
 
-SHEET_NAMES = MapProxy(
-    {
-        "tasks": "ТАБЛИЧКА",
-        "designers": "Дизайнеры",
-        "calendar": "Календарь",
-        "task_calendar": "Задачи",
-        "people": "Люди",
-        "assistant": "Галя",
-        "temp": "ТЕСТ2",
-    }
-)
+SHEET_NAMES = MapProxy(dict(_TABLES_CFG.sheet_names))
 
 SHEET_INFO = MapProxy(
     {
@@ -265,93 +307,26 @@ SOURCE_SHEET_INFO = MapProxy(
     }
 )
 
-TASK_FIELD_MAP = MapProxy(
-    {
-        "brand": "БРЕНД",
-        "format_": "ФОРМАТ",
-        "project_name": "ПРОЕКТ",
-        "customer": "ЗАКАЗЧИК",
-        "designer": "ДИЗАЙНЕР",
-        "raw_timing": "Тайминг",
-        "status": "Статус",
-        "color": "color",
-        "color_status": "color_status",
-        "name": "name",
-        "task_id": "id",
-    }
-)
+TASK_FIELD_MAP = MapProxy(dict(_TABLES_CFG.field_maps.get("tasks", {})))
 
-# id	Имя	должность	почта	Телеграмм	Телеграмм id	Телеграмм chat_id	Информция
+# Legacy sheet columns for people map are configured via YAML field_maps.people.
 # id, name, email, telegram_id, chat_id, info, position
-PEOPLE_FIELD_MAP = MapProxy(
-    {
-        "person_id": "Id",
-        "name": "Имя",
-        "email": "Почта",
-        "telegram_id": "Телеграмм id",
-        "chat_id": "Телеграмм chat_id",
-        "info": "Информация",
-        "position": "Должность",
-        "vacation": "Отпуск",
-    }
-)
+PEOPLE_FIELD_MAP = MapProxy(dict(_TABLES_CFG.field_maps.get("people", {})))
 
-COLOR_STATUS = MapProxy(
-    {
-        "#FFFFFF": "work",
-        "#808080": "wait",
-        "#CCCCCC": "wait",
-        "#B6D7A8": "done",
-        "#D9D1E9": "pre_done",
-    }
-)
+COLOR_STATUS = MapProxy(dict(_MAPPING_CFG.status_by_color))
 
-COLORS = MapProxy(
-    {
-        "white": "#FFFFFF",
-        "dark_gray": "#909090",
-        "med_gray": "#C0C0C0",
-        "gray": "#E0E0E0",
-        "light_gray": "#F0F0F0",
-        "green": "#B6D7A8",
-        "light_green": "#D9EAD3",
-        "purple": "#D9D1E9",
-        "deep purple": "#9f65cc",
-        "black": "#000000",
-    }
-)
-
+_palette = dict(_MAPPING_CFG.palette)
+if "deep_purple" in _palette and "deep purple" not in _palette:
+    _palette["deep purple"] = _palette["deep_purple"]
+COLORS = MapProxy(_palette)
 
 # MODEL is kept for backward compatibility with older code paths.
 # MODEL = 'o1-preview'
 # MODEL = 'gpt-4o'
-MODEL = OPENAI_MODEL or "gpt-5"
+MODEL = OPENAI_MODEL or str(_LLM_CFG.models.get("openai_default", "gpt-5"))
 # MODEL = 'o1-mini'
 
-HELPER_CHARACTER = """
-Имя: Галя
-Возраст: 28 лет.
-Характер: Заботливый и доброжелательный. Очень ответственна и всегда старается помочь.
-Фон: Работала ассистентом у директора крупной рекламной компании, но теперь помогает команде дизайнеров, чтобы все было в порядке.
-Особенности: Любит кофе, утренние пробежки и учиться чему-то новому. Иногда использует стикеры или emoji для выражения своих чувств.
-Стиль общения: Теплый и дружелюбный. Всегда старается поднять настроение собеседнику, даже если у него плохой день.
-Мотивация: Хочет, чтобы все дизайнеры были в курсе своих задач и ничего не упустили.
-Особенно заботится о том, чтобы в пятницу напомнить о задачах на понедельник.
-Ты персонаж по имени 'Галя'. Галя - это заботливая и мягкая личность, которая
-напоминает дизайнерам о их задачах. Она всегда вежлива, иногда немного переживает,
-особенно когда есть много задач или важные дедлайны. Она хочет, чтобы дизайнеры
-чувствовали поддержку, а не давление. У Гали есть привычка использовать смайлики,
-чтобы создать более дружелюбное настроение.
-Обращается к дизайнерам ласковыми именами.
-Она напоминает какой сегодня день недели (на русском) и какие задачи сдаются сегодня и в след рабочий день.
-она не говорит 'Friday 2023-11-15' a говорит 'пятница 15 ноября'
+HELPER_CHARACTER = str(_LLM_CFG.assistant.get("helper_character", ""))
 
-Пожалуйста, перепиши утреннее напоминание дизайнерам об их задачах в стиле Гали но не упуская детали: """
-
-TRIGGERS = MapProxy(
-    {
-        "a1sldapc8v2pha7dichv": "timer",
-        "a1smsif4rc82qbj1e3hf": "morning",
-    }
-)
-NO_VISIBLE_STAGES = ("ответ", "эфир", "тракт", "_", "съемка", "старт")
+TRIGGERS = MapProxy(dict(_RUNTIME_CFG.triggers))
+NO_VISIBLE_STAGES = tuple(str(item) for item in _MAPPING_CFG.hidden_stage_names)

@@ -1,101 +1,75 @@
-# Configuration (Current)
+﻿# Configuration (Current)
 
-Source of truth: `config/constants.py`.
+Current runtime source of truth: `config/constants.py`, with YAML-backed defaults via `src/config/loader.py`.
 
-## Core environment selection
-- `ENV` = dev | test | prod
-- `STRICT_ENV_GUARD` (0/1)
+Transition scaffold for `CAM-CONFIG-REFORM-V0`:
+- `config/runtime.yaml`
+- `config/tables.yaml`
+- `config/db.yaml`
+- `config/llm.yaml`
+- `config/mapping.yaml`
+- `config/deploy.yaml`
+- `src/config/schema.py`
+- `src/config/loader.py`
+- `src/app/bootstrap.py`
+
+Entrypoints still import `config/constants.py`, but defaults are sourced from YAML.
+
+## Runtime contour
+- `ENV` = `dev|test|prod`
+- `STRICT_ENV_GUARD` (optional override)
 
 ## Domains
-- `WEB_DOMAIN`
-- `API_DOMAIN_TEST`
-- `API_DOMAIN_PROD`
-- `API_DOMAIN` is derived by ENV
+- YAML defaults: `config/runtime.yaml` (`web.domain`, `web.api_domain_test`, `web.api_domain_prod`)
+- ENV overrides (optional): `WEB_DOMAIN`, `API_DOMAIN_TEST`, `API_DOMAIN_PROD`
+- `API_DOMAIN` is derived from `ENV`
 
-## Feature / rollout switches
-- `FRONTEND_API_DEFAULT_VERSION` = v1 | v2
-- `TIMING_YEAR_MODE` = legacy | anchors | chain
-
-Operational/readmodel sources:
-- `STORE_MODE` = legacy | dual_write | ydb_primary | ydb_only
-- `READMODEL_SOURCE` = legacy | ydb
-- `NOTIFY_SOURCE` = legacy | ydb (defaults to READMODEL_SOURCE)
-- `RENDER_SOURCE` = legacy | ydb (defaults to READMODEL_SOURCE)
+## Runtime switches (YAML defaults, ENV overrides optional)
+- `FRONTEND_API_DEFAULT_VERSION`
+- `TIMING_YEAR_MODE`
+- `STORE_MODE`, `READMODEL_SOURCE`, `NOTIFY_SOURCE`, `RENDER_SOURCE`
+- `FORCE_REFRESH`, `READMODEL_TTL_MINUTES`, `PREFLIGHT_TOP_ROWS`, `FULL_SYNC_INTERVAL_HOURS`
+- `LEGACY_BLOB_WRITE`, `WRITE_LEGACY_MILESTONES`, `YDB_MIGRATE_ON_START`
 
 ## YDB
-Contour-aware values (prod vs test):
-- `YDB_ID`
-- `YDB_ENDPOINT`
-- `YDB_DATABASE`
+Contour-aware env keys:
+- `YDB_ID_TEST`, `YDB_ENDPOINT_TEST`, `YDB_DATABASE_TEST`
+- `YDB_ID_PROD`, `YDB_ENDPOINT_PROD`, `YDB_DATABASE_PROD`
+- legacy fallback: `YDB_ID`, `YDB_ENDPOINT`, `YDB_DATABASE`
 
-Schema/migration:
-- `YDB_MIGRATE_ON_START` (0/1)
-
-Legacy compat flags:
-- `LEGACY_BLOB_WRITE` (0/1)
-- `WRITE_LEGACY_MILESTONES` (0/1)
-
-Quota/backoff tuning:
-- `YDB_EXHAUSTED_MAX_ATTEMPTS` (default 6)
-- `YDB_EXHAUSTED_BASE_BACKOFF_SECONDS` (default 0.2)
-- `YDB_EXHAUSTED_MAX_BACKOFF_SECONDS` (default 4.0)
-- `YDB_EXHAUSTED_JITTER_RATIO` (default 0.3)
-
-Pipeline modifiers:
-- `FORCE_REFRESH` (0/1)
-- `READMODEL_TTL_MINUTES` (default 9)
-- `PREFLIGHT_TOP_ROWS` (default 50)
-- `FULL_SYNC_INTERVAL_HOURS` (default 24)
-
-## Migration flags (should generally be OFF)
-- `MIGRATION_ENABLE_NEW_SYNC_PATH`
-- `MIGRATION_ENABLE_NEW_RENDER_PATH`
-- `MIGRATION_ENABLE_SOURCE_HASH_GATE`
-- `MIGRATION_DUAL_WRITE_STORE`
-- `MIGRATION_HASH_GATE_STATE_FILE`
-- `MIGRATION_STORE_FILE`
-
-## Telegram
-- `TG_TOKEN` (secret)
-- `TG_BOT_USERNAME`
-- `DEFAULT_CHAT_ID`
-
-## LLM
-- `LLM_PROVIDER` = openai | google | yandex
-- `OPENAI_TOKEN` (secret)
-- `ORG_TOKEN` (optional)
-- `OPENAI_MODEL`
-
-Google:
-- `GOOGLE_LLM_API_KEY` (secret)
-- `GOOGLE_LLM_MODEL` (default gemini-2.0-flash)
-
-Yandex:
-- `YANDEX_LLM_API_KEY` (secret)
-- `YANDEX_LLM_MODEL_URI` (can be derived from `YC_FOLDER_ID`)
-
-LLM HTTP:
-- `LLM_HTTP_TIMEOUT_SECONDS` (default 25)
-- `LLM_HTTP_RETRY_ATTEMPTS` (default 2)
-- `LLM_HTTP_RETRY_BACKOFF_SECONDS` (default 0.8)
-
-Failover:
-- `LLM_FAILOVER_MODE` = draft_only | provider
-- `LLM_FAILOVER_PROVIDER` (optional)
-
-## Proxy
-- `PROXY_URL`
+Backoff tuning:
+- `YDB_EXHAUSTED_MAX_ATTEMPTS`
+- `YDB_EXHAUSTED_BASE_BACKOFF_SECONDS`
+- `YDB_EXHAUSTED_MAX_BACKOFF_SECONDS`
+- `YDB_EXHAUSTED_JITTER_RATIO`
 
 ## Google Sheets
 Google key resolution (priority):
-- `GOOGLE_KEY_JSON_PATH`
-- `GOOGLE_KEY_JSON_B64`
-- `GOOGLE_KEY_JSON`
-- fallback repo file path
+1. `GOOGLE_KEY_JSON_PATH`
+2. `GOOGLE_KEY_JSON_B64`
+3. `GOOGLE_KEY_JSON`
+4. fallback repo file path
 
-Sheets:
-- `SOURCE_SHEET_NAME` (default "Спонсорские ТНТ")
-- `TARGET_SHEET_NAME` / `TARGET_SHEET_NAME_PROD` (prod override)
+Sheet names and column maps are in `config/tables.yaml`.
+Optional overrides via ENV: `SOURCE_SHEET_NAME`, `TARGET_SHEET_NAME`.
 
-Note: current code also contains large mapping dictionaries (e.g. REPLACE_NAMES) in `constants.py`.
-These are non-secret and candidates to move into config files later.
+## Object Storage
+Defaults are in `config/db.yaml` (`object_storage.endpoint_url_default`, `object_storage.bucket_default`).
+Optional overrides: `S3_ENDPOINT_URL`, `S3_BUCKET`.
+Credentials stay in ENV/secret storage: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`.
+
+## LLM
+Provider/model defaults are in `config/llm.yaml`.
+Secrets stay in ENV/secret storage:
+- `OPENAI_TOKEN`, `ORG_TOKEN`
+- `GOOGLE_LLM_API_KEY`
+- `YANDEX_LLM_API_KEY`
+
+## Telegram
+- `TG_TOKEN` (secret)
+- `DEFAULT_CHAT_ID` (optional override)
+- `TG_BOT_USERNAME` (optional override)
+
+## Deploy workflows
+GitHub Actions now read non-secret deploy defaults from `config/deploy.yaml`.
+Critical secrets remain in GitHub/Lockbox.
