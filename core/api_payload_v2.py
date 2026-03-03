@@ -9,7 +9,8 @@ from datetime import datetime, timezone
 from typing import Any, Iterable
 
 from core.people import Person
-from core.task_query_contract import TimeWindow, apply_task_query, milestone_type_labels, project_tasks
+from core.task_query_adapter import TaskQueryContext, build_task_query_context, query_projections
+from core.task_query_contract import TimeWindow, milestone_type_labels
 
 
 def _utc_iso(dt: datetime | None = None) -> str:
@@ -132,9 +133,9 @@ def build_frontend_api_payload_v2(
     synced_at: datetime | None = None,
 ) -> dict[str, Any]:
     """Build v2 payload with stable hash and extensible entity model."""
-    projections = project_tasks(tasks)
-    pre_window_filtered = apply_task_query(
-        projections,
+    query_context = build_task_query_context(tasks)
+    pre_window_filtered = query_projections(
+        query_context,
         statuses=statuses,
         designer=designer_filter,
         limit=10**9,
@@ -142,8 +143,8 @@ def build_frontend_api_payload_v2(
     )
     tasks_total = len(pre_window_filtered)
     query_window = TimeWindow(start=window_start, end=window_end, mode=window_mode or "intersects")
-    filtered = apply_task_query(
-        pre_window_filtered,
+    filtered = query_projections(
+        TaskQueryContext(projections=list(pre_window_filtered)),
         limit=max(limit, 0),
         window=query_window,
     )

@@ -13,6 +13,7 @@ Execute Stage 22 unification work: one DB query contract and one source-policy m
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-229 - Unified DB query contract adapter for API/render/notify.
 - [DONE] DTM-228 - Stage 22 kickoff and bounded queue.
 - [DONE] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 - [DONE] DTM-227 - DB migration v2 finalization: versioning, preflight top-50 gate, forced refresh, and evidence package.
@@ -45,10 +46,11 @@ Execute Stage 22 unification work: one DB query contract and one source-policy m
 
 ## Stage 22 Estimate (Dynamic)
 - Baseline estimate: 6 tasks.
-- Done: 1
-- Remaining: 5
+- Done: 2
+- Remaining: 4
 
 ## Done (Latest)
+- [DONE] DTM-229 - Shared query adapter layer (`core/task_query_adapter.py`) wired to API v1/v2 + planner + reminder; test and timer smoke passed.
 - [DONE] DTM-228 - Stage 22 kickoff and bounded queue (freshness check + bounded execution queue confirmed).
 - [DONE] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 - [DONE] DTM-227 - DB migration v2 finalization (`dtm_task_versions`, preflight top-50 + daily full-sync gate, forced refresh no-version-bump, cloud smoke evidence).
@@ -90,10 +92,10 @@ Execute Stage 22 unification work: one DB query contract and one source-policy m
 - none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-229 - Unified DB query contract adapter for API/render/notify.
 - [TODO] DTM-230 - Source-policy cleanup for `READMODEL_SOURCE`/`NOTIFY_SOURCE`/`RENDER_SOURCE`.
 - [TODO] DTM-231 - Stage 22 production runbook for `db_migrate`/forced refresh/rollback.
 - [TODO] DTM-232 - Stage 22 tri-block smoke suite from unified query source.
+- [TODO] DTM-233 - Stage 22 closeout and Stage 23 handoff package.
 
 ## Tri-Block Readiness Matrix (Test Contour)
 - Frontend API: in progress (v1/v2/doc cloud verification passed; pending explicit YDB readmodel-source confirmation in v2 payload).
@@ -101,6 +103,7 @@ Execute Stage 22 unification work: one DB query contract and one source-policy m
 - Notifications: in progress (delivery logic works; needs contour smoke evidence under current rollout switches).
 
 ## Active Task Files
+- `agile/tasks/stage_20_plus/DTM-229_stage22_unified-db-query-contract-adapter.md`
 - `agile/tasks/stage_20_plus/DTM-228_stage22-kickoff-and-bounded-queue.md`
 - `agile/tasks/stage_20_plus/DTM-201_stage21-closeout-and-stage22-handoff.md`
 - `agile/tasks/stage_20_plus/DTM-227_stage21_db-migration-v2-finalization.md`

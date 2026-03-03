@@ -17,7 +17,8 @@ from telegram.ext import Application
 
 from config import DEFAULT_CHAT_ID, TG
 from core.adapters import ChatAdapter, LoggerAdapter, MessageAdapter, NullLogger
-from core.task_query_contract import TimeWindow, apply_task_query, milestones_in_window, project_tasks
+from core.task_query_adapter import build_task_query_context, query_projections
+from core.task_query_contract import TimeWindow, milestones_in_window
 from utils.func import filter_stages
 
 
@@ -542,10 +543,10 @@ class Reminder:
 
     def _get_tasks_for_date_sync(self, date: pd.Timestamp) -> list[Any]:
         tasks = self.task_repository.get_all_tasks()
-        projections = project_tasks(tasks)
+        query_context = build_task_query_context(tasks)
         window = TimeWindow(start=date.date(), end=date.date(), mode="intersects")
-        filtered = apply_task_query(
-            projections,
+        filtered = query_projections(
+            query_context,
             statuses=["work"],
             window=window,
             limit=10**9,
