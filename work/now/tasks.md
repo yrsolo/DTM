@@ -1,17 +1,13 @@
 # Active Tasks
 
-- [x] Activate `CAM-PIPELINE-CLEAN-SKELETON-V1` from priorities.
-- [x] P01-T001: introduce shared `AppContext` contract (`src/app/context.py`) and wire bootstrap to it.
-- [x] P01-T002: add baseline use-case contracts (`src/services/usecases/contracts.py`).
-- [x] P02-T001: add thin `TimerJob.run(ctx)` scaffold (`src/entrypoints/jobs/timer_job.py`) without behavior change.
-- [x] P02-T002: adapt `main.py` to call `TimerJob` orchestration shell (feature-equivalent path).
-- [x] P03-T001: classify runtime errors via typed app boundary (`TransientError` / `PermanentError` / `UserError`) without changing external API.
-- [x] P03-T002: map typed errors to explicit entrypoint outcomes (HTTP/exit) in dedicated boundary layer.
-- [x] P04-T001: document pipeline skeleton/dataflow update in `docs/system/*` after first integration pass.
-- [x] P04-T002: decide closeout criteria for CAM-PIPELINE-CLEAN-SKELETON-V1 and prepare handoff to CAM-ENTRYPOINT-REFORM-V1.
+- [x] Activate `CAM-ENTRYPOINT-REFORM-V1` from priorities.
+- [x] P01-T001: extract HTTP payload parsing into `src/entrypoints/http/event_parser.py` and delegate from `index.py`.
+- [ ] P01-T002: extract path/method/query parsing helpers from `index.py` into `src/entrypoints/http/event_parser.py`.
+- [ ] P01-T003: introduce HTTP router scaffold in `src/entrypoints/http/router.py` and delegate from `index.py`.
+- [ ] P02-T001: align `main.py` thin wrapper over `TimerJob` shell (feature-equivalent).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (P04 completed: closeout criteria fixed in campaign evidence, next campaign target confirmed: CAM-ENTRYPOINT-REFORM-V1)
+- 2026-03-04 (P01-T001 completed: `_extract_payload` moved out of `index.py` into `src/entrypoints/http/event_parser.py`)

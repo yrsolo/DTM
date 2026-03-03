@@ -1,22 +1,21 @@
-# CAM-PIPELINE-CLEAN-SKELETON-V1
+# CAM-ENTRYPOINT-REFORM-V1
 
 ## Status
-Activated from priority queue after CAM-CONFIG-REFORM-V0 core milestones.
+Activated from priority queue after CAM-PIPELINE-CLEAN-SKELETON-V1 handoff.
 
 ## Goal
-Make runtime pipeline skeleton linear and predictable: context + use-case contracts + thin orchestration.
+Make `index.py` and `main.py` thin wrappers by moving parsing/routing/orchestration helpers to `src/entrypoints/*`.
 
 ## Current Phase
-P04: closeout + handoff preparation.
+P01: HTTP entrypoint extraction.
 
 ## Important Rule
-- Keep business behavior unchanged while introducing contracts/scaffold.
+- Keep business behavior unchanged while extracting helpers.
 
 ## Exit Criteria
-- `AppContext` contract and use-case contracts exist and are wired in bootstrap.
-- `TimerJob` shell is integrated into runtime path without behavior regressions.
-- Typed error taxonomy exists and is mapped at entrypoint boundary.
-- System docs reflect the transition state and next campaign handoff.
+- `index.py` delegates event parsing/routing helpers to `src/entrypoints/http/*`.
+- `main.py` delegates job selection shell to `src/entrypoints/jobs/*`.
+- External API/runtime behavior remains feature-equivalent.
 
 ## Archive
 - closeouts stored in `work/archive/campaigns/*/closeout.md`.

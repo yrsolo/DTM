@@ -33,6 +33,7 @@ from main import main
 from src.app.bootstrap import build_app_context
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
 from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
+from src.entrypoints.http.event_parser import extract_payload as _extract_payload
 from src.services.errors import AppError, PermanentError, TransientError, UserError
 from src.services.source_policy import build_source_policy_matrix
 
@@ -43,41 +44,6 @@ APP_SOURCE_SHEET_NAME = str(APP_CFG.tables.google_sheets.get("source_sheet_name_
 APP_READMODEL_SOURCE = APP_CFG.runtime.sources.readmodel_source_default
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
-
-def _extract_payload(event: Any) -> tuple[dict[str, Any], bool]:
-    if not isinstance(event, dict):
-        return {}, False
-    is_http = any(
-        key in event
-        for key in (
-            "httpMethod",
-            "method",
-            "requestMethod",
-            "path",
-            "rawPath",
-            "raw_path",
-            "requestContext",
-            "queryStringParameters",
-            "rawQueryString",
-            "params",
-            "url",
-        )
-    )
-    if "body" not in event:
-        return event, is_http
-
-    raw_body = event.get("body")
-    if isinstance(raw_body, dict):
-        return raw_body, True
-    if isinstance(raw_body, str) and raw_body.strip():
-        try:
-            parsed = json.loads(raw_body)
-            if isinstance(parsed, dict):
-                return parsed, True
-        except json.JSONDecodeError:
-            pass
-    return {}, True
-
 
 def _load_work_tasks_for_group_query() -> list[Any]:
     dependencies = build_planner_dependencies(
