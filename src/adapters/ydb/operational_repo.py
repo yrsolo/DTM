@@ -265,9 +265,16 @@ class OperationalTaskRepo:
         if not task_ids:
             return 0
 
-        # Full table replace is acceptable because sync reads full source range.
-        delete_query = f"DELETE FROM `{self.milestones_table}`;"
-        self.client.query(delete_query)
+        # Safe replace: delete only affected task_ids, never full-table wipe.
+        delete_query = f"""
+        DECLARE $task_ids AS List<Utf8>;
+        DELETE FROM `{self.milestones_table}`
+        WHERE task_id IN $task_ids;
+        """
+        chunk_size = 200
+        for index in range(0, len(task_ids), chunk_size):
+            chunk = task_ids[index : index + chunk_size]
+            self.client.execute(delete_query, {"$task_ids": chunk})
 
         rows: list[dict[str, Any]] = []
         for task_id, milestones in payload_by_task.items():
@@ -570,7 +577,7 @@ class OperationalTaskRepo:
         DECLARE $statuses AS List<Utf8>;
         SELECT
             task_id, title, brand, format_, customer, raw_timing, owner_id, group_id, status, start_date, end_date, next_due_date,
-            tags_json, links_json, task_hash, task_revision, updated_at_utc
+            tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
         FROM `{self.tasks_table}`
         WHERE
             ListLength($statuses) = 0
@@ -587,7 +594,7 @@ class OperationalTaskRepo:
             DECLARE $statuses AS List<Utf8>;
             SELECT
                 task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
-                tags_json, links_json, task_hash, task_revision, updated_at_utc
+                tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
             FROM `{self.tasks_table}`
             WHERE
                 ListLength($statuses) = 0
@@ -618,6 +625,7 @@ class OperationalTaskRepo:
                     "task_revision": int(getattr(row, "task_revision", 0) or 0),
                     "current_version": int(getattr(row, "task_revision", 0) or 0),
                     "updated_at_utc": getattr(row, "updated_at_utc", None),
+                    "raw_payload": str(getattr(row, "raw_payload", "{}")),
                 }
             )
         return rows
@@ -629,7 +637,7 @@ class OperationalTaskRepo:
             return False
         return any(
             marker in text
-            for marker in ("brand", "format_", "customer", "raw_timing")
+            for marker in ("brand", "format_", "customer", "raw_timing", "raw_payload")
         )
 
     def list_milestones(
