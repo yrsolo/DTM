@@ -182,6 +182,18 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
     return defaults
 
 
+def _merge_tables_env_overrides(tables_cfg: TablesConfig) -> TablesConfig:
+    google_sheets = dict(tables_cfg.google_sheets)
+    source_sheet_name = os.getenv("SOURCE_SHEET_NAME", "").strip()
+    target_sheet_name = os.getenv("TARGET_SHEET_NAME", "").strip()
+    if source_sheet_name:
+        google_sheets["source_sheet_name_default"] = source_sheet_name
+    if target_sheet_name:
+        google_sheets["target_sheet_name_default"] = target_sheet_name
+    tables_cfg.google_sheets = google_sheets
+    return tables_cfg
+
+
 def load_config(config_dir: Path = CONFIG_DIR) -> AppConfig:
     runtime_data = _load_yaml(config_dir / "runtime.yaml")
     tables_data = _load_yaml(config_dir / "tables.yaml")
@@ -197,6 +209,7 @@ def load_config(config_dir: Path = CONFIG_DIR) -> AppConfig:
         sheet_names=tables_data.get("sheet_names", {}),
         field_maps=tables_data.get("field_maps", {}),
     )
+    tables_cfg = _merge_tables_env_overrides(tables_cfg)
     db_cfg = DbConfig(
         ydb=db_data.get("ydb", {}),
         object_storage=db_data.get("object_storage", {}),

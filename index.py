@@ -14,10 +14,7 @@ from config import (
     DEBUG_HTTP_EVENT,
     FRONTEND_API_DEFAULT_VERSION,
     KEY_JSON,
-    READMODEL_SOURCE,
-    RUNTIME_ENV,
     SHEET_INFO,
-    SOURCE_SHEET_NAME,
     TG_BOT_USERNAME,
     TRIGGERS,
     YDB_DATABASE,
@@ -39,6 +36,10 @@ from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.services.source_policy import build_source_policy_matrix
 
 APP_CONTEXT = build_app_context()
+APP_CFG = APP_CONTEXT.cfg
+APP_RUNTIME_ENV = APP_CFG.runtime.runtime.env_default
+APP_SOURCE_SHEET_NAME = str(APP_CFG.tables.google_sheets.get("source_sheet_name_default", ""))
+APP_READMODEL_SOURCE = APP_CFG.runtime.sources.readmodel_source_default
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
 
@@ -388,7 +389,7 @@ def _parse_window_query(params: dict[str, Any]) -> tuple[dict[str, Any], dict[st
 
 def _load_frontend_tasks(dependencies: Any, statuses: list[str]) -> list[Any]:
     policy = build_source_policy_matrix(
-        readmodel_source=READMODEL_SOURCE,
+        readmodel_source=APP_READMODEL_SOURCE,
         notify_source="legacy",
         render_source="legacy",
     )
@@ -905,8 +906,8 @@ def _handle_frontend_api_if_requested(
     payload = build_frontend_api_payload(
         tasks=tasks,
         people=people,
-        env_name=RUNTIME_ENV,
-        source_sheet_name=SOURCE_SHEET_NAME,
+        env_name=APP_RUNTIME_ENV,
+        source_sheet_name=APP_SOURCE_SHEET_NAME,
         statuses=statuses,
         limit=limit,
         include_people=include_people,
@@ -963,7 +964,7 @@ def _handle_frontend_api_v2_if_requested(
         )
 
     policy = build_source_policy_matrix(
-        readmodel_source=READMODEL_SOURCE,
+        readmodel_source=APP_READMODEL_SOURCE,
         notify_source="legacy",
         render_source="legacy",
     )
@@ -1022,8 +1023,8 @@ def _handle_frontend_api_v2_if_requested(
     payload = build_frontend_api_payload_v2(
         tasks=tasks,
         people=people,
-        env_name=RUNTIME_ENV,
-        source_sheet_name=SOURCE_SHEET_NAME,
+        env_name=APP_RUNTIME_ENV,
+        source_sheet_name=APP_SOURCE_SHEET_NAME,
         statuses=statuses,
         limit=limit,
         include_people=include_people,
