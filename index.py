@@ -36,6 +36,7 @@ from src.entrypoints.http.event_parser import http_method as _http_method
 from src.entrypoints.http.event_parser import http_path as _http_path
 from src.entrypoints.http.event_parser import normalize_path as _normalize_path
 from src.entrypoints.http.event_parser import query_params as _query_params
+from src.entrypoints.http.router import dispatch_http
 from src.services.errors import AppError, PermanentError, TransientError, UserError
 from src.services.source_policy import build_source_policy_matrix
 
@@ -914,25 +915,19 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
             "body": "!GROUP_QUERY_OK!",
         }
 
-    root_response = _handle_api_root_if_requested(
-        event if isinstance(event, dict) else {}, is_http_event
-    )
-    if root_response is not None:
-        return root_response
-
-    frontend_v2_response = _handle_frontend_api_v2_if_requested(
-        event if isinstance(event, dict) else {}, is_http_event
-    )
-    if frontend_v2_response is not None:
-        return frontend_v2_response
-
-    frontend_response = _handle_frontend_api_if_requested(
-        event if isinstance(event, dict) else {}, is_http_event
-    )
-    if frontend_response is not None:
-        return frontend_response
-
     event_dict = event if isinstance(event, dict) else {}
+    http_response = dispatch_http(
+        event_dict,
+        is_http_event,
+        (
+            _handle_api_root_if_requested,
+            _handle_frontend_api_v2_if_requested,
+            _handle_frontend_api_if_requested,
+        ),
+    )
+    if http_response is not None:
+        return http_response
+
     _debug_http_shape(event_dict, is_http_event)
     run_mode = _extract_run_mode(event_dict, request_payload, is_http_event)
     trigger_mode = _resolve_trigger_mode(event_dict)
