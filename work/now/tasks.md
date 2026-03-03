@@ -1,13 +1,9 @@
 # Active Tasks
 
-- [x] Create `work/` process skeleton (`archive`, `now`, `roadmap`).
-- [x] Move legacy process files into `work/` and keep system docs in `docs/`.
-- [x] Keep historical task cards in archive and summarize them in one closeout list.
-- [x] Rebuild docs entrypoints (`README.md`, `docs/README.md`, `work/README.md`).
-- [x] Final pass: verify links and remove stale references in process docs.
+- [ ] Select next active campaign from `work/roadmap/backlog.md`.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-03 (final process-link pass completed)
+- 2026-03-03 (legacy/done items moved to archive)

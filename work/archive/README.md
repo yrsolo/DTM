@@ -9,3 +9,5 @@ Indexes:
 Raw historical materials are preserved under:
 - `work/archive/agile_legacy/`
 - `work/archive/legacy_docs/`
+- `work/archive/roadmap_legacy/`
+- `work/archive/now_legacy/`

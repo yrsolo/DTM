@@ -64,7 +64,7 @@ Use this cadence to keep threshold tuning reproducible and avoid ad-hoc policy d
 ### Per run
 - Execute baseline helper and confirm `quality_report.json`, `alert_evaluation.json`, `read_model.json`, `schema_snapshot.json`, and `fixture_bundle.json` exist.
 - Record evaluated level (`INFO_ONLY/WARN/CRITICAL/OK`) and core metrics in Jira evidence comment.
-- If level is `WARN` or `CRITICAL`, apply escalation policy from `work/roadmap/plan_legacy/risk_register.md`.
+- If level is `WARN` or `CRITICAL`, apply escalation policy from `work/archive/roadmap_legacy/plan_legacy/risk_register.md`.
 - Verify retry taxonomy metrics in `quality_report.summary`:
   - `reminder_send_retry_attempt_count`
   - `reminder_send_retry_exhausted_count`

@@ -67,7 +67,7 @@ When a stage is completed, the agent must provide a plain-language transition su
 - At minimum check:
   - `README.md` (project positioning/behavior level),
   - `docs/README.md` (active map),
-  - `work/roadmap/plan_legacy/*` (legacy process/risk),
+  - `work/archive/roadmap_legacy/plan_legacy/*` (legacy process/risk),
   - `work/roadmap/campaigns/*` (active campaign charter/plan/evidence),
   - `work/now/tasks.md` and `work/roadmap/backlog.md` (execution status).
 - For merge/push to `main`, stale documentation is a blocker.
