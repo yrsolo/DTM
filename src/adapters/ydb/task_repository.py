@@ -19,6 +19,10 @@ class _TimingDiagnostics:
 def _to_timestamp(value: Any) -> pd.Timestamp | None:
     if value is None:
         return None
+    if isinstance(value, int):
+        # YDB `Date` may be returned as day-offset from Unix epoch.
+        if 0 <= value <= 200_000:
+            return (pd.Timestamp("1970-01-01") + pd.to_timedelta(value, unit="D")).normalize()
     try:
         ts = pd.Timestamp(value)
     except Exception:

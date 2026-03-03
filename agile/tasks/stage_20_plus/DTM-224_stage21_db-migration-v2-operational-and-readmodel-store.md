@@ -76,6 +76,8 @@
 - 2026-03-02: Task moved to blocked pending owner manual test deploy; Telegram blocker notification sent (`agent/notify_owner.py --mode blocked ...`).
 - 2026-03-03: Manual test deploy confirmed by live probes (`/api/v1/frontend`, `/api/v2/frontend`, `/api/v2/frontend/doc` all `200`), but `meta.readmodelSource/readmodelId` are still absent in v2 payload, so cloud evidence still indicates non-YDB-readmodel source on test contour.
 - 2026-03-03: Owner notifications sent via `agent/notify_owner.py`: informational completion note for API cloud verification and blocker note for remaining YDB-readmodel source switch decision.
+- 2026-03-03: Repeat deploy verification passed for v2 YDB-readmodel markers (`meta.readmodelSource=ydb`, `readmodelId=frontend_v2:default`), unblocking cloud source-switch concern.
+- 2026-03-03: Found v1 regression under YDB source (`1970-01-01` timing dates) caused by YDB Date int parsing in adapter; fixed in `src/adapters/ydb/task_repository.py` with day-offset conversion and covered by new unit test.
 
 ## Links
 - `src/adapters/ydb/schema.py`
