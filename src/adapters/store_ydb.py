@@ -7,12 +7,12 @@ JSON-backed adapter remains for local tests/mocks only.
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 from typing import Any, Protocol
 from urllib.parse import urlsplit
 
 import pandas as pd
+from config.constants import YC_SA_JSON_CREDENTIALS, YC_SA_KEY_FILE
 
 
 class OperationalStore(Protocol):
@@ -224,10 +224,10 @@ class YdbOperationalStore:
     @staticmethod
     def _build_credentials(ydb_module: Any) -> Any:
         """Resolve YDB credentials with explicit SA-json priority for local/dev use."""
-        sa_json = str(os.getenv("YC_SA_JSON_CREDENTIALS", "")).strip()
+        sa_json = str(YC_SA_JSON_CREDENTIALS).strip()
         if sa_json:
             return ydb_module.iam.ServiceAccountCredentials.from_content(sa_json)
-        sa_key_file = str(os.getenv("YC_SA_KEY_FILE", "")).strip()
+        sa_key_file = str(YC_SA_KEY_FILE).strip()
         if sa_key_file:
             return ydb_module.iam.ServiceAccountCredentials.from_file(sa_key_file)
         return ydb_module.credentials_from_env_variables()

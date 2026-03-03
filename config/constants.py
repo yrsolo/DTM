@@ -137,6 +137,8 @@ if RENDER_SOURCE not in ALLOWED_READ_SOURCES:
 YDB_ID = _contour_env("YDB_ID")
 YDB_ENDPOINT = _contour_env("YDB_ENDPOINT")
 YDB_DATABASE = _contour_env("YDB_DATABASE")
+YC_SA_JSON_CREDENTIALS = _env("YC_SA_JSON_CREDENTIALS")
+YC_SA_KEY_FILE = _env("YC_SA_KEY_FILE")
 YDB_MIGRATE_ON_START = _env_flag(
     "YDB_MIGRATE_ON_START", "1" if _DB_CFG.ydb.get("migrate_on_start_default", False) else "0"
 )
