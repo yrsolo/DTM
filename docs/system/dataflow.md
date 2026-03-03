@@ -80,3 +80,11 @@ Builder does:
 Consumers:
 - API v2 reads the snapshot row.
 - Render/notify should prefer readmodel or bulk operational reads (no N+1).
+
+## 8) Pipeline skeleton (current transition state)
+- `src/app/context.py` defines shared `AppContext` (`cfg`, `deps`, `clock`, `log`).
+- `src/services/usecases/contracts.py` defines baseline contracts:
+  - `SyncUseCase`, `BuildReadmodelUseCase`, `RenderUseCase`, `NotifyUseCase`.
+- `src/entrypoints/jobs/timer_job.py` provides linear `TimerJob.run(ctx)` orchestration shell.
+
+Current runtime keeps legacy execution path, but `main.py` already calls `TimerJob` shell in `timer` mode to anchor the new integration point.

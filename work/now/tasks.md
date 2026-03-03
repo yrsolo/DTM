@@ -7,10 +7,11 @@
 - [x] P02-T002: adapt `main.py` to call `TimerJob` orchestration shell (feature-equivalent path).
 - [x] P03-T001: classify runtime errors via typed app boundary (`TransientError` / `PermanentError` / `UserError`) without changing external API.
 - [x] P03-T002: map typed errors to explicit entrypoint outcomes (HTTP/exit) in dedicated boundary layer.
-- [ ] P04-T001: document pipeline skeleton/dataflow update in `docs/system/*` after first integration pass.
+- [x] P04-T001: document pipeline skeleton/dataflow update in `docs/system/*` after first integration pass.
+- [ ] P04-T002: decide closeout criteria for CAM-PIPELINE-CLEAN-SKELETON-V1 and prepare handoff to CAM-ENTRYPOINT-REFORM-V1.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (P03 completed: typed errors now mapped to HTTP boundary outcomes for HTTP events; legacy fallback preserved)
+- 2026-03-04 (P04-T001 completed: system docs updated with AppContext/use-case contracts/TimerJob shell transition notes)

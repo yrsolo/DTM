@@ -15,6 +15,10 @@ Observed modes used in code:
 - `reminders-only`
 - `sync-only`
 
+### Timer orchestration shell (new)
+In `timer` mode `main.py` now invokes `TimerJob.run(APP_CONTEXT)` from `src/entrypoints/jobs/timer_job.py`.
+Current shell is intentionally no-op by default (no connected steps) and does not change business behavior yet.
+
 ### db_migrate
 If `mode == "db_migrate"`:
 1) create `YdbClient(endpoint=YDB_ENDPOINT, database=YDB_DATABASE)`
