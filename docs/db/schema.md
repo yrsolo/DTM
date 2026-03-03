@@ -46,10 +46,24 @@
 - Primary key: `source_id` (`Utf8`).
 - Columns:
   - `source_id` `Utf8`
-  - `source_hash` `Utf8`
+  - `preflight_hash_50` `Utf8`
+  - `source_hash_full` `Utf8`
   - `synced_at_utc` `Timestamp`
+  - `last_full_sync_at` `Timestamp?`
   - `last_success_at_utc` `Timestamp`
   - `last_error` `Utf8?`
+  - `last_error_code` `Utf8?`
+  - `last_error_at_utc` `Timestamp?`
+
+### `dtm_task_versions`
+- Primary key: `(task_id, version)`.
+- Columns:
+  - `task_id` `Utf8`
+  - `version` `Uint64`
+  - `status` `Utf8` (`active|archive`)
+  - `content_hash` `Utf8`
+  - `payload_json` `Utf8`
+  - `created_at_utc` `Timestamp`
 
 ### `dtm_readmodel_frontend_v2`
 - Primary key: `readmodel_id` (`Utf8`).
@@ -63,6 +77,12 @@
   - `generated_at_utc` `Timestamp`
 
 ## Query Policy
-- Sync hash gate uses source-range values hash (`source_hash` in `dtm_sync_state`).
+- Sync gate uses two hashes:
+  - `preflight_hash_50` for top-50 source rows (values+colors),
+  - `source_hash_full` for full source-range (values+colors).
+- Full sync is required daily (24h) even when preflight is unchanged.
 - Readmodel build loads operational data in batched reads (tasks + milestones).
 - API v2 in YDB mode reads readmodel snapshot row (`dtm_readmodel_frontend_v2`) and returns payload.
+- Versioning rule:
+  - content changes create new version rows in `dtm_task_versions`,
+  - color/status-only changes do not increment version.

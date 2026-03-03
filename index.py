@@ -406,6 +406,20 @@ def _extract_run_mode(
     return raw_mode
 
 
+def _extract_force_refresh(
+    event: dict[str, Any],
+    request_payload: dict[str, Any],
+    is_http_event: bool,
+) -> bool:
+    payload_value = request_payload.get("force_refresh")
+    if payload_value is not None:
+        return _parse_bool(str(payload_value), default=False)
+    if is_http_event:
+        params = _query_params(event)
+        return _parse_bool(params.get("force_refresh"), default=False)
+    return False
+
+
 def _frontend_api_doc() -> dict[str, Any]:
     return {
         "artifact": "dtm_frontend_api_doc",
@@ -1072,6 +1086,7 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
 
     dry_run = bool(request_payload.get("dry_run", False))
     mock_external = request_payload.get("mock_external")
+    force_refresh = _extract_force_refresh(event_dict, request_payload, is_http_event)
     planner_event = request_payload.get("event")
     if planner_event is None and not is_http_event:
         planner_event = event
@@ -1082,6 +1097,7 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
             mode=run_mode,
             dry_run=dry_run,
             mock_external=mock_external,
+            force_refresh=force_refresh,
         )
     except Exception as ex:
         tr = str(traceback.format_exc())

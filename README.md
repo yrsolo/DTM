@@ -25,6 +25,8 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `docs/architecture/target-architecture.md`
 - Stage-by-stage migration plan (M1..M8):
   - `docs/migration/plan.md`
+- Current Stage-21 DB finalization execution notes:
+  - `docs/migration_plan.md`
 - Atomic tasks by stage:
   - `docs/migration/tasks.md`
 - YDB schema and DB rollout plan:
@@ -90,6 +92,11 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - `STORE_MODE=legacy|dual_write|ydb_primary|ydb_only`
 - `READMODEL_SOURCE=legacy|ydb`
 - Optional: `NOTIFY_SOURCE`, `RENDER_SOURCE` (`legacy|ydb`)
+- Runtime sync gates:
+  - `READMODEL_TTL_MINUTES` (default `9`)
+  - `PREFLIGHT_TOP_ROWS` (default `50`)
+  - `FULL_SYNC_INTERVAL_HOURS` (default `24`)
+  - `FORCE_REFRESH=0|1` (forced full refresh without version bump for existing tasks)
 - Prod order:
   1. `STORE_MODE=dual_write`
   2. switch readmodel/notify sources to `ydb`
@@ -207,6 +214,9 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - for `ENV=dev/test` runtime prefers `YDB_ID_TEST`, `YDB_ENDPOINT_TEST`, `YDB_DATABASE_TEST`
   - for `ENV=prod` runtime prefers `YDB_ID_PROD`, `YDB_ENDPOINT_PROD`, `YDB_DATABASE_PROD`
   - legacy fallback `YDB_ID`, `YDB_ENDPOINT`, `YDB_DATABASE` is still supported.
+- YDB migration/runtime knobs:
+  - `YDB_MIGRATE_ON_START=0|1` (default `0`)
+  - `LEGACY_BLOB_WRITE=0|1` (default `0`)
 - Timing year inference mode:
   - `TIMING_YEAR_MODE=legacy|anchors|chain` (default: `legacy`)
   - `legacy`: old parser behavior, `next_task_date` pivot by mean.

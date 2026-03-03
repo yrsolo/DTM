@@ -13,6 +13,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-227 - DB migration v2 finalization: versioning, preflight top-50 gate, forced refresh, and evidence package.
 - [DONE] DTM-226 - Improve milestone year inference for legacy rows (`TIMING_YEAR_MODE=legacy|anchors|chain`) with non-regression tests.
 - [DONE] DTM-225 - Split test/prod YDB contours across runtime, workflows, and Lockbox payload.
 - [DONE] DTM-224 - DB migration v2: cloud smoke passed (`v2` reads YDB readmodel; `v1` dates fixed after hotfix deploy).
@@ -46,6 +47,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - Remaining: 0
 
 ## Done (Latest)
+- [DONE] DTM-227 - DB migration v2 finalization (`dtm_task_versions`, preflight top-50 + daily full-sync gate, forced refresh no-version-bump, cloud smoke evidence).
 - [DONE] DTM-226 - Timing year inference hardening (`legacy|anchors|chain`) + parser/chain regression tests.
 - [DONE] DTM-225 - Split test/prod YDB contours (`YDB_*_TEST` / `YDB_*_PROD`) in runtime + CI/CD + Lockbox sync.
 - [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
@@ -92,6 +94,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - Notifications: in progress (delivery logic works; needs contour smoke evidence under current rollout switches).
 
 ## Active Task Files
+- `agile/tasks/stage_20_plus/DTM-227_stage21_db-migration-v2-finalization.md`
 - `agile/tasks/stage_20_plus/DTM-224_stage21_db-migration-v2-operational-and-readmodel-store.md`
 - `agile/tasks/stage_20_plus/DTM-225_stage21_split-test-prod-ydb-contours.md`
 - `agile/tasks/stage_20_plus/DTM-226_stage21_timing-year-inference-hardening.md`

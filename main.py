@@ -1,12 +1,14 @@
 """Основной файл для запуска планировщика задач."""
 
 import asyncio
-import hashlib
 import json
 import traceback
+from datetime import datetime, timezone
 from pathlib import Path
 
 from config import (
+    FORCE_REFRESH,
+    FULL_SYNC_INTERVAL_HOURS,
     KEY_JSON,
     LEGACY_BLOB_WRITE,
     MIGRATION_ENABLE_SOURCE_HASH_GATE,
@@ -16,6 +18,8 @@ from config import (
     RENDER_SOURCE,
     STORE_MODE,
     RUNTIME_ENV,
+    PREFLIGHT_TOP_ROWS,
+    READMODEL_TTL_MINUTES,
     YDB_MIGRATE_ON_START,
     YDB_DATABASE,
     YDB_ENDPOINT,
@@ -117,9 +121,6 @@ def _task_to_operational_payload(task) -> dict[str, object]:
         "raw_timing": task.raw_timing,
         "milestones": milestones,
     }
-    task_hash = hashlib.sha256(
-        json.dumps(task_hash_basis, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
 
     return {
         "task_id": str(task.id),
@@ -136,21 +137,39 @@ def _task_to_operational_payload(task) -> dict[str, object]:
         "next_due_date": next_due_date,
         "tags": [],
         "links": {},
-        "task_hash": task_hash,
-        "task_revision": 1,
+        "task_hash": None,
+        "task_revision": 0,
         "raw_payload": task_hash_basis,
         "milestones": milestones,
     }
 
 
-def _read_source_range_values(source_task_repository) -> list[list[str]]:
+def _read_source_range_values(source_task_repository, *, worksheet_range: str) -> list[list[str]]:
     spreadsheet_name = source_task_repository.source_sheet_info.spreadsheet_name
     sheet_name = source_task_repository.source_sheet_info.get_sheet_name("tasks")
     return source_task_repository.service.get_worksheet_values(
         spreadsheet_name=spreadsheet_name,
         worksheet_name=sheet_name,
-        worksheet_range="A1:Z2000",
+        worksheet_range=worksheet_range,
     )
+
+
+def _read_source_range_colors(source_task_repository, *, worksheet_range: str) -> list[str]:
+    spreadsheet_name = source_task_repository.source_sheet_info.spreadsheet_name
+    sheet_name = source_task_repository.source_sheet_info.get_sheet_name("tasks")
+    return source_task_repository.service.get_cell_colors(
+        spreadsheet_name=spreadsheet_name,
+        worksheet_name=sheet_name,
+        worksheet_range=worksheet_range,
+    )
+
+
+def _read_source_snapshot(source_task_repository, *, worksheet_range: str) -> dict[str, object]:
+    return {
+        "range": worksheet_range,
+        "values": _read_source_range_values(source_task_repository, worksheet_range=worksheet_range),
+        "colors": _read_source_range_colors(source_task_repository, worksheet_range=worksheet_range),
+    }
 
 
 def _build_ydb_task_repository() -> YdbOperationalTaskRepository:
@@ -193,6 +212,7 @@ async def main(**kwargs):
     mode = resolve_run_mode(mode=mode, event=event, triggers=TRIGGERS)
     if mock_external is None:
         mock_external = mode == "test"
+    force_refresh = bool(kwargs.get("force_refresh", FORCE_REFRESH))
     print(f"{mode=} {dry_run=} {mock_external=}")
 
     if mode == "db_migrate":
@@ -303,31 +323,73 @@ async def main(**kwargs):
                 ensure_schema=YDB_MIGRATE_ON_START,
             )
             sync_service = YdbSyncService(operational_repo)
-            source_values = _read_source_range_values(source_task_repository)
+            preflight_range = f"A1:Z{max(PREFLIGHT_TOP_ROWS, 1)}"
+            full_range = "A1:Z2000"
+            preflight_snapshot = _read_source_snapshot(source_task_repository, worksheet_range=preflight_range)
+            full_snapshot = _read_source_snapshot(source_task_repository, worksheet_range=full_range)
             normalized_tasks = [_task_to_operational_payload(task) for task in tasks]
-            sync_result = sync_service.run(
-                source_id=source_id,
-                source_range_values=source_values,
-                normalized_tasks=normalized_tasks,
-            )
-            _safe_print(
-                "migration_operational_sync="
-                f"source_id={sync_result.source_id} "
-                f"source_hash={sync_result.source_hash} "
-                f"previous_hash={sync_result.previous_hash} "
-                f"no_changes={sync_result.no_changes} "
-                f"tasks_upserted={sync_result.tasks_upserted} "
-                f"milestones_upserted={sync_result.milestones_upserted} "
-                f"ydb_queries_count={sync_result.ydb_queries_count} "
-                f"error_code={sync_result.ydb_error_code}"
-            )
+            existing_readmodel = FrontendReadmodelRepo(
+                endpoint=YDB_ENDPOINT,
+                database=YDB_DATABASE,
+                ensure_schema=False,
+            ).get_readmodel("frontend_v2:default")
+            ttl_skip = False
+            if existing_readmodel is not None and existing_readmodel.generated_at_utc is not None and not force_refresh:
+                age_seconds = (datetime.now(timezone.utc) - existing_readmodel.generated_at_utc).total_seconds()
+                ttl_skip = age_seconds < READMODEL_TTL_MINUTES * 60
+            if ttl_skip:
+                _safe_print(
+                    "migration_operational_sync="
+                    "skipped=true "
+                    f"reason=readmodel_ttl_fresh ttl_minutes={READMODEL_TTL_MINUTES}"
+                )
+            else:
+                sync_result = sync_service.run(
+                    source_id=source_id,
+                    preflight_range_values=preflight_snapshot,
+                    source_range_values=full_snapshot,
+                    normalized_tasks=normalized_tasks,
+                    force_refresh=force_refresh,
+                    full_sync_interval_hours=FULL_SYNC_INTERVAL_HOURS,
+                )
+                _safe_print(
+                    "migration_operational_sync="
+                    f"source_id={sync_result.source_id} "
+                    f"preflight_hash_50={sync_result.preflight_hash_50} "
+                    f"source_hash_full={sync_result.source_hash_full} "
+                    f"previous_preflight_hash_50={sync_result.previous_preflight_hash_50} "
+                    f"previous_source_hash_full={sync_result.previous_source_hash_full} "
+                    f"no_changes={sync_result.no_changes} "
+                    f"full_sync_performed={sync_result.full_sync_performed} "
+                    f"forced_refresh={sync_result.forced_refresh} "
+                    f"tasks_upserted={sync_result.tasks_upserted} "
+                    f"milestones_upserted={sync_result.milestones_upserted} "
+                    f"ydb_queries_count={sync_result.ydb_queries_count} "
+                    f"error_code={sync_result.ydb_error_code}"
+                )
         except Exception as exc:
             sync_deferred = True
             safe_error = str(exc).encode("ascii", "backslashreplace").decode("ascii")
             _safe_print(f"migration_ydb_pipeline_error={safe_error}")
             safe_trace = traceback.format_exc().encode("ascii", "backslashreplace").decode("ascii")
             _safe_print(f"migration_ydb_pipeline_trace={safe_trace}")
-        if not sync_deferred:
+            try:
+                state = operational_repo.get_sync_state(source_id) if "operational_repo" in locals() else None
+                if state is not None:
+                    operational_repo.set_sync_state(
+                        source_id=source_id,
+                        preflight_hash_50=state.preflight_hash_50,
+                        source_hash_full=state.source_hash_full,
+                        synced_at_utc=datetime.now(timezone.utc),
+                        last_full_sync_at_utc=state.last_full_sync_at_utc,
+                        last_success_at_utc=state.last_success_at_utc or datetime.now(timezone.utc),
+                        last_error=safe_error,
+                        last_error_code="ydb_resource_exhausted" if "resourceexhausted" in safe_error.lower() else "ydb_error",
+                        last_error_at_utc=datetime.now(timezone.utc),
+                    )
+            except Exception:
+                pass
+        if not sync_deferred and not ttl_skip:
             try:
                 operational_repo = OperationalTaskRepo(
                     endpoint=YDB_ENDPOINT,
