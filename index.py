@@ -36,6 +36,7 @@ from core.reminder import TelegramNotifier
 from main import main
 from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
+from src.services.source_policy import build_source_policy_matrix
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
 DEBUG_HTTP_EVENT = os.getenv("DEBUG_HTTP_EVENT", os.getenv("DEBUG_API_EVENT_SHAPE", "0")).strip().lower() in {
@@ -386,7 +387,12 @@ def _parse_window_query(params: dict[str, Any]) -> tuple[dict[str, Any], dict[st
 
 
 def _load_frontend_tasks(dependencies: Any, statuses: list[str]) -> list[Any]:
-    if READMODEL_SOURCE != "ydb":
+    policy = build_source_policy_matrix(
+        readmodel_source=READMODEL_SOURCE,
+        notify_source="legacy",
+        render_source="legacy",
+    )
+    if not policy.api_reads_ydb():
         return dependencies.task_repository.get_task_by_color_status(statuses)
     task_repo = YdbOperationalTaskRepository(endpoint=YDB_ENDPOINT, database=YDB_DATABASE)
     return task_repo.get_task_by_color_status(statuses)
@@ -942,7 +948,12 @@ def _handle_frontend_api_v2_if_requested(event: dict[str, Any], is_http_event: b
             details=window_error.get("details", {}),
         )
 
-    if READMODEL_SOURCE == "ydb":
+    policy = build_source_policy_matrix(
+        readmodel_source=READMODEL_SOURCE,
+        notify_source="legacy",
+        render_source="legacy",
+    )
+    if policy.api_reads_ydb():
         repo = FrontendReadmodelRepo(
             endpoint=YDB_ENDPOINT,
             database=YDB_DATABASE,

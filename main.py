@@ -39,6 +39,7 @@ from src.services.readmodel_builder import FrontendReadmodelBuilderService
 from src.services.sync_service import YdbSyncService
 from src.services.sync.hash_basis import build_hash_basis
 from src.services.sync.hash_gate import evaluate_hash_gate, save_last_hash
+from src.services.source_policy import build_source_policy_matrix
 
 
 def _print_quality_report(report):
@@ -180,8 +181,13 @@ def _build_ydb_task_repository() -> YdbOperationalTaskRepository:
 
 
 def _apply_task_source_switches(planner: GoogleSheetPlanner, mode: str) -> tuple[bool, bool]:
-    render_reads_ydb = RENDER_SOURCE == "ydb" and mode in {"timer", "test", "sync-only"}
-    notify_reads_ydb = NOTIFY_SOURCE == "ydb" and mode in {"morning", "test", "reminders-only"}
+    policy = build_source_policy_matrix(
+        readmodel_source="legacy",
+        notify_source=NOTIFY_SOURCE,
+        render_source=RENDER_SOURCE,
+    )
+    render_reads_ydb = policy.render_reads_ydb(mode)
+    notify_reads_ydb = policy.notify_reads_ydb(mode)
     if not (render_reads_ydb or notify_reads_ydb):
         return False, False
 
