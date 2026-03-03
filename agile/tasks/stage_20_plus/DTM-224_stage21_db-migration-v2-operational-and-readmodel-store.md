@@ -37,7 +37,7 @@
 - [x] Readmodel builder uses milestones table bulk-load (no N+1 per task reads).
 - [x] Operational payload preserves `brand/format_/customer/raw_timing`.
 - [x] Unit tests added for source-hash gate / readmodel enums / milestones source / backoff.
-- [ ] Cloud smoke for readmodel snapshot path (sync -> build -> API v2 over test domain).
+- [x] Cloud smoke for readmodel snapshot path (sync -> build -> API v2 over test domain).
 
 ## Work log
 - 2026-03-02: Created execution task from external migration arbitration prompt.
@@ -78,6 +78,10 @@
 - 2026-03-03: Owner notifications sent via `agent/notify_owner.py`: informational completion note for API cloud verification and blocker note for remaining YDB-readmodel source switch decision.
 - 2026-03-03: Repeat deploy verification passed for v2 YDB-readmodel markers (`meta.readmodelSource=ydb`, `readmodelId=frontend_v2:default`), unblocking cloud source-switch concern.
 - 2026-03-03: Found v1 regression under YDB source (`1970-01-01` timing dates) caused by YDB Date int parsing in adapter; fixed in `src/adapters/ydb/task_repository.py` with day-offset conversion and covered by new unit test.
+- 2026-03-03: Post-fix cloud verification passed:
+  - `GET /api/v1/frontend` returns valid task dates (`2026-*`), no fallback `1970-01-01` contamination.
+  - `GET /api/v2/frontend` keeps YDB readmodel markers (`meta.readmodelSource=ydb`, `readmodelId=frontend_v2:default`).
+  - DB migration cloud smoke blocker is closed.
 
 ## Links
 - `src/adapters/ydb/schema.py`

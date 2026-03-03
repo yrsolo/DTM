@@ -43,6 +43,19 @@ Set in `Settings -> Secrets and variables -> Actions`:
     - `WEB_DOMAIN`
     - `API_DOMAIN_PROD`
     - `API_DOMAIN_TEST`
+    - `YDB_ID_PROD`
+    - `YDB_ENDPOINT_PROD`
+    - `YDB_DATABASE_PROD`
+
+For contour split keep both sets in Lockbox:
+- test/dev runtime:
+  - `YDB_ID_TEST`
+  - `YDB_ENDPOINT_TEST`
+  - `YDB_DATABASE_TEST`
+- prod runtime:
+  - `YDB_ID_PROD`
+  - `YDB_ENDPOINT_PROD`
+  - `YDB_DATABASE_PROD`
 
 ## API Gateway and custom domains
 Use local helper script (one command per contour):
