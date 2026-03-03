@@ -13,6 +13,7 @@ Execute Stage 23 cloud hardening rollout queue from Stage 22 unified baseline.
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-235 - Cloud tri-block smoke automation package.
 - [DONE] DTM-234 - Stage 23 kickoff and bounded queue.
 - [DONE] DTM-233 - Stage 22 closeout and Stage 23 handoff package.
 - [DONE] DTM-232 - Stage 22 tri-block smoke suite from unified query source.
@@ -51,10 +52,11 @@ Execute Stage 23 cloud hardening rollout queue from Stage 22 unified baseline.
 
 ## Stage 23 Estimate (Dynamic)
 - Baseline estimate: 6 tasks.
-- Done: 1
-- Remaining: 5
+- Done: 2
+- Remaining: 4
 
 ## Done (Latest)
+- [DONE] DTM-235 - Added cloud tri-block smoke automation (`agent/stage23_cloud_tri_block_smoke.py`) + test contour evidence artifact.
 - [DONE] DTM-234 - Stage 23 kickoff and bounded queue (goal/counters/queue synchronized).
 - [DONE] DTM-233 - Published Stage 22 closeout + Stage 23 handoff package (`doc/stages/69`, `doc/stages/70`) and synchronized control-plane docs.
 - [DONE] DTM-232 - Added deterministic tri-block parity smoke (`agent/stage22_tri_block_smoke.py`) + unit test; API/render/notify IDs match from one query source.
@@ -102,7 +104,6 @@ Execute Stage 23 cloud hardening rollout queue from Stage 22 unified baseline.
 - none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-235 - Cloud tri-block smoke automation package.
 - [TODO] DTM-236 - Readmodel freshness markers for render/notify cloud parity checks.
 - [TODO] DTM-237 - Canary rollout checklist for source-policy switch + rollback checkpoints.
 - [TODO] DTM-238 - Test-contour operational evidence bundle and production go/no-go inputs.
@@ -114,6 +115,7 @@ Execute Stage 23 cloud hardening rollout queue from Stage 22 unified baseline.
 - Notifications: in progress (delivery logic works; needs contour smoke evidence under current rollout switches).
 
 ## Active Task Files
+- `agile/tasks/stage_20_plus/DTM-235_stage23_cloud-tri-block-smoke-automation-package.md`
 - `agile/tasks/stage_20_plus/DTM-234_stage23-kickoff-and-bounded-queue.md`
 - `agile/tasks/stage_20_plus/DTM-233_stage22-closeout-and-stage23-handoff.md`
 - `agile/tasks/stage_20_plus/DTM-232_stage22_tri-block-smoke-suite-unified-query-source.md`
