@@ -64,6 +64,7 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Deployment smoke and rollback runbooks are in:
   - `doc/ops/stage9_deployment_smoke_checklist.md`
   - `doc/ops/stage10_function_rollback_drill.md`
+  - `doc/ops/stage22_db_migrate_force_refresh_rollback_runbook.md`
 - Stage 8 prototype loader utility: `agent/load_prototype_payload.py` (filesystem/Object Storage + schema gate).
 - Stage 8 static prototype assets: `web_prototype/static` (run local preview with `.venv\Scripts\python.exe agent\run_web_prototype_server.py`).
 - Stage 8 payload preparation helper: `.venv\Scripts\python.exe agent\prepare_web_prototype_payload.py --source-mode auto` (writes `web_prototype/static/prototype_payload.json`).

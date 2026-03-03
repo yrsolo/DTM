@@ -47,6 +47,7 @@
 - Use bounded retries and backoff for `RESOURCE_EXHAUSTED`.
 - Keep schema creation idempotent (`ensure_tables`) but execute it only in explicit migrate mode (or controlled non-prod runs).
 - Keep cloud verification evidence in sprint/task logs before promotion to prod.
+- Use operational runbook for migrate/refresh/rollback steps: `doc/ops/stage22_db_migrate_force_refresh_rollback_runbook.md`.
 - Runtime note:
   - Timer flow triggers migration pipeline (`sync_state` + operational + readmodel), and transient YDB exhaustion is logged without stopping legacy render path.
   - forced refresh (`FORCE_REFRESH=1` or runtime flag) rebuilds data/readmodel without version increments for existing tasks.
