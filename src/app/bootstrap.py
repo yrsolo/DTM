@@ -2,19 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any
-
+from src.app.context import AppContext
 from src.config.loader import load_config
-from src.config.schema import AppConfig
-
-
-@dataclass(slots=True)
-class AppContext:
-    """Shared runtime context (phase-0 scaffold)."""
-
-    cfg: AppConfig
-    deps: dict[str, Any]
 
 
 def build_app_context() -> AppContext:

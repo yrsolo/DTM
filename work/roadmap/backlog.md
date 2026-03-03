@@ -1,8 +1,8 @@
 # Backlog
 
 ## Ready
-- CAM-CONFIG-REFORM-V0 (in progress).
-- CAM-PIPELINE-CLEAN-SKELETON-V1 (next).
+- CAM-CONFIG-REFORM-V0 (completed core scope, hardening follow-ups possible).
+- CAM-PIPELINE-CLEAN-SKELETON-V1 (in progress).
 - CAM-ENTRYPOINT-REFORM-V1.
 - CAM-CORE-CLEANUP-V1.
 - CAM-DEDUP-LEGACY-REMOVAL-V1.

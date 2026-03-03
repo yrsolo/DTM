@@ -1,16 +1,16 @@
-# CAM-CONFIG-REFORM-V0
+# CAM-PIPELINE-CLEAN-SKELETON-V1
 
 ## Status
-Active campaign started from priority queue (`work/roadmap/campaigns/priorities.md`).
+Activated from priority queue after CAM-CONFIG-REFORM-V0 core milestones.
 
 ## Goal
-Minimize ENV usage and move non-secret behavioral settings into structured YAML config.
+Make runtime pipeline skeleton linear and predictable: context + use-case contracts + thin orchestration.
 
 ## Current Phase
-P02: bootstrap wiring for entrypoints (`index.py` / `main.py`).
+P02: timer orchestration shell.
 
 ## Important Rule
-- YAML transfer scope approved by owner; normal commit flow is allowed.
+- Keep business behavior unchanged while introducing contracts/scaffold.
 
 ## Archive
 - closeouts stored in `work/archive/campaigns/*/closeout.md`.
