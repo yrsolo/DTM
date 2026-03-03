@@ -13,7 +13,7 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 1 active execution task (WIP=1).
 
 ## Now
-- [BLOCKED] DTM-224 - DB migration v2: cloud source-switch confirmed (`meta.readmodelSource=ydb`); pending redeploy verification of v1 date-parsing hotfix (`1970-01-01` regression).
+- [DONE] DTM-224 - DB migration v2: cloud smoke passed (`v2` reads YDB readmodel; `v1` dates fixed after hotfix deploy).
 - [DONE] DTM-223 - Frontend API v2 + shared task query contract across API/render/reminder; cloud verification passed on test domain.
 - [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
 - [DONE] DTM-221 - Frontend API event-shape hardening + Actions requirements split.
@@ -40,12 +40,13 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 
 ## Stage 21 Estimate (Dynamic)
 - Baseline estimate: 24 tasks.
-- Done: 23
-- Remaining: 1
+- Done: 24
+- Remaining: 0
 
 ## Done (Latest)
 - [DONE] DTM-222 - Proxy-template route and multi-value query fix for frontend API.
 - [DONE] DTM-223 - Frontend API v2 + shared task query contract; cloud verification passed (`v1/v2/doc` = 200).
+- [DONE] DTM-224 - DB migration v2 cloud smoke passed (`v2` readmodel markers confirmed; `v1` date regression fixed).
 - [DONE] DTM-221 - Frontend API event-shape hardening + Actions requirements split.
 - [DONE] DTM-220 - API gateway ANY-method compatibility hotfix.
 - [DONE] DTM-218 - API HTTP method fallback hotfix (no-op to frontend route fix).
@@ -76,10 +77,9 @@ Start Stage 21 delivery contour split: test auto-deploy + manual prod release + 
 - [DONE] DTM-191 - Stage 19 closeout and Stage 20 handoff package.
 
 ## Blocked
-- [BLOCKED] DTM-224 - cloud smoke pending v1 date output verification after YDB Date-int parsing hotfix deploy.
+- none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-224 - Deploy v1 date parsing hotfix and verify `/api/v1/frontend` dates are no longer `1970-01-01`.
 - [TODO] DTM-201 - Stage 21 closeout and Stage 22 handoff package.
 
 ## Tri-Block Readiness Matrix (Test Contour)
