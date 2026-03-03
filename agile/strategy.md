@@ -3,10 +3,10 @@
 ## Objective
 Deliver DTM to stable production operation with clear, maintainable process artifacts.
 
-## Current Focus (Stage 21)
-1. Split release contour: test auto-deploy vs manual prod release.
-2. Stabilize API/domain contour for test (`dtm-api-test`) and prod (`dtm-api`).
-3. Keep release docs/runbooks concise and trustworthy.
+## Current Focus (Stage 24 Proposal)
+1. Promote Stage 23 cloud evidence into production-ready canary rehearsal package.
+2. Close remaining marker gap (`meta.readmodelSource`) in v2 payload for clearer YDB contour observability.
+3. Automate render/notify freshness evidence extraction from cloud logs.
 4. Treat delivery as three equal product blocks:
    - Frontend API
    - Sheet Render

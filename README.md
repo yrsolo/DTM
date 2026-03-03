@@ -25,6 +25,8 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `docs/architecture/target-architecture.md`
 - Stage-by-stage migration plan (M1..M8):
   - `docs/migration/plan.md`
+- Current Stage-21 DB finalization execution notes:
+  - `docs/migration_plan.md`
 - Atomic tasks by stage:
   - `docs/migration/tasks.md`
 - YDB schema and DB rollout plan:
@@ -57,11 +59,15 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - Architecture is under phased reconstruction.
 - Legacy snapshot is kept in `old/` for controlled comparison during migration.
 - Stage 0-19 status and evidence index are tracked in `doc/03_reconstruction_backlog.md`.
+- Stage 23 closeout and Stage 24 handoff package:
+  - `doc/stages/72_stage23_closeout_and_stage24_handoff.md`
 - Current sprint/task execution state is tracked in `agile/sprint_current.md`.
 - Serverless deploy setup (test/prod split) is in `doc/ops/stage9_main_autodeploy_setup.md`.
 - Deployment smoke and rollback runbooks are in:
   - `doc/ops/stage9_deployment_smoke_checklist.md`
   - `doc/ops/stage10_function_rollback_drill.md`
+  - `doc/ops/stage22_db_migrate_force_refresh_rollback_runbook.md`
+  - `doc/ops/stage23_source_policy_canary_rollout_checklist.md`
 - Stage 8 prototype loader utility: `agent/load_prototype_payload.py` (filesystem/Object Storage + schema gate).
 - Stage 8 static prototype assets: `web_prototype/static` (run local preview with `.venv\Scripts\python.exe agent\run_web_prototype_server.py`).
 - Stage 8 payload preparation helper: `.venv\Scripts\python.exe agent\prepare_web_prototype_payload.py --source-mode auto` (writes `web_prototype/static/prototype_payload.json`).
@@ -90,6 +96,11 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
 - `STORE_MODE=legacy|dual_write|ydb_primary|ydb_only`
 - `READMODEL_SOURCE=legacy|ydb`
 - Optional: `NOTIFY_SOURCE`, `RENDER_SOURCE` (`legacy|ydb`)
+- Runtime sync gates:
+  - `READMODEL_TTL_MINUTES` (default `9`)
+  - `PREFLIGHT_TOP_ROWS` (default `50`)
+  - `FULL_SYNC_INTERVAL_HOURS` (default `24`)
+  - `FORCE_REFRESH=0|1` (forced full refresh without version bump for existing tasks)
 - Prod order:
   1. `STORE_MODE=dual_write`
   2. switch readmodel/notify sources to `ydb`
@@ -179,6 +190,12 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - `.venv\Scripts\python.exe agent\sync_hash_gate_smoke.py`
 - Migration M2 parity smoke (legacy-style date parse vs new normalize):
   - `.venv\Scripts\python.exe agent\normalize_parity_smoke.py`
+- Stage 22 tri-block parity smoke (API/render/notify from one query contract):
+  - `.venv\Scripts\python.exe agent\stage22_tri_block_smoke.py`
+- Stage 23 cloud tri-block smoke evidence (function invoke + API v1/v2 parity):
+  - `.venv\Scripts\python.exe agent\stage23_cloud_tri_block_smoke.py --function-url <function_url> --api-base <api_base_url>`
+- Stage 23 operational evidence bundle (go/no-go inputs from cloud smoke):
+  - `.venv\Scripts\python.exe agent\stage23_operational_evidence_bundle.py --smoke-file artifacts/tmp/stage23_canary_precheck.json --output-file artifacts/tmp/stage23_operational_evidence_bundle.json`
 - Lockbox sync helper for full `.env` payload:
   - `.venv\Scripts\python.exe agent\sync_lockbox_from_env.py --secret-name DTM`
 - Prod release prep helper (validates required prod keys + syncs Lockbox):
@@ -207,6 +224,9 @@ DTM is a real-world pet project built as a portfolio case about evolving legacy 
   - for `ENV=dev/test` runtime prefers `YDB_ID_TEST`, `YDB_ENDPOINT_TEST`, `YDB_DATABASE_TEST`
   - for `ENV=prod` runtime prefers `YDB_ID_PROD`, `YDB_ENDPOINT_PROD`, `YDB_DATABASE_PROD`
   - legacy fallback `YDB_ID`, `YDB_ENDPOINT`, `YDB_DATABASE` is still supported.
+- YDB migration/runtime knobs:
+  - `YDB_MIGRATE_ON_START=0|1` (default `0`)
+  - `LEGACY_BLOB_WRITE=0|1` (default `0`)
 - Timing year inference mode:
   - `TIMING_YEAR_MODE=legacy|anchors|chain` (default: `legacy`)
   - `legacy`: old parser behavior, `next_task_date` pivot by mean.

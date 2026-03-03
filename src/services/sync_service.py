@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
 from src.adapters.ydb.operational_repo import OperationalTaskRepo
@@ -31,12 +31,81 @@ def _to_date(value: Any) -> date | None:
         return None
 
 
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _content_hash_for_task(task: dict[str, Any], milestones: list[dict[str, Any]]) -> str:
+    basis = {
+        "title": str(task.get("title", task.get("name", ""))).strip(),
+        "brand": str(task.get("brand", "")).strip(),
+        "format_": str(task.get("format_", "")).strip(),
+        "customer": str(task.get("customer", "")).strip(),
+        "owner_id": str(task.get("owner_id", task.get("designer", ""))).strip(),
+        "group_id": str(task.get("group_id", task.get("project_name", ""))).strip(),
+        "raw_timing": str(task.get("raw_timing", "")).strip(),
+        "milestones": [
+            {
+                "type": str(item.get("type", "")).strip(),
+                "planned": str(item.get("planned") or item.get("planned_date") or "").strip(),
+                "actual": str(item.get("actual") or item.get("actual_date") or "").strip(),
+                "status": str(item.get("status", "")).strip(),
+                "raw_text": str(item.get("raw_text", "")).strip(),
+            }
+            for item in milestones
+        ],
+    }
+    encoded = json.dumps(basis, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
+def _ensure_start_milestone(
+    *,
+    milestones: list[dict[str, Any]],
+    now_utc: datetime,
+) -> list[dict[str, Any]]:
+    normalized = list(milestones)
+    milestone_dates = [
+        _to_date(item.get("planned") if isinstance(item, dict) else None) for item in normalized
+    ]
+    milestone_dates = [item for item in milestone_dates if item is not None]
+    earliest = min(milestone_dates) if milestone_dates else None
+    created_at_date = now_utc.date() if earliest is None else min(now_utc.date(), earliest)
+    need_start = earliest is None or created_at_date < earliest
+    if need_start:
+        normalized.append(
+            {
+                "idx": -1,
+                "type": "start",
+                "planned": created_at_date.isoformat(),
+                "actual": None,
+                "status": "planned",
+                "raw_text": "start",
+            }
+        )
+    normalized.sort(
+        key=lambda item: (
+            _to_date(item.get("planned") if isinstance(item, dict) else None) is None,
+            _to_date(item.get("planned") if isinstance(item, dict) else None) or date.max,
+            str(item.get("type", "")).strip(),
+        )
+    )
+    for index, item in enumerate(normalized):
+        if isinstance(item, dict):
+            item["idx"] = index
+    return normalized
+
+
 @dataclass(slots=True)
 class SyncRunResult:
     source_id: str
-    source_hash: str
-    previous_hash: str | None
+    preflight_hash_50: str
+    source_hash_full: str
+    previous_preflight_hash_50: str | None
+    previous_source_hash_full: str | None
     no_changes: bool
+    full_sync_performed: bool
+    forced_refresh: bool
     tasks_upserted: int
     milestones_upserted: int
     ydb_queries_count: int
@@ -49,16 +118,71 @@ class YdbSyncService:
     def __init__(self, repo: OperationalTaskRepo) -> None:
         self.repo = repo
 
-    def run(self, *, source_id: str, source_range_values: Any, normalized_tasks: list[dict[str, Any]]) -> SyncRunResult:
-        source_hash = stable_json_hash(source_range_values)
+    def run(
+        self,
+        *,
+        source_id: str,
+        preflight_range_values: Any,
+        source_range_values: Any,
+        normalized_tasks: list[dict[str, Any]],
+        force_refresh: bool = False,
+        full_sync_interval_hours: int = 24,
+    ) -> SyncRunResult:
+        preflight_hash_50 = stable_json_hash(preflight_range_values)
+        source_hash_full = stable_json_hash(source_range_values)
+        now_utc = _utc_now()
         state = self.repo.get_sync_state(source_id)
-        previous_hash = state.source_hash if state is not None else None
-        if previous_hash == source_hash:
+        previous_preflight = state.preflight_hash_50 if state is not None else None
+        previous_full = state.source_hash_full if state is not None else None
+
+        full_sync_stale = True
+        if state is not None and state.last_full_sync_at_utc is not None:
+            full_sync_stale = now_utc - state.last_full_sync_at_utc >= timedelta(hours=max(full_sync_interval_hours, 1))
+        preflight_changed = previous_preflight != preflight_hash_50
+        full_sync_required = force_refresh or preflight_changed or full_sync_stale or state is None
+
+        if not full_sync_required:
+            self.repo.set_sync_state(
+                source_id=source_id,
+                preflight_hash_50=preflight_hash_50,
+                source_hash_full=previous_full or source_hash_full,
+                synced_at_utc=now_utc,
+                last_full_sync_at_utc=state.last_full_sync_at_utc if state is not None else now_utc,
+                last_success_at_utc=now_utc,
+            )
             return SyncRunResult(
                 source_id=source_id,
-                source_hash=source_hash,
-                previous_hash=previous_hash,
+                preflight_hash_50=preflight_hash_50,
+                source_hash_full=source_hash_full,
+                previous_preflight_hash_50=previous_preflight,
+                previous_source_hash_full=previous_full,
                 no_changes=True,
+                full_sync_performed=False,
+                forced_refresh=force_refresh,
+                tasks_upserted=0,
+                milestones_upserted=0,
+                ydb_queries_count=self.repo.client.stats.ydb_queries_count,
+                ydb_error_code=self.repo.client.stats.error_code,
+            )
+
+        if not force_refresh and previous_full == source_hash_full:
+            self.repo.set_sync_state(
+                source_id=source_id,
+                preflight_hash_50=preflight_hash_50,
+                source_hash_full=source_hash_full,
+                synced_at_utc=now_utc,
+                last_full_sync_at_utc=now_utc,
+                last_success_at_utc=now_utc,
+            )
+            return SyncRunResult(
+                source_id=source_id,
+                preflight_hash_50=preflight_hash_50,
+                source_hash_full=source_hash_full,
+                previous_preflight_hash_50=previous_preflight,
+                previous_source_hash_full=previous_full,
+                no_changes=True,
+                full_sync_performed=True,
+                forced_refresh=force_refresh,
                 tasks_upserted=0,
                 milestones_upserted=0,
                 ydb_queries_count=self.repo.client.stats.ydb_queries_count,
@@ -67,6 +191,8 @@ class YdbSyncService:
 
         task_rows: list[dict[str, Any]] = []
         milestones_by_task: dict[str, list[dict[str, Any]]] = {}
+        existing_rows = {str(row.get("task_id", "")).strip(): row for row in self.repo.list_tasks() if str(row.get("task_id", "")).strip()}
+
         for task in normalized_tasks:
             task_id = str(task.get("task_id", task.get("id", ""))).strip()
             if not task_id:
@@ -84,6 +210,7 @@ class YdbSyncService:
                     for idx, item in enumerate(timing_fallback)
                 ]
 
+            milestones = _ensure_start_milestone(milestones=milestones if isinstance(milestones, list) else [], now_utc=now_utc)
             min_date = None
             max_date = None
             if isinstance(milestones, list):
@@ -93,6 +220,36 @@ class YdbSyncService:
                         continue
                     min_date = planned if min_date is None or planned < min_date else min_date
                     max_date = planned if max_date is None or planned > max_date else max_date
+
+            content_hash = _content_hash_for_task(task, milestones if isinstance(milestones, list) else [])
+            existing_row = existing_rows.get(task_id)
+            previous_hash = str(existing_row.get("task_hash", "")).strip() if isinstance(existing_row, dict) else ""
+            previous_version = int(existing_row.get("task_revision", 0) or 0) if isinstance(existing_row, dict) else 0
+
+            if existing_row is None:
+                task_revision = 1
+                create_new_version = True
+            elif force_refresh:
+                task_revision = max(previous_version, 1)
+                create_new_version = False
+            elif previous_hash != content_hash:
+                task_revision = max(previous_version, 0) + 1
+                create_new_version = True
+            else:
+                task_revision = max(previous_version, 1)
+                create_new_version = False
+
+            if create_new_version and previous_version > 0:
+                self.repo.archive_task_version(task_id=task_id, version=previous_version)
+            if create_new_version:
+                self.repo.upsert_task_version(
+                    task_id=task_id,
+                    version=task_revision,
+                    status="active",
+                    content_hash=content_hash,
+                    payload_json=json.dumps(task, ensure_ascii=False, sort_keys=True),
+                    created_at_utc=now_utc,
+                )
 
             task_rows.append(
                 {
@@ -110,8 +267,8 @@ class YdbSyncService:
                     "next_due_date": task.get("next_due_date") or min_date,
                     "tags": task.get("tags", []),
                     "links": task.get("links", {}),
-                    "task_hash": task.get("task_hash"),
-                    "task_revision": task.get("task_revision", 0),
+                    "task_hash": content_hash if (create_new_version or not force_refresh or not previous_hash) else previous_hash,
+                    "task_revision": task_revision,
                     "raw_payload": task,
                 }
             )
@@ -119,12 +276,23 @@ class YdbSyncService:
 
         milestones_total = self.repo.replace_task_milestones_bulk(milestones_by_task)
         tasks_upserted = self.repo.upsert_tasks_batch(task_rows)
-        self.repo.set_sync_state(source_id=source_id, source_hash=source_hash)
+        self.repo.set_sync_state(
+            source_id=source_id,
+            preflight_hash_50=preflight_hash_50,
+            source_hash_full=source_hash_full,
+            synced_at_utc=now_utc,
+            last_full_sync_at_utc=now_utc,
+            last_success_at_utc=now_utc,
+        )
         return SyncRunResult(
             source_id=source_id,
-            source_hash=source_hash,
-            previous_hash=previous_hash,
+            preflight_hash_50=preflight_hash_50,
+            source_hash_full=source_hash_full,
+            previous_preflight_hash_50=previous_preflight,
+            previous_source_hash_full=previous_full,
             no_changes=False,
+            full_sync_performed=True,
+            forced_refresh=force_refresh,
             tasks_upserted=tasks_upserted,
             milestones_upserted=milestones_total,
             ydb_queries_count=self.repo.client.stats.ydb_queries_count,

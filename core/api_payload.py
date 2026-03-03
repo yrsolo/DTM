@@ -9,7 +9,8 @@ import pandas as pd
 
 from core.people import Person
 from core.repository import Task
-from core.task_query_contract import TimeWindow, apply_task_query, project_tasks
+from core.task_query_adapter import build_task_query_context, query_projections
+from core.task_query_contract import TimeWindow
 
 
 def _now_utc_iso() -> str:
@@ -91,9 +92,10 @@ def build_frontend_api_payload(
 ) -> dict[str, Any]:
     """Build deterministic frontend payload for HTTP API."""
     today = pd.Timestamp.today().normalize()
-    task_list = project_tasks(tasks)
-    tasks_filtered = apply_task_query(
-        task_list,
+    query_context = build_task_query_context(tasks)
+    task_list = query_context.projections
+    tasks_filtered = query_projections(
+        query_context,
         statuses=statuses,
         designer=designer_filter,
         limit=10**9,

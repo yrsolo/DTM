@@ -32,10 +32,18 @@ def _to_date(value: Any) -> date | None:
 @dataclass(slots=True)
 class SyncStateRow:
     source_id: str
-    source_hash: str
+    preflight_hash_50: str
+    source_hash_full: str
     synced_at_utc: datetime | None
+    last_full_sync_at_utc: datetime | None
     last_success_at_utc: datetime | None
     last_error: str | None
+    last_error_code: str | None
+    last_error_at_utc: datetime | None
+
+    @property
+    def source_hash(self) -> str:
+        return self.source_hash_full
 
 
 class OperationalTaskRepo:
@@ -48,6 +56,7 @@ class OperationalTaskRepo:
         database: str,
         tasks_table: str = "dtm_tasks",
         milestones_table: str = "dtm_task_milestones",
+        versions_table: str = "dtm_task_versions",
         sync_state_table: str = "dtm_sync_state",
         readmodel_table: str = "dtm_readmodel_frontend_v2",
         ensure_schema: bool = False,
@@ -55,12 +64,14 @@ class OperationalTaskRepo:
         self.client = YdbClient(endpoint=endpoint, database=database)
         self.tasks_table = tasks_table
         self.milestones_table = milestones_table
+        self.versions_table = versions_table
         self.sync_state_table = sync_state_table
         if ensure_schema:
             ensure_tables(
                 self.client,
                 tasks_table=tasks_table,
                 milestones_table=milestones_table,
+                versions_table=versions_table,
                 sync_state_table=sync_state_table,
                 readmodel_table=readmodel_table,
             )
@@ -294,45 +305,192 @@ class OperationalTaskRepo:
     def get_sync_state(self, source_id: str) -> SyncStateRow | None:
         query = f"""
         DECLARE $source_id AS Utf8;
-        SELECT source_id, source_hash, synced_at_utc, last_success_at_utc, last_error
+        SELECT
+            source_id, preflight_hash_50, source_hash_full, synced_at_utc, last_full_sync_at,
+            last_success_at_utc, last_error, last_error_code, last_error_at_utc
         FROM `{self.sync_state_table}`
         WHERE source_id = $source_id;
         """
-        result_sets = self.client.execute(query, {"$source_id": str(source_id).strip()})
+        try:
+            result_sets = self.client.execute(query, {"$source_id": str(source_id).strip()})
+            legacy = False
+        except Exception as exc:
+            text = str(exc).lower()
+            if "member not found" not in text:
+                raise
+            legacy = True
+            legacy_query = f"""
+            DECLARE $source_id AS Utf8;
+            SELECT source_id, source_hash, synced_at_utc, last_success_at_utc, last_error
+            FROM `{self.sync_state_table}`
+            WHERE source_id = $source_id;
+            """
+            result_sets = self.client.execute(legacy_query, {"$source_id": str(source_id).strip()})
         if not result_sets or not result_sets[0].rows:
             return None
         row = result_sets[0].rows[0]
+        if legacy:
+            source_hash = str(getattr(row, "source_hash", ""))
+            return SyncStateRow(
+                source_id=str(getattr(row, "source_id", "")),
+                preflight_hash_50=source_hash,
+                source_hash_full=source_hash,
+                synced_at_utc=getattr(row, "synced_at_utc", None),
+                last_full_sync_at_utc=getattr(row, "synced_at_utc", None),
+                last_success_at_utc=getattr(row, "last_success_at_utc", None),
+                last_error=str(getattr(row, "last_error", "")).strip() or None,
+                last_error_code=None,
+                last_error_at_utc=None,
+            )
         return SyncStateRow(
             source_id=str(getattr(row, "source_id", "")),
-            source_hash=str(getattr(row, "source_hash", "")),
+            preflight_hash_50=str(getattr(row, "preflight_hash_50", "")),
+            source_hash_full=str(getattr(row, "source_hash_full", "")),
             synced_at_utc=getattr(row, "synced_at_utc", None),
+            last_full_sync_at_utc=getattr(row, "last_full_sync_at", None),
             last_success_at_utc=getattr(row, "last_success_at_utc", None),
             last_error=str(getattr(row, "last_error", "")).strip() or None,
+            last_error_code=str(getattr(row, "last_error_code", "")).strip() or None,
+            last_error_at_utc=getattr(row, "last_error_at_utc", None),
         )
 
-    def set_sync_state(self, source_id: str, source_hash: str, *, last_error: str | None = None) -> None:
+    def set_sync_state(
+        self,
+        *,
+        source_id: str,
+        preflight_hash_50: str,
+        source_hash_full: str,
+        synced_at_utc: datetime | None = None,
+        last_full_sync_at_utc: datetime | None = None,
+        last_success_at_utc: datetime | None = None,
+        last_error: str | None = None,
+        last_error_code: str | None = None,
+        last_error_at_utc: datetime | None = None,
+    ) -> None:
         query = f"""
         DECLARE $source_id AS Utf8;
-        DECLARE $source_hash AS Utf8;
+        DECLARE $preflight_hash_50 AS Utf8;
+        DECLARE $source_hash_full AS Utf8;
         DECLARE $synced_at_utc AS Timestamp;
+        DECLARE $last_full_sync_at AS Timestamp?;
         DECLARE $last_success_at_utc AS Timestamp;
         DECLARE $last_error AS Utf8?;
+        DECLARE $last_error_code AS Utf8?;
+        DECLARE $last_error_at_utc AS Timestamp?;
         UPSERT INTO `{self.sync_state_table}` (
-            source_id, source_hash, synced_at_utc, last_success_at_utc, last_error
+            source_id, preflight_hash_50, source_hash_full, synced_at_utc, last_full_sync_at,
+            last_success_at_utc, last_error, last_error_code, last_error_at_utc
         )
-        VALUES ($source_id, $source_hash, $synced_at_utc, $last_success_at_utc, $last_error);
+        VALUES (
+            $source_id, $preflight_hash_50, $source_hash_full, $synced_at_utc, $last_full_sync_at,
+            $last_success_at_utc, $last_error, $last_error_code, $last_error_at_utc
+        );
         """
-        now = _utc_now()
-        self.client.execute(
-            query,
-            {
-                "$source_id": str(source_id).strip(),
-                "$source_hash": str(source_hash).strip(),
-                "$synced_at_utc": now,
-                "$last_success_at_utc": now,
-                "$last_error": str(last_error).strip() if last_error else None,
-            },
+        now = synced_at_utc or _utc_now()
+        try:
+            self.client.execute(
+                query,
+                {
+                    "$source_id": str(source_id).strip(),
+                    "$preflight_hash_50": str(preflight_hash_50).strip(),
+                    "$source_hash_full": str(source_hash_full).strip(),
+                    "$synced_at_utc": now,
+                    "$last_full_sync_at": last_full_sync_at_utc,
+                    "$last_success_at_utc": last_success_at_utc or now,
+                    "$last_error": str(last_error).strip() if last_error else None,
+                    "$last_error_code": str(last_error_code).strip() if last_error_code else None,
+                    "$last_error_at_utc": last_error_at_utc,
+                },
+            )
+        except Exception as exc:
+            text = str(exc).lower()
+            if "member not found" not in text:
+                raise
+            legacy_query = f"""
+            DECLARE $source_id AS Utf8;
+            DECLARE $source_hash AS Utf8;
+            DECLARE $synced_at_utc AS Timestamp;
+            DECLARE $last_success_at_utc AS Timestamp;
+            DECLARE $last_error AS Utf8?;
+            UPSERT INTO `{self.sync_state_table}` (
+                source_id, source_hash, synced_at_utc, last_success_at_utc, last_error
+            )
+            VALUES ($source_id, $source_hash, $synced_at_utc, $last_success_at_utc, $last_error);
+            """
+            self.client.execute(
+                legacy_query,
+                {
+                    "$source_id": str(source_id).strip(),
+                    "$source_hash": str(source_hash_full).strip(),
+                    "$synced_at_utc": now,
+                    "$last_success_at_utc": last_success_at_utc or now,
+                    "$last_error": str(last_error).strip() if last_error else None,
+                },
+            )
+
+    def upsert_task_version(
+        self,
+        *,
+        task_id: str,
+        version: int,
+        status: str,
+        content_hash: str,
+        payload_json: str,
+        created_at_utc: datetime | None = None,
+    ) -> None:
+        query = f"""
+        DECLARE $task_id AS Utf8;
+        DECLARE $version AS Uint64;
+        DECLARE $status AS Utf8;
+        DECLARE $content_hash AS Utf8;
+        DECLARE $payload_json AS Utf8;
+        DECLARE $created_at_utc AS Timestamp;
+        UPSERT INTO `{self.versions_table}` (
+            task_id, version, status, content_hash, payload_json, created_at_utc
         )
+        VALUES (
+            $task_id, $version, $status, $content_hash, $payload_json, $created_at_utc
+        );
+        """
+        try:
+            self.client.execute(
+                query,
+                {
+                    "$task_id": str(task_id).strip(),
+                    "$version": int(version),
+                    "$status": str(status).strip() or "active",
+                    "$content_hash": str(content_hash).strip(),
+                    "$payload_json": payload_json,
+                    "$created_at_utc": created_at_utc or _utc_now(),
+                },
+            )
+        except Exception as exc:
+            text = str(exc).lower()
+            if "path not found" in text or "table not found" in text:
+                return
+            raise
+
+    def archive_task_version(self, *, task_id: str, version: int) -> None:
+        query = f"""
+        DECLARE $task_id AS Utf8;
+        DECLARE $version AS Uint64;
+        UPDATE `{self.versions_table}`
+        SET status = "archive"
+        WHERE task_id = $task_id AND version = $version;
+        """
+        try:
+            self.client.execute(
+                query,
+                {
+                    "$task_id": str(task_id).strip(),
+                    "$version": int(version),
+                },
+            )
+        except Exception as exc:
+            text = str(exc).lower()
+            if "path not found" in text or "table not found" in text:
+                return
+            raise
 
     def list_tasks(self, *, statuses: list[str] | None = None) -> list[dict[str, Any]]:
         status_filter = [str(item).strip().lower() for item in (statuses or []) if str(item).strip()]

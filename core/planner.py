@@ -6,7 +6,7 @@ from typing import Any, Mapping, Sequence
 
 from config import SOURCE_SHEET_INFO
 from core.bootstrap import PlannerDependencies, build_planner_dependencies
-from core.task_query_contract import query_source_tasks
+from core.task_query_adapter import build_task_query_context, query_source_tasks
 from utils.service import GoogleSheetInfo
 
 
@@ -95,8 +95,9 @@ class GoogleSheetPlanner:
         min_date: str = "1W",
     ) -> None:
         """Build and publish a calendar view from filtered designer tasks."""
+        query_context = build_task_query_context(self.task_repository.get_all_tasks())
         tasks = query_source_tasks(
-            self.task_repository.get_all_tasks(),
+            query_context,
             statuses=color_status,
             limit=10**9,
         )

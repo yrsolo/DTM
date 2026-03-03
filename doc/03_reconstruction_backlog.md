@@ -27,12 +27,15 @@ Safe, incremental migration of DTM from legacy tightly coupled automation to mai
 | 18 | provider reliability guardrails (timeout/retry + enhancer counters) | done | `doc/stages/55_stage18_execution_plan.md`, `doc/stages/58_stage18_closeout_and_stage19_handoff.md` |
 | 19 | provider failover policy (`draft_only` vs `provider`) | done | `doc/stages/59_stage19_execution_plan.md`, `doc/stages/62_stage19_closeout_and_stage20_handoff.md` |
 | 20 | production-readiness hardening (docs freshness, repo hygiene, release evidence) | done | `doc/stages/63_stage20_execution_plan.md`, `doc/stages/66_stage20_closeout_and_stage21_handoff.md` |
+| 21 | deploy/API/runtime contour split + DB migration v2 finalization | done | `doc/stages/67_stage21_closeout_and_stage22_handoff.md`, `docs/db/schema.md`, `docs/evidence_db_migration_v2.md` |
+| 22 | tri-block query/source-policy unification + parity smoke | done | `doc/stages/69_stage22_closeout_and_stage23_handoff.md`, `doc/stages/70_stage23_execution_plan.md` |
+| 23 | cloud evidence hardening + canary control package | done | `doc/stages/70_stage23_execution_plan.md`, `doc/stages/71_stage23_test_contour_operational_evidence_bundle.md`, `doc/stages/72_stage23_closeout_and_stage24_handoff.md` |
 
-## Current Focus (Post Stage 20)
-- Active execution tasks completed in Stage 21:
-  - deploy contour split (test auto / prod manual),
-  - API domain tooling and frontend API contract/doc endpoint,
-  - migration blueprint package (`docs/*`) and M1-M3 scaffolding (`src/*`).
+## Current Focus (Post Stage 23)
+- Stage 24 proposed focus:
+  - close payload marker gap (`meta.readmodelSource`) in test contour evidence,
+  - automate render/notify freshness extraction into one artifact,
+  - prepare production canary rehearsal + rollback drill evidence bundle.
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).
