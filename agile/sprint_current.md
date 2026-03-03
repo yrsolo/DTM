@@ -1,7 +1,7 @@
 # Sprint Current
 
 ## Sprint Goal
-Complete CAM transition of planning/docs and start execution-ready queue for milestone versioning campaign.
+Launch and execute CAM-MILESTONES-V1.1 cleanup hardening for versioned milestones source-of-truth.
 
 ## Capacity
 1 active execution task (WIP=1).
@@ -28,6 +28,12 @@ Complete CAM transition of planning/docs and start execution-ready queue for mil
 - [DONE] `CAM-DBMIG-MILESTONES-V1-P05-T001` unit test: version update uses matching milestone version in builder.
 - [DONE] `CAM-DBMIG-MILESTONES-V1-P05-T002` unit test: forced refresh keeps versions stable.
 - [DONE] `CAM-DBMIG-MILESTONES-V1-P05-T003` publish evidence package and runbook snippet.
+- [IN_PROGRESS] `CAM-MILESTONES-V1.1-P02-T004` remove global milestones DELETE from bulk sync path.
+- [DONE] `CAM-MILESTONES-V1.1-P02-T004` remove global milestones DELETE from bulk sync path.
+- [DONE] `CAM-MILESTONES-V1.1-P04-T001` migration utility with fallback source (`dtm_task_milestones` -> `raw_payload`).
+- [DONE] `CAM-MILESTONES-V1.1-P04-T002` post-migration verification sample + evidence.
+- [DONE] `CAM-MILESTONES-V1.1-P05-T001` unit tests for safe bulk replace scope.
+- [DONE] `CAM-MILESTONES-V1.1-P05-T003` smoke + evidence closeout.
 
 ## Done (Latest)
 - [DONE] `CAM-DBMIG-MILESTONES-V1-P01-T003`
@@ -44,6 +50,11 @@ Complete CAM transition of planning/docs and start execution-ready queue for mil
 - [DONE] `CAM-DBMIG-MILESTONES-V1-P05-T003`
 - [DONE] `CAM-DBMIG-MILESTONES-V1-P05-T002`
 - [DONE] `CAM-DBMIG-MILESTONES-V1-P05-T001`
+- [DONE] `CAM-MILESTONES-V1.1-P05-T003`
+- [DONE] `CAM-MILESTONES-V1.1-P05-T001`
+- [DONE] `CAM-MILESTONES-V1.1-P04-T002`
+- [DONE] `CAM-MILESTONES-V1.1-P04-T001`
+- [DONE] `CAM-MILESTONES-V1.1-P02-T004`
 - [DONE] `CAM-DOC-REFORM-P02-T003`
 - [DONE] `CAM-DOC-REFORM-P02-T002`
 - [DONE] `CAM-DOC-REFORM-P02-T001`
@@ -56,4 +67,4 @@ Complete CAM transition of planning/docs and start execution-ready queue for mil
 - none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] Define next campaign scope after CAM-DBMIG-MILESTONES-V1 closeout (owner decision).
+- [TODO] Define next campaign scope after `CAM-MILESTONES-V1.1` closeout (owner decision).

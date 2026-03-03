@@ -45,6 +45,7 @@
 Compatibility role:
 - Legacy/current snapshot table kept for compatibility during migration.
 - Must not be used as source of truth for version-bound readmodel once `dtm_task_milestones_v` path is enabled.
+- Sync safety rule: bulk updates must delete only affected `task_id` scopes; full-table delete is forbidden.
 
 ### `dtm_task_milestones_v`
 - Primary key: `(task_id, version, idx)`.
