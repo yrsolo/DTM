@@ -42,6 +42,7 @@
 - 2026-03-03: Stage 3 implemented: `force_refresh` path wired (`index.py` -> `main.py` -> sync service) without version bump for existing tasks.
 - 2026-03-03: Stage 6 baseline added: unit tests for version/hash rules and cloud smoke script `agent/cloud_smoke_db_migration_v2.py`.
 - 2026-03-03: Cloud smoke executed: sync trigger via function URL (`mode=sync-only&force_refresh=1`) + API verify via `https://dtm-api-test.solofarm.ru/api/v2/frontend` (`status=200`, `contractVersion=2.0.1`).
+- 2026-03-03: Owner Telegram info-notification sent (`mode=info`, task closeout update).
 
 ## Links
 - Prompt source: owner chat message "DB_MIGRATION_V2 FINALIZATION (stages + atomic tasks)".
