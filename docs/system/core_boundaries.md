@@ -49,3 +49,8 @@ This document tracks what is domain-pure vs infrastructure-coupled inside `core/
 | `core/use_cases.py` | `src/services/usecases/planner_runtime.py` | move implementation, keep compatibility shim in `core/use_cases.py` | low |
 | `main.py` imports from `core/*` | `main.py` imports from `src/app` and `src/services/usecases` | direct import swap after shim is in place | low |
 | `index.py` imports from `core/bootstrap.py` | `index.py` imports from `src/app/planner_bootstrap.py` | direct import swap after shim is in place | low |
+
+## Completed in CAM-CORE-CLEANUP-V1 (current wave)
+- `core/bootstrap.py` converted to compatibility shim; implementation moved to `src/app/planner_bootstrap.py`.
+- `core/use_cases.py` converted to compatibility shim; implementation moved to `src/services/usecases/planner_runtime.py`.
+- `TimingParser` extracted to `core/timing_parser.py` and de-duplicated from `core/repository.py`.
