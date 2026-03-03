@@ -1,7 +1,7 @@
 # Sprint Current
 
 ## Sprint Goal
-Execute Stage 22 unification work: one DB query contract and one source-policy matrix for API, Sheet Render, and Notifications.
+Stage 22 is closed; prepare Stage 23 cloud hardening rollout queue (awaiting owner go/no-go for execution start).
 
 ## Product Blocks (Equal Priority)
 - Frontend API
@@ -13,6 +13,7 @@ Execute Stage 22 unification work: one DB query contract and one source-policy m
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-233 - Stage 22 closeout and Stage 23 handoff package.
 - [DONE] DTM-232 - Stage 22 tri-block smoke suite from unified query source.
 - [DONE] DTM-231 - Stage 22 production runbook for `db_migrate`, forced refresh, rollback and safety gates.
 - [DONE] DTM-230 - Source-policy cleanup (`READMODEL_SOURCE`/`NOTIFY_SOURCE`/`RENDER_SOURCE`) with one consumer matrix.
@@ -49,10 +50,11 @@ Execute Stage 22 unification work: one DB query contract and one source-policy m
 
 ## Stage 22 Estimate (Dynamic)
 - Baseline estimate: 6 tasks.
-- Done: 5
-- Remaining: 1
+- Done: 6
+- Remaining: 0
 
 ## Done (Latest)
+- [DONE] DTM-233 - Published Stage 22 closeout + Stage 23 handoff package (`doc/stages/69`, `doc/stages/70`) and synchronized control-plane docs.
 - [DONE] DTM-232 - Added deterministic tri-block parity smoke (`agent/stage22_tri_block_smoke.py`) + unit test; API/render/notify IDs match from one query source.
 - [DONE] DTM-231 - Published Stage 22 ops runbook for migrate/forced-refresh/rollback (`doc/ops/stage22_db_migrate_force_refresh_rollback_runbook.md`) and linked from active docs.
 - [DONE] DTM-230 - Unified source-policy matrix extracted to `src/services/source_policy.py`; wired into `main.py` and `index.py`; tests+timer smoke passed.
@@ -98,7 +100,11 @@ Execute Stage 22 unification work: one DB query contract and one source-policy m
 - none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-233 - Stage 22 closeout and Stage 23 handoff package.
+- [TODO] DTM-234 - Stage 23 kickoff and bounded queue.
+- [TODO] DTM-235 - Cloud tri-block smoke automation package.
+- [TODO] DTM-236 - Readmodel freshness markers for render/notify cloud parity checks.
+- [TODO] DTM-237 - Canary rollout checklist for source-policy switch + rollback checkpoints.
+- [TODO] DTM-238 - Test-contour operational evidence bundle and production go/no-go inputs.
 
 ## Tri-Block Readiness Matrix (Test Contour)
 - Frontend API: in progress (v1/v2/doc cloud verification passed; pending explicit YDB readmodel-source confirmation in v2 payload).
@@ -106,6 +112,7 @@ Execute Stage 22 unification work: one DB query contract and one source-policy m
 - Notifications: in progress (delivery logic works; needs contour smoke evidence under current rollout switches).
 
 ## Active Task Files
+- `agile/tasks/stage_20_plus/DTM-233_stage22-closeout-and-stage23-handoff.md`
 - `agile/tasks/stage_20_plus/DTM-232_stage22_tri-block-smoke-suite-unified-query-source.md`
 - `agile/tasks/stage_20_plus/DTM-231_stage22_prod-runbook-db-migrate-force-refresh-rollback.md`
 - `agile/tasks/stage_20_plus/DTM-230_stage22_source-policy-cleanup-matrix.md`

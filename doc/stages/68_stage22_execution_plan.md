@@ -6,7 +6,7 @@ Unify production data-consumption paths so Frontend API, Sheet Render, and Notif
 ## Baseline
 - Stage 22 estimate baseline: 6 tasks.
 - Dynamic tracking rule: after each completed task, update `Done` and `Remaining` in `agile/sprint_current.md`.
-- Current counter after kickoff: done `0`, remaining `6`.
+- Current counter: done `6`, remaining `0`.
 
 ## Stage 22 slices (initial)
 1. `DTM-228`: Stage 22 kickoff and bounded queue.

@@ -3,10 +3,10 @@
 ## Objective
 Deliver DTM to stable production operation with clear, maintainable process artifacts.
 
-## Current Focus (Stage 22)
-1. Unify API/render/notification consumers over one DB query contract (single filter semantics).
-2. Consolidate source-policy matrix (`READMODEL_SOURCE`/`NOTIFY_SOURCE`/`RENDER_SOURCE`) and remove duplicated read branches.
-3. Keep release docs/runbooks concise and trustworthy.
+## Current Focus (Stage 23)
+1. Move Stage 22 local parity baseline into reproducible cloud smoke/evidence flow.
+2. Add explicit freshness markers/checkpoints for API, render, and notifications in one contour.
+3. Prepare controlled canary rollout checklist for source-policy switch and rollback.
 4. Treat delivery as three equal product blocks:
    - Frontend API
    - Sheet Render

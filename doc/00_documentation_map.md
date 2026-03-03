@@ -50,7 +50,8 @@ This file explains where to read first and where to go for details.
 - Stage 19: `doc/stages/59_stage19_execution_plan.md` ... `doc/stages/62_stage19_closeout_and_stage20_handoff.md`
 - Stage 20: `doc/stages/63_stage20_execution_plan.md` ... `doc/stages/66_stage20_closeout_and_stage21_handoff.md`
 - Stage 21: `doc/stages/67_stage21_closeout_and_stage22_handoff.md`
-- Stage 22 kickoff plan: `doc/stages/68_stage22_execution_plan.md`
+- Stage 22: `doc/stages/68_stage22_execution_plan.md`, `doc/stages/69_stage22_closeout_and_stage23_handoff.md`
+- Stage 23 kickoff plan: `doc/stages/70_stage23_execution_plan.md`
 - For current status and latest active stage, use `doc/03_reconstruction_backlog.md`.
 
 ## Historical Archives

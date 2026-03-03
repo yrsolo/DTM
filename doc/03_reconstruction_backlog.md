@@ -28,12 +28,13 @@ Safe, incremental migration of DTM from legacy tightly coupled automation to mai
 | 19 | provider failover policy (`draft_only` vs `provider`) | done | `doc/stages/59_stage19_execution_plan.md`, `doc/stages/62_stage19_closeout_and_stage20_handoff.md` |
 | 20 | production-readiness hardening (docs freshness, repo hygiene, release evidence) | done | `doc/stages/63_stage20_execution_plan.md`, `doc/stages/66_stage20_closeout_and_stage21_handoff.md` |
 | 21 | deploy/API/runtime contour split + DB migration v2 finalization | done | `doc/stages/67_stage21_closeout_and_stage22_handoff.md`, `docs/db/schema.md`, `docs/evidence_db_migration_v2.md` |
+| 22 | tri-block query/source-policy unification + parity smoke | done | `doc/stages/69_stage22_closeout_and_stage23_handoff.md`, `doc/stages/70_stage23_execution_plan.md` |
 
-## Current Focus (Post Stage 21)
-- Stage 22 proposed focus:
-  - unify API/render/notifications consumers over one DB query contract,
-  - finalize source-policy matrix and tri-block smoke parity package,
-  - publish Stage 22 closeout and Stage 23 handoff.
+## Current Focus (Post Stage 22)
+- Stage 23 proposed focus:
+  - automate cloud tri-block smoke evidence from unified Stage 22 baseline,
+  - add freshness parity markers for API/render/notify in cloud contour,
+  - prepare canary rollout and rollback checkpoints for source-policy switch.
 
 ## Operating Principles
 - One active execution task at a time (WIP=1).
