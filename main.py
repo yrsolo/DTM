@@ -31,8 +31,7 @@ from src.adapters.store_ydb import build_operational_store
 from src.adapters.ydb.operational_repo import OperationalTaskRepo
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
 from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
-from src.adapters.ydb.schema import ensure_tables
-from src.adapters.ydb.client import YdbClient
+from src.entrypoints.jobs.db_migrate_job import run_db_migrate
 from src.entrypoints.jobs.timer_job import TimerJob
 from src.services.readmodel_builder import FrontendReadmodelBuilderService
 from src.services.sync_service import YdbSyncService
@@ -252,18 +251,9 @@ async def main(**kwargs):
     print(f"{mode=} {dry_run=} {mock_external=}")
 
     if mode == "db_migrate":
-        client = YdbClient(endpoint=YDB_ENDPOINT, database=YDB_DATABASE)
-        ensure_tables(client)
+        result = run_db_migrate(endpoint=YDB_ENDPOINT, database=YDB_DATABASE)
         print("db_migrate_done=true")
-        return {
-            "mode": "db_migrate",
-            "summary": {
-                "db_migrate_done": True,
-                "ydb_queries_count": client.stats.ydb_queries_count,
-                "ydb_duration_ms": client.stats.duration_ms,
-                "ydb_error_code": client.stats.error_code,
-            },
-        }
+        return result
 
     dependencies = build_planner_dependencies(
         KEY_JSON,
