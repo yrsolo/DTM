@@ -13,6 +13,7 @@ Execute Stage 23 cloud hardening rollout queue from Stage 22 unified baseline.
 1 active execution task (WIP=1).
 
 ## Now
+- [DONE] DTM-237 - Canary rollout checklist for source-policy switch + rollback checkpoints.
 - [DONE] DTM-236 - Readmodel freshness markers for render/notify cloud parity checks.
 - [DONE] DTM-235 - Cloud tri-block smoke automation package.
 - [DONE] DTM-234 - Stage 23 kickoff and bounded queue.
@@ -53,10 +54,11 @@ Execute Stage 23 cloud hardening rollout queue from Stage 22 unified baseline.
 
 ## Stage 23 Estimate (Dynamic)
 - Baseline estimate: 6 tasks.
-- Done: 3
-- Remaining: 3
+- Done: 4
+- Remaining: 2
 
 ## Done (Latest)
+- [DONE] DTM-237 - Published Stage 23 source-policy canary checklist with rollback checkpoints and production go/no-go inputs (`doc/ops/stage23_source_policy_canary_rollout_checklist.md`).
 - [DONE] DTM-236 - Added render/notify readmodel freshness runtime marker (`readmodel_freshness`) with unit tests.
 - [DONE] DTM-235 - Added cloud tri-block smoke automation (`agent/stage23_cloud_tri_block_smoke.py`) + test contour evidence artifact.
 - [DONE] DTM-234 - Stage 23 kickoff and bounded queue (goal/counters/queue synchronized).
@@ -106,7 +108,6 @@ Execute Stage 23 cloud hardening rollout queue from Stage 22 unified baseline.
 - none
 
 ## Next 3-5 Tasks (Groomed)
-- [TODO] DTM-237 - Canary rollout checklist for source-policy switch + rollback checkpoints.
 - [TODO] DTM-238 - Test-contour operational evidence bundle and production go/no-go inputs.
 - [TODO] DTM-239 - Stage 23 closeout and Stage 24 handoff package.
 
