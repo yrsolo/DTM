@@ -11,6 +11,7 @@ from config import (
     FULL_SYNC_INTERVAL_HOURS,
     KEY_JSON,
     LEGACY_BLOB_WRITE,
+    WRITE_LEGACY_MILESTONES,
     MIGRATION_ENABLE_SOURCE_HASH_GATE,
     MIGRATION_HASH_GATE_STATE_FILE,
     MIGRATION_STORE_FILE,
@@ -370,7 +371,10 @@ async def main(**kwargs):
                 database=YDB_DATABASE,
                 ensure_schema=YDB_MIGRATE_ON_START,
             )
-            sync_service = YdbSyncService(operational_repo)
+            sync_service = YdbSyncService(
+                operational_repo,
+                write_legacy_milestones=WRITE_LEGACY_MILESTONES,
+            )
             preflight_range = f"A1:Z{max(PREFLIGHT_TOP_ROWS, 1)}"
             full_range = "A1:Z2000"
             preflight_snapshot = _read_source_snapshot(source_task_repository, worksheet_range=preflight_range)

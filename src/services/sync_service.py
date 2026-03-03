@@ -115,8 +115,9 @@ class SyncRunResult:
 class YdbSyncService:
     """Sync normalized tasks into YDB operational tables."""
 
-    def __init__(self, repo: OperationalTaskRepo) -> None:
+    def __init__(self, repo: OperationalTaskRepo, *, write_legacy_milestones: bool = False) -> None:
         self.repo = repo
+        self.write_legacy_milestones = bool(write_legacy_milestones)
 
     def run(
         self,
@@ -192,6 +193,8 @@ class YdbSyncService:
         task_rows: list[dict[str, Any]] = []
         milestones_by_task: dict[str, list[dict[str, Any]]] = {}
         milestones_versions_by_task: dict[tuple[str, int], list[dict[str, Any]]] = {}
+        changed_version_tasks: dict[str, int] = {}
+        pending_archives: list[tuple[str, int]] = []
         existing_rows = {str(row.get("task_id", "")).strip(): row for row in self.repo.list_tasks() if str(row.get("task_id", "")).strip()}
 
         for task in normalized_tasks:
@@ -240,8 +243,6 @@ class YdbSyncService:
                 task_revision = max(previous_version, 1)
                 create_new_version = False
 
-            if create_new_version and previous_version > 0:
-                self.repo.archive_task_version(task_id=task_id, version=previous_version)
             if create_new_version and not force_refresh:
                 self.repo.upsert_task_version(
                     task_id=task_id,
@@ -251,6 +252,9 @@ class YdbSyncService:
                     payload_json=json.dumps(task, ensure_ascii=False, sort_keys=True),
                     created_at_utc=now_utc,
                 )
+                changed_version_tasks[task_id] = task_revision
+                if previous_version > 0:
+                    pending_archives.append((task_id, previous_version))
 
             task_rows.append(
                 {
@@ -275,12 +279,52 @@ class YdbSyncService:
             )
             milestones_by_task[task_id] = milestones if isinstance(milestones, list) else []
             if create_new_version and not force_refresh:
-                milestones_versions_by_task[(task_id, task_revision)] = milestones if isinstance(milestones, list) else []
+                version_rows = milestones if isinstance(milestones, list) else []
+                if not version_rows:
+                    raise RuntimeError("milestones_write_empty")
+                milestones_versions_by_task[(task_id, task_revision)] = version_rows
 
-        milestones_total = self.repo.replace_task_milestones_bulk(milestones_by_task)
+        if self.write_legacy_milestones:
+            milestones_total = self.repo.replace_task_milestones_bulk(milestones_by_task)
+        else:
+            milestones_total = 0
+            print("legacy_milestones_write=skipped reason=disabled")
+
         if milestones_versions_by_task:
-            self.repo.upsert_task_milestones_versions_bulk(milestones_versions_by_task)
+            milestones_written = self.repo.upsert_task_milestones_versions_bulk(milestones_versions_by_task)
+            if milestones_written <= 0:
+                raise RuntimeError("milestones_write_empty")
         tasks_upserted = self.repo.upsert_tasks_batch(task_rows)
+
+        if changed_version_tasks:
+            current_rows = {
+                str(row.get("task_id", "")).strip(): int(row.get("current_version", row.get("task_revision", 0)) or 0)
+                for row in self.repo.list_tasks()
+                if str(row.get("task_id", "")).strip()
+            }
+            missing_version_head = [
+                task_id for task_id, expected_version in changed_version_tasks.items()
+                if current_rows.get(task_id, 0) != expected_version
+            ]
+            if missing_version_head:
+                raise RuntimeError("current_version_missing_after_sync")
+
+            versioned_rows = self.repo.list_milestones_for_versions(task_versions=changed_version_tasks)
+            rows_by_key: dict[tuple[str, int], int] = {}
+            for item in versioned_rows:
+                key = (str(item.get("task_id", "")).strip(), int(item.get("version", 0) or 0))
+                rows_by_key[key] = rows_by_key.get(key, 0) + 1
+            missing_milestones = [
+                task_id
+                for task_id, version in changed_version_tasks.items()
+                if rows_by_key.get((task_id, version), 0) <= 0
+            ]
+            if missing_milestones:
+                raise RuntimeError("milestones_current_version_missing")
+
+        for task_id, previous_version in pending_archives:
+            self.repo.archive_task_version(task_id=task_id, version=previous_version)
+
         self.repo.set_sync_state(
             source_id=source_id,
             preflight_hash_50=preflight_hash_50,

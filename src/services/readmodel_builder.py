@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any
 
 from core.api_payload_v2 import build_frontend_api_payload_v2
@@ -117,6 +117,8 @@ class FrontendReadmodelBuilderService:
             rows.sort(key=lambda row: int(row.get("idx", 0)))
 
         task_views: list[_TaskView] = []
+        synthetic_start_count = 0
+        synthetic_examples: list[str] = []
         for row in task_rows:
             task_id = str(row.get("task_id", "")).strip()
             if not task_id:
@@ -127,6 +129,12 @@ class FrontendReadmodelBuilderService:
                 if not planned:
                     continue
                 timing.setdefault(planned, []).append(str(milestone.get("type", "unknown")))
+            if not timing:
+                synthetic_start_count += 1
+                if len(synthetic_examples) < 10:
+                    synthetic_examples.append(f"{task_id}:{task_versions.get(task_id, 0)}")
+                planned = self._resolve_synthetic_start_date(row)
+                timing.setdefault(planned, []).append("start")
             task_views.append(
                 _TaskView(
                     id=task_id,
@@ -159,6 +167,11 @@ class FrontendReadmodelBuilderService:
         payload["meta"]["source"]["sheetUrl"] = None
         payload["meta"]["features"]["readmodelStored"] = True
         payload["meta"]["features"]["apiReadmodelOnly"] = True
+        if synthetic_start_count > 0:
+            warnings = payload["meta"].setdefault("warnings", [])
+            if "synthetic_start_used" not in warnings:
+                warnings.append("synthetic_start_used")
+            print(f"milestones_synthetic_start_count={synthetic_start_count} samples={','.join(synthetic_examples)}")
 
         row = self.readmodel_repo.upsert_readmodel(
             payload,
@@ -174,3 +187,21 @@ class FrontendReadmodelBuilderService:
             tasks_count=len(parsed_payload.get("tasks", [])) if isinstance(parsed_payload, dict) else 0,
             ydb_queries_count=self.operational_repo.client.stats.ydb_queries_count + self.readmodel_repo.client.stats.ydb_queries_count,
         )
+
+    @staticmethod
+    def _resolve_synthetic_start_date(row: dict[str, Any]) -> str:
+        for key in ("created_at_utc", "first_seen_at_utc", "updated_at_utc", "next_due_date", "start_date", "end_date"):
+            value = row.get(key)
+            if isinstance(value, datetime):
+                return value.date().isoformat()
+            if isinstance(value, date):
+                return value.isoformat()
+            text = str(value or "").strip()
+            if len(text) >= 10:
+                candidate = text[:10]
+                try:
+                    date.fromisoformat(candidate)
+                    return candidate
+                except ValueError:
+                    continue
+        return datetime.now(timezone.utc).date().isoformat()

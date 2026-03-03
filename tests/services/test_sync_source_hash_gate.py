@@ -31,6 +31,8 @@ class _RepoStub:
         self.milestone_version_upserts = 0
         self.version_upserts = 0
         self.version_archives = 0
+        self.force_empty_versioned_write = False
+        self.versioned_rows_by_key = {}
         self._tasks = {}
 
     def get_sync_state(self, source_id: str):  # noqa: ARG002
@@ -55,6 +57,7 @@ class _RepoStub:
                 "task_id": str(task["task_id"]),
                 "task_hash": str(task.get("task_hash", "")),
                 "task_revision": int(task.get("task_revision", 0) or 0),
+                "current_version": int(task.get("task_revision", 0) or 0),
             }
         return len(tasks)
 
@@ -64,7 +67,21 @@ class _RepoStub:
 
     def upsert_task_milestones_versions_bulk(self, payload_by_task_version):  # noqa: ANN001
         self.milestone_version_upserts += 1
+        if self.force_empty_versioned_write:
+            return 0
+        for key, rows in payload_by_task_version.items():
+            self.versioned_rows_by_key[key] = list(rows)
         return sum(len(items) for items in payload_by_task_version.values())
+
+    def list_milestones_for_versions(self, *, task_versions, include_details=True):  # noqa: ANN001, ARG002
+        rows = []
+        for task_id, version in task_versions.items():
+            for row in self.versioned_rows_by_key.get((task_id, version), []):
+                payload = dict(row)
+                payload["task_id"] = task_id
+                payload["version"] = version
+                rows.append(payload)
+        return rows
 
     def archive_task_version(self, *, task_id, version):  # noqa: ANN001, ARG002
         self.version_archives += 1
@@ -81,7 +98,7 @@ class SyncSourceHashGateTestCase(unittest.TestCase):
 
     def test_sync_skips_full_sync_when_preflight_unchanged_and_recent(self) -> None:
         repo = _RepoStub()
-        service = YdbSyncService(repo)  # type: ignore[arg-type]
+        service = YdbSyncService(repo, write_legacy_milestones=True)  # type: ignore[arg-type]
         snapshot = {"values": [["id"], ["1"]], "colors": ["#fff"]}
         normalized = [{"task_id": "1", "title": "A", "status": "work", "milestones": []}]
 
@@ -106,7 +123,7 @@ class SyncSourceHashGateTestCase(unittest.TestCase):
 
     def test_color_only_change_does_not_increment_version(self) -> None:
         repo = _RepoStub()
-        service = YdbSyncService(repo)  # type: ignore[arg-type]
+        service = YdbSyncService(repo, write_legacy_milestones=True)  # type: ignore[arg-type]
         preflight_a = {"values": [["id"], ["1"]], "colors": ["#fff"]}
         full_a = {"values": [["id", "title"], ["1", "Task"]], "colors": ["#fff"]}
         full_b = {"values": [["id", "title"], ["1", "Task"]], "colors": ["#000"]}
@@ -134,7 +151,7 @@ class SyncSourceHashGateTestCase(unittest.TestCase):
 
     def test_content_change_increments_version_and_archives_previous(self) -> None:
         repo = _RepoStub()
-        service = YdbSyncService(repo)  # type: ignore[arg-type]
+        service = YdbSyncService(repo, write_legacy_milestones=True)  # type: ignore[arg-type]
         snapshot_a = {"values": [["id"], ["1"]], "colors": ["#fff"]}
         full_a = {"values": [["id", "title"], ["1", "Task"]], "colors": ["#fff"]}
         full_b = {"values": [["id", "title"], ["1", "Task 2"]], "colors": ["#fff"]}
@@ -159,7 +176,7 @@ class SyncSourceHashGateTestCase(unittest.TestCase):
 
     def test_forced_refresh_does_not_change_existing_version(self) -> None:
         repo = _RepoStub()
-        service = YdbSyncService(repo)  # type: ignore[arg-type]
+        service = YdbSyncService(repo, write_legacy_milestones=True)  # type: ignore[arg-type]
         snapshot = {"values": [["id"], ["1"]], "colors": ["#fff"]}
         full_a = {"values": [["id", "title"], ["1", "Task"]], "colors": ["#fff"]}
         full_b = {"values": [["id", "title"], ["1", "Task changed"]], "colors": ["#fff"]}
@@ -185,7 +202,7 @@ class SyncSourceHashGateTestCase(unittest.TestCase):
 
     def test_start_milestone_is_added_when_missing(self) -> None:
         repo = _RepoStub()
-        service = YdbSyncService(repo)  # type: ignore[arg-type]
+        service = YdbSyncService(repo, write_legacy_milestones=True)  # type: ignore[arg-type]
         snapshot = {"values": [["id"], ["1"]], "colors": ["#fff"]}
 
         result = service.run(
@@ -196,6 +213,35 @@ class SyncSourceHashGateTestCase(unittest.TestCase):
         )
 
         self.assertEqual(result.milestones_upserted, 1)
+
+    def test_legacy_milestones_write_disabled_by_default(self) -> None:
+        repo = _RepoStub()
+        service = YdbSyncService(repo)  # type: ignore[arg-type]
+        snapshot = {"values": [["id"], ["1"]], "colors": ["#fff"]}
+
+        service.run(
+            source_id="sheet:test",
+            preflight_range_values=snapshot,
+            source_range_values=snapshot,
+            normalized_tasks=[{"task_id": "1", "title": "Task", "status": "work", "milestones": []}],
+        )
+
+        self.assertEqual(repo.milestone_replace_calls, 0)
+
+    def test_sync_fails_when_versioned_milestones_write_returns_zero(self) -> None:
+        repo = _RepoStub()
+        repo.force_empty_versioned_write = True
+        service = YdbSyncService(repo)  # type: ignore[arg-type]
+        snapshot = {"values": [["id"], ["1"]], "colors": ["#fff"]}
+
+        with self.assertRaises(RuntimeError) as ctx:
+            service.run(
+                source_id="sheet:test",
+                preflight_range_values=snapshot,
+                source_range_values=snapshot,
+                normalized_tasks=[{"task_id": "1", "title": "Task", "status": "work", "milestones": []}],
+            )
+        self.assertIn("milestones_write_empty", str(ctx.exception))
 
 
 if __name__ == "__main__":

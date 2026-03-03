@@ -4,9 +4,10 @@
 - `CAM-DOC-REFORM`
 - `CAM-DBMIG-MILESTONES-V1`
 - `CAM-MILESTONES-V1.1`
+- `CAM-MILESTONES-V1.2`
 
 ## Ready Queue
-1. Define next campaign scope after `CAM-MILESTONES-V1.1` closeout.
+1. Define next campaign scope after `CAM-MILESTONES-V1.2` closeout.
 
 ## Recently Completed
 - `CAM-DBMIG-MILESTONES-V1-P01-T001`
