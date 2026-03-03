@@ -21,6 +21,7 @@
 - Verify:
   - task upserts land in `dtm_tasks`
   - milestones land in `dtm_task_milestones`
+  - versioned milestones table `dtm_task_milestones_v` exists (write-path switch comes later campaign phase)
   - `dtm_sync_state` updated by `preflight_hash_50` and `source_hash_full`.
   - `dtm_task_versions` captures active/archive versions.
 
@@ -34,10 +35,15 @@
 - Verify API v2 does one readmodel query and returns stored `payload_json`.
 - Current implementation note:
   - API v2 YDB mode returns stored snapshot as-is (no per-request rebuild/filtering).
+  - readmodel snapshot itself is now built from `dtm_task_milestones_v` using `(task_id, current_version)` join; builder no longer depends on raw payload milestones.
 
 ### Stage 4: Render/Notify source switch
 - Move render and notify to YDB-backed operational/readmodel sources.
 - Verify regular timer/morning flows and smoke metrics.
+
+### Stage 4.5: Milestones version backfill
+- Execute `python -m agent.backfill_milestones_versions --apply --verify-sample-size 5` after first YDB sync on target contour.
+- Verification must report `verify_mismatches=0`.
 
 ### Stage 5: Primary and strict mode
 - Switch `STORE_MODE=ydb_primary` then `STORE_MODE=ydb_only`.
@@ -47,7 +53,9 @@
 - Use bounded retries and backoff for `RESOURCE_EXHAUSTED`.
 - Keep schema creation idempotent (`ensure_tables`) but execute it only in explicit migrate mode (or controlled non-prod runs).
 - Keep cloud verification evidence in sprint/task logs before promotion to prod.
-- Use operational runbook for migrate/refresh/rollback steps: `doc/ops/stage22_db_migrate_force_refresh_rollback_runbook.md`.
+- Use operational runbook for migrate/refresh/rollback steps: `docs/ops/stage22_db_migrate_force_refresh_rollback_runbook.md`.
 - Runtime note:
   - Timer flow triggers migration pipeline (`sync_state` + operational + readmodel), and transient YDB exhaustion is logged without stopping legacy render path.
   - forced refresh (`FORCE_REFRESH=1` or runtime flag) rebuilds data/readmodel without version increments for existing tasks.
+  - active version truth is `dtm_tasks.task_revision` (`current_version` alias in adapter contract).
+  - versioned milestones write policy is active: rows in `dtm_task_milestones_v` are written only for content/timing version bumps; status/color-only and forced refresh paths do not write new versioned milestone rows.

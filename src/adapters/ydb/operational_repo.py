@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
 from src.adapters.ydb.client import YdbClient
@@ -20,6 +20,17 @@ def _to_date(value: Any) -> date | None:
         return None
     if isinstance(value, date):
         return value
+    if isinstance(value, (int, float)):
+        raw = int(value)
+        if raw <= 0:
+            return None
+        # YDB Date can be returned as days since Unix epoch.
+        if raw < 100_000:
+            return date(1970, 1, 1) + timedelta(days=raw)
+        # Fallback for epoch-like timestamps.
+        if raw > 10_000_000_000:
+            raw //= 1_000
+        return datetime.fromtimestamp(raw, tz=timezone.utc).date()
     text = str(value).strip()
     if not text:
         return None
@@ -56,6 +67,7 @@ class OperationalTaskRepo:
         database: str,
         tasks_table: str = "dtm_tasks",
         milestones_table: str = "dtm_task_milestones",
+        milestones_versions_table: str = "dtm_task_milestones_v",
         versions_table: str = "dtm_task_versions",
         sync_state_table: str = "dtm_sync_state",
         readmodel_table: str = "dtm_readmodel_frontend_v2",
@@ -64,6 +76,7 @@ class OperationalTaskRepo:
         self.client = YdbClient(endpoint=endpoint, database=database)
         self.tasks_table = tasks_table
         self.milestones_table = milestones_table
+        self.milestones_versions_table = milestones_versions_table
         self.versions_table = versions_table
         self.sync_state_table = sync_state_table
         if ensure_schema:
@@ -71,6 +84,7 @@ class OperationalTaskRepo:
                 self.client,
                 tasks_table=tasks_table,
                 milestones_table=milestones_table,
+                milestones_versioned_table=milestones_versions_table,
                 versions_table=versions_table,
                 sync_state_table=sync_state_table,
                 readmodel_table=readmodel_table,
@@ -297,6 +311,64 @@ class OperationalTaskRepo:
         )
         SELECT
             task_id, idx, type, planned_date, actual_date, status, raw_text, confidence, inference_rule
+        FROM AS_TABLE($rows);
+        """
+        self.client.execute(upsert_query, {"$rows": rows})
+        return len(rows)
+
+    def upsert_task_milestones_versions_bulk(
+        self,
+        payload_by_task_version: dict[tuple[str, int], list[dict[str, Any]]],
+    ) -> int:
+        """Upsert versioned milestones rows keyed by (task_id, version, idx)."""
+        if not payload_by_task_version:
+            return 0
+
+        rows: list[dict[str, Any]] = []
+        for (task_id, version), milestones in payload_by_task_version.items():
+            normalized_task_id = str(task_id).strip()
+            normalized_version = int(version or 0)
+            if not normalized_task_id or normalized_version <= 0:
+                continue
+            for index, milestone in enumerate(milestones):
+                rows.append(
+                    {
+                        "task_id": normalized_task_id,
+                        "version": normalized_version,
+                        "idx": int(milestone.get("idx", index)),
+                        "type": str(milestone.get("type", "")).strip() or "unknown",
+                        "planned_date": _to_date(milestone.get("planned_date", milestone.get("planned"))),
+                        "actual_date": _to_date(milestone.get("actual_date", milestone.get("actual"))),
+                        "status": str(milestone.get("status", "unknown")).strip() or "unknown",
+                        "raw_text": str(milestone.get("raw_text", "")).strip() or None,
+                        "confidence": float(milestone.get("confidence", 0.0) or 0.0),
+                        "inference_rule": str(milestone.get("inference_rule", "")).strip() or None,
+                    }
+                )
+
+        if not rows:
+            return 0
+
+        upsert_query = f"""
+        DECLARE $rows AS List<
+            Struct<
+                task_id:Utf8,
+                version:Uint64,
+                idx:Uint32,
+                type:Utf8,
+                planned_date:Date?,
+                actual_date:Date?,
+                status:Utf8,
+                raw_text:Utf8?,
+                confidence:Double,
+                inference_rule:Utf8?
+            >
+        >;
+        UPSERT INTO `{self.milestones_versions_table}` (
+            task_id, version, idx, type, planned_date, actual_date, status, raw_text, confidence, inference_rule
+        )
+        SELECT
+            task_id, version, idx, type, planned_date, actual_date, status, raw_text, confidence, inference_rule
         FROM AS_TABLE($rows);
         """
         self.client.execute(upsert_query, {"$rows": rows})
@@ -544,6 +616,7 @@ class OperationalTaskRepo:
                     "links_json": str(getattr(row, "links_json", "{}")),
                     "task_hash": str(getattr(row, "task_hash", "")) or None,
                     "task_revision": int(getattr(row, "task_revision", 0) or 0),
+                    "current_version": int(getattr(row, "task_revision", 0) or 0),
                     "updated_at_utc": getattr(row, "updated_at_utc", None),
                 }
             )
@@ -592,6 +665,79 @@ class OperationalTaskRepo:
             rows.append(
                 {
                     "task_id": str(getattr(row, "task_id", "")),
+                    "idx": int(getattr(row, "idx", 0) or 0),
+                    "type": str(getattr(row, "type", "")),
+                    "planned_date": getattr(row, "planned_date", None),
+                    "actual_date": getattr(row, "actual_date", None) if include_details else None,
+                    "status": (str(getattr(row, "status", "")) or "unknown") if include_details else "unknown",
+                    "raw_text": (str(getattr(row, "raw_text", "")) or None) if include_details else None,
+                    "confidence": float(getattr(row, "confidence", 0.0) or 0.0) if include_details else 0.0,
+                    "inference_rule": (str(getattr(row, "inference_rule", "")) or None) if include_details else None,
+                }
+            )
+        return rows
+
+    def list_milestones_for_versions(
+        self,
+        *,
+        task_versions: dict[str, int],
+        include_details: bool = True,
+    ) -> list[dict[str, Any]]:
+        keys = [
+            {"task_id": str(task_id).strip(), "version": int(version)}
+            for task_id, version in (task_versions or {}).items()
+            if str(task_id).strip() and int(version or 0) > 0
+        ]
+        if not keys:
+            return []
+
+        if include_details:
+            query = f"""
+            DECLARE $keys AS List<Struct<task_id:Utf8, version:Uint64>>;
+            SELECT
+                m.task_id AS task_id,
+                m.version AS version,
+                m.idx AS idx,
+                m.type AS type,
+                m.planned_date AS planned_date,
+                m.actual_date AS actual_date,
+                m.status AS status,
+                m.raw_text AS raw_text,
+                m.confidence AS confidence,
+                m.inference_rule AS inference_rule
+            FROM `{self.milestones_versions_table}` AS m
+            INNER JOIN AS_TABLE($keys) AS k
+            ON m.task_id = k.task_id AND m.version = k.version;
+            """
+        else:
+            query = f"""
+            DECLARE $keys AS List<Struct<task_id:Utf8, version:Uint64>>;
+            SELECT
+                m.task_id AS task_id,
+                m.version AS version,
+                m.idx AS idx,
+                m.type AS type,
+                m.planned_date AS planned_date
+            FROM `{self.milestones_versions_table}` AS m
+            INNER JOIN AS_TABLE($keys) AS k
+            ON m.task_id = k.task_id AND m.version = k.version;
+            """
+        try:
+            result_sets = self.client.execute(query, {"$keys": keys})
+        except Exception as exc:
+            text = str(exc).lower()
+            if "path not found" in text or "table not found" in text:
+                return []
+            raise
+        if not result_sets:
+            return []
+
+        rows: list[dict[str, Any]] = []
+        for row in result_sets[0].rows:
+            rows.append(
+                {
+                    "task_id": str(getattr(row, "task_id", "")),
+                    "version": int(getattr(row, "version", 0) or 0),
                     "idx": int(getattr(row, "idx", 0) or 0),
                     "type": str(getattr(row, "type", "")),
                     "planned_date": getattr(row, "planned_date", None),

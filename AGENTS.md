@@ -21,7 +21,7 @@ Operational rules for AI agents working in this repository.
 
 ## Task Tracking Control Plane
 - Jira is preferred for execution state (task creation, status transitions, comments with evidence), but it is not mandatory.
-- If Jira is unavailable or does not add value for current work, use local tracking in `agile/sprint_current.md` and `agile/tasks/*.md`.
+- If Jira is unavailable or does not add value for current work, use local tracking in `agile/sprint_current.md` and `agile/backlog.md`.
 - Execution is allowed without Jira key when local tracking is kept up to date.
 
 ## Autonomous Commits
@@ -66,9 +66,10 @@ When a stage is completed, the agent must provide a plain-language transition su
 - If code/config/process changes, update relevant docs in the same change set.
 - At minimum check:
   - `README.md` (project positioning/behavior level),
-  - `doc/01_*`, `doc/02_*` (current behavior/modules),
-  - `doc/03_*` (backlog and status),
-  - `doc/09_git_workflow.md` (process rules), if workflow changed.
+  - `docs/README.md` (active map),
+  - `docs/plan/*` (process/risk),
+  - `docs/campaigns/*` (active campaign charter/plan/evidence),
+  - `agile/sprint_current.md` and `agile/backlog.md` (execution status).
 - For merge/push to `main`, stale documentation is a blocker.
 - If docs are intentionally unchanged, agent must state why (`not needed` with reason).
 
@@ -78,7 +79,7 @@ When a stage is completed, the agent must provide a plain-language transition su
   - compare docs with current code paths/scripts/config used by real flow,
   - check recent repository changes (`git log`/`git blame`) for drift,
   - confirm whether validations/smoke checks still represent current behavior.
-- Agent must record trust status in `agile/context_registry.md`:
+- Agent must record trust status in current campaign evidence file under `docs/campaigns/<CAMPAIGN>/evidence.md`:
   - `source`, `last_verified_at`, `verified_by`, `evidence`, `trust_level` (`high/medium/low`), `notes`.
 - If trust level is `low` for a source required by current task, do not start execution tasking; create a clarification/verification task first.
 

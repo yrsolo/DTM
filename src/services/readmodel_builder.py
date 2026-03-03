@@ -95,12 +95,22 @@ class FrontendReadmodelBuilderService:
             )
 
         task_rows = self.operational_repo.list_tasks(statuses=["work", "pre_done"])
-        task_ids = [str(row.get("task_id", "")).strip() for row in task_rows if str(row.get("task_id", "")).strip()]
-        milestone_rows = self.operational_repo.list_milestones(task_ids=task_ids)
+        task_versions: dict[str, int] = {}
+        for row in task_rows:
+            task_id = str(row.get("task_id", "")).strip()
+            current_version = int(row.get("current_version", row.get("task_revision", 0)) or 0)
+            if task_id and current_version > 0:
+                task_versions[task_id] = current_version
+
+        milestone_rows = self.operational_repo.list_milestones_for_versions(task_versions=task_versions)
         milestones_by_task: dict[str, list[dict[str, Any]]] = {}
         for item in milestone_rows:
             task_id = str(item.get("task_id", "")).strip()
             if not task_id:
+                continue
+            row_version = int(item.get("version", 0) or 0)
+            expected_version = int(task_versions.get(task_id, 0) or 0)
+            if expected_version > 0 and row_version > 0 and row_version != expected_version:
                 continue
             milestones_by_task.setdefault(task_id, []).append(item)
         for rows in milestones_by_task.values():

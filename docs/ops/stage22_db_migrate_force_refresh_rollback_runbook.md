@@ -42,6 +42,17 @@ If any gate fails: do not continue with migrate/refresh.
    - data/readmodel refreshed,
    - existing task versions are not incremented by forced refresh mode.
 
+## Procedure B1: Versioned milestones backfill (one-time after first YDB sync)
+1. Run backfill utility:
+   - `.venv\Scripts\python.exe -m agent.backfill_milestones_versions --apply --verify-sample-size 5`
+2. Expected output:
+   - `rows_written > 0` (for non-empty contour),
+   - `verify_mismatches=0`,
+   - `verify_ok=true`.
+3. If verification fails:
+   - stop rollout to strict YDB modes,
+   - inspect date conversions and milestone signatures before retry.
+
 ## Procedure C: Rollback
 Use when YDB contour is unstable or smoke fails after deployment.
 

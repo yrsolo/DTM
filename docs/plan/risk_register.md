@@ -127,7 +127,7 @@
   - `reminder_send_error_unknown_count >= 1` in two consecutive weekly reviews -> classifier tuning task.
   - `reminder_send_error_permanent_count >= 3` with `permanent >= transient` -> data quality follow-up task.
 - `Monthly`: run threshold drift review and create dedicated Jira task for any threshold update.
-- Operational checklist source of truth: `doc/ops/baseline_validation_and_artifacts.md` (Routine Ops Cadence Checklist).
+- Operational checklist source of truth: `docs/ops/baseline_validation_and_artifacts.md` (Routine Ops Cadence Checklist).
 
 ### Retry taxonomy metrics checklist
 - Metrics to review from `quality_report.summary`:

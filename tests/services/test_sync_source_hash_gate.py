@@ -28,6 +28,7 @@ class _RepoStub:
         self.client = type("Client", (), {"stats": self.stats})()
         self.upsert_calls = 0
         self.milestone_replace_calls = 0
+        self.milestone_version_upserts = 0
         self.version_upserts = 0
         self.version_archives = 0
         self._tasks = {}
@@ -60,6 +61,10 @@ class _RepoStub:
     def replace_task_milestones_bulk(self, payload_by_task):  # noqa: ANN001
         self.milestone_replace_calls += 1
         return sum(len(items) for items in payload_by_task.values())
+
+    def upsert_task_milestones_versions_bulk(self, payload_by_task_version):  # noqa: ANN001
+        self.milestone_version_upserts += 1
+        return sum(len(items) for items in payload_by_task_version.values())
 
     def archive_task_version(self, *, task_id, version):  # noqa: ANN001, ARG002
         self.version_archives += 1
@@ -125,6 +130,7 @@ class SyncSourceHashGateTestCase(unittest.TestCase):
         self.assertEqual(repo._tasks["1"]["task_revision"], 1)
         self.assertEqual(repo.version_upserts, 1)
         self.assertEqual(repo.version_archives, 0)
+        self.assertEqual(repo.milestone_version_upserts, 1)
 
     def test_content_change_increments_version_and_archives_previous(self) -> None:
         repo = _RepoStub()
@@ -149,6 +155,7 @@ class SyncSourceHashGateTestCase(unittest.TestCase):
         self.assertEqual(repo._tasks["1"]["task_revision"], 2)
         self.assertEqual(repo.version_upserts, 2)
         self.assertEqual(repo.version_archives, 1)
+        self.assertEqual(repo.milestone_version_upserts, 2)
 
     def test_forced_refresh_does_not_change_existing_version(self) -> None:
         repo = _RepoStub()
@@ -174,6 +181,7 @@ class SyncSourceHashGateTestCase(unittest.TestCase):
         self.assertEqual(repo._tasks["1"]["task_revision"], 1)
         self.assertEqual(repo.version_upserts, 1)
         self.assertEqual(repo.version_archives, 0)
+        self.assertEqual(repo.milestone_version_upserts, 1)
 
     def test_start_milestone_is_added_when_missing(self) -> None:
         repo = _RepoStub()
