@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 import json
-import re
 import time
 import traceback
 from datetime import datetime
 from typing import Any
-from urllib.parse import parse_qsl, urlparse
 
 from config import (
     DEBUG_HTTP_EVENT,
@@ -34,6 +32,10 @@ from src.app.bootstrap import build_app_context
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
 from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.entrypoints.http.event_parser import extract_payload as _extract_payload
+from src.entrypoints.http.event_parser import http_method as _http_method
+from src.entrypoints.http.event_parser import http_path as _http_path
+from src.entrypoints.http.event_parser import normalize_path as _normalize_path
+from src.entrypoints.http.event_parser import query_params as _query_params
 from src.services.errors import AppError, PermanentError, TransientError, UserError
 from src.services.source_policy import build_source_policy_matrix
 
@@ -82,126 +84,6 @@ async def _handle_group_query_if_requested(
             parse_mode=None,
         )
         return True
-
-
-def _http_path(event: dict[str, Any]) -> str:
-    def _normalize_proxy_path(value: Any) -> str:
-        raw = str(value or "").strip()
-        if not raw:
-            return ""
-        if raw == "/{proxy+}" or raw == "{proxy+}":
-            return ""
-        return raw if raw.startswith("/") else f"/{raw}"
-
-    if not isinstance(event, dict):
-        return ""
-    # Proxy placeholders often carry the real route in pathParams/params.proxy.
-    path_params = event.get("pathParams")
-    if isinstance(path_params, dict):
-        proxy = _normalize_proxy_path(path_params.get("proxy"))
-        if proxy:
-            return proxy
-    params = event.get("params")
-    if isinstance(params, dict):
-        proxy = _normalize_proxy_path(params.get("proxy"))
-        if proxy:
-            return proxy
-        params_path = _normalize_proxy_path(params.get("path"))
-        if params_path:
-            return params_path
-        path_map = params.get("path")
-        if isinstance(path_map, dict):
-            for key in ("proxy", "path"):
-                path = _normalize_proxy_path(path_map.get(key))
-                if path:
-                    return path
-
-    request_context = event.get("requestContext")
-    if isinstance(request_context, dict):
-        http_ctx = request_context.get("http")
-        if isinstance(http_ctx, dict):
-            path = _normalize_proxy_path(http_ctx.get("path"))
-            if path:
-                return path
-            raw_path = _normalize_proxy_path(http_ctx.get("rawPath"))
-            if raw_path:
-                return raw_path
-        rc_path = _normalize_proxy_path(request_context.get("path"))
-        if rc_path:
-            return rc_path
-    for key in ("path", "rawPath", "raw_path", "url"):
-        path = _normalize_proxy_path(event.get(key))
-        if path:
-            return path
-    return ""
-
-
-def _http_method(event: dict[str, Any]) -> str:
-    if not isinstance(event, dict):
-        return ""
-    request_context = event.get("requestContext")
-    if isinstance(request_context, dict):
-        http_ctx = request_context.get("http")
-        if isinstance(http_ctx, dict):
-            method = str(http_ctx.get("method", "")).strip().upper()
-            if method:
-                return method
-        method = str(request_context.get("httpMethod", "")).strip().upper()
-        if method:
-            return method
-    for key in ("httpMethod", "method", "requestMethod"):
-        method = str(event.get(key, "")).strip().upper()
-        if method:
-            return method
-    return ""
-
-
-def _query_params(event: dict[str, Any]) -> dict[str, Any]:
-    def _flatten(source: dict[str, Any]) -> dict[str, Any]:
-        result: dict[str, Any] = {}
-        for key, value in source.items():
-            if isinstance(value, list):
-                result[key] = str(value[0]).strip() if value else ""
-            elif value is None:
-                result[key] = ""
-            else:
-                result[key] = str(value).strip()
-        return result
-
-    if not isinstance(event, dict):
-        return {}
-    direct = event.get("queryStringParameters")
-    if isinstance(direct, dict) and direct:
-        return _flatten(direct)
-    raw_query = event.get("rawQueryString")
-    if isinstance(raw_query, str) and raw_query.strip():
-        parsed = {key: value for key, value in parse_qsl(raw_query, keep_blank_values=True)}
-        if parsed:
-            return parsed
-    multi = event.get("multiValueQueryStringParameters")
-    if isinstance(multi, dict) and multi:
-        return _flatten(multi)
-    url = event.get("url")
-    if isinstance(url, str) and url.startswith(("http://", "https://")):
-        parsed_url = urlparse(url)
-        parsed = {key: value for key, value in parse_qsl(parsed_url.query, keep_blank_values=True)}
-        if parsed:
-            return parsed
-    params = event.get("params")
-    if isinstance(params, dict):
-        qs = params.get("queryString")
-        if isinstance(qs, dict):
-            flattened = _flatten(qs)
-            if flattened:
-                return flattened
-    multi_params = event.get("multiValueParams")
-    if isinstance(multi_params, dict):
-        qs = multi_params.get("queryString")
-        if isinstance(qs, dict):
-            flattened = _flatten(qs)
-            if flattened:
-                return flattened
-    return {}
 
 
 def _json_response(status_code: int, payload: dict[str, Any]) -> dict[str, Any]:
@@ -797,24 +679,6 @@ def _frontend_api_v2_doc_html() -> str:
 </body>
 </html>
 """
-
-
-def _normalize_path(path: str) -> str:
-    value = str(path or "").strip()
-    if not value:
-        return ""
-    if value.startswith("http://") or value.startswith("https://"):
-        marker = value.find("/", value.find("://") + 3)
-        value = value[marker:] if marker != -1 else "/"
-    if "?" in value:
-        value = value.split("?", 1)[0]
-    value = re.sub(r"/{2,}", "/", value)
-    if not value.startswith("/"):
-        value = "/" + value
-    if len(value) > 1 and value.endswith("/"):
-        value = value[:-1]
-    return value
-
 
 def _path_matches(path: str, candidates: set[str]) -> bool:
     normalized = _normalize_path(path)
