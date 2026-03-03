@@ -12,11 +12,11 @@
 - [x] Owner review gate: confirm YAML transfer scope before first commit.
 - [x] P01-T009: remove legacy `TARGET_SHEET_NAME_PROD` requirement from runtime/release contour.
 - [x] P02-T001: start bootstrap wiring in `index.py/main.py` (in progress).
-- [ ] P02-T002: move entrypoint env flags to YAML/config loader (`DEBUG_HTTP_EVENT` done; continue on remaining flags).
+- [ ] P02-T002: move entrypoint env flags to YAML/config loader (`DEBUG_HTTP_EVENT` + main pipeline defaults migrated; continue on remaining flags).
 - [x] P03-T001: remove direct `os.getenv` usage from adapters in runtime path (`src/adapters/ydb/client.py`, `src/adapters/store_ydb.py`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (P03-T001 completed; runtime adapters no longer read env directly, moved to centralized constants/config path)
+- 2026-03-04 (P02-T002 advanced: `main.py` now takes pipeline defaults from `APP_CONTEXT.cfg.runtime.pipeline` for TTL/preflight/full-sync/force-refresh)

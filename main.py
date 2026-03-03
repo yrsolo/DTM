@@ -7,8 +7,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from config import (
-    FORCE_REFRESH,
-    FULL_SYNC_INTERVAL_HOURS,
     KEY_JSON,
     LEGACY_BLOB_WRITE,
     WRITE_LEGACY_MILESTONES,
@@ -19,8 +17,6 @@ from config import (
     RENDER_SOURCE,
     STORE_MODE,
     RUNTIME_ENV,
-    PREFLIGHT_TOP_ROWS,
-    READMODEL_TTL_MINUTES,
     YDB_MIGRATE_ON_START,
     YDB_DATABASE,
     YDB_ENDPOINT,
@@ -44,6 +40,7 @@ from src.services.sync.hash_gate import evaluate_hash_gate, save_last_hash
 from src.services.source_policy import build_source_policy_matrix
 
 APP_CONTEXT = build_app_context()
+PIPELINE_CFG = APP_CONTEXT.cfg.runtime.pipeline
 
 
 def _print_quality_report(report):
@@ -246,7 +243,7 @@ async def main(**kwargs):
     mode = resolve_run_mode(mode=mode, event=event, triggers=TRIGGERS)
     if mock_external is None:
         mock_external = mode == "test"
-    force_refresh = bool(kwargs.get("force_refresh", FORCE_REFRESH))
+    force_refresh = bool(kwargs.get("force_refresh", PIPELINE_CFG.force_refresh_default))
     print(f"{mode=} {dry_run=} {mock_external=}")
 
     if mode == "db_migrate":
@@ -378,7 +375,7 @@ async def main(**kwargs):
                 operational_repo,
                 write_legacy_milestones=WRITE_LEGACY_MILESTONES,
             )
-            preflight_range = f"A1:Z{max(PREFLIGHT_TOP_ROWS, 1)}"
+            preflight_range = f"A1:Z{max(PIPELINE_CFG.preflight_top_rows, 1)}"
             full_range = "A1:Z2000"
             preflight_snapshot = _read_source_snapshot(source_task_repository, worksheet_range=preflight_range)
             full_snapshot = _read_source_snapshot(source_task_repository, worksheet_range=full_range)
@@ -391,12 +388,12 @@ async def main(**kwargs):
             ttl_skip = False
             if existing_readmodel is not None and existing_readmodel.generated_at_utc is not None and not force_refresh:
                 age_seconds = (datetime.now(timezone.utc) - existing_readmodel.generated_at_utc).total_seconds()
-                ttl_skip = age_seconds < READMODEL_TTL_MINUTES * 60
+                ttl_skip = age_seconds < PIPELINE_CFG.readmodel_ttl_minutes * 60
             if ttl_skip:
                 _safe_print(
                     "migration_operational_sync="
                     "skipped=true "
-                    f"reason=readmodel_ttl_fresh ttl_minutes={READMODEL_TTL_MINUTES}"
+                    f"reason=readmodel_ttl_fresh ttl_minutes={PIPELINE_CFG.readmodel_ttl_minutes}"
                 )
             else:
                 sync_result = sync_service.run(
@@ -405,7 +402,7 @@ async def main(**kwargs):
                     source_range_values=full_snapshot,
                     normalized_tasks=normalized_tasks,
                     force_refresh=force_refresh,
-                    full_sync_interval_hours=FULL_SYNC_INTERVAL_HOURS,
+                    full_sync_interval_hours=PIPELINE_CFG.full_sync_interval_hours,
                 )
                 _safe_print(
                     "migration_operational_sync="
