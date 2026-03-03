@@ -8,10 +8,10 @@
 - [x] P03-T001: classify runtime errors via typed app boundary (`TransientError` / `PermanentError` / `UserError`) without changing external API.
 - [x] P03-T002: map typed errors to explicit entrypoint outcomes (HTTP/exit) in dedicated boundary layer.
 - [x] P04-T001: document pipeline skeleton/dataflow update in `docs/system/*` after first integration pass.
-- [ ] P04-T002: decide closeout criteria for CAM-PIPELINE-CLEAN-SKELETON-V1 and prepare handoff to CAM-ENTRYPOINT-REFORM-V1.
+- [x] P04-T002: decide closeout criteria for CAM-PIPELINE-CLEAN-SKELETON-V1 and prepare handoff to CAM-ENTRYPOINT-REFORM-V1.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (P04-T001 completed: system docs updated with AppContext/use-case contracts/TimerJob shell transition notes)
+- 2026-03-04 (P04 completed: closeout criteria fixed in campaign evidence, next campaign target confirmed: CAM-ENTRYPOINT-REFORM-V1)
