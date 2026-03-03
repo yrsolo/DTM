@@ -1,0 +1,40 @@
+runtime:
+  env_default: dev
+  strict_env_guard_default: false
+  timezone: Europe/Moscow
+
+web:
+  domain: solofarm.ru
+  api_domain_test: dtm-api-test.solofarm.ru
+  api_domain_prod: dtm-api.solofarm.ru
+
+pipeline:
+  readmodel_ttl_minutes: 9
+  preflight_top_rows: 50
+  full_sync_interval_hours: 24
+  force_refresh_default: false
+
+sources:
+  store_mode_default: legacy
+  readmodel_source_default: legacy
+  notify_source_default: readmodel_source
+  render_source_default: readmodel_source
+
+timing:
+  year_mode_default: legacy
+  allowed_year_modes:
+    - legacy
+    - anchors
+    - chain
+
+triggers:
+  a1sldapc8v2pha7dichv: timer
+  a1smsif4rc82qbj1e3hf: morning
+
+migration:
+  enable_new_sync_path: false
+  enable_new_render_path: false
+  enable_source_hash_gate: false
+  dual_write_store: false
+  hash_gate_state_file: artifacts/tmp/source_hash_gate_state.json
+  store_file: artifacts/tmp/normalized_store.json

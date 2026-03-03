@@ -1,2 +1,4 @@
 # Minimal dependencies for GitHub Actions pre-deploy smoke scripts.
 # Current smoke checks rely only on Python stdlib and project modules.
+PyYAML
+python-dotenv

@@ -30,6 +30,7 @@ from config import (
 from core.bootstrap import build_planner_dependencies
 from core.planner import GoogleSheetPlanner
 from core.use_cases import resolve_run_mode, run_planner_use_case
+from src.app.bootstrap import build_app_context
 from src.adapters.store_ydb import build_operational_store
 from src.adapters.ydb.operational_repo import OperationalTaskRepo
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
@@ -41,6 +42,8 @@ from src.services.sync_service import YdbSyncService
 from src.services.sync.hash_basis import build_hash_basis
 from src.services.sync.hash_gate import evaluate_hash_gate, save_last_hash
 from src.services.source_policy import build_source_policy_matrix
+
+APP_CONTEXT = build_app_context()
 
 
 def _print_quality_report(report):

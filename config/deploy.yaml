@@ -1,0 +1,9 @@
+yandex_cloud:
+  folder_id: b1g42qj26s1u7gv7bufm
+  service_account_id: aje1kqd422vq2vefkbbl
+  function_entrypoint: index.handler
+  function_runtime: python314
+  function_timeout: 60s
+  function_memory: 512Mb
+  function_name_test: dtm
+  function_name_prod: dtm-prod

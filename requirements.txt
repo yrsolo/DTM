@@ -13,3 +13,4 @@ httpx
 openai
 boto3
 ydb
+PyYAML

@@ -33,9 +33,12 @@ from core.group_query import (
 )
 from core.reminder import TelegramNotifier
 from main import main
+from src.app.bootstrap import build_app_context
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
 from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.services.source_policy import build_source_policy_matrix
+
+APP_CONTEXT = build_app_context()
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
 DEBUG_HTTP_EVENT = os.getenv(

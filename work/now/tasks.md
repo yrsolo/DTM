@@ -11,10 +11,10 @@
 - [x] P01-T008: reduce `.env` and `.env.example` to secrets/overrides only; remove baked non-secret constants.
 - [x] Owner review gate: confirm YAML transfer scope before first commit.
 - [x] P01-T009: remove legacy `TARGET_SHEET_NAME_PROD` requirement from runtime/release contour.
-- [ ] P02-T001: start bootstrap wiring in `index.py/main.py` after owner YAML review.
+- [ ] P02-T001: start bootstrap wiring in `index.py/main.py` (in progress).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (P01-T009 completed, owner review gate closed, ready to start P02 wiring)
+- 2026-03-04 (P02-T001 started; entrypoints now initialize app context from `src/app/bootstrap.py`)
