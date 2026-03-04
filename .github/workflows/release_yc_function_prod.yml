@@ -42,6 +42,7 @@ jobs:
           pip install -r requirements.actions.txt
 
       - name: Load deploy defaults from YAML
+        id: deploy_defaults
         shell: bash
         run: |
           set -euo pipefail
@@ -66,6 +67,12 @@ jobs:
           with Path(github_env).open("a", encoding="utf-8") as f:
               for k, v in values.items():
                   f.write(f"{k}={v}\\n")
+          github_output = os.environ.get("GITHUB_OUTPUT", "").strip()
+          if not github_output:
+              raise RuntimeError("GITHUB_OUTPUT is not set")
+          with Path(github_output).open("a", encoding="utf-8") as f:
+              for k, v in values.items():
+                  f.write(f"{k.lower()}={v}\\n")
           PY
 
       - name: Resolve function target
@@ -122,10 +129,10 @@ jobs:
           yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
           folder-id: ${{ vars.YC_FOLDER_ID || secrets.YC_FOLDER_ID || env.YC_FOLDER_ID }}
           function-name: ${{ steps.target.outputs.target }}
-          runtime: ${{ env.YC_FUNCTION_RUNTIME || vars.YC_FUNCTION_RUNTIME || 'python311' }}
-          memory: ${{ env.YC_FUNCTION_MEMORY || vars.YC_FUNCTION_MEMORY || '512Mb' }}
-          execution-timeout: ${{ env.YC_FUNCTION_TIMEOUT || vars.YC_FUNCTION_TIMEOUT || '60s' }}
-          entrypoint: ${{ env.YC_FUNCTION_ENTRYPOINT || vars.YC_FUNCTION_ENTRYPOINT || secrets.YC_FUNCTION_ENTRYPOINT || 'index.handler' }}
+          runtime: ${{ steps.deploy_defaults.outputs.yc_function_runtime || env.YC_FUNCTION_RUNTIME || vars.YC_FUNCTION_RUNTIME || 'python311' }}
+          memory: ${{ steps.deploy_defaults.outputs.yc_function_memory || env.YC_FUNCTION_MEMORY || vars.YC_FUNCTION_MEMORY || '512Mb' }}
+          execution-timeout: ${{ steps.deploy_defaults.outputs.yc_function_timeout || env.YC_FUNCTION_TIMEOUT || vars.YC_FUNCTION_TIMEOUT || '60s' }}
+          entrypoint: ${{ steps.deploy_defaults.outputs.yc_function_entrypoint || env.YC_FUNCTION_ENTRYPOINT || vars.YC_FUNCTION_ENTRYPOINT || secrets.YC_FUNCTION_ENTRYPOINT || 'index.handler' }}
           service-account: ${{ vars.YC_RUNTIME_SERVICE_ACCOUNT_ID || secrets.YC_RUNTIME_SERVICE_ACCOUNT_ID || vars.YC_SERVICE_ACCOUNT_ID || secrets.YC_SERVICE_ACCOUNT_ID || env.YC_SERVICE_ACCOUNT_ID }}
           environment: |
             ENV=prod
