@@ -30,6 +30,15 @@
 | `src/entrypoints/http/debug_utils.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | debug helper extraction + full smoke pack | high | HTTP debug event-shape logger moved out of index into dedicated module; behavior retained |
 | `src/entrypoints/http/frontend_v2_handler.py`, `tests/api/test_frontend_api_routing.py`, `docs/system/{entrypoints_index_main,module_map}.md` | 2026-03-04 | TeamLead agent | compatibility rollback fix + smoke/docs sync | high | API v1 compatibility restored by mapping supported v1 routes to v2 handlers; docs/tests aligned with alias policy |
 | `src/entrypoints/http/frontend_v2_handler.py`, `tests/api/test_frontend_api_routing.py` | 2026-03-04 | TeamLead agent | v2 availability hotfix + regression smoke | high | API v2 no longer hard-fails when YDB readmodel path is unavailable; runtime falls back to legacy data source and returns payload |
+| `src/entrypoints/http/group_query_tasks_loader.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | group-query task loader extraction + full smoke pack | high | group-query task loading moved out of index into dedicated HTTP helper module; behavior retained |
+| `index.py`, `src/entrypoints/http/group_query_handler.py`, `src/entrypoints/http/group_query_tasks_loader.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | group-query wrapper removal + full smoke pack | high | index group-query wrapper removed; handler now delegates directly with injected boundaries in-place; behavior retained |
+| `index.py`, `src/entrypoints/http/router.py`, `src/entrypoints/http/frontend_v2_handler.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | HTTP dispatch chain simplification + full smoke pack | high | removed redundant legacy `v1_discontinued` handler from HTTP dispatch chain; v1 compatibility remains via v2 alias routes |
+| `src/entrypoints/http/http_dispatch_chain.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | dispatch-chain wiring extraction + full smoke pack | high | root/v2 HTTP handler wiring moved out of index into dedicated dispatch-chain builder; behavior retained |
+| `src/entrypoints/http/runtime_execution.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | runtime execution extraction + full smoke pack | high | runtime main invocation and error handling moved out of index into dedicated helper; behavior retained |
+| `docs/system/entrypoints_index_main.md`, `docs/system/module_map.md`, `index.py`, `src/entrypoints/http/*` | 2026-03-04 | TeamLead agent | docs sync pass against current code contour | high | system docs now reflect thinned index orchestration role and extracted HTTP module boundaries |
+| `src/entrypoints/http/frontend_compat_handlers.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | dead compatibility code cleanup + full smoke pack | high | removed unused `v1_discontinued` compatibility handler code after switching to v1->v2 alias policy |
+| `src/entrypoints/jobs/source_snapshot_reader.py`, `main.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | main snapshot helper extraction + full smoke pack | high | source snapshot (values/colors/range) IO helpers moved out of main entrypoint into dedicated jobs module; behavior retained |
+| `index.py`, `src/entrypoints/http/frontend_v2_handler.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | HTTP error-boundary hardening + full smoke pack | high | unhandled HTTP runtime exceptions now produce structured API `503` responses (`http_dispatch_failed` / `frontend_source_unavailable`) instead of gateway-level `502` |
 
 ## Execution Log
 - CAM-CONFIG-REFORM-V0 activated in `work/now/campaign.md`.
@@ -80,6 +89,24 @@
 - CFG-P02-T043 completed: aligned API routing tests and system docs with v1 compatibility-alias policy and validated full smoke contour.
 - CFG-P02-T044 completed: added API v2 runtime fallback when YDB readmodel access fails under `READMODEL_SOURCE=ydb`; fallback serves payload from legacy source path instead of crashing the request.
 - CFG-P02-T045 completed: added regression test for `READMODEL_SOURCE=ydb` + YDB failure path and validated full smoke contour.
+- CFG-P02-T046 completed: extracted group-query task loading helper from `index.py` into `src/entrypoints/http/group_query_tasks_loader.py`.
+- CFG-P02-T047 completed: executed full smoke contour after group-query task loader extraction (API routing + core/services/adapters unit smoke).
+- CFG-P02-T048 completed: removed intermediate group-query wrapper function from `index.py`; switched handler flow to direct delegation call using extracted HTTP modules.
+- CFG-P02-T049 completed: executed full smoke contour after group-query wrapper removal (API routing + core/services/adapters unit smoke).
+- CFG-P02-T050 completed: removed redundant `v1_discontinued` handler from dispatch chain since supported API v1 paths are already handled as v2 aliases.
+- CFG-P02-T051 completed: executed full smoke contour after HTTP dispatch chain simplification (API routing + core/services/adapters unit smoke).
+- CFG-P02-T052 completed: extracted root/v2 HTTP dispatch wiring from `index.py` into `src/entrypoints/http/http_dispatch_chain.py`.
+- CFG-P02-T053 completed: executed full smoke contour after dispatch-chain wiring extraction (API routing + core/services/adapters unit smoke).
+- CFG-P02-T054 completed: extracted runtime execution/error-handling block from `index.py` into `src/entrypoints/http/runtime_execution.py`.
+- CFG-P02-T055 completed: executed full smoke contour after runtime execution extraction (API routing + core/services/adapters unit smoke).
+- CFG-P02-T056 completed: synchronized system docs to reflect current thinned `index.py` role and extracted HTTP modules (`event_parser`, dispatch chain, runtime execution helpers).
+- CFG-P02-T057 completed: removed dead `v1_discontinued` compatibility handler code from `src/entrypoints/http/frontend_compat_handlers.py`.
+- CFG-P02-T058 completed: executed full smoke contour after dead compatibility code removal (API routing + core/services/adapters unit smoke).
+- CFG-P02-T059 completed: extracted source snapshot reader helpers from `main.py` into `src/entrypoints/jobs/source_snapshot_reader.py`.
+- CFG-P02-T060 completed: executed full smoke contour after snapshot-reader extraction from `main.py` (API routing + core/services/adapters unit smoke).
+- CFG-P02-T061 completed: added HTTP dispatch error boundary in `index.py` so handler exceptions return structured API errors instead of bubbling to gateway `502`.
+- CFG-P02-T062 completed: added structured `503 frontend_source_unavailable` response in `frontend_v2_handler` when legacy source path fails at runtime.
+- CFG-P02-T063 completed: added regression test for legacy source failure path and validated full smoke contour.
 - P01 scaffold implemented (uncommitted):
   - YAML config files added: `config/runtime.yaml`, `config/tables.yaml`, `config/db.yaml`, `config/llm.yaml`, `config/mapping.yaml`
   - typed schema scaffold: `src/config/schema.py`
@@ -129,6 +156,19 @@
   - `rg -n "^def _frontend_api_doc\\(|^def _frontend_api_doc_html\\(" index.py`
   - `python -m py_compile index.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile src/entrypoints/http/http_dispatch_chain.py index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile src/entrypoints/http/runtime_execution.py index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile src/entrypoints/http/frontend_compat_handlers.py index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile src/entrypoints/jobs/source_snapshot_reader.py main.py index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile src/entrypoints/http/frontend_v2_handler.py index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing -v`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
   - `python -m py_compile src/entrypoints/http/frontend_v2_docs.py index.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing -v`
   - `python -m unittest tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
@@ -152,6 +192,10 @@
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
   - `python -m py_compile src/entrypoints/http/frontend_v2_handler.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing -v`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile src/entrypoints/http/group_query_tasks_loader.py index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile index.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
   - `python -m py_compile src/entrypoints/http/frontend_v2_handler.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing -v`

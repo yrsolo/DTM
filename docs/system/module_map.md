@@ -10,7 +10,7 @@ This document is a **navigation map** of the codebase as it exists today. It is 
 
 | Path | Role | Responsibility | Key imports / deps | State | Notes |
 |---|---|---|---|---|---|
-| `index.py` | Entrypoint (HTTP) | Cloud Functions / API Gateway handler: parse event, route, serve API v2 (+ v1 compatibility aliases), group-query, sometimes triggers jobs | imports both `core/*` (legacy) and `src/*` (new), may touch YDB repos | Refactor | Too many responsibilities; should delegate to `src/handlers/*` only. API v1 should remain compatibility-only, no feature development. |
+| `index.py` | Entrypoint (HTTP) | Cloud Functions / API Gateway orchestration: parse event, dispatch HTTP handlers, trigger planner runtime modes | mostly `src/entrypoints/http/*` modules + boundary wiring to planner/YDB deps | Refactor | Significantly thinned, but still contains runtime orchestration and dependency wiring that should move to dedicated handler/composition module. |
 | `main.py` | Entrypoint (Jobs) | Orchestrates timer/test/morning/reminders-only/sync-only/db_migrate; hash gate; YDB sync; readmodel build | `GoogleSheetPlanner`, `OperationalTaskRepo`, `YdbSyncService`, `FrontendReadmodelBuilderService`, config/constants | Refactor | Acts as “god runner”. Should be split into job modules + service calls. |
 | `local_run.py` | Support | Local wrapper to run modes (dev convenience) | uses `main.main()` | OK | Keep as developer tool, but should target new job entrypoints after refactor. |
 

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import traceback
 from typing import Any
 
 from config import (
@@ -33,12 +32,12 @@ from src.entrypoints.http.event_parser import http_method as _http_method
 from src.entrypoints.http.event_parser import http_path as _http_path
 from src.entrypoints.http.debug_utils import debug_http_shape as _debug_http_shape
 from src.entrypoints.http.group_query_handler import handle_group_query_if_requested
+from src.entrypoints.http.group_query_tasks_loader import (
+    load_work_tasks_for_group_query as _load_work_tasks_for_group_query,
+)
+from src.entrypoints.http.http_dispatch_chain import build_http_dispatch_handlers
 from src.entrypoints.http.event_parser import normalize_path as _normalize_path
 from src.entrypoints.http.event_parser import query_params as _query_params
-from src.entrypoints.http.frontend_compat_handlers import (
-    handle_frontend_api_root_if_requested,
-    handle_frontend_api_v1_discontinued_if_requested,
-)
 from src.entrypoints.http.frontend_query_params import (
     parse_bool as _parse_bool,
     parse_limit as _parse_limit,
@@ -51,6 +50,7 @@ from src.entrypoints.http.runtime_mode import (
     extract_run_mode as _extract_run_mode,
     resolve_trigger_mode as _resolve_trigger_mode,
 )
+from src.entrypoints.http.runtime_execution import execute_runtime
 from src.entrypoints.http.response_utils import (
     error_response as _error_response,
     html_response as _html_response,
@@ -58,7 +58,6 @@ from src.entrypoints.http.response_utils import (
     path_matches as _path_matches,
 )
 from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_api_v2_doc_html
-from src.entrypoints.http.frontend_v2_handler import handle_frontend_api_v2_if_requested
 from src.entrypoints.http.router import dispatch_http
 from src.services.errors import AppError, PermanentError, TransientError, UserError
 
@@ -74,21 +73,17 @@ APP_TG_DEFAULT_CHAT_ID = DEFAULT_CHAT_ID
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
 
-def _load_work_tasks_for_group_query() -> list[Any]:
-    dependencies = build_planner_dependencies(
-        KEY_JSON,
-        SHEET_INFO,
-        dry_run=True,
-        mock_external=True,
-        cfg=APP_CFG,
-    )
-    return dependencies.task_repository.get_task_by_color_status(["work", "pre_done"])
 
+async def handler(event: Any, _: Any) -> dict[str, Any]:
+    """Yandex Cloud handler."""
+    request_payload, is_http_event = _extract_payload(event)
+    if request_payload.get("healthcheck"):
+        return {
+            "statusCode": 200,
+            "body": "!HEALTHY!",
+        }
 
-async def _handle_group_query_if_requested(
-    request_payload: dict[str, Any], is_http_event: bool
-) -> bool:
-    return await handle_group_query_if_requested(
+    if await handle_group_query_if_requested(
         request_payload,
         is_http_event,
         bot_username=TG_BOT_USERNAME,
@@ -97,32 +92,22 @@ async def _handle_group_query_if_requested(
             bot_token=APP_TG_BOT_TOKEN,
             default_chat_id=APP_TG_DEFAULT_CHAT_ID,
         ),
-        load_work_tasks_for_group_query=_load_work_tasks_for_group_query,
+        load_work_tasks_for_group_query=lambda: _load_work_tasks_for_group_query(
+            key_json=KEY_JSON,
+            sheet_info=SHEET_INFO,
+            app_cfg=APP_CFG,
+            build_planner_dependencies=build_planner_dependencies,
+        ),
         build_deadlines_reply=build_deadlines_reply,
         build_tasks_reply=build_tasks_reply,
-    )
+    ):
+        return {
+            "statusCode": 200,
+            "body": "!GROUP_QUERY_OK!",
+        }
 
-
-def _handle_frontend_api_if_requested(
-    event: dict[str, Any], is_http_event: bool
-) -> dict[str, Any] | None:
-    return handle_frontend_api_v1_discontinued_if_requested(
-        event,
-        is_http_event,
-        error_response=_error_response,
-        normalize_path=_normalize_path,
-        http_path=_http_path,
-        http_method=_http_method,
-        path_matches=lambda path, candidates: _path_matches(path, candidates, _normalize_path),
-    )
-
-
-def _handle_frontend_api_v2_if_requested(
-    event: dict[str, Any], is_http_event: bool
-) -> dict[str, Any] | None:
-    return handle_frontend_api_v2_if_requested(
-        event,
-        is_http_event,
+    event_dict = event if isinstance(event, dict) else {}
+    root_handler, v2_handler = build_http_dispatch_handlers(
         json_response=_json_response,
         html_response=_html_response,
         error_response=_error_response,
@@ -130,7 +115,7 @@ def _handle_frontend_api_v2_if_requested(
         http_path=_http_path,
         http_method=_http_method,
         query_params=_query_params,
-        path_matches=lambda path, candidates: _path_matches(path, candidates, _normalize_path),
+        path_matches=_path_matches,
         parse_statuses=_parse_statuses,
         parse_limit=_parse_limit,
         parse_bool=_parse_bool,
@@ -161,50 +146,23 @@ def _handle_frontend_api_v2_if_requested(
         ),
         build_frontend_api_payload_v2=build_frontend_api_payload_v2,
     )
-
-
-def _handle_api_root_if_requested(
-    event: dict[str, Any], is_http_event: bool
-) -> dict[str, Any] | None:
-    return handle_frontend_api_root_if_requested(
-        event,
-        is_http_event,
-        json_response=_json_response,
-        html_response=_html_response,
-        normalize_path=_normalize_path,
-        http_path=_http_path,
-        http_method=_http_method,
-        query_params=_query_params,
-        frontend_api_v2_doc=frontend_api_v2_doc,
-        frontend_api_v2_doc_html=frontend_api_v2_doc_html,
-    )
-
-
-async def handler(event: Any, _: Any) -> dict[str, Any]:
-    """Yandex Cloud handler."""
-    request_payload, is_http_event = _extract_payload(event)
-    if request_payload.get("healthcheck"):
-        return {
-            "statusCode": 200,
-            "body": "!HEALTHY!",
-        }
-
-    if await _handle_group_query_if_requested(request_payload, is_http_event):
-        return {
-            "statusCode": 200,
-            "body": "!GROUP_QUERY_OK!",
-        }
-
-    event_dict = event if isinstance(event, dict) else {}
-    http_response = dispatch_http(
-        event_dict,
-        is_http_event,
-        (
-            _handle_api_root_if_requested,
-            _handle_frontend_api_v2_if_requested,
-            _handle_frontend_api_if_requested,
-        ),
-    )
+    try:
+        http_response = dispatch_http(
+            event_dict,
+            is_http_event,
+            (
+                root_handler,
+                v2_handler,
+            ),
+        )
+    except Exception as error:
+        print(f"http_dispatch_error={error}")
+        return _error_response(
+            503,
+            code="http_dispatch_failed",
+            message="HTTP handler execution failed.",
+            details={"errorType": type(error).__name__},
+        )
     if http_response is not None:
         return http_response
 
@@ -255,55 +213,21 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
     if planner_event is None and not is_http_event:
         planner_event = event
 
-    try:
-        await main(
-            event=planner_event,
-            mode=run_mode,
-            dry_run=dry_run,
-            mock_external=mock_external,
-            force_refresh=force_refresh,
-        )
-    except Exception as ex:
-        if isinstance(ex, UserError):
-            error_family = "user"
-        elif isinstance(ex, TransientError):
-            error_family = "transient"
-        elif isinstance(ex, PermanentError):
-            error_family = "permanent"
-        elif isinstance(ex, AppError):
-            error_family = "app"
-        else:
-            error_family = "unknown"
-        tr = str(traceback.format_exc())
-        txt = f"Runtime failure:\n{ex}\nTRACEBACK\n{tr}\n"
-
-        print(f"runtime_error_classification={error_family}")
-        if isinstance(ex, AppError) and is_http_event:
-            status_code = 500
-            if isinstance(ex, UserError):
-                status_code = 400
-            elif isinstance(ex, TransientError):
-                status_code = 503
-            return _error_response(
-                status_code,
-                code=ex.code,
-                message=str(ex),
-            )
-        print(txt)
-        try:
-            await TelegramNotifier(
-                bot_token=APP_TG_BOT_TOKEN,
-                default_chat_id=APP_TG_DEFAULT_CHAT_ID,
-            ).alog(txt)
-        except Exception as notifier_error:
-            print(f"Error notifier failed: {notifier_error}")
-
-        return {
-            "statusCode": 200,
-            "body": "!!!EGGORR!!!",
-        }
-
-    return {
-        "statusCode": 200,
-        "body": "!GOOD!",
-    }
+    return await execute_runtime(
+        main_func=main,
+        mode=run_mode,
+        planner_event=planner_event,
+        dry_run=dry_run,
+        mock_external=mock_external,
+        force_refresh=force_refresh,
+        is_http_event=is_http_event,
+        app_error_cls=AppError,
+        user_error_cls=UserError,
+        transient_error_cls=TransientError,
+        permanent_error_cls=PermanentError,
+        error_response=_error_response,
+        notifier_factory=lambda: TelegramNotifier(
+            bot_token=APP_TG_BOT_TOKEN,
+            default_chat_id=APP_TG_DEFAULT_CHAT_ID,
+        ),
+    )

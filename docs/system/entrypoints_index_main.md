@@ -95,22 +95,29 @@ Steps:
 ## `index.py` — HTTP entrypoint
 
 ### What it currently does
-`index.py` is a large multi-purpose handler:
+`index.py` is now mostly an orchestration shell:
 - parse raw serverless event → method/path/query/body
 - route to API v2 endpoints (with API v1 compatibility aliases)
 - supports “group query” flows (Telegram chat commands)
-- may call into planner logic and/or YDB readmodel repositories
+- delegates heavy logic to `src/entrypoints/http/*` modules
 
 ### API version policy
 - Active public contract: API v2.
 - API v1 routes are treated as legacy compatibility aliases and mapped to v2 handlers.
 - Runtime behavior for supported API v1 paths (`/api/v1`, `/api/v1/frontend`, `/api/v1/read-model`, `/api/v1/frontend/doc`, `/api/v1/read-model/doc`): same payload/documentation as v2 endpoints.
 - Runtime resilience for API v2 data endpoint: if `READMODEL_SOURCE=ydb` and YDB readmodel is temporarily unavailable (driver/runtime/init error), handler falls back to legacy source path to avoid hard HTTP failure.
+- Runtime error boundary: unexpected exceptions in HTTP dispatch/runtime paths are converted to structured API `503` responses (`http_dispatch_failed` / `frontend_source_unavailable`) instead of uncaught gateway `502`.
 
 ### Extraction progress (CAM-ENTRYPOINT-REFORM-V1)
 - event payload/path/method/query parsing moved to `src/entrypoints/http/event_parser.py`
 - HTTP dispatch chain moved to `src/entrypoints/http/router.py` (`dispatch_http`)
-- `index.py` still contains endpoint handlers, but parsing/routing boilerplate is delegated
+- API docs/handlers moved to dedicated modules:
+  - `src/entrypoints/http/frontend_v2_docs.py`
+  - `src/entrypoints/http/frontend_v2_handler.py`
+  - `src/entrypoints/http/group_query_handler.py`
+  - `src/entrypoints/http/http_dispatch_chain.py`
+  - `src/entrypoints/http/runtime_execution.py`
+- `index.py` keeps runtime orchestration and boundary wiring only
 
 ### Intended direction (not implemented in this document)
 - `index.py` should become thin: parse + route → call `src/handlers/api.py`.

@@ -230,6 +230,26 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(payload.get("meta", {}).get("readmodelSource"), "legacy_fallback")
         self.assertEqual(payload.get("meta", {}).get("fallbackReason"), "ydb_unavailable")
 
+    def test_v2_returns_503_when_legacy_source_unavailable(self) -> None:
+        index.APP_READMODEL_SOURCE = "legacy"
+
+        def _raise_build_deps(*args, **kwargs):  # noqa: ANN002, ANN003
+            raise ModuleNotFoundError("google")
+
+        index.build_planner_dependencies = _raise_build_deps
+
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend?statuses=work"
+        event["queryStringParameters"] = {"statuses": "work"}
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response.get("body", "{}"))
+
+        self.assertEqual(response["statusCode"], 503)
+        self.assertEqual(payload.get("error", {}).get("code"), "frontend_source_unavailable")
+        self.assertEqual(payload.get("error", {}).get("details", {}).get("errorType"), "ModuleNotFoundError")
+
 
 if __name__ == "__main__":
     unittest.main()
