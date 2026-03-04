@@ -8,9 +8,9 @@
       "env": "test",
       "sourceId": "SourceSheet",
       "sheetName": "SourceSheet",
-      "sheetUrl": null
+      "sheetUrl": ""
     },
-    "hash": "e538ef62bbc071bd7cc9404f6dc14d5a97dfaf2bebd4864f64f98644b287bda5",
+    "hash": "34ce37177bf75b2f77a1c2ea49460b6830201480e8655d679189765623f74896",
     "features": {
       "taskHash": true,
       "taskRevision": true,
@@ -20,7 +20,7 @@
     },
     "paging": {
       "limit": 100,
-      "nextCursor": null
+      "nextCursor": ""
     }
   },
   "filters": {
@@ -28,7 +28,7 @@
       "work",
       "pre_done"
     ],
-    "designer": null,
+    "designer": "",
     "limit": 100,
     "include_people": true,
     "window": {
@@ -123,10 +123,7 @@
         "nextDue": "2026-03-03"
       },
       "tags": [],
-      "hash": null,
-      "revision": null,
       "links": {
-        "sheetRowUrl": null,
         "self": "/api/v2/frontend/tasks/101"
       },
       "milestones": [
@@ -156,10 +153,7 @@
         "nextDue": "2026-04-12"
       },
       "tags": [],
-      "hash": null,
-      "revision": null,
       "links": {
-        "sheetRowUrl": null,
         "self": "/api/v2/frontend/tasks/102"
       },
       "milestones": [

@@ -17,6 +17,7 @@
 - `DEDUP-P02-T006` completed: removed empty legacy package marker `src/handlers/__init__.py`; verified no active imports of `src.handlers` namespace.
 - `DEDUP-P02-T007` completed: synced `docs/system/module_map.md` to reflect finished sync/handler dedup wave (removed stale conflict note).
 - `DEDUP-P02-T008` completed: removed unused legacy frontend payload serializer `core/api_payload.py`; docs synced to v2 payload-only active contour.
+- `DEDUP-P02-T009` completed: stabilized API v2 snapshot tests by freezing `pd.Timestamp.today()` in payload tests, fixed stage test fixtures encoding, and refreshed snapshots to current v2 payload shape.
 
 ## Verification
 - `rg -n "from src\\.services\\.sync_service|from src\\.services\\.sync\\.sync_service|from src\\.services\\.readmodels\\.builder|from src\\.services\\.readmodel_builder" src main.py index.py tests`
@@ -37,6 +38,8 @@
   - `docs/system/module_map.md`
   - `docs/system/dedup_plan.md`
 - `rg -n "core\\.api_payload\\b|from core\\.api_payload import|build_frontend_api_payload\\(" src tests main.py index.py`
+- `python -m unittest tests.api.test_frontend_api_routing -v`
+- `python -m unittest tests.api.test_frontend_api_v2_payload -v`
 - `python -m unittest tests.api.test_frontend_api_routing -v`
 - manual read pass:
   - `src/services/sync_service.py`
