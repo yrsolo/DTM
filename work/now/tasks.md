@@ -98,10 +98,11 @@
 - [x] CFG-P02-T070: fix readmodel date normalization for YDB Date-encoded milestone values in `src/services/readmodel_builder.py` (days-since-epoch handling).
 - [x] CFG-P02-T071: add regression tests for numeric YDB milestone dates and verify no null-date regression in readmodel build path.
 - [x] CFG-P02-T072: validate fix against live test DB data locally (no deploy): builder dry-run with real operational rows yields tasks with non-null dates.
+- [x] CFG-P02-T073: switch test deploy automation to `test` branch flow (`dev -> test -> main`) and add auto PR creation workflow (`test -> main`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T070..T072 completed: YDB date normalization fixed in readmodel builder; local test DB dry-run confirms non-null dates)
+- 2026-03-04 (CFG-P02-T073 completed: test deploy trigger moved to `test` branch, auto PR workflow `test -> main` added, docs/tracking synced)
 
