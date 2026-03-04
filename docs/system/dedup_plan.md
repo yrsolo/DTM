@@ -14,6 +14,7 @@ This document tracks active duplicate/parallel implementations and defines `keep
 | Readmodel publisher | `src/adapters/ydb/readmodel_repo.py` + runtime builder upsert path | `src/services/readmodels/publisher.py` file-based artifact publisher in runtime contour | no active runtime imports to publisher | low (removed 2026-03-04) |
 | Sync/build handlers | entrypoints/jobs + `src/services/pipeline_runtime.py` | `src/handlers/sync.py`, `src/handlers/build_readmodels.py` in runtime contour | no imports from `main.py`/`index.py`; only handler tests used them | low (removed 2026-03-04) |
 | API handler skeleton | `src/entrypoints/http/*` dispatch chain | `src/handlers/api.py` placeholder | no runtime imports; only static leftover | low (removed 2026-03-04) |
+| Render/notify handler skeletons | `src/entrypoints/jobs/*` + service use-cases | `src/handlers/render_sheets.py`, `src/handlers/notify_morning.py` placeholders | no runtime imports; static leftovers only | low (removed 2026-03-04) |
 
 ## Proposed removal sequence
 1. Add explicit `legacy-only` marking in docs for handler/readmodels old path.

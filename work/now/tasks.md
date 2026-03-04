@@ -121,10 +121,11 @@
 - [x] DEDUP-P02-T002: remove unused duplicate `src/services/sync/sync_service.py` and keep only sync hash primitives in `src/services/sync/*`.
 - [x] DEDUP-P02-T003: remove legacy build-readmodels path (`src/handlers/build_readmodels.py`, `src/services/readmodels/*`) and related tests from active tree.
 - [x] DEDUP-P02-T004: remove legacy placeholder `src/handlers/api.py` and align system docs to `src/entrypoints/http/*` runtime boundary.
+- [x] DEDUP-P02-T005: remove legacy placeholder handler stubs `src/handlers/render_sheets.py` and `src/handlers/notify_morning.py`; align dedup/module docs.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (DEDUP-P02-T004 completed: legacy API handler skeleton removed; docs aligned to entrypoints/http runtime boundary)
+- 2026-03-04 (DEDUP-P02-T005 completed: legacy render/notify handler stubs removed; docs aligned and smoke tests green)
 

@@ -48,8 +48,8 @@ This document is a **navigation map** of the codebase as it exists today. It is 
 |---|---|---|---|---|
 | `src/handlers/api.py` | Legacy | Placeholder API handler skeleton | Removed | Removed from active tree in dedup wave; runtime uses `src/entrypoints/http/*`. |
 | `src/handlers/build_readmodels.py` | Legacy | Legacy build-readmodels handler | Removed | Removed from active tree in dedup wave. |
-| `src/handlers/render_sheets.py` | Entrypoint boundary | Render job handler | Refactor | |
-| `src/handlers/notify_morning.py` | Entrypoint boundary | Notify job handler | Refactor | |
+| `src/handlers/render_sheets.py` | Legacy | Placeholder render handler | Removed | Removed from active tree in dedup wave. |
+| `src/handlers/notify_morning.py` | Legacy | Placeholder notify handler | Removed | Removed from active tree in dedup wave. |
 
 ## Adapters (integrations)
 
@@ -78,11 +78,11 @@ This document is a **navigation map** of the codebase as it exists today. It is 
 
 1) **Two sync implementations**: `src/services/sync_service.py` vs `src/services/sync/*` (legacy handler removed from active tree).
 2) **Two cores**: top-level `core/` (legacy mixed) vs `src/core/` (domain).
-3) **Entrypoints bypass handlers**: `index.py` and `main.py` implement logic that should live in `src/handlers/*`.
+3) **Legacy handler stubs removed**: runtime now relies on `src/entrypoints/http/*` and `src/entrypoints/jobs/*` instead of `src/handlers/*`.
 
 ## Immediate recommendations
 
 - Treat `src/*` as the target structure; treat top-level `core/` as legacy.
-- Make `index.py` thin: event parsing + routing → call `src/handlers/*`.
-- Make `main.py` thin: mode selection → call job handlers/services.
+- Keep `index.py` thin: event parsing + routing in `src/entrypoints/http/*`.
+- Keep `main.py` thin: mode selection + orchestration delegated to `src/entrypoints/jobs/*`.
 - Consolidate sync path: pick one implementation and archive/remove the other.

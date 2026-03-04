@@ -13,6 +13,7 @@
 - `DEDUP-P02-T002` completed: removed unused duplicate `src/services/sync/sync_service.py`; `src/services/sync/__init__.py` now exports only hash primitives.
 - `DEDUP-P02-T003` completed: removed legacy build-readmodels branch (`src/handlers/build_readmodels.py`, `src/services/readmodels/*`) and related tests.
 - `DEDUP-P02-T004` completed: removed legacy placeholder `src/handlers/api.py`; docs aligned to `src/entrypoints/http/*` as active API boundary.
+- `DEDUP-P02-T005` completed: removed legacy placeholder handler stubs `src/handlers/render_sheets.py` and `src/handlers/notify_morning.py`; docs aligned.
 
 ## Verification
 - `rg -n "from src\\.services\\.sync_service|from src\\.services\\.sync\\.sync_service|from src\\.services\\.readmodels\\.builder|from src\\.services\\.readmodel_builder" src main.py index.py tests`
@@ -24,6 +25,8 @@
 - `rg -n "src\\.handlers\\.build_readmodels|src\\.services\\.readmodels|build_read_models\\(|publish_read_model_to_file\\(" src tests main.py index.py`
 - `python -m unittest tests.services.test_planner_pipeline_job tests.services.test_sync_source_hash_gate tests.api.test_frontend_api_routing -v`
 - `rg -n "src\\.handlers\\.api|handle_api\\(" src tests main.py index.py docs/system`
+- `python -m unittest tests.services.test_planner_pipeline_job tests.services.test_sync_source_hash_gate tests.api.test_frontend_api_routing -v`
+- `rg -n "src\\.handlers\\.(render_sheets|notify_morning)|from src\\.handlers import (render_sheets|notify_morning)|handle_render_sheets|handle_notify_morning" src tests main.py index.py docs work`
 - `python -m unittest tests.services.test_planner_pipeline_job tests.services.test_sync_source_hash_gate tests.api.test_frontend_api_routing -v`
 - manual read pass:
   - `src/services/sync_service.py`
