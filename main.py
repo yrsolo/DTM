@@ -25,6 +25,7 @@ from src.entrypoints.jobs.db_migrate_branch import run_db_migrate_if_requested
 from src.entrypoints.jobs.db_migrate_job import run_db_migrate
 from src.entrypoints.jobs.hash_gate_job import resolve_allow_sync_by_hash_gate
 from src.entrypoints.jobs.legacy_store_write_job import run_legacy_store_write
+from src.entrypoints.jobs.planner_setup_job import build_planner_runtime
 from src.entrypoints.jobs.quality_report_job import print_quality_report as _print_quality_report
 from src.entrypoints.jobs.readmodel_freshness import (
     build_readmodel_freshness_marker as _readmodel_freshness_marker,
@@ -86,24 +87,12 @@ async def main(**kwargs):
     if migrate_handled:
         return migrate_result
 
-    dependencies = build_planner_dependencies(
-        KEY_JSON,
-        SHEET_INFO,
+    planner, source_task_repository = build_planner_runtime(
+        key_json=KEY_JSON,
+        sheet_info=SHEET_INFO,
         dry_run=dry_run,
         mock_external=mock_external,
         cfg=APP_CONTEXT.cfg,
-    )
-    source_task_repository = dependencies.task_repository
-    planner = GoogleSheetPlanner(
-        KEY_JSON,
-        SHEET_INFO,
-        mode=mode,
-        dry_run=dry_run,
-        mock_external=mock_external,
-        dependencies=dependencies,
-    )
-    apply_task_source_switches(
-        planner=planner,
         mode=mode,
         render_source=APP_RENDER_SOURCE,
         notify_source=APP_NOTIFY_SOURCE,
@@ -111,6 +100,9 @@ async def main(**kwargs):
         ydb_database=YDB_DATABASE,
         ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
         ydb_sa_key_file=YC_SA_KEY_FILE,
+        build_planner_dependencies=build_planner_dependencies,
+        planner_cls=GoogleSheetPlanner,
+        apply_task_source_switches=apply_task_source_switches,
         log=_safe_print,
     )
     run_readmodel_freshness_probe(

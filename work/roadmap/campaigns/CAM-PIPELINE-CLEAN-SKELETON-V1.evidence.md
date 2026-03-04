@@ -16,6 +16,7 @@
 - `PIPE-P03-T003` completed: quality-report summary printer extracted to `src/entrypoints/jobs/quality_report_job.py`; `main.py` delegates summary output formatting.
 - `PIPE-P03-T004` completed: `db_migrate` early-return branch extracted to `src/entrypoints/jobs/db_migrate_branch.py`; `main.py` delegates migrate branch handling.
 - `PIPE-P03-T005` completed: runtime context resolution (`mode/mock_external/force_refresh` + timer shell hook) extracted to `src/entrypoints/jobs/runtime_context_job.py`; `main.py` delegates startup context preparation.
+- `PIPE-P03-T006` completed: planner/dependencies setup extracted to `src/entrypoints/jobs/planner_setup_job.py`; `main.py` delegates runtime planner assembly and source-switch wiring.
 
 ## Verification
 - `python -m py_compile main.py src/entrypoints/jobs/readmodel_freshness.py`
@@ -34,7 +35,9 @@
 - `python -m unittest tests.services.test_db_migrate_branch_job tests.services.test_quality_report_job tests.services.test_readmodel_probe_job tests.services.test_source_switch_job tests.services.test_task_payloads_job tests.services.test_hash_gate_job tests.services.test_legacy_store_write_job tests.services.test_pipeline_runtime tests.api.test_frontend_api_routing -v`
 - `python -m py_compile main.py src/entrypoints/jobs/runtime_context_job.py tests/services/test_runtime_context_job.py`
 - `python -m unittest tests.services.test_runtime_context_job tests.services.test_db_migrate_branch_job tests.services.test_quality_report_job tests.services.test_readmodel_probe_job tests.services.test_source_switch_job tests.services.test_task_payloads_job tests.services.test_hash_gate_job tests.services.test_legacy_store_write_job tests.services.test_pipeline_runtime tests.api.test_frontend_api_routing -v`
+- `python -m py_compile main.py src/entrypoints/jobs/planner_setup_job.py tests/services/test_planner_setup_job.py`
+- `python -m unittest tests.services.test_planner_setup_job tests.services.test_runtime_context_job tests.services.test_db_migrate_branch_job tests.services.test_quality_report_job tests.services.test_readmodel_probe_job tests.services.test_source_switch_job tests.services.test_task_payloads_job tests.services.test_hash_gate_job tests.services.test_legacy_store_write_job tests.services.test_pipeline_runtime tests.api.test_frontend_api_routing -v`
 
 ## Results
 - `py_compile`: pass.
-- `unittest`: pass (`Ran 31 tests`, `OK`).
+- `unittest`: pass (`Ran 32 tests`, `OK`).
