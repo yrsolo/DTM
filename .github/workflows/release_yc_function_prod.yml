@@ -122,6 +122,24 @@ jobs:
           echo "Resolved memory=${YC_FUNCTION_MEMORY}"
           echo "Resolved entrypoint=${YC_FUNCTION_ENTRYPOINT}"
 
+      - name: Validate deploy defaults outputs
+        shell: bash
+        env:
+          OUT_RUNTIME: ${{ steps.deploy_defaults.outputs.yc_function_runtime }}
+          OUT_TIMEOUT: ${{ steps.deploy_defaults.outputs.yc_function_timeout }}
+          OUT_MEMORY: ${{ steps.deploy_defaults.outputs.yc_function_memory }}
+          OUT_ENTRYPOINT: ${{ steps.deploy_defaults.outputs.yc_function_entrypoint }}
+        run: |
+          set -euo pipefail
+          for key in OUT_RUNTIME OUT_TIMEOUT OUT_MEMORY OUT_ENTRYPOINT; do
+            val="${!key:-}"
+            if [ -z "${val}" ]; then
+              echo "Missing required deploy output: ${key}" >&2
+              exit 1
+            fi
+          done
+          echo "Deploy outputs: runtime=${OUT_RUNTIME} timeout=${OUT_TIMEOUT} memory=${OUT_MEMORY} entrypoint=${OUT_ENTRYPOINT}"
+
       - name: Deploy PROD function version
         id: deploy
         uses: yc-actions/yc-sls-function@v4
@@ -129,10 +147,10 @@ jobs:
           yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
           folder-id: ${{ vars.YC_FOLDER_ID || secrets.YC_FOLDER_ID || env.YC_FOLDER_ID }}
           function-name: ${{ steps.target.outputs.target }}
-          runtime: ${{ steps.deploy_defaults.outputs.yc_function_runtime || env.YC_FUNCTION_RUNTIME || vars.YC_FUNCTION_RUNTIME || 'python311' }}
-          memory: ${{ steps.deploy_defaults.outputs.yc_function_memory || env.YC_FUNCTION_MEMORY || vars.YC_FUNCTION_MEMORY || '512Mb' }}
-          execution-timeout: ${{ steps.deploy_defaults.outputs.yc_function_timeout || env.YC_FUNCTION_TIMEOUT || vars.YC_FUNCTION_TIMEOUT || '60s' }}
-          entrypoint: ${{ steps.deploy_defaults.outputs.yc_function_entrypoint || env.YC_FUNCTION_ENTRYPOINT || vars.YC_FUNCTION_ENTRYPOINT || secrets.YC_FUNCTION_ENTRYPOINT || 'index.handler' }}
+          runtime: ${{ steps.deploy_defaults.outputs.yc_function_runtime }}
+          memory: ${{ steps.deploy_defaults.outputs.yc_function_memory }}
+          execution-timeout: ${{ steps.deploy_defaults.outputs.yc_function_timeout }}
+          entrypoint: ${{ steps.deploy_defaults.outputs.yc_function_entrypoint }}
           service-account: ${{ vars.YC_RUNTIME_SERVICE_ACCOUNT_ID || secrets.YC_RUNTIME_SERVICE_ACCOUNT_ID || vars.YC_SERVICE_ACCOUNT_ID || secrets.YC_SERVICE_ACCOUNT_ID || env.YC_SERVICE_ACCOUNT_ID }}
           environment: |
             ENV=prod
