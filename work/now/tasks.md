@@ -81,10 +81,11 @@
 - [x] CFG-P02-T053: verify full smoke contour after dispatch-chain wiring extraction (`api/core/services/adapters`).
 - [x] CFG-P02-T054: extract runtime execution/error-handling block from `index.py` into `src/entrypoints/http/runtime_execution.py`.
 - [x] CFG-P02-T055: verify full smoke contour after runtime execution extraction (`api/core/services/adapters`).
+- [x] CFG-P02-T056: sync system docs with current thinned `index.py` entrypoint contour and extracted HTTP modules.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T054..T055 completed: runtime execution helper extracted from index; smoke green)
+- 2026-03-04 (CFG-P02-T056 completed: system docs synced with current index/http extraction contour)
 

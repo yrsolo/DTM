@@ -95,11 +95,11 @@ Steps:
 ## `index.py` — HTTP entrypoint
 
 ### What it currently does
-`index.py` is a large multi-purpose handler:
+`index.py` is now mostly an orchestration shell:
 - parse raw serverless event → method/path/query/body
 - route to API v2 endpoints (with API v1 compatibility aliases)
 - supports “group query” flows (Telegram chat commands)
-- may call into planner logic and/or YDB readmodel repositories
+- delegates heavy logic to `src/entrypoints/http/*` modules
 
 ### API version policy
 - Active public contract: API v2.
@@ -110,7 +110,13 @@ Steps:
 ### Extraction progress (CAM-ENTRYPOINT-REFORM-V1)
 - event payload/path/method/query parsing moved to `src/entrypoints/http/event_parser.py`
 - HTTP dispatch chain moved to `src/entrypoints/http/router.py` (`dispatch_http`)
-- `index.py` still contains endpoint handlers, but parsing/routing boilerplate is delegated
+- API docs/handlers moved to dedicated modules:
+  - `src/entrypoints/http/frontend_v2_docs.py`
+  - `src/entrypoints/http/frontend_v2_handler.py`
+  - `src/entrypoints/http/group_query_handler.py`
+  - `src/entrypoints/http/http_dispatch_chain.py`
+  - `src/entrypoints/http/runtime_execution.py`
+- `index.py` keeps runtime orchestration and boundary wiring only
 
 ### Intended direction (not implemented in this document)
 - `index.py` should become thin: parse + route → call `src/handlers/api.py`.
