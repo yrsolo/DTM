@@ -51,8 +51,17 @@ def handle_frontend_api_v2_if_requested(
         return None
 
     params = query_params(event)
-    doc_paths = {"/api/v2/frontend/doc"}
-    data_paths = {"/api/v2/frontend"}
+    doc_paths = {
+        "/api/v2/frontend/doc",
+        "/api/v1",
+        "/api/v1/frontend/doc",
+        "/api/v1/read-model/doc",
+    }
+    data_paths = {
+        "/api/v2/frontend",
+        "/api/v1/frontend",
+        "/api/v1/read-model",
+    }
 
     if path_matches(path, doc_paths):
         if str(params.get("format", "")).strip().lower() == "json":

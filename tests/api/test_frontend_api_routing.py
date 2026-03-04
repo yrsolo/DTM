@@ -96,12 +96,12 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(params.get("limit"), "100")
         self.assertEqual(params.get("include_people"), "true")
 
-    def test_v1_endpoint_returns_gone(self) -> None:
+    def test_v1_endpoint_aliases_to_v2_payload(self) -> None:
         event = _fixture_event()
         response = asyncio.run(index.handler(event, None))
         payload = json.loads(response["body"])
-        self.assertEqual(response["statusCode"], 410)
-        self.assertEqual(payload.get("error", {}).get("code"), "api_v1_discontinued")
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(payload.get("meta", {}).get("artifact"), "dtm_frontend_api_v2")
 
     def test_v2_endpoint_returns_v2_payload(self) -> None:
         event = _fixture_event()

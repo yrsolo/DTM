@@ -28,6 +28,7 @@
 | `src/entrypoints/http/response_utils.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | response/path helper extraction + full smoke pack | high | JSON/HTML/error/path helpers moved out of index into dedicated HTTP module; behavior retained |
 | `src/entrypoints/http/frontend_tasks_loader.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | frontend task loader extraction + full smoke pack | high | frontend API task source selection/loading moved out of index into dedicated HTTP module; behavior retained |
 | `src/entrypoints/http/debug_utils.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | debug helper extraction + full smoke pack | high | HTTP debug event-shape logger moved out of index into dedicated module; behavior retained |
+| `src/entrypoints/http/frontend_v2_handler.py`, `tests/api/test_frontend_api_routing.py`, `docs/system/{entrypoints_index_main,module_map}.md` | 2026-03-04 | TeamLead agent | compatibility rollback fix + smoke/docs sync | high | API v1 compatibility restored by mapping supported v1 routes to v2 handlers; docs/tests aligned with alias policy |
 
 ## Execution Log
 - CAM-CONFIG-REFORM-V0 activated in `work/now/campaign.md`.
@@ -74,6 +75,8 @@
 - CFG-P02-T039 completed: executed full smoke contour after frontend task loader extraction (API routing + core/services/adapters unit smoke).
 - CFG-P02-T040 completed: extracted HTTP debug event-shape logger from `index.py` into `src/entrypoints/http/debug_utils.py`.
 - CFG-P02-T041 completed: executed full smoke contour after HTTP debug helper extraction (API routing + core/services/adapters unit smoke).
+- CFG-P02-T042 completed: restored API v1 runtime compatibility (supported `/api/v1*` frontend/read-model routes mapped to v2 handler paths instead of `410`).
+- CFG-P02-T043 completed: aligned API routing tests and system docs with v1 compatibility-alias policy and validated full smoke contour.
 - P01 scaffold implemented (uncommitted):
   - YAML config files added: `config/runtime.yaml`, `config/tables.yaml`, `config/db.yaml`, `config/llm.yaml`, `config/mapping.yaml`
   - typed schema scaffold: `src/config/schema.py`
@@ -143,4 +146,7 @@
   - `python -m py_compile src/entrypoints/http/frontend_tasks_loader.py index.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
   - `python -m py_compile src/entrypoints/http/debug_utils.py index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile src/entrypoints/http/frontend_v2_handler.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing -v`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
