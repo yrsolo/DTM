@@ -11,8 +11,10 @@
 - `STRAIGHTEN-P02-T001` completed: removed old main hash-gate coupling from runtime wiring (`main.py`, `planner_pipeline_job.py`) and aligned unit test for planner pipeline helper.
 - `STRAIGHTEN-P03-T001` completed: implemented preflight-driven skip in pipeline runtime (`run_preflight_only` + conditional full snapshot fetch).
 - `STRAIGHTEN-P04-T001` completed: updated `docs/system/dataflow.md` to single canonical gate semantics and added tests for skip/performed full-snapshot paths.
+- `STRAIGHTEN-P02-T002` completed: removed dead old-gate artifacts from active contour (`src/entrypoints/jobs/hash_gate_job.py`, `src/services/sync/hash_basis.py`, `src/services/sync/hash_gate.py`, unused constants/tests).
 
 ## Verification
 - `rg -n "MIGRATION_ENABLE_SOURCE_HASH_GATE|build_hash_basis|evaluate_hash_gate|save_last_hash|run_ydb_sync_readmodel_pipeline|src\\.services\\.sync_service|src\\.services\\.sync\\.sync_service" src main.py tests`
 - `python -m unittest tests.services.test_planner_pipeline_job tests.services.test_sync_source_hash_gate tests.api.test_frontend_api_routing -v`
 - `python -m unittest tests.services.test_pipeline_runtime tests.services.test_planner_pipeline_job tests.services.test_sync_source_hash_gate tests.api.test_frontend_api_routing -v`
+- `rg -n "MIGRATION_ENABLE_SOURCE_HASH_GATE|MIGRATION_HASH_GATE_STATE_FILE|resolve_allow_sync_by_hash_gate|hash_gate_job|services\\.sync\\.hash_gate|services\\.sync\\.hash_basis" src main.py index.py tests config`

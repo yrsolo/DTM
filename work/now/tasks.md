@@ -135,10 +135,15 @@
 - [x] STRAIGHTEN-P02-T001: remove old main hash-gate coupling from runtime path (`main.py` + `planner_pipeline_job.py` + tests).
 - [x] STRAIGHTEN-P03-T001: make preflight cheap in `run_ydb_sync_readmodel_pipeline` (skip full snapshot fetch when no sync is needed).
 - [x] STRAIGHTEN-P04-T001: update `docs/system/dataflow.md` and campaign evidence with skipped/performed full-snapshot logs.
+- [x] STRAIGHTEN-P02-T002: remove dead old-gate artifacts (`hash_gate_job`, `src/services/sync/hash_*`, hash-gate constants/tests) from active contour.
+- [x] OPS-CAMP-P01-T004: archive completed `CAM-PIPELINE-STRAIGHTEN-V1` and switch active execution to `CAM-ENTRYPOINT-DEHYBRID-V1`.
+- [x] DEHYBRID-P01-T001: trust-gate verification for `CAM-ENTRYPOINT-DEHYBRID-V1` against current entrypoint/runtime imports (`index.py`, `main.py`, `src/entrypoints/http/*`, `src/entrypoints/jobs/*`).
+- [x] DEHYBRID-P01-T002: remove direct `index -> main` coupling via shared runtime entry (`src/entrypoints/runtime/planner_runtime_entry.py`).
+- [ ] DEHYBRID-P03-T001: remove direct `core.*` imports from `index.py` by moving API/group-query composition behind `src/entrypoints/http/*` boundary.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (STRAIGHTEN-P04-T001 completed: preflight-driven full snapshot skip implemented, tested, and documented)
+- 2026-03-04 (DEHYBRID-P01-T002 completed: `index.py` no longer imports/calls `main.main`)
 

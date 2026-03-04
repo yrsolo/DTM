@@ -22,7 +22,6 @@ from core.group_query import (
     parse_group_query_request,
 )
 from core.reminder import TelegramNotifier
-from main import main
 from src.app.bootstrap import build_app_context
 from src.app.planner_bootstrap import build_planner_dependencies
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
@@ -51,6 +50,7 @@ from src.entrypoints.http.runtime_mode import (
     resolve_trigger_mode as _resolve_trigger_mode,
 )
 from src.entrypoints.http.runtime_execution import execute_runtime
+from src.entrypoints.runtime.planner_runtime_entry import run_planner_runtime
 from src.entrypoints.http.response_utils import (
     error_response as _error_response,
     html_response as _html_response,
@@ -214,7 +214,7 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         planner_event = event
 
     return await execute_runtime(
-        main_func=main,
+        main_func=run_planner_runtime,
         mode=run_mode,
         planner_event=planner_event,
         dry_run=dry_run,
