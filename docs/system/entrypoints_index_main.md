@@ -27,29 +27,29 @@ If `mode == "db_migrate"`:
 
 ### Planner bootstrap
 For non-migrate modes:
-1) build dependencies via `build_planner_dependencies(KEY_JSON, SHEET_INFO, dry_run, mock_external)`
-2) create `GoogleSheetPlanner(...)`
-3) apply source switches: `_apply_task_source_switches(planner, mode)` based on `NOTIFY_SOURCE`, `RENDER_SOURCE` and `source_policy`
+1) resolve runtime context via `src/entrypoints/jobs/runtime_context_job.py` (`mode/mock_external/force_refresh` + timer shell marker)
+2) handle migrate branch via `src/entrypoints/jobs/db_migrate_branch.py` (early return)
+3) build dependencies + planner via `src/entrypoints/jobs/planner_setup_job.py`
+4) apply source switches via `src/entrypoints/jobs/source_switch_job.py` based on `NOTIFY_SOURCE`, `RENDER_SOURCE` and `source_policy`
 
 ### Optional readmodel freshness marker
 If `mode in {timer,test,morning,reminders-only,sync-only}` and `(RENDER_SOURCE=="ydb" or NOTIFY_SOURCE=="ydb")`:
-- tries to read readmodel `frontend_v2:default` from YDB and prints a `readmodel_freshness=` marker.
+- `src/entrypoints/jobs/readmodel_probe_job.py` reads `frontend_v2:default` and prints `readmodel_freshness=` marker.
 
 ### Legacy file-based hash gate (optional)
 If `MIGRATION_ENABLE_SOURCE_HASH_GATE` and `mode in {timer,test,sync-only}`:
-- builds a hash basis from tasks loaded from the **Sheets repository** (not from snapshot ranges)
+- `src/entrypoints/jobs/hash_gate_job.py` builds hash basis from tasks loaded from the **Sheets repository** (not from snapshot ranges)
 - evaluates `evaluate_hash_gate(...)` using state file `MIGRATION_HASH_GATE_STATE_FILE`
-- sets `allow_sync` accordingly
+- returns `allow_sync`
 
 > Note: This is separate from the YDB-based source snapshot hash gate.
 
 ### Core use-case execution
-Calls `run_planner_use_case(planner, mode, allow_sync=allow_sync)` which drives reminders/render etc.
-Then reads `tasks = source_task_repository.get_all_tasks()`.
+`src/entrypoints/jobs/planner_pipeline_job.py` calls `run_planner_use_case(planner, mode, allow_sync=allow_sync)` and then reads `tasks = source_task_repository.get_all_tasks()`.
 
 ### Legacy blob write (disabled by default)
 If `LEGACY_BLOB_WRITE` and `STORE_MODE in {dual_write,ydb_primary,ydb_only}` and mode in {timer,test,sync-only}:
-- writes legacy `dtm_operational_tasks` via `build_operational_store(...).upsert_tasks(records)`.
+- `src/entrypoints/jobs/legacy_store_write_job.py` writes legacy `dtm_operational_tasks` via `build_operational_store(...).upsert_tasks(records)`.
 Else prints: `migration_store_write=skipped write_path=normalized_only`.
 
 ### YDB normalized pipeline (sync + readmodel)
@@ -66,7 +66,7 @@ Steps:
    - preflight range: `A1:Z{PREFLIGHT_TOP_ROWS}`
    - full range: `A1:Z2000`
    Each snapshot includes `values + colors`.
-5) transform planner tasks to operational payload: `_task_to_operational_payload(task)`
+5) transform planner tasks to operational payload: `src/entrypoints/jobs/task_payloads.py`
 6) read existing readmodel row `frontend_v2:default` and apply TTL skip:
    - `ttl_skip = age_seconds < READMODEL_TTL_MINUTES * 60` (unless `force_refresh`)
 7) if ttl_skip: skip sync (`migration_operational_sync=skipped reason=readmodel_ttl_fresh`)
@@ -77,6 +77,7 @@ Steps:
    - build readmodel via `FrontendReadmodelBuilderService(...).run(readmodel_id="frontend_v2:default")`
    - prints marker `migration_readmodel_build=...`
 10) always prints `migration_defer_status sync_deferred=... readmodel_deferred=...`
+11) quality summary output is delegated to `src/entrypoints/jobs/quality_report_job.py`
 
 ### Error handling
 - sync exceptions set `sync_deferred=True` and attempt to write last_error into `dtm_sync_state`.

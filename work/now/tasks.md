@@ -113,10 +113,11 @@
 - [x] PIPE-P03-T005: extract runtime context resolution block (`mode/mock_external/force_refresh` + timer shell hook) from `main.py` to `src/entrypoints/jobs/runtime_context_job.py`.
 - [x] PIPE-P03-T006: extract planner/dependencies setup block from `main.py` to `src/entrypoints/jobs/planner_setup_job.py`.
 - [x] PIPE-P03-T007: extract planner pipeline orchestration block from `main.py` to `src/entrypoints/jobs/planner_pipeline_job.py`.
+- [x] PIPE-P03-T008: sync `docs/system/entrypoints_index_main.md` with current extracted `main.py` jobs-helper contour.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (PIPE-P03-T007 completed: planner pipeline orchestration extracted from `main.py`; targeted + routing smoke tests green)
+- 2026-03-04 (PIPE-P03-T008 completed: entrypoint system docs synced with current `main.py` jobs-helper contour)
 
