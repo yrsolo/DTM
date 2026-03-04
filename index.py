@@ -33,6 +33,7 @@ from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.entrypoints.http.event_parser import extract_payload as _extract_payload
 from src.entrypoints.http.event_parser import http_method as _http_method
 from src.entrypoints.http.event_parser import http_path as _http_path
+from src.entrypoints.http.group_query_handler import handle_group_query_if_requested
 from src.entrypoints.http.event_parser import normalize_path as _normalize_path
 from src.entrypoints.http.event_parser import query_params as _query_params
 from src.entrypoints.http.frontend_compat_handlers import (
@@ -71,30 +72,19 @@ def _load_work_tasks_for_group_query() -> list[Any]:
 async def _handle_group_query_if_requested(
     request_payload: dict[str, Any], is_http_event: bool
 ) -> bool:
-    if not is_http_event:
-        return False
-
-    query = parse_group_query_request(request_payload, bot_username=TG_BOT_USERNAME)
-    if query is None:
-        return False
-
-    notifier = TelegramNotifier(bot_token=APP_TG_BOT_TOKEN, default_chat_id=APP_TG_DEFAULT_CHAT_ID)
-    try:
-        tasks = _load_work_tasks_for_group_query()
-        if query.action == "deadlines":
-            reply = build_deadlines_reply(tasks)
-        else:
-            reply = build_tasks_reply(tasks, requester_name=query.requester_name)
-        await notifier.send_message(query.chat_id, reply, parse_mode=None)
-        return True
-    except Exception as error:
-        print(f"group_query_error={error}")
-        await notifier.send_message(
-            query.chat_id,
-            "Не смогла собрать список задач. Попробуйте еще раз через минуту.",
-            parse_mode=None,
-        )
-        return True
+    return await handle_group_query_if_requested(
+        request_payload,
+        is_http_event,
+        bot_username=TG_BOT_USERNAME,
+        parse_group_query_request=parse_group_query_request,
+        notifier_factory=lambda: TelegramNotifier(
+            bot_token=APP_TG_BOT_TOKEN,
+            default_chat_id=APP_TG_DEFAULT_CHAT_ID,
+        ),
+        load_work_tasks_for_group_query=_load_work_tasks_for_group_query,
+        build_deadlines_reply=build_deadlines_reply,
+        build_tasks_reply=build_tasks_reply,
+    )
 
 
 def _json_response(status_code: int, payload: dict[str, Any]) -> dict[str, Any]:
@@ -474,5 +464,3 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         "statusCode": 200,
         "body": "!GOOD!",
     }
-
-

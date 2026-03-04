@@ -55,10 +55,12 @@
 - [x] CFG-P02-T027: verify full smoke contour after compatibility handler extraction (`api/core/services/adapters`).
 - [x] CFG-P02-T028: restore explicit YDB SA credential propagation from entrypoints/services into YDB repos/clients after adapter decoupling from `config.constants`.
 - [x] CFG-P02-T029: verify full smoke contour after YDB credential propagation updates (`api/core/services/adapters`).
+- [x] CFG-P02-T030: extract group-query request handler from `index.py` into `src/entrypoints/http/group_query_handler.py`.
+- [x] CFG-P02-T031: verify full smoke contour after group-query handler extraction (`api/core/services/adapters`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T028..T029 completed: YDB credential propagation restored via boundaries; full smoke green)
+- 2026-03-04 (CFG-P02-T030..T031 completed: group-query handler extracted from index; full smoke green)
 
