@@ -84,10 +84,12 @@
 - [x] CFG-P02-T056: sync system docs with current thinned `index.py` entrypoint contour and extracted HTTP modules.
 - [x] CFG-P02-T057: remove dead `v1_discontinued` compatibility handler code from `src/entrypoints/http/frontend_compat_handlers.py`.
 - [x] CFG-P02-T058: verify full smoke contour after dead compatibility code removal (`api/core/services/adapters`).
+- [x] CFG-P02-T059: extract source snapshot reader helpers from `main.py` into `src/entrypoints/jobs/source_snapshot_reader.py`.
+- [x] CFG-P02-T060: verify full smoke contour after `main.py` snapshot-reader extraction (`api/core/services/adapters`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T057..T058 completed: dead v1-discontinued compatibility code removed; smoke green)
+- 2026-03-04 (CFG-P02-T059..T060 completed: main snapshot reader helpers extracted; smoke green)
 

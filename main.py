@@ -27,6 +27,7 @@ from src.adapters.store_ydb import build_operational_store
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
 from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.entrypoints.jobs.db_migrate_job import run_db_migrate
+from src.entrypoints.jobs.source_snapshot_reader import read_source_snapshot as _read_source_snapshot
 from src.entrypoints.jobs.timer_job import TimerJob
 from src.services.pipeline_runtime import run_ydb_sync_readmodel_pipeline
 from src.services.sync.hash_basis import build_hash_basis
@@ -167,34 +168,6 @@ def _task_to_operational_payload(task) -> dict[str, object]:
         "task_revision": 0,
         "raw_payload": task_hash_basis,
         "milestones": milestones,
-    }
-
-
-def _read_source_range_values(source_task_repository, *, worksheet_range: str) -> list[list[str]]:
-    spreadsheet_name = source_task_repository.source_sheet_info.spreadsheet_name
-    sheet_name = source_task_repository.source_sheet_info.get_sheet_name("tasks")
-    return source_task_repository.service.get_worksheet_values(
-        spreadsheet_name=spreadsheet_name,
-        worksheet_name=sheet_name,
-        worksheet_range=worksheet_range,
-    )
-
-
-def _read_source_range_colors(source_task_repository, *, worksheet_range: str) -> list[str]:
-    spreadsheet_name = source_task_repository.source_sheet_info.spreadsheet_name
-    sheet_name = source_task_repository.source_sheet_info.get_sheet_name("tasks")
-    return source_task_repository.service.get_cell_colors(
-        spreadsheet_name=spreadsheet_name,
-        worksheet_name=sheet_name,
-        worksheet_range=worksheet_range,
-    )
-
-
-def _read_source_snapshot(source_task_repository, *, worksheet_range: str) -> dict[str, object]:
-    return {
-        "range": worksheet_range,
-        "values": _read_source_range_values(source_task_repository, worksheet_range=worksheet_range),
-        "colors": _read_source_range_colors(source_task_repository, worksheet_range=worksheet_range),
     }
 
 
