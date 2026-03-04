@@ -18,6 +18,7 @@
 - `DEDUP-P02-T007` completed: synced `docs/system/module_map.md` to reflect finished sync/handler dedup wave (removed stale conflict note).
 - `DEDUP-P02-T008` completed: removed unused legacy frontend payload serializer `core/api_payload.py`; docs synced to v2 payload-only active contour.
 - `DEDUP-P02-T009` completed: stabilized API v2 snapshot tests by freezing `pd.Timestamp.today()` in payload tests, fixed stage test fixtures encoding, and refreshed snapshots to current v2 payload shape.
+- `DEDUP-P03-T001` completed: audited `core/*` compatibility shims (`people.py`, `planner.py`, `repository.py`, `use_cases.py`) and documented keep-policy boundary per owner decision.
 
 ## Verification
 - `rg -n "from src\\.services\\.sync_service|from src\\.services\\.sync\\.sync_service|from src\\.services\\.readmodels\\.builder|from src\\.services\\.readmodel_builder" src main.py index.py tests`
@@ -41,6 +42,9 @@
 - `python -m unittest tests.api.test_frontend_api_routing -v`
 - `python -m unittest tests.api.test_frontend_api_v2_payload -v`
 - `python -m unittest tests.api.test_frontend_api_routing -v`
+- import audit:
+  - `rg -n "\bfrom core\.|\bimport core\.|\bimport core\b" main.py index.py src tests`
+  - `python` one-off scan over `core/*.py` for code refs in `src tests main.py index.py local_run.py agent web_prototype`
 - manual read pass:
   - `src/services/sync_service.py`
   - `src/services/sync/sync_service.py`

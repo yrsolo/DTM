@@ -126,10 +126,11 @@
 - [x] DEDUP-P02-T007: sync `docs/system/module_map.md` after handler/sync dedup wave (remove stale "two sync implementations" conflict note).
 - [x] DEDUP-P02-T008: remove unused legacy frontend payload serializer `core/api_payload.py` (v1 artifact) and sync dedup/core-boundaries docs.
 - [x] DEDUP-P02-T009: stabilize API v2 snapshot tests (`tests.api.test_frontend_api_v2_payload`) by freezing `today()` and refreshing snapshots to current v2 payload contract.
+- [x] DEDUP-P03-T001: audit `core/*` compatibility shims for active-code imports and document keep-policy boundary (owner decision: preserve legacy shims).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (DEDUP-P02-T009 completed: API v2 payload snapshots stabilized and refreshed; routing + payload test packs green)
+- 2026-03-04 (DEDUP-P03-T001 completed: core compatibility shims audited; no active code imports, kept intentionally by owner policy)
 
