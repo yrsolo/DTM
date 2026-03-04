@@ -129,10 +129,11 @@
 - [x] DEDUP-P03-T001: audit `core/*` compatibility shims for active-code imports and document keep-policy boundary (owner decision: preserve legacy shims).
 - [x] DEDUP-P03-T002: move compatibility shims from `core/*` to `old/v1/*` and add legacy-archaeology markdown notes in `old/v1`.
 - [x] OPS-CAMP-P01-T001: normalize campaign lifecycle registry (`in progress / planned / done / parked`) in `work/now/campaign.md` and align `work/roadmap/backlog.md`.
+- [x] OPS-CAMP-P01-T002: archive all current campaign files from `work/roadmap/campaigns` to `work/archive/campaigns/*` and mark them completed in status registries.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (OPS-CAMP-P01-T001 completed: campaign status registry normalized and backlog aligned)
+- 2026-03-04 (OPS-CAMP-P01-T002 completed: all current campaigns archived and marked done)
 
