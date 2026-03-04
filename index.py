@@ -31,10 +31,6 @@ from src.entrypoints.http.group_query_handler import (
 from src.entrypoints.http.group_query_tasks_loader import (
     load_work_tasks_for_group_query as _load_work_tasks_for_group_query,
 )
-from src.entrypoints.http.http_dispatch_chain import (
-    HttpDispatchHandlersContext,
-    build_http_dispatch_handlers,
-)
 from src.entrypoints.http.event_parser import normalize_path as _normalize_path
 from src.entrypoints.http.event_parser import query_params as _query_params
 from src.entrypoints.http.frontend_query_params import (
@@ -61,7 +57,7 @@ from src.entrypoints.http.response_utils import (
     path_matches as _path_matches,
 )
 from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_api_v2_doc_html
-from src.entrypoints.http.router import dispatch_http
+from src.entrypoints.http.router import HttpRouter, HttpRouterContext
 from src.legacy.http_core_bindings import (
     build_deadlines_reply,
     build_tasks_reply,
@@ -117,7 +113,7 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         }
 
     event_dict = event if isinstance(event, dict) else {}
-    dispatch_ctx = HttpDispatchHandlersContext(
+    router_ctx = HttpRouterContext(
         json_response=_json_response,
         html_response=_html_response,
         error_response=_error_response,
@@ -140,16 +136,9 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         frontend_api_v2_doc_html=frontend_api_v2_doc_html,
         frontend_readmodel_repo_cls=FrontendReadmodelRepo,
     )
-    root_handler, v2_handler = build_http_dispatch_handlers(dispatch_ctx)
+    router = HttpRouter(router_ctx)
     try:
-        http_response = dispatch_http(
-            event_dict,
-            is_http_event,
-            (
-                root_handler,
-                v2_handler,
-            ),
-        )
+        http_response = router.dispatch(event_dict, is_http_event)
     except Exception as error:
         print(f"http_dispatch_error={error}")
         return _error_response(

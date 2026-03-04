@@ -36,6 +36,16 @@ class SyncReadmodelPipelineRequest:
     force_refresh: bool
 
 
+class TimerPipeline:
+    """Object wrapper for sync+readmodel timer pipeline execution."""
+
+    def __init__(self, ctx: SyncReadmodelPipelineContext) -> None:
+        self._ctx = ctx
+
+    def run(self, request: SyncReadmodelPipelineRequest) -> None:
+        run_ydb_sync_readmodel_pipeline(self._ctx, request)
+
+
 def run_ydb_sync_readmodel_pipeline(
     ctx: SyncReadmodelPipelineContext,
     request: SyncReadmodelPipelineRequest,
