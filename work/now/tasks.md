@@ -53,10 +53,12 @@
 - [x] CFG-P02-T025: verify full smoke contour after handler extraction (`api/core/services/adapters`).
 - [x] CFG-P02-T026: extract API root and v1-discontinued compatibility handlers from `index.py` into `src/entrypoints/http/frontend_compat_handlers.py`.
 - [x] CFG-P02-T027: verify full smoke contour after compatibility handler extraction (`api/core/services/adapters`).
+- [x] CFG-P02-T028: restore explicit YDB SA credential propagation from entrypoints/services into YDB repos/clients after adapter decoupling from `config.constants`.
+- [x] CFG-P02-T029: verify full smoke contour after YDB credential propagation updates (`api/core/services/adapters`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T026..T027 completed: root/v1 compat handlers extracted; full smoke green)
+- 2026-03-04 (CFG-P02-T028..T029 completed: YDB credential propagation restored via boundaries; full smoke green)
 

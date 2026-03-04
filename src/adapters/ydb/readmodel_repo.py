@@ -39,13 +39,20 @@ class FrontendReadmodelRepo:
         *,
         endpoint: str,
         database: str,
+        sa_json_credentials: str | None = None,
+        sa_key_file: str | None = None,
         readmodel_table: str = "dtm_readmodel_frontend_v2",
         tasks_table: str = "dtm_tasks",
         milestones_table: str = "dtm_task_milestones",
         sync_state_table: str = "dtm_sync_state",
         ensure_schema: bool = False,
     ) -> None:
-        self.client = YdbClient(endpoint=endpoint, database=database)
+        self.client = YdbClient(
+            endpoint=endpoint,
+            database=database,
+            sa_json_credentials=sa_json_credentials,
+            sa_key_file=sa_key_file,
+        )
         self.readmodel_table = readmodel_table
         if ensure_schema:
             ensure_tables(

@@ -27,6 +27,8 @@ def handle_frontend_api_v2_if_requested(
     app_readmodel_source: str,
     ydb_endpoint: str,
     ydb_database: str,
+    ydb_sa_json_credentials: str | None,
+    ydb_sa_key_file: str | None,
     app_runtime_env: str,
     app_source_sheet_name: str,
     key_json: str,
@@ -82,6 +84,8 @@ def handle_frontend_api_v2_if_requested(
         repo = frontend_readmodel_repo_cls(
             endpoint=ydb_endpoint,
             database=ydb_database,
+            sa_json_credentials=ydb_sa_json_credentials,
+            sa_key_file=ydb_sa_key_file,
             ensure_schema=False,
         )
         row = repo.get_readmodel("frontend_v2:default")

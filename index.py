@@ -13,6 +13,8 @@ from config import (
     SHEET_INFO,
     TG,
     TG_BOT_USERNAME,
+    YC_SA_JSON_CREDENTIALS,
+    YC_SA_KEY_FILE,
     YDB_DATABASE,
     YDB_ENDPOINT,
 )
@@ -253,7 +255,12 @@ def _load_frontend_tasks(dependencies: Any, statuses: list[str]) -> list[Any]:
     )
     if not policy.api_reads_ydb():
         return dependencies.task_repository.get_task_by_color_status(statuses)
-    task_repo = YdbOperationalTaskRepository(endpoint=YDB_ENDPOINT, database=YDB_DATABASE)
+    task_repo = YdbOperationalTaskRepository(
+        endpoint=YDB_ENDPOINT,
+        database=YDB_DATABASE,
+        sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+        sa_key_file=YC_SA_KEY_FILE,
+    )
     return task_repo.get_task_by_color_status(statuses)
 
 
@@ -327,6 +334,8 @@ def _handle_frontend_api_v2_if_requested(
         app_readmodel_source=APP_READMODEL_SOURCE,
         ydb_endpoint=YDB_ENDPOINT,
         ydb_database=YDB_DATABASE,
+        ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+        ydb_sa_key_file=YC_SA_KEY_FILE,
         app_runtime_env=APP_RUNTIME_ENV,
         app_source_sheet_name=APP_SOURCE_SHEET_NAME,
         key_json=KEY_JSON,

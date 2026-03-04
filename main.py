@@ -15,6 +15,8 @@ from config import (
     YDB_MIGRATE_ON_START,
     YDB_DATABASE,
     YDB_ENDPOINT,
+    YC_SA_JSON_CREDENTIALS,
+    YC_SA_KEY_FILE,
     SHEET_INFO,
 )
 from src.services.planner_runtime import GoogleSheetPlanner
@@ -200,6 +202,8 @@ def _build_ydb_task_repository() -> YdbOperationalTaskRepository:
     return YdbOperationalTaskRepository(
         endpoint=YDB_ENDPOINT,
         database=YDB_DATABASE,
+        sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+        sa_key_file=YC_SA_KEY_FILE,
     )
 
 
@@ -248,7 +252,12 @@ async def main(**kwargs):
     print(f"{mode=} {dry_run=} {mock_external=}")
 
     if mode == "db_migrate":
-        result = run_db_migrate(endpoint=YDB_ENDPOINT, database=YDB_DATABASE)
+        result = run_db_migrate(
+            endpoint=YDB_ENDPOINT,
+            database=YDB_DATABASE,
+            sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+            sa_key_file=YC_SA_KEY_FILE,
+        )
         print("db_migrate_done=true")
         return result
 
@@ -276,6 +285,8 @@ async def main(**kwargs):
             readmodel_repo = FrontendReadmodelRepo(
                 endpoint=YDB_ENDPOINT,
                 database=YDB_DATABASE,
+                sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+                sa_key_file=YC_SA_KEY_FILE,
                 ensure_schema=False,
             )
             marker = _readmodel_freshness_marker(readmodel_repo.get_readmodel("frontend_v2:default"))
@@ -337,6 +348,8 @@ async def main(**kwargs):
             ydb_endpoint=YDB_ENDPOINT,
             ydb_database=YDB_DATABASE,
             json_file_path=MIGRATION_STORE_FILE,
+            sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+            sa_key_file=YC_SA_KEY_FILE,
         )
         store_result = store.upsert_tasks(records)
         print(
@@ -359,6 +372,8 @@ async def main(**kwargs):
         force_refresh=force_refresh,
         ydb_endpoint=YDB_ENDPOINT,
         ydb_database=YDB_DATABASE,
+        ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+        ydb_sa_key_file=YC_SA_KEY_FILE,
         ydb_migrate_on_start=YDB_MIGRATE_ON_START,
         write_legacy_milestones=WRITE_LEGACY_MILESTONES,
         runtime_env=APP_RUNTIME_ENV,

@@ -69,11 +69,15 @@ class YdbOperationalTaskRepository:
         *,
         endpoint: str,
         database: str,
+        sa_json_credentials: str | None = None,
+        sa_key_file: str | None = None,
         repo: OperationalTaskRepo | None = None,
     ) -> None:
         self.repo = repo or OperationalTaskRepo(
             endpoint=endpoint,
             database=database,
+            sa_json_credentials=sa_json_credentials,
+            sa_key_file=sa_key_file,
             ensure_schema=False,
         )
         self.row_issues: list[str] = []
