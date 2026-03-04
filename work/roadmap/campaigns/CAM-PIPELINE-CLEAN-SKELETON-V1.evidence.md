@@ -10,13 +10,16 @@
 - `PIPE-P01-T002` completed: readmodel freshness helper extracted to `src/entrypoints/jobs/readmodel_freshness.py`; `main.py` switched to imports.
 - `PIPE-P02-T001` completed: source hash-gate branch extracted to `src/entrypoints/jobs/hash_gate_job.py`; `main.py` delegates decision.
 - `PIPE-P02-T002` completed: legacy store-write branch extracted to `src/entrypoints/jobs/legacy_store_write_job.py`; `main.py` delegates write/skip logging.
+- `PIPE-P02-T003` completed: task payload conversion helpers extracted to `src/entrypoints/jobs/task_payloads.py`; `main.py` uses module imports.
 
 ## Verification
 - `python -m py_compile main.py src/entrypoints/jobs/readmodel_freshness.py`
 - `python -m unittest tests.services.test_pipeline_runtime tests.api.test_frontend_api_routing -v`
 - `python -m py_compile main.py src/entrypoints/jobs/hash_gate_job.py src/entrypoints/jobs/legacy_store_write_job.py tests/services/test_hash_gate_job.py tests/services/test_legacy_store_write_job.py`
 - `python -m unittest tests.services.test_hash_gate_job tests.services.test_legacy_store_write_job tests.services.test_pipeline_runtime tests.api.test_frontend_api_routing -v`
+- `python -m py_compile main.py src/entrypoints/jobs/task_payloads.py tests/services/test_task_payloads_job.py`
+- `python -m unittest tests.services.test_task_payloads_job tests.services.test_hash_gate_job tests.services.test_legacy_store_write_job tests.services.test_pipeline_runtime tests.api.test_frontend_api_routing -v`
 
 ## Results
 - `py_compile`: pass.
-- `unittest`: pass (`Ran 19 tests`, `OK`).
+- `unittest`: pass (`Ran 21 tests`, `OK`).

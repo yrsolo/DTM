@@ -23,6 +23,7 @@ Make the runtime pipeline explicit and thin at entrypoint level:
 ### P02 - Continue entrypoint thinning
 - `PIPE-P02-T001`: extract hash-gate block from `main.py` into dedicated jobs/service helper. (done)
 - `PIPE-P02-T002`: extract legacy store-write logging block into dedicated jobs helper. (done)
+- `PIPE-P02-T003`: extract task payload conversion helpers from `main.py` into dedicated jobs helper module. (done)
 
 ## DoD
 - `main.py` contains only mode routing and high-level orchestration calls.

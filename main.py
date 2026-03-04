@@ -32,6 +32,10 @@ from src.entrypoints.jobs.readmodel_freshness import (
     safe_print as _safe_print,
 )
 from src.entrypoints.jobs.source_snapshot_reader import read_source_snapshot as _read_source_snapshot
+from src.entrypoints.jobs.task_payloads import (
+    task_to_operational_payload as _task_to_operational_payload,
+    task_to_store_record as _task_to_store_record,
+)
 from src.entrypoints.jobs.timer_job import TimerJob
 from src.services.pipeline_runtime import run_ydb_sync_readmodel_pipeline
 from src.services.source_policy import build_source_policy_matrix
@@ -65,84 +69,6 @@ def _print_quality_report(report):
         f"reminder_delivery_rate={summary.get('reminder_delivery_rate')} "
         f"reminder_failure_rate={summary.get('reminder_failure_rate')}"
     )
-
-
-def _task_to_store_record(task) -> dict[str, object]:
-    timing_rows = []
-    for dt, stages in sorted(task.timing.items(), key=lambda item: item[0]):
-        timing_rows.append(
-            {
-                "date": dt.date().isoformat(),
-                "stages": list(stages),
-            }
-        )
-    return {
-        "task_id": str(task.id),
-        "name": task.name,
-        "brand": task.brand,
-        "format_": task.format_,
-        "project_name": task.project_name,
-        "customer": task.customer,
-        "designer": task.designer,
-        "status": task.status,
-        "color_status": task.color_status,
-        "raw_timing": task.raw_timing,
-        "timing": timing_rows,
-    }
-
-
-def _task_to_operational_payload(task) -> dict[str, object]:
-    milestones = []
-    for idx, (dt, stages) in enumerate(sorted(task.timing.items(), key=lambda item: item[0])):
-        planned = dt.date().isoformat()
-        for stage in stages:
-            milestones.append(
-                {
-                    "idx": idx,
-                    "type": str(stage).strip().lower() or "unknown",
-                    "planned": planned,
-                    "actual": None,
-                    "status": "planned",
-                    "raw_text": str(stage),
-                }
-            )
-
-    start_date = task.min_date.date().isoformat() if task.min_date is not None else None
-    end_date = task.max_date.date().isoformat() if task.max_date is not None else None
-    next_due_date = task.min_date.date().isoformat() if task.min_date is not None else None
-    task_hash_basis = {
-        "id": str(task.id),
-        "name": task.name,
-        "brand": task.brand,
-        "format_": task.format_,
-        "project_name": task.project_name,
-        "customer": task.customer,
-        "designer": task.designer,
-        "status": task.color_status,
-        "raw_timing": task.raw_timing,
-        "milestones": milestones,
-    }
-
-    return {
-        "task_id": str(task.id),
-        "title": task.name,
-        "brand": task.brand,
-        "format_": task.format_,
-        "customer": task.customer,
-        "raw_timing": task.raw_timing,
-        "owner_id": task.designer,
-        "group_id": task.project_name,
-        "status": task.color_status,
-        "start_date": start_date,
-        "end_date": end_date,
-        "next_due_date": next_due_date,
-        "tags": [],
-        "links": {},
-        "task_hash": None,
-        "task_revision": 0,
-        "raw_payload": task_hash_basis,
-        "milestones": milestones,
-    }
 
 
 def _build_ydb_task_repository() -> YdbOperationalTaskRepository:

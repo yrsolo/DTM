@@ -105,10 +105,11 @@
 - [x] PIPE-P01-T002: extract readmodel freshness helper from `main.py` to `src/entrypoints/jobs/readmodel_freshness.py` without behavior change.
 - [x] PIPE-P02-T001: extract source hash-gate decision block from `main.py` to `src/entrypoints/jobs/hash_gate_job.py`.
 - [x] PIPE-P02-T002: extract legacy store-write block from `main.py` to `src/entrypoints/jobs/legacy_store_write_job.py`.
+- [x] PIPE-P02-T003: extract task payload conversion helpers from `main.py` to `src/entrypoints/jobs/task_payloads.py`.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (PIPE-P02-T001..T002 completed: hash-gate and legacy store-write branches extracted from `main.py`; targeted + routing smoke tests green)
+- 2026-03-04 (PIPE-P02-T003 completed: task payload conversion helpers extracted from `main.py`; targeted + routing smoke tests green)
 
