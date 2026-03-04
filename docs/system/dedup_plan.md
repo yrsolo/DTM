@@ -17,14 +17,14 @@ This document tracks active duplicate/parallel implementations and defines `keep
 | Render/notify handler skeletons | `src/entrypoints/jobs/*` + service use-cases | `src/handlers/render_sheets.py`, `src/handlers/notify_morning.py` placeholders | no runtime imports; static leftovers only | low (removed 2026-03-04) |
 | Handlers package placeholder | `src/entrypoints/http/*`, `src/entrypoints/jobs/*` | `src/handlers/__init__.py` marker-only package | no runtime imports of `src.handlers` namespace | low (removed 2026-03-04) |
 | Frontend v1 payload serializer | `core/api_payload_v2.py` | `core/api_payload.py` (legacy v1 payload builder) | no runtime/test imports in active contour | low (removed 2026-03-04) |
-| Core compatibility shims | `src/*` direct modules | `core/{people,planner,repository,use_cases}.py` | no direct imports in active code contour; retained by owner decision for legacy-only compatibility | medium (keep for now) |
+| Core compatibility shims | `src/*` direct modules | `old/v1/{people,planner,repository,use_cases}.py` | no direct imports in active code contour; moved to legacy archaeology archive | low (moved 2026-03-04) |
 
 ## Proposed removal sequence
 1. Add explicit `legacy-only` marking in docs for handler/readmodels old path.
 2. Stop running legacy handler tests in default smoke (or move to dedicated legacy suite). (done for sync handler path via deletion)
 3. Remove remaining legacy handler path and `src/services/sync/sync_service.py` after test suite split. (done)
 4. Remove `src/services/readmodels/*` runtime-irrelevant builder/publisher path after migration note is documented. (done)
-5. Keep compatibility shims in `core/*` until owner cancels legacy-shim policy; do not remove in this campaign.
+5. Compatibility shims moved from `core/*` to `old/v1/*` as legacy archaeology; keep read-only.
 
 ## Guardrails
 - Remove only one duplicate branch per PR.

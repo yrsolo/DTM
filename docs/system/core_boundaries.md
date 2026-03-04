@@ -73,5 +73,5 @@ This document tracks what is domain-pure vs infrastructure-coupled inside `core/
 
 ## Legacy policy (owner decision, 2026-03-04)
 - `old/*` and notebooks are kept untouched.
-- Compatibility shims in `core/*` are preserved for legacy-only imports.
+- Legacy compatibility shims were moved out of `core/*` into `old/v1/*` for archaeology/reference.
 - Active contour (`src/*`, `main.py`, `index.py`, `tests/*`, `agent/*`) must continue using direct non-shim imports.
