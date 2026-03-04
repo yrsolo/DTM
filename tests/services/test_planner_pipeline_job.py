@@ -12,18 +12,13 @@ class _SourceRepoStub:
 
 class PlannerPipelineJobTestCase(unittest.IsolatedAsyncioTestCase):
     async def test_runs_pipeline_sequence(self) -> None:
-        calls = {"hash_gate": 0, "use_case": 0, "store_write": 0, "sync": 0, "quality": 0}
+        calls = {"use_case": 0, "store_write": 0, "sync": 0, "quality": 0}
 
         async def run_use_case(planner, mode, allow_sync):  # noqa: ANN001
             calls["use_case"] += 1
             self.assertEqual(mode, "test")
             self.assertTrue(allow_sync)
             return {"summary": {"task_row_issue_count": 0}}
-
-        def resolve_hash_gate(**kwargs):  # noqa: ANN003
-            calls["hash_gate"] += 1
-            self.assertEqual(kwargs["mode"], "test")
-            return True
 
         def run_store_write(**kwargs):  # noqa: ANN003
             calls["store_write"] += 1
@@ -43,8 +38,6 @@ class PlannerPipelineJobTestCase(unittest.IsolatedAsyncioTestCase):
             source_task_repository=_SourceRepoStub(),
             mode="test",
             force_refresh=False,
-            migration_enable_source_hash_gate=True,
-            migration_hash_gate_state_file="state.json",
             legacy_blob_write=True,
             app_store_mode="dual_write",
             app_runtime_env="dev",
@@ -57,7 +50,6 @@ class PlannerPipelineJobTestCase(unittest.IsolatedAsyncioTestCase):
             write_legacy_milestones=True,
             pipeline_cfg=object(),
             safe_print=lambda _: None,
-            resolve_allow_sync_by_hash_gate=resolve_hash_gate,
             run_planner_use_case=run_use_case,
             run_legacy_store_write=run_store_write,
             run_ydb_sync_readmodel_pipeline=run_sync,
@@ -68,7 +60,6 @@ class PlannerPipelineJobTestCase(unittest.IsolatedAsyncioTestCase):
             print_quality_report=print_quality,
         )
         self.assertEqual(result["summary"]["task_row_issue_count"], 0)
-        self.assertEqual(calls["hash_gate"], 1)
         self.assertEqual(calls["use_case"], 1)
         self.assertEqual(calls["store_write"], 1)
         self.assertEqual(calls["sync"], 1)

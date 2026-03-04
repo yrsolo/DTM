@@ -9,15 +9,15 @@ A source snapshot is treated as:
 
 Hashes are computed on raw snapshot (before normalization).
 
-## 2) Hash gate (two-level)
+## 2) Hash gate (single canonical gate in SyncService)
 
 ### Preflight hash (top rows)
 - Fetch top `PREFLIGHT_TOP_ROWS` rows (default 50) of the source-range (values + colors).
 - Compute `preflight_hash_50 = stable_json_hash(preflight_snapshot)`.
 
-### Full hash (entire range)
-- Fetch full source-range (values + colors).
-- Compute `source_hash_full = stable_json_hash(full_snapshot)`.
+### Full hash (entire range, conditional)
+- Fetch full source-range (values + colors) **only when preflight says full sync is needed**.
+- Compute `source_hash_full = stable_json_hash(full_snapshot)` only in this branch.
 
 ### Gate decision (operational sync)
 Inputs:
@@ -28,10 +28,11 @@ Inputs:
 - `FULL_SYNC_INTERVAL_HOURS` (default 24)
 
 Rules (effective):
-1) If not force_refresh AND preflight unchanged AND last full sync not stale → skip full sync.
-2) Otherwise fetch full snapshot and compute full hash.
-3) If not force_refresh AND full hash unchanged → skip normalization/upsert.
-4) Else → normalize + write operational tables + build readmodel.
+1) Compute preflight hash and ask canonical gate in `YdbSyncService` (`decide_preflight` / `run_preflight_only`).
+2) If not force_refresh AND preflight unchanged AND last full sync not stale → skip full snapshot fetch and skip full sync.
+3) Otherwise fetch full snapshot and compute full hash.
+4) If not force_refresh AND full hash unchanged → skip normalization/upsert.
+5) Else → normalize + write operational tables + build readmodel.
 
 ## 3) Normalization invariants
 Normalization produces per-task:

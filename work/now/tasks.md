@@ -131,10 +131,14 @@
 - [x] OPS-CAMP-P01-T001: normalize campaign lifecycle registry (`in progress / planned / done / parked`) in `work/now/campaign.md` and align `work/roadmap/backlog.md`.
 - [x] OPS-CAMP-P01-T002: archive all current campaign files from `work/roadmap/campaigns` to `work/archive/campaigns/*` and mark them completed in status registries.
 - [x] OPS-CAMP-P01-T003: register new campaign pack (`CAM-PIPELINE-STRAIGHTEN-V1`, `CAM-ENTRYPOINT-DEHYBRID-V1`, `CAM-ENTRYPOINT-HYGIENE-V1`) with charter/evidence templates and priorities file.
+- [x] STRAIGHTEN-P01-T001: trust-gate verification for `CAM-PIPELINE-STRAIGHTEN-V1` against current runtime code paths (`main.py`, `planner_pipeline_job.py`, `pipeline_runtime.py`, `sync_service.py`).
+- [x] STRAIGHTEN-P02-T001: remove old main hash-gate coupling from runtime path (`main.py` + `planner_pipeline_job.py` + tests).
+- [x] STRAIGHTEN-P03-T001: make preflight cheap in `run_ydb_sync_readmodel_pipeline` (skip full snapshot fetch when no sync is needed).
+- [x] STRAIGHTEN-P04-T001: update `docs/system/dataflow.md` and campaign evidence with skipped/performed full-snapshot logs.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (OPS-CAMP-P01-T003 completed: new campaign pack added and planned status synced)
+- 2026-03-04 (STRAIGHTEN-P04-T001 completed: preflight-driven full snapshot skip implemented, tested, and documented)
 

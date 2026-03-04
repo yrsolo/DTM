@@ -11,8 +11,6 @@ async def run_planner_pipeline(
     source_task_repository: Any,
     mode: str,
     force_refresh: bool,
-    migration_enable_source_hash_gate: bool,
-    migration_hash_gate_state_file: str,
     legacy_blob_write: bool,
     app_store_mode: str,
     app_runtime_env: str,
@@ -25,7 +23,6 @@ async def run_planner_pipeline(
     write_legacy_milestones: bool,
     pipeline_cfg: Any,
     safe_print: Callable[[str], None],
-    resolve_allow_sync_by_hash_gate: Callable[..., bool],
     run_planner_use_case: Callable[..., Awaitable[dict[str, Any]]],
     run_legacy_store_write: Callable[..., None],
     run_ydb_sync_readmodel_pipeline: Callable[..., None],
@@ -35,13 +32,7 @@ async def run_planner_pipeline(
     read_source_snapshot: Callable[..., dict[str, Any]],
     print_quality_report: Callable[[dict[str, Any]], None],
 ) -> dict[str, Any]:
-    allow_sync = resolve_allow_sync_by_hash_gate(
-        enabled=migration_enable_source_hash_gate,
-        mode=mode,
-        source_task_repository=source_task_repository,
-        state_file_path=migration_hash_gate_state_file,
-        safe_print=safe_print,
-    )
+    allow_sync = True
 
     quality_report = await run_planner_use_case(planner, mode, allow_sync=allow_sync)
     tasks = source_task_repository.get_all_tasks()

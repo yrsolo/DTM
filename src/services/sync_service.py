@@ -112,12 +112,121 @@ class SyncRunResult:
     ydb_error_code: str
 
 
+@dataclass(slots=True)
+class PreflightDecision:
+    preflight_hash_50: str
+    previous_preflight_hash_50: str | None
+    previous_source_hash_full: str | None
+    full_sync_required: bool
+    now_utc: datetime
+    reason: str
+
+
 class YdbSyncService:
     """Sync normalized tasks into YDB operational tables."""
 
     def __init__(self, repo: OperationalTaskRepo, *, write_legacy_milestones: bool = False) -> None:
         self.repo = repo
         self.write_legacy_milestones = bool(write_legacy_milestones)
+
+    def decide_preflight(
+        self,
+        *,
+        source_id: str,
+        preflight_range_values: Any,
+        force_refresh: bool = False,
+        full_sync_interval_hours: int = 24,
+    ) -> PreflightDecision:
+        preflight_hash_50 = stable_json_hash(preflight_range_values)
+        now_utc = _utc_now()
+        state = self.repo.get_sync_state(source_id)
+        previous_preflight = state.preflight_hash_50 if state is not None else None
+        previous_full = state.source_hash_full if state is not None else None
+        if force_refresh:
+            return PreflightDecision(
+                preflight_hash_50=preflight_hash_50,
+                previous_preflight_hash_50=previous_preflight,
+                previous_source_hash_full=previous_full,
+                full_sync_required=True,
+                now_utc=now_utc,
+                reason="forced_refresh",
+            )
+        if state is None:
+            return PreflightDecision(
+                preflight_hash_50=preflight_hash_50,
+                previous_preflight_hash_50=None,
+                previous_source_hash_full=None,
+                full_sync_required=True,
+                now_utc=now_utc,
+                reason="state_missing",
+            )
+        if previous_preflight != preflight_hash_50:
+            return PreflightDecision(
+                preflight_hash_50=preflight_hash_50,
+                previous_preflight_hash_50=previous_preflight,
+                previous_source_hash_full=previous_full,
+                full_sync_required=True,
+                now_utc=now_utc,
+                reason="preflight_changed",
+            )
+        last_full = state.last_full_sync_at_utc
+        if last_full is None:
+            return PreflightDecision(
+                preflight_hash_50=preflight_hash_50,
+                previous_preflight_hash_50=previous_preflight,
+                previous_source_hash_full=previous_full,
+                full_sync_required=True,
+                now_utc=now_utc,
+                reason="full_sync_missing",
+            )
+        full_sync_stale = now_utc - last_full >= timedelta(hours=max(full_sync_interval_hours, 1))
+        return PreflightDecision(
+            preflight_hash_50=preflight_hash_50,
+            previous_preflight_hash_50=previous_preflight,
+            previous_source_hash_full=previous_full,
+            full_sync_required=full_sync_stale,
+            now_utc=now_utc,
+            reason="full_sync_stale" if full_sync_stale else "preflight_unchanged",
+        )
+
+    def run_preflight_only(
+        self,
+        *,
+        source_id: str,
+        preflight_range_values: Any,
+        force_refresh: bool = False,
+        full_sync_interval_hours: int = 24,
+    ) -> SyncRunResult | None:
+        decision = self.decide_preflight(
+            source_id=source_id,
+            preflight_range_values=preflight_range_values,
+            force_refresh=force_refresh,
+            full_sync_interval_hours=full_sync_interval_hours,
+        )
+        if decision.full_sync_required:
+            return None
+        self.repo.set_sync_state(
+            source_id=source_id,
+            preflight_hash_50=decision.preflight_hash_50,
+            source_hash_full=decision.previous_source_hash_full or "",
+            synced_at_utc=decision.now_utc,
+            last_full_sync_at_utc=self.repo.get_sync_state(source_id).last_full_sync_at_utc,
+            last_success_at_utc=decision.now_utc,
+        )
+        return SyncRunResult(
+            source_id=source_id,
+            preflight_hash_50=decision.preflight_hash_50,
+            source_hash_full=decision.previous_source_hash_full or "",
+            previous_preflight_hash_50=decision.previous_preflight_hash_50,
+            previous_source_hash_full=decision.previous_source_hash_full,
+            no_changes=True,
+            full_sync_performed=False,
+            forced_refresh=force_refresh,
+            tasks_upserted=0,
+            milestones_upserted=0,
+            ydb_queries_count=self.repo.client.stats.ydb_queries_count,
+            ydb_error_code=self.repo.client.stats.error_code,
+        )
 
     def run(
         self,
@@ -129,26 +238,25 @@ class YdbSyncService:
         force_refresh: bool = False,
         full_sync_interval_hours: int = 24,
     ) -> SyncRunResult:
-        preflight_hash_50 = stable_json_hash(preflight_range_values)
+        decision = self.decide_preflight(
+            source_id=source_id,
+            preflight_range_values=preflight_range_values,
+            force_refresh=force_refresh,
+            full_sync_interval_hours=full_sync_interval_hours,
+        )
+        preflight_hash_50 = decision.preflight_hash_50
+        previous_preflight = decision.previous_preflight_hash_50
+        previous_full = decision.previous_source_hash_full
+        now_utc = decision.now_utc
         source_hash_full = stable_json_hash(source_range_values)
-        now_utc = _utc_now()
-        state = self.repo.get_sync_state(source_id)
-        previous_preflight = state.preflight_hash_50 if state is not None else None
-        previous_full = state.source_hash_full if state is not None else None
 
-        full_sync_stale = True
-        if state is not None and state.last_full_sync_at_utc is not None:
-            full_sync_stale = now_utc - state.last_full_sync_at_utc >= timedelta(hours=max(full_sync_interval_hours, 1))
-        preflight_changed = previous_preflight != preflight_hash_50
-        full_sync_required = force_refresh or preflight_changed or full_sync_stale or state is None
-
-        if not full_sync_required:
+        if not decision.full_sync_required:
             self.repo.set_sync_state(
                 source_id=source_id,
                 preflight_hash_50=preflight_hash_50,
                 source_hash_full=previous_full or source_hash_full,
                 synced_at_utc=now_utc,
-                last_full_sync_at_utc=state.last_full_sync_at_utc if state is not None else now_utc,
+                last_full_sync_at_utc=self.repo.get_sync_state(source_id).last_full_sync_at_utc,
                 last_success_at_utc=now_utc,
             )
             return SyncRunResult(

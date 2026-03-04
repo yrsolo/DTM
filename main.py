@@ -6,8 +6,6 @@ from config import (
     KEY_JSON,
     LEGACY_BLOB_WRITE,
     WRITE_LEGACY_MILESTONES,
-    MIGRATION_ENABLE_SOURCE_HASH_GATE,
-    MIGRATION_HASH_GATE_STATE_FILE,
     MIGRATION_STORE_FILE,
     YDB_MIGRATE_ON_START,
     YDB_DATABASE,
@@ -23,7 +21,6 @@ from src.app.bootstrap import build_app_context
 from src.adapters.store_ydb import build_operational_store
 from src.entrypoints.jobs.db_migrate_branch import run_db_migrate_if_requested
 from src.entrypoints.jobs.db_migrate_job import run_db_migrate
-from src.entrypoints.jobs.hash_gate_job import resolve_allow_sync_by_hash_gate
 from src.entrypoints.jobs.legacy_store_write_job import run_legacy_store_write
 from src.entrypoints.jobs.planner_pipeline_job import run_planner_pipeline
 from src.entrypoints.jobs.planner_setup_job import build_planner_runtime
@@ -122,8 +119,6 @@ async def main(**kwargs):
         source_task_repository=source_task_repository,
         mode=mode,
         force_refresh=force_refresh,
-        migration_enable_source_hash_gate=MIGRATION_ENABLE_SOURCE_HASH_GATE,
-        migration_hash_gate_state_file=MIGRATION_HASH_GATE_STATE_FILE,
         legacy_blob_write=LEGACY_BLOB_WRITE,
         app_store_mode=APP_STORE_MODE,
         app_runtime_env=APP_RUNTIME_ENV,
@@ -136,7 +131,6 @@ async def main(**kwargs):
         write_legacy_milestones=WRITE_LEGACY_MILESTONES,
         pipeline_cfg=PIPELINE_CFG,
         safe_print=_safe_print,
-        resolve_allow_sync_by_hash_gate=resolve_allow_sync_by_hash_gate,
         run_planner_use_case=run_planner_use_case,
         run_legacy_store_write=run_legacy_store_write,
         run_ydb_sync_readmodel_pipeline=run_ydb_sync_readmodel_pipeline,

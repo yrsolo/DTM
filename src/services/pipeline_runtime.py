@@ -65,8 +65,12 @@ def run_ydb_sync_readmodel_pipeline(
         preflight_range = f"A1:Z{max(pipeline_cfg.preflight_top_rows, 1)}"
         full_range = "A1:Z2000"
         preflight_snapshot = read_source_snapshot(source_task_repository, worksheet_range=preflight_range)
-        full_snapshot = read_source_snapshot(source_task_repository, worksheet_range=full_range)
-        normalized_tasks = [task_to_operational_payload(task) for task in tasks]
+        preflight_result = sync_service.run_preflight_only(
+            source_id=source_id,
+            preflight_range_values=preflight_snapshot,
+            force_refresh=force_refresh,
+            full_sync_interval_hours=pipeline_cfg.full_sync_interval_hours,
+        )
         existing_readmodel = FrontendReadmodelRepo(
             endpoint=ydb_endpoint,
             database=ydb_database,
@@ -84,14 +88,21 @@ def run_ydb_sync_readmodel_pipeline(
                 f"reason=readmodel_ttl_fresh ttl_minutes={pipeline_cfg.readmodel_ttl_minutes}"
             )
         else:
-            sync_result = sync_service.run(
-                source_id=source_id,
-                preflight_range_values=preflight_snapshot,
-                source_range_values=full_snapshot,
-                normalized_tasks=normalized_tasks,
-                force_refresh=force_refresh,
-                full_sync_interval_hours=pipeline_cfg.full_sync_interval_hours,
-            )
+            if preflight_result is not None:
+                safe_print("full_snapshot_fetch=skipped reason=preflight_unchanged")
+                sync_result = preflight_result
+            else:
+                safe_print("full_snapshot_fetch=performed reason=sync_required")
+                full_snapshot = read_source_snapshot(source_task_repository, worksheet_range=full_range)
+                normalized_tasks = [task_to_operational_payload(task) for task in tasks]
+                sync_result = sync_service.run(
+                    source_id=source_id,
+                    preflight_range_values=preflight_snapshot,
+                    source_range_values=full_snapshot,
+                    normalized_tasks=normalized_tasks,
+                    force_refresh=force_refresh,
+                    full_sync_interval_hours=pipeline_cfg.full_sync_interval_hours,
+                )
             safe_print(
                 "migration_operational_sync="
                 f"source_id={sync_result.source_id} "

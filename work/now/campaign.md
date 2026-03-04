@@ -3,10 +3,9 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
-- none
+- CAM-PIPELINE-STRAIGHTEN-V1
 
 ## Planned
-- CAM-PIPELINE-STRAIGHTEN-V1
 - CAM-ENTRYPOINT-DEHYBRID-V1
 - CAM-ENTRYPOINT-HYGIENE-V1
 
