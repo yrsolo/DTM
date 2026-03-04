@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from typing import Any
+
 from config import (
     KEY_JSON,
     LEGACY_BLOB_WRITE,
@@ -58,15 +61,24 @@ APP_TRIGGERS = APP_CONTEXT.cfg.runtime.triggers
 TIMER_JOB_SHELL = TimerJob()
 
 
-async def run_planner_runtime(**kwargs):
+@dataclass(frozen=True)
+class PlannerRuntimeRequest:
+    event: Any = None
+    mode: str | None = None
+    dry_run: bool = False
+    mock_external: Any = None
+    force_refresh: bool | None = None
+
+
+async def run_planner_runtime(request: PlannerRuntimeRequest):
     """Run planner runtime mode through shared entry logic."""
-    dry_run = kwargs.get("dry_run", False)
+    dry_run = request.dry_run
     runtime_ctx = resolve_runtime_context(
-        mode=kwargs.get("mode"),
-        event=kwargs.get("event"),
+        mode=request.mode,
+        event=request.event,
         dry_run=dry_run,
-        mock_external=kwargs.get("mock_external"),
-        force_refresh_raw=kwargs.get("force_refresh"),
+        mock_external=request.mock_external,
+        force_refresh_raw=request.force_refresh,
         triggers=APP_TRIGGERS,
         force_refresh_default=PIPELINE_CFG.force_refresh_default,
         resolve_run_mode=resolve_run_mode,

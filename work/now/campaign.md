@@ -16,6 +16,7 @@ Single source of truth for campaign lifecycle state.
 - CAM-PIPELINE-STRAIGHTEN-V1 (archived in `work/archive/campaigns/CAM-PIPELINE-STRAIGHTEN-V1/`)
 - CAM-ENTRYPOINT-DEHYBRID-V1 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-DEHYBRID-V1/`)
 - CAM-ENTRYPOINT-HYGIENE-V1 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-HYGIENE-V1/`)
+- CAM-ENTRYPOINT-WRAPPER-DTO-V1 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-WRAPPER-DTO-V1/`)
 
 ## Parked
 - none

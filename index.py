@@ -55,7 +55,7 @@ from src.entrypoints.http.runtime_execution import (
     RuntimeExecutionRequest,
     execute_runtime,
 )
-from src.entrypoints.runtime.planner_runtime_entry import run_planner_runtime
+from src.entrypoints.runtime.planner_runtime_entry import PlannerRuntimeRequest, run_planner_runtime
 from src.entrypoints.http.response_utils import (
     error_response as _error_response,
     html_response as _html_response,
@@ -230,6 +230,7 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
 
     runtime_ctx = RuntimeExecutionContext(
         main_func=run_planner_runtime,
+        runtime_request_factory=PlannerRuntimeRequest,
         is_http_event=is_http_event,
         app_error_cls=AppError,
         user_error_cls=UserError,

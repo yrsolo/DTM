@@ -1,17 +1,18 @@
 # Entrypoints Behavior (Current): `index.py` and `main.py`
 
-This file reflects current runtime behavior after dehybrid and pipeline-straighten changes.
+This file reflects current runtime behavior after dehybrid, straighten, and wrapper-dto changes.
 
 ## `main.py`
 
 `main.py` is a thin async wrapper:
-- imports `run_planner_runtime` from `src/entrypoints/runtime/planner_runtime_entry.py`
-- exposes `main(**kwargs)` that directly delegates to `run_planner_runtime(**kwargs)`
+- imports `PlannerRuntimeRequest` and `run_planner_runtime` from `src/entrypoints/runtime/planner_runtime_entry.py`
+- exposes `main(request=None, *, event, mode, dry_run, mock_external, force_refresh)`
+- builds `PlannerRuntimeRequest` (if needed) and delegates to `run_planner_runtime(request)`
 - has no orchestration logic of its own
 
 ## Shared runtime entry: `src/entrypoints/runtime/planner_runtime_entry.py`
 
-This is the canonical runtime path used by both jobs and HTTP-triggered planner modes.
+Canonical runtime path used by jobs and HTTP-triggered planner modes.
 
 Flow:
 1. Resolve mode/context with `resolve_runtime_context(...)`.
@@ -31,7 +32,7 @@ Important behavior:
 - parses incoming event
 - dispatches HTTP routes via `src/entrypoints/http/*`
 - runs group-query flow via HTTP handlers and explicit legacy bindings namespace (`src/legacy/http_core_bindings.py`)
-- for planner modes delegates to `execute_runtime(main_func=run_planner_runtime, ...)`
+- for planner modes delegates to `execute_runtime(...)`, which constructs `PlannerRuntimeRequest` and calls `run_planner_runtime(request)`
 
 Key constraints now satisfied:
 - `index.py` does not import or call `main.main`

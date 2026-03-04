@@ -9,7 +9,8 @@ from typing import Any, Awaitable, Callable
 
 @dataclass(frozen=True)
 class RuntimeExecutionContext:
-    main_func: Callable[..., Awaitable[Any]]
+    main_func: Callable[[Any], Awaitable[Any]]
+    runtime_request_factory: Callable[..., Any]
     is_http_event: bool
     app_error_cls: type
     user_error_cls: type
@@ -33,13 +34,14 @@ async def execute_runtime(
     request: RuntimeExecutionRequest,
 ) -> dict[str, Any]:
     try:
-        await ctx.main_func(
+        runtime_request = ctx.runtime_request_factory(
             event=request.planner_event,
             mode=request.mode,
             dry_run=request.dry_run,
             mock_external=request.mock_external,
             force_refresh=request.force_refresh,
         )
+        await ctx.main_func(runtime_request)
     except Exception as ex:
         if isinstance(ex, ctx.user_error_cls):
             error_family = "user"

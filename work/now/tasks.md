@@ -150,10 +150,14 @@
 - [x] HYGIENE-P03-T002: replace sync/readmodel pipeline hyperfunction args with typed context/request DTO (`run_ydb_sync_readmodel_pipeline` + planner pipeline wiring).
 - [x] HYGIENE-P03-T003: replace group-query handler hyperfunction args with typed context/request DTO (`handle_group_query_if_requested` + `index.py` wiring).
 - [x] HYGIENE-P04-T001: final hygiene verification + docs/tracking sync and campaign closeout decision.
+- [x] WRAPPERDTO-P01-T001: trust-gate verification for remaining `**kwargs` wrappers in runtime handoff path (`main.py`, `planner_runtime_entry.py`, `runtime_execution.py`, `index.py`).
+- [x] WRAPPERDTO-P02-T001: introduce `PlannerRuntimeRequest` DTO and canonical runtime entry method without `**kwargs` in `planner_runtime_entry.py`.
+- [x] WRAPPERDTO-P02-T002: switch `main.py` and `runtime_execution/index.py` to explicit typed runtime request handoff.
+- [x] WRAPPERDTO-P03-T001: run smoke contour and sync campaign docs/tracking; close/archive campaign if DoD met.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (HYGIENE-P04-T001 completed: hygiene verification passed; campaign prepared for archive)
+- 2026-03-04 (WRAPPERDTO-P03-T001 completed: runtime wrappers converted to DTO flow and verified)
 
