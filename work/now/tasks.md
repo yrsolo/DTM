@@ -77,10 +77,12 @@
 - [x] CFG-P02-T049: verify full smoke contour after group-query wrapper removal (`api/core/services/adapters`).
 - [x] CFG-P02-T050: remove redundant legacy `v1_discontinued` handler from HTTP dispatch chain after v1->v2 alias restoration.
 - [x] CFG-P02-T051: verify full smoke contour after HTTP dispatch chain simplification (`api/core/services/adapters`).
+- [x] CFG-P02-T052: extract HTTP dispatch-chain wiring for root/v2 handlers from `index.py` into `src/entrypoints/http/http_dispatch_chain.py`.
+- [x] CFG-P02-T053: verify full smoke contour after dispatch-chain wiring extraction (`api/core/services/adapters`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T050..T051 completed: redundant legacy dispatch handler removed; smoke green)
+- 2026-03-04 (CFG-P02-T052..T053 completed: HTTP dispatch wiring extracted from index; smoke green)
 

@@ -36,9 +36,9 @@ from src.entrypoints.http.group_query_handler import handle_group_query_if_reque
 from src.entrypoints.http.group_query_tasks_loader import (
     load_work_tasks_for_group_query as _load_work_tasks_for_group_query,
 )
+from src.entrypoints.http.http_dispatch_chain import build_http_dispatch_handlers
 from src.entrypoints.http.event_parser import normalize_path as _normalize_path
 from src.entrypoints.http.event_parser import query_params as _query_params
-from src.entrypoints.http.frontend_compat_handlers import handle_frontend_api_root_if_requested
 from src.entrypoints.http.frontend_query_params import (
     parse_bool as _parse_bool,
     parse_limit as _parse_limit,
@@ -58,7 +58,6 @@ from src.entrypoints.http.response_utils import (
     path_matches as _path_matches,
 )
 from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_api_v2_doc_html
-from src.entrypoints.http.frontend_v2_handler import handle_frontend_api_v2_if_requested
 from src.entrypoints.http.router import dispatch_http
 from src.services.errors import AppError, PermanentError, TransientError, UserError
 
@@ -73,69 +72,6 @@ APP_TG_BOT_TOKEN = TG
 APP_TG_DEFAULT_CHAT_ID = DEFAULT_CHAT_ID
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
-
-
-def _handle_frontend_api_v2_if_requested(
-    event: dict[str, Any], is_http_event: bool
-) -> dict[str, Any] | None:
-    return handle_frontend_api_v2_if_requested(
-        event,
-        is_http_event,
-        json_response=_json_response,
-        html_response=_html_response,
-        error_response=_error_response,
-        normalize_path=_normalize_path,
-        http_path=_http_path,
-        http_method=_http_method,
-        query_params=_query_params,
-        path_matches=lambda path, candidates: _path_matches(path, candidates, _normalize_path),
-        parse_statuses=_parse_statuses,
-        parse_limit=_parse_limit,
-        parse_bool=_parse_bool,
-        parse_window_query=_parse_window_query,
-        app_readmodel_source=APP_READMODEL_SOURCE,
-        ydb_endpoint=YDB_ENDPOINT,
-        ydb_database=YDB_DATABASE,
-        ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
-        ydb_sa_key_file=YC_SA_KEY_FILE,
-        app_runtime_env=APP_RUNTIME_ENV,
-        app_source_sheet_name=APP_SOURCE_SHEET_NAME,
-        key_json=KEY_JSON,
-        sheet_info=SHEET_INFO,
-        app_cfg=APP_CFG,
-        frontend_api_v2_doc=frontend_api_v2_doc,
-        frontend_api_v2_doc_html=frontend_api_v2_doc_html,
-        frontend_readmodel_repo_cls=FrontendReadmodelRepo,
-        build_planner_dependencies=build_planner_dependencies,
-        load_frontend_tasks=lambda dependencies, statuses: _load_frontend_tasks(
-            dependencies,
-            statuses,
-            app_readmodel_source=APP_READMODEL_SOURCE,
-            ydb_endpoint=YDB_ENDPOINT,
-            ydb_database=YDB_DATABASE,
-            ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
-            ydb_sa_key_file=YC_SA_KEY_FILE,
-            ydb_operational_task_repo_cls=YdbOperationalTaskRepository,
-        ),
-        build_frontend_api_payload_v2=build_frontend_api_payload_v2,
-    )
-
-
-def _handle_api_root_if_requested(
-    event: dict[str, Any], is_http_event: bool
-) -> dict[str, Any] | None:
-    return handle_frontend_api_root_if_requested(
-        event,
-        is_http_event,
-        json_response=_json_response,
-        html_response=_html_response,
-        normalize_path=_normalize_path,
-        http_path=_http_path,
-        http_method=_http_method,
-        query_params=_query_params,
-        frontend_api_v2_doc=frontend_api_v2_doc,
-        frontend_api_v2_doc_html=frontend_api_v2_doc_html,
-    )
 
 
 async def handler(event: Any, _: Any) -> dict[str, Any]:
@@ -171,12 +107,51 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         }
 
     event_dict = event if isinstance(event, dict) else {}
+    root_handler, v2_handler = build_http_dispatch_handlers(
+        json_response=_json_response,
+        html_response=_html_response,
+        error_response=_error_response,
+        normalize_path=_normalize_path,
+        http_path=_http_path,
+        http_method=_http_method,
+        query_params=_query_params,
+        path_matches=_path_matches,
+        parse_statuses=_parse_statuses,
+        parse_limit=_parse_limit,
+        parse_bool=_parse_bool,
+        parse_window_query=_parse_window_query,
+        app_readmodel_source=APP_READMODEL_SOURCE,
+        ydb_endpoint=YDB_ENDPOINT,
+        ydb_database=YDB_DATABASE,
+        ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+        ydb_sa_key_file=YC_SA_KEY_FILE,
+        app_runtime_env=APP_RUNTIME_ENV,
+        app_source_sheet_name=APP_SOURCE_SHEET_NAME,
+        key_json=KEY_JSON,
+        sheet_info=SHEET_INFO,
+        app_cfg=APP_CFG,
+        frontend_api_v2_doc=frontend_api_v2_doc,
+        frontend_api_v2_doc_html=frontend_api_v2_doc_html,
+        frontend_readmodel_repo_cls=FrontendReadmodelRepo,
+        build_planner_dependencies=build_planner_dependencies,
+        load_frontend_tasks=lambda dependencies, statuses: _load_frontend_tasks(
+            dependencies,
+            statuses,
+            app_readmodel_source=APP_READMODEL_SOURCE,
+            ydb_endpoint=YDB_ENDPOINT,
+            ydb_database=YDB_DATABASE,
+            ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+            ydb_sa_key_file=YC_SA_KEY_FILE,
+            ydb_operational_task_repo_cls=YdbOperationalTaskRepository,
+        ),
+        build_frontend_api_payload_v2=build_frontend_api_payload_v2,
+    )
     http_response = dispatch_http(
         event_dict,
         is_http_event,
         (
-            _handle_api_root_if_requested,
-            _handle_frontend_api_v2_if_requested,
+            root_handler,
+            v2_handler,
         ),
     )
     if http_response is not None:
