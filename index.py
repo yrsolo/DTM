@@ -78,29 +78,6 @@ APP_TG_DEFAULT_CHAT_ID = DEFAULT_CHAT_ID
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
 
 
-async def _handle_group_query_if_requested(
-    request_payload: dict[str, Any], is_http_event: bool
-) -> bool:
-    return await handle_group_query_if_requested(
-        request_payload,
-        is_http_event,
-        bot_username=TG_BOT_USERNAME,
-        parse_group_query_request=parse_group_query_request,
-        notifier_factory=lambda: TelegramNotifier(
-            bot_token=APP_TG_BOT_TOKEN,
-            default_chat_id=APP_TG_DEFAULT_CHAT_ID,
-        ),
-        load_work_tasks_for_group_query=lambda: _load_work_tasks_for_group_query(
-            key_json=KEY_JSON,
-            sheet_info=SHEET_INFO,
-            app_cfg=APP_CFG,
-            build_planner_dependencies=build_planner_dependencies,
-        ),
-        build_deadlines_reply=build_deadlines_reply,
-        build_tasks_reply=build_tasks_reply,
-    )
-
-
 def _handle_frontend_api_if_requested(
     event: dict[str, Any], is_http_event: bool
 ) -> dict[str, Any] | None:
@@ -187,7 +164,24 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
             "body": "!HEALTHY!",
         }
 
-    if await _handle_group_query_if_requested(request_payload, is_http_event):
+    if await handle_group_query_if_requested(
+        request_payload,
+        is_http_event,
+        bot_username=TG_BOT_USERNAME,
+        parse_group_query_request=parse_group_query_request,
+        notifier_factory=lambda: TelegramNotifier(
+            bot_token=APP_TG_BOT_TOKEN,
+            default_chat_id=APP_TG_DEFAULT_CHAT_ID,
+        ),
+        load_work_tasks_for_group_query=lambda: _load_work_tasks_for_group_query(
+            key_json=KEY_JSON,
+            sheet_info=SHEET_INFO,
+            app_cfg=APP_CFG,
+            build_planner_dependencies=build_planner_dependencies,
+        ),
+        build_deadlines_reply=build_deadlines_reply,
+        build_tasks_reply=build_tasks_reply,
+    ):
         return {
             "statusCode": 200,
             "body": "!GROUP_QUERY_OK!",

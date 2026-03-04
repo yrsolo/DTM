@@ -73,10 +73,12 @@
 - [x] CFG-P02-T045: add regression test for API v2 fallback path (`READMODEL_SOURCE=ydb` + YDB failure) and verify full smoke contour.
 - [x] CFG-P02-T046: extract group-query task loading helper from `index.py` into `src/entrypoints/http/group_query_tasks_loader.py`.
 - [x] CFG-P02-T047: verify full smoke contour after group-query task loader extraction (`api/core/services/adapters`).
+- [x] CFG-P02-T048: simplify `index.py` by inlining group-query wrapper and delegating directly to extracted HTTP handler.
+- [x] CFG-P02-T049: verify full smoke contour after group-query wrapper removal (`api/core/services/adapters`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T046..T047 completed: group-query task loader extracted from index; smoke green)
+- 2026-03-04 (CFG-P02-T048..T049 completed: group-query wrapper removed from index; smoke green)
 
