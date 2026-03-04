@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-from pathlib import Path
 
 from config import (
     KEY_JSON,
@@ -26,6 +25,8 @@ from src.adapters.store_ydb import build_operational_store
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
 from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.entrypoints.jobs.db_migrate_job import run_db_migrate
+from src.entrypoints.jobs.hash_gate_job import resolve_allow_sync_by_hash_gate
+from src.entrypoints.jobs.legacy_store_write_job import run_legacy_store_write
 from src.entrypoints.jobs.readmodel_freshness import (
     build_readmodel_freshness_marker as _readmodel_freshness_marker,
     safe_print as _safe_print,
@@ -33,8 +34,6 @@ from src.entrypoints.jobs.readmodel_freshness import (
 from src.entrypoints.jobs.source_snapshot_reader import read_source_snapshot as _read_source_snapshot
 from src.entrypoints.jobs.timer_job import TimerJob
 from src.services.pipeline_runtime import run_ydb_sync_readmodel_pipeline
-from src.services.sync.hash_basis import build_hash_basis
-from src.services.sync.hash_gate import evaluate_hash_gate, save_last_hash
 from src.services.source_policy import build_source_policy_matrix
 
 APP_CONTEXT = build_app_context()
@@ -248,68 +247,33 @@ async def main(**kwargs):
             _safe_print(f"readmodel_freshness_error={str(exc)}")
 
     allow_sync = True
-    if MIGRATION_ENABLE_SOURCE_HASH_GATE and mode in {"timer", "test", "sync-only"}:
-        rows = []
-        for task in source_task_repository.get_all_tasks():
-            rows.append(
-                {
-                    "id": task.id,
-                    "brand": task.brand,
-                    "format_": task.format_,
-                    "project_name": task.project_name,
-                    "customer": task.customer,
-                    "designer": task.designer,
-                    "raw_timing": task.raw_timing,
-                    "status": task.status,
-                }
-            )
-        basis = build_hash_basis(rows)
-        state_file = Path(MIGRATION_HASH_GATE_STATE_FILE)
-        decision = evaluate_hash_gate(source_payload=basis, state_file=state_file)
-        print(
-            "source_hash_gate="
-            f"source_hash={decision.source_hash} "
-            f"previous_hash={decision.previous_hash} "
-            f"should_sync={decision.should_sync}"
-        )
-        allow_sync = decision.should_sync
-        if decision.should_sync:
-            save_last_hash(
-                state_file=state_file,
-                source_id=SHEET_INFO.spreadsheet_name,
-                source_hash=decision.source_hash,
-            )
+    allow_sync = resolve_allow_sync_by_hash_gate(
+        enabled=MIGRATION_ENABLE_SOURCE_HASH_GATE,
+        mode=mode,
+        source_task_repository=source_task_repository,
+        state_file_path=MIGRATION_HASH_GATE_STATE_FILE,
+        safe_print=_safe_print,
+    )
 
     quality_report = await run_planner_use_case(planner, mode, allow_sync=allow_sync)
     tasks = source_task_repository.get_all_tasks()
 
-    if (
-        LEGACY_BLOB_WRITE
-        and APP_STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"}
-        and mode in {"timer", "test", "sync-only"}
-        and allow_sync
-    ):
-        records = [_task_to_store_record(task) for task in tasks]
-        store = build_operational_store(
-            APP_STORE_MODE,
-            env_name=APP_RUNTIME_ENV,
-            ydb_endpoint=YDB_ENDPOINT,
-            ydb_database=YDB_DATABASE,
-            json_file_path=MIGRATION_STORE_FILE,
-            sa_json_credentials=YC_SA_JSON_CREDENTIALS,
-            sa_key_file=YC_SA_KEY_FILE,
-        )
-        store_result = store.upsert_tasks(records)
-        print(
-            "migration_store_write="
-            f"store_mode={APP_STORE_MODE} "
-            "write_path=dual_write_legacy "
-            f"store_file={MIGRATION_STORE_FILE} "
-            f"records={len(records)} "
-            f"result={store_result}"
-        )
-    elif APP_STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"} and mode in {"timer", "test", "sync-only"}:
-        print("migration_store_write=skipped write_path=normalized_only reason=LEGACY_BLOB_WRITE_disabled")
+    run_legacy_store_write(
+        legacy_blob_write=LEGACY_BLOB_WRITE,
+        store_mode=APP_STORE_MODE,
+        mode=mode,
+        allow_sync=allow_sync,
+        tasks=tasks,
+        task_to_store_record=_task_to_store_record,
+        runtime_env=APP_RUNTIME_ENV,
+        ydb_endpoint=YDB_ENDPOINT,
+        ydb_database=YDB_DATABASE,
+        migration_store_file=MIGRATION_STORE_FILE,
+        sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+        sa_key_file=YC_SA_KEY_FILE,
+        build_store=build_operational_store,
+        safe_print=_safe_print,
+    )
 
     run_ydb_sync_readmodel_pipeline(
         store_mode=APP_STORE_MODE,

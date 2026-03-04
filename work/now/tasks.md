@@ -103,10 +103,12 @@
 - [x] CFG-P02-T075: verify live test DB snapshot state locally: operational tasks contain dates; forced readmodel rebuild restores non-null API dates (11/11).
 - [x] PIPE-P01-T001: activate `CAM-PIPELINE-CLEAN-SKELETON-V1` and record first extraction sequence for `main.py` helper thinning.
 - [x] PIPE-P01-T002: extract readmodel freshness helper from `main.py` to `src/entrypoints/jobs/readmodel_freshness.py` without behavior change.
+- [x] PIPE-P02-T001: extract source hash-gate decision block from `main.py` to `src/entrypoints/jobs/hash_gate_job.py`.
+- [x] PIPE-P02-T002: extract legacy store-write block from `main.py` to `src/entrypoints/jobs/legacy_store_write_job.py`.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (PIPE-P01-T001..T002 completed: pipeline campaign activated, first `main.py` helper extraction delivered with no behavior change)
+- 2026-03-04 (PIPE-P02-T001..T002 completed: hash-gate and legacy store-write branches extracted from `main.py`; targeted + routing smoke tests green)
 

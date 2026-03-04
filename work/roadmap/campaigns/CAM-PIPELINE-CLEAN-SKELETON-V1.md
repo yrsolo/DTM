@@ -21,8 +21,8 @@ Make the runtime pipeline explicit and thin at entrypoint level:
 - `PIPE-P01-T002`: extract readmodel freshness helper from `main.py` into `src/entrypoints/jobs/readmodel_freshness.py`.
 
 ### P02 - Continue entrypoint thinning
-- `PIPE-P02-T001`: extract hash-gate block from `main.py` into dedicated jobs/service helper.
-- `PIPE-P02-T002`: extract legacy store-write logging block into dedicated jobs helper.
+- `PIPE-P02-T001`: extract hash-gate block from `main.py` into dedicated jobs/service helper. (done)
+- `PIPE-P02-T002`: extract legacy store-write logging block into dedicated jobs helper. (done)
 
 ## DoD
 - `main.py` contains only mode routing and high-level orchestration calls.

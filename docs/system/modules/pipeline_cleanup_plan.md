@@ -8,8 +8,8 @@
 
 ## Ordered extraction plan
 1. Extract small pure helpers first (done: readmodel freshness helper).
-2. Extract hash-gate branch into dedicated job helper module.
-3. Extract legacy store-write/reporting branch into dedicated job helper module.
+2. Extract hash-gate branch into dedicated job helper module. (done)
+3. Extract legacy store-write/reporting branch into dedicated job helper module. (done)
 4. Re-check if task payload conversion helpers should stay near entrypoint or move to service boundary.
 
 ## Constraints
