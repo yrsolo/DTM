@@ -44,6 +44,7 @@ from src.entrypoints.http.frontend_query_params import (
     parse_statuses as _parse_statuses,
     parse_window_query as _parse_window_query,
 )
+from src.entrypoints.http.frontend_tasks_loader import load_frontend_tasks as _load_frontend_tasks
 from src.entrypoints.http.runtime_mode import (
     extract_force_refresh as _extract_force_refresh,
     extract_run_mode as _extract_run_mode,
@@ -59,7 +60,6 @@ from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_
 from src.entrypoints.http.frontend_v2_handler import handle_frontend_api_v2_if_requested
 from src.entrypoints.http.router import dispatch_http
 from src.services.errors import AppError, PermanentError, TransientError, UserError
-from src.services.source_policy import build_source_policy_matrix
 
 APP_CONTEXT = build_app_context()
 APP_CFG = APP_CONTEXT.cfg
@@ -126,23 +126,6 @@ def _debug_http_shape(event: dict[str, Any], is_http_event: bool) -> None:
     )
 
 
-def _load_frontend_tasks(dependencies: Any, statuses: list[str]) -> list[Any]:
-    policy = build_source_policy_matrix(
-        readmodel_source=APP_READMODEL_SOURCE,
-        notify_source="legacy",
-        render_source="legacy",
-    )
-    if not policy.api_reads_ydb():
-        return dependencies.task_repository.get_task_by_color_status(statuses)
-    task_repo = YdbOperationalTaskRepository(
-        endpoint=YDB_ENDPOINT,
-        database=YDB_DATABASE,
-        sa_json_credentials=YC_SA_JSON_CREDENTIALS,
-        sa_key_file=YC_SA_KEY_FILE,
-    )
-    return task_repo.get_task_by_color_status(statuses)
-
-
 def _handle_frontend_api_if_requested(
     event: dict[str, Any], is_http_event: bool
 ) -> dict[str, Any] | None:
@@ -189,7 +172,16 @@ def _handle_frontend_api_v2_if_requested(
         frontend_api_v2_doc_html=frontend_api_v2_doc_html,
         frontend_readmodel_repo_cls=FrontendReadmodelRepo,
         build_planner_dependencies=build_planner_dependencies,
-        load_frontend_tasks=_load_frontend_tasks,
+        load_frontend_tasks=lambda dependencies, statuses: _load_frontend_tasks(
+            dependencies,
+            statuses,
+            app_readmodel_source=APP_READMODEL_SOURCE,
+            ydb_endpoint=YDB_ENDPOINT,
+            ydb_database=YDB_DATABASE,
+            ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+            ydb_sa_key_file=YC_SA_KEY_FILE,
+            ydb_operational_task_repo_cls=YdbOperationalTaskRepository,
+        ),
         build_frontend_api_payload_v2=build_frontend_api_payload_v2,
     )
 

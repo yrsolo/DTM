@@ -63,10 +63,12 @@
 - [x] CFG-P02-T035: verify full smoke contour after runtime mode helper extraction (`api/core/services/adapters`).
 - [x] CFG-P02-T036: extract HTTP response/path helper functions from `index.py` into `src/entrypoints/http/response_utils.py`.
 - [x] CFG-P02-T037: verify full smoke contour after response/path helper extraction (`api/core/services/adapters`).
+- [x] CFG-P02-T038: extract frontend task loading helper from `index.py` into `src/entrypoints/http/frontend_tasks_loader.py`.
+- [x] CFG-P02-T039: verify full smoke contour after frontend task loader extraction (`api/core/services/adapters`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T036..T037 completed: response/path helpers extracted from index; full smoke green)
+- 2026-03-04 (CFG-P02-T038..T039 completed: frontend task loader extracted from index; full smoke green)
 
