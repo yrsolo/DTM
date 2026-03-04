@@ -10,7 +10,7 @@
       "sheetName": "SourceSheet",
       "sheetUrl": ""
     },
-    "hash": "04705df72d90a5a835ed2c22189ffcdb9f1f6bdb6d927f576d27de6ca1b72d64",
+    "hash": "f2b7487bc1158c5bc308984c6328109f13761e87783f883aa46f7db674b8a824",
     "features": {
       "taskHash": true,
       "taskRevision": true,
@@ -109,6 +109,7 @@
       "brand": "BrandA",
       "format_": "Banner",
       "customer": "Cust",
+      "history": "",
       "ownerId": "ae078c0616e907b1",
       "groupId": "9f33f1e54cc26a14",
       "status": "work",

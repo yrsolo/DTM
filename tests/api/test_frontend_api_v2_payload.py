@@ -91,6 +91,8 @@ class FrontendApiV2PayloadTestCase(unittest.TestCase):
         self.assertEqual(payload["meta"]["contractVersion"], "2.0.1")
         self.assertIsInstance(payload["tasks"], list)
         self.assertTrue(all("milestones" in item for item in payload["tasks"]))
+        self.assertTrue(all("history" in item for item in payload["tasks"]))
+        self.assertTrue(all(isinstance(item["history"], str) for item in payload["tasks"]))
 
     def test_milestone_type_enum_contains_only_used_types(self) -> None:
         payload = self._build_payload(

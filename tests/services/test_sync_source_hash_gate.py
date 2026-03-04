@@ -174,6 +174,34 @@ class SyncSourceHashGateTestCase(unittest.TestCase):
         self.assertEqual(repo.version_archives, 1)
         self.assertEqual(repo.milestone_version_upserts, 2)
 
+    def test_history_change_increments_version(self) -> None:
+        repo = _RepoStub()
+        service = YdbSyncService(repo, write_legacy_milestones=True)  # type: ignore[arg-type]
+        snapshot_a = {"values": [["id"], ["1"]], "colors": ["#fff"]}
+        full_a = {"values": [["id", "title"], ["1", "Task"]], "colors": ["#fff"]}
+        full_b = {"values": [["id", "title"], ["1", "Task"]], "colors": ["#aaa"]}
+
+        service.run(
+            source_id="sheet:test",
+            preflight_range_values=snapshot_a,
+            source_range_values=full_a,
+            normalized_tasks=[
+                {"task_id": "1", "title": "Task", "status": "work", "history": "raw A", "milestones": []}
+            ],
+        )
+        service.run(
+            source_id="sheet:test",
+            preflight_range_values={"values": [["id"], ["1"]], "colors": ["#aaa"]},
+            source_range_values=full_b,
+            normalized_tasks=[
+                {"task_id": "1", "title": "Task", "status": "work", "history": "raw B", "milestones": []}
+            ],
+        )
+
+        self.assertEqual(repo._tasks["1"]["task_revision"], 2)
+        self.assertEqual(repo.version_upserts, 2)
+        self.assertEqual(repo.version_archives, 1)
+
     def test_forced_refresh_does_not_change_existing_version(self) -> None:
         repo = _RepoStub()
         service = YdbSyncService(repo, write_legacy_milestones=True)  # type: ignore[arg-type]

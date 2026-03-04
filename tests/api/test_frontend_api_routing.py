@@ -101,6 +101,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertIn("brand", body)
         self.assertIn("format_", body)
         self.assertIn("customer", body)
+        self.assertIn("history", body)
         self.assertIn("reserved", body)
         self.assertIn("implemented", body)
 

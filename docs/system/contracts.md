@@ -13,7 +13,8 @@ Fields (minimum set observed in current code):
 - owner_id: str
 - group_id: str
 - raw_timing: str
-- status: str (derived from color mapping)
+- status: str (derived from color mapping; normalized workflow status)
+- history: str (raw textual status from source column)
 - min_date: YYYY-MM-DD? (derived from milestones planned dates)
 - max_date: YYYY-MM-DD? (derived from milestones planned dates)
 - milestones: list[Milestone]

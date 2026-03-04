@@ -1,5 +1,10 @@
 # Active Tasks
 
+- [x] API-HISTORY-T001: restore raw textual task status as `tasks[].history` in API v2 payload while keeping normalized `status` semantics.
+- [x] API-HISTORY-T002: include `history` in sync content-hash basis and keep backward-safe readmodel fallback (`raw_payload.history|status|""`).
+- [x] API-HISTORY-T003: align docs/tests/snapshots with new `history` field and verify full smoke suite + `check_no_monsters`.
+- [x] BRANCH-SYNC-T001: synchronize `test` branch to `dev` using reset + force-with-lease to restore linear promotion policy.
+
 - [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P01-T001: inventory functional context dataclasses/lambda wiring and record replacements in `docs/system/demonster_inventory.md`.
 - [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P02-T001: normalize `AppContext` runtime deps (no callback/factory fields) and bootstrap wiring.
 - [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P03-T001: stabilize HTTP DTO contour (`HttpRequest`/`HttpResponse`) for router dispatch.
@@ -210,5 +215,5 @@
 - none
 
 ## Last Update
-- 2026-03-05 (CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1 implemented: HTTP/router/runtime demonster completed, timer pipeline canonicalized, tests+grep green)
+- 2026-03-05 (restored API v2 `tasks[].history`, aligned tests/snapshots/docs, and synced `test` branch to `dev`)
 

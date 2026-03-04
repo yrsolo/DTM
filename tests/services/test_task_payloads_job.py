@@ -38,6 +38,9 @@ class TaskPayloadsJobTestCase(unittest.TestCase):
         self.assertEqual(payload["task_id"], "42")
         self.assertEqual(payload["start_date"], "2026-03-04")
         self.assertEqual(payload["end_date"], "2026-03-11")
+        self.assertEqual(payload["history"], "work")
+        self.assertEqual(payload["status"], "work")
+        self.assertEqual(payload["raw_payload"]["history"], "work")
         self.assertEqual(len(payload["milestones"]), 2)
 
 

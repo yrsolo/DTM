@@ -41,6 +41,7 @@ def _content_hash_for_task(task: dict[str, Any], milestones: list[dict[str, Any]
         "brand": str(task.get("brand", "")).strip(),
         "format_": str(task.get("format_", "")).strip(),
         "customer": str(task.get("customer", "")).strip(),
+        "history": str(task.get("history", "")).strip(),
         "owner_id": str(task.get("owner_id", task.get("designer", ""))).strip(),
         "group_id": str(task.get("group_id", task.get("project_name", ""))).strip(),
         "raw_timing": str(task.get("raw_timing", "")).strip(),
