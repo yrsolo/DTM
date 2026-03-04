@@ -19,6 +19,7 @@
 | `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | dead-code cleanup + extended smoke pack | high | removed unused API v1 doc builders from runtime entrypoint; verified no regressions in API/core/services/adapters smoke contour |
 | `docs/system/entrypoints_index_main.md` | 2026-03-04 | TeamLead agent | documentation sync pass | high | entrypoint behavior doc now explicitly states runtime `410 api_v1_discontinued` response for API v1 paths |
 | `src/entrypoints/http/frontend_v2_docs.py`, `index.py`, `tests/api/test_frontend_api_routing.py` | 2026-03-04 | TeamLead agent | extraction refactor + compile + routing smoke | high | API v2 doc builders moved out of index entrypoint into dedicated HTTP module without behavior change |
+| `src/entrypoints/http/frontend_v2_handler.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | handler extraction refactor + full smoke pack | high | API v2 handler moved out of index into dedicated HTTP module; index now delegates with explicit boundary wiring |
 
 ## Execution Log
 - CAM-CONFIG-REFORM-V0 activated in `work/now/campaign.md`.
@@ -47,6 +48,8 @@
 - CFG-P02-T021 completed: updated entrypoint system doc with explicit runtime behavior for API v1 paths (`410 api_v1_discontinued`).
 - CFG-P02-T022 completed: extracted API v2 documentation builders from `index.py` to `src/entrypoints/http/frontend_v2_docs.py`.
 - CFG-P02-T023 completed: validated no behavior regressions with API routing/unit smoke and runtime smoke packs.
+- CFG-P02-T024 completed: extracted API v2 request handler from `index.py` into `src/entrypoints/http/frontend_v2_handler.py`; kept index as thin delegator for this path.
+- CFG-P02-T025 completed: executed full smoke contour after handler extraction (API routing + core/services/adapters unit smoke).
 - P01 scaffold implemented (uncommitted):
   - YAML config files added: `config/runtime.yaml`, `config/tables.yaml`, `config/db.yaml`, `config/llm.yaml`, `config/mapping.yaml`
   - typed schema scaffold: `src/config/schema.py`
@@ -99,3 +102,5 @@
   - `python -m py_compile src/entrypoints/http/frontend_v2_docs.py index.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing -v`
   - `python -m unittest tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile src/entrypoints/http/frontend_v2_handler.py src/entrypoints/http/frontend_v2_docs.py index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`

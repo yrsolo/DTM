@@ -49,10 +49,12 @@
 - [x] CFG-P02-T021: sync entrypoint system docs with enforced runtime behavior (`/api/v1/* -> 410 api_v1_discontinued`).
 - [x] CFG-P02-T022: extract API v2 documentation builders from `index.py` into `src/entrypoints/http/frontend_v2_docs.py`.
 - [x] CFG-P02-T023: verify routing and runtime smoke after `index.py` documentation extraction.
+- [x] CFG-P02-T024: extract API v2 request handler logic from `index.py` into `src/entrypoints/http/frontend_v2_handler.py`.
+- [x] CFG-P02-T025: verify full smoke contour after handler extraction (`api/core/services/adapters`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T022..T023 completed: v2 docs extracted from index; routing/runtime smoke green)
+- 2026-03-04 (CFG-P02-T024..T025 completed: v2 handler extracted from index; full smoke green)
 

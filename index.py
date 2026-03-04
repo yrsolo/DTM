@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import time
 import traceback
 from datetime import datetime
 from typing import Any
@@ -35,6 +34,7 @@ from src.entrypoints.http.event_parser import http_path as _http_path
 from src.entrypoints.http.event_parser import normalize_path as _normalize_path
 from src.entrypoints.http.event_parser import query_params as _query_params
 from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_api_v2_doc_html
+from src.entrypoints.http.frontend_v2_handler import handle_frontend_api_v2_if_requested
 from src.entrypoints.http.router import dispatch_http
 from src.services.errors import AppError, PermanentError, TransientError, UserError
 from src.services.source_policy import build_source_policy_matrix
@@ -320,118 +320,36 @@ def _handle_frontend_api_if_requested(
 def _handle_frontend_api_v2_if_requested(
     event: dict[str, Any], is_http_event: bool
 ) -> dict[str, Any] | None:
-    if not is_http_event:
-        return None
-    path = _normalize_path(_http_path(event))
-    method = _http_method(event) or "GET"
-    if method == "ANY":
-        method = "GET"
-    if method != "GET":
-        return None
-
-    params = _query_params(event)
-    doc_paths = {"/api/v2/frontend/doc"}
-    data_paths = {"/api/v2/frontend"}
-
-    if _path_matches(path, doc_paths):
-        if str(params.get("format", "")).strip().lower() == "json":
-            return _json_response(200, frontend_api_v2_doc())
-        return _html_response(200, frontend_api_v2_doc_html())
-    if not _path_matches(path, data_paths):
-        return None
-
-    started = time.perf_counter()
-    statuses = _parse_statuses(params.get("statuses", "work,pre_done"))
-    designer = str(params.get("designer", "")).strip()
-    limit = _parse_limit(params.get("limit", "200"))
-    include_people = _parse_bool(params.get("include_people"), default=True)
-    window_data, window_error = _parse_window_query(params)
-    if window_error is not None:
-        return _error_response(
-            400,
-            code=str(window_error.get("code", "invalid_window")),
-            message=str(window_error.get("message", "Invalid time window")),
-            details=window_error.get("details", {}),
-        )
-
-    policy = build_source_policy_matrix(readmodel_source=APP_READMODEL_SOURCE, notify_source="legacy", render_source="legacy")
-    if policy.api_reads_ydb():
-        repo = FrontendReadmodelRepo(
-            endpoint=YDB_ENDPOINT,
-            database=YDB_DATABASE,
-            ensure_schema=False,
-        )
-        row = repo.get_readmodel("frontend_v2:default")
-        if row is None:
-            return _error_response(
-                503,
-                code="readmodel_unavailable",
-                message="frontend_v2 readmodel snapshot is not built yet.",
-            )
-        payload = row.payload()
-        if not isinstance(payload, dict):
-            return _error_response(
-                500,
-                code="readmodel_payload_invalid",
-                message="Stored readmodel payload is not a valid JSON object.",
-            )
-        payload.setdefault("meta", {})
-        payload["meta"]["readmodelSource"] = "ydb"
-        payload["meta"]["readmodelId"] = row.readmodel_id
-        payload["meta"]["readmodelHash"] = row.payload_hash
-        payload["meta"]["builtFromSourceHash"] = row.built_from_source_hash
-        if any(
-            [
-                designer,
-                limit != 200,
-                include_people is not True,
-                window_data.get("enabled", False),
-                statuses != ["work", "pre_done"],
-            ]
-        ):
-            payload["meta"]["queryFilterApplied"] = False
-            payload["meta"]["queryFilterNote"] = (
-                "YDB readmodel endpoint returns stored snapshot without per-request rebuild."
-            )
-        return _json_response(200, payload)
-
-    dependencies = build_planner_dependencies(
-        KEY_JSON,
-        SHEET_INFO,
-        dry_run=True,
-        mock_external=True,
-        cfg=APP_CFG,
+    return handle_frontend_api_v2_if_requested(
+        event,
+        is_http_event,
+        json_response=_json_response,
+        html_response=_html_response,
+        error_response=_error_response,
+        normalize_path=_normalize_path,
+        http_path=_http_path,
+        http_method=_http_method,
+        query_params=_query_params,
+        path_matches=_path_matches,
+        parse_statuses=_parse_statuses,
+        parse_limit=_parse_limit,
+        parse_bool=_parse_bool,
+        parse_window_query=_parse_window_query,
+        app_readmodel_source=APP_READMODEL_SOURCE,
+        ydb_endpoint=YDB_ENDPOINT,
+        ydb_database=YDB_DATABASE,
+        app_runtime_env=APP_RUNTIME_ENV,
+        app_source_sheet_name=APP_SOURCE_SHEET_NAME,
+        key_json=KEY_JSON,
+        sheet_info=SHEET_INFO,
+        app_cfg=APP_CFG,
+        frontend_api_v2_doc=frontend_api_v2_doc,
+        frontend_api_v2_doc_html=frontend_api_v2_doc_html,
+        frontend_readmodel_repo_cls=FrontendReadmodelRepo,
+        build_planner_dependencies=build_planner_dependencies,
+        load_frontend_tasks=_load_frontend_tasks,
+        build_frontend_api_payload_v2=build_frontend_api_payload_v2,
     )
-    tasks = _load_frontend_tasks(dependencies, statuses)
-    people = []
-    if include_people:
-        dependencies.people_manager.get_designers()
-        people = list(dependencies.people_manager.people.values())
-
-    payload = build_frontend_api_payload_v2(
-        tasks=tasks,
-        people=people,
-        env_name=APP_RUNTIME_ENV,
-        source_sheet_name=APP_SOURCE_SHEET_NAME,
-        statuses=statuses,
-        limit=limit,
-        include_people=include_people,
-        designer_filter=designer,
-        window_start=window_data.get("start"),
-        window_end=window_data.get("end"),
-        window_mode=str(window_data.get("mode", "intersects")),
-    )
-    duration_ms = int((time.perf_counter() - started) * 1000)
-    print(
-        "api_response "
-        f"artifact={payload.get('meta', {}).get('artifact', '')} "
-        f"contractVersion={payload.get('meta', {}).get('contractVersion', '')} "
-        f"generatedAt={payload.get('meta', {}).get('generatedAt', '')} "
-        f"syncedAt={payload.get('meta', {}).get('syncedAt', '')} "
-        f"tasksReturned={payload.get('summary', {}).get('tasksReturned', 0)} "
-        f"duration_ms={duration_ms}"
-    )
-    return _json_response(200, payload)
 
 
 def _handle_api_root_if_requested(
