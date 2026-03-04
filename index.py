@@ -45,6 +45,11 @@ from src.entrypoints.http.frontend_query_params import (
     parse_statuses as _parse_statuses,
     parse_window_query as _parse_window_query,
 )
+from src.entrypoints.http.runtime_mode import (
+    extract_force_refresh as _extract_force_refresh,
+    extract_run_mode as _extract_run_mode,
+    resolve_trigger_mode as _resolve_trigger_mode,
+)
 from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_api_v2_doc_html
 from src.entrypoints.http.frontend_v2_handler import handle_frontend_api_v2_if_requested
 from src.entrypoints.http.router import dispatch_http
@@ -147,15 +152,6 @@ def _html_response(status_code: int, html: str) -> dict[str, Any]:
     }
 
 
-def _resolve_trigger_mode(event: Any) -> str:
-    try:
-        messages = event.get("messages")
-        trigger_id = str(messages[0]["details"]["trigger_id"]).strip()
-    except (TypeError, KeyError, IndexError):
-        return ""
-    return str(APP_TRIGGERS.get(trigger_id, "")).strip().lower()
-
-
 def _load_frontend_tasks(dependencies: Any, statuses: list[str]) -> list[Any]:
     policy = build_source_policy_matrix(
         readmodel_source=APP_READMODEL_SOURCE,
@@ -171,34 +167,6 @@ def _load_frontend_tasks(dependencies: Any, statuses: list[str]) -> list[Any]:
         sa_key_file=YC_SA_KEY_FILE,
     )
     return task_repo.get_task_by_color_status(statuses)
-
-
-def _extract_run_mode(
-    event: dict[str, Any],
-    request_payload: dict[str, Any],
-    is_http_event: bool,
-) -> str:
-    raw_mode = str(request_payload.get("mode", "")).strip().lower()
-    if not raw_mode and is_http_event:
-        params = _query_params(event)
-        raw_mode = str(params.get("mode", "")).strip().lower()
-    if raw_mode not in ALLOWED_RUN_MODES:
-        return ""
-    return raw_mode
-
-
-def _extract_force_refresh(
-    event: dict[str, Any],
-    request_payload: dict[str, Any],
-    is_http_event: bool,
-) -> bool:
-    payload_value = request_payload.get("force_refresh")
-    if payload_value is not None:
-        return _parse_bool(str(payload_value), default=False)
-    if is_http_event:
-        params = _query_params(event)
-        return _parse_bool(params.get("force_refresh"), default=False)
-    return False
 
 
 def _path_matches(path: str, candidates: set[str]) -> bool:
@@ -305,8 +273,14 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         return http_response
 
     _debug_http_shape(event_dict, is_http_event)
-    run_mode = _extract_run_mode(event_dict, request_payload, is_http_event)
-    trigger_mode = _resolve_trigger_mode(event_dict)
+    run_mode = _extract_run_mode(
+        event_dict,
+        request_payload,
+        is_http_event,
+        allowed_run_modes=ALLOWED_RUN_MODES,
+        query_params=_query_params,
+    )
+    trigger_mode = _resolve_trigger_mode(event_dict, APP_TRIGGERS)
     if not run_mode and trigger_mode:
         run_mode = trigger_mode
     if is_http_event and not run_mode:
@@ -326,7 +300,13 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
 
     dry_run = bool(request_payload.get("dry_run", False))
     mock_external = request_payload.get("mock_external")
-    force_refresh = _extract_force_refresh(event_dict, request_payload, is_http_event)
+    force_refresh = _extract_force_refresh(
+        event_dict,
+        request_payload,
+        is_http_event,
+        query_params=_query_params,
+        parse_bool=_parse_bool,
+    )
     planner_event = request_payload.get("event")
     if planner_event is None and not is_http_event:
         planner_event = event
