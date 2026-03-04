@@ -71,7 +71,12 @@ class FrontendReadmodelBuilderService:
         self.env_name = env_name
         self.source_sheet_name = source_sheet_name
 
-    def run(self, *, readmodel_id: str = "frontend_v2:default") -> ReadmodelBuildResult:
+    def run(
+        self,
+        *,
+        readmodel_id: str = "frontend_v2:default",
+        force_rebuild: bool = False,
+    ) -> ReadmodelBuildResult:
         sync_state = self.operational_repo.get_sync_state(self.source_id)
         source_hash = sync_state.source_hash if sync_state is not None else ""
         if not source_hash:
@@ -83,7 +88,7 @@ class FrontendReadmodelBuilderService:
                 ydb_queries_count=self.operational_repo.client.stats.ydb_queries_count,
             )
         existing = self.readmodel_repo.get_readmodel(readmodel_id)
-        if existing is not None and existing.built_from_source_hash == source_hash:
+        if (not force_rebuild) and existing is not None and existing.built_from_source_hash == source_hash:
             payload = existing.payload()
             tasks_count = len(payload.get("tasks", [])) if isinstance(payload, dict) else 0
             return ReadmodelBuildResult(

@@ -45,6 +45,8 @@
 
 | `.github/workflows/deploy_yc_function_main.yml`, `.github/workflows/open_pr_test_to_main.yml`, `docs/system/config.md`, `docs/system/runbook.md` | 2026-03-04 | TeamLead agent | branch-flow automation update + docs sync | high | test deploy is now triggered by `test` branch push; auto-PR flow ensures `test -> main` promotion PR exists |
 
+| `src/services/readmodel_builder.py`, `src/services/pipeline_runtime.py`, `tests/services/test_readmodel_uses_milestones_table.py`, live test DB (`dtm_readmodel_frontend_v2`) | 2026-03-04 | TeamLead agent | force-rebuild path fix + live snapshot verification | high | `force_refresh` now forces readmodel rebuild even when source hash unchanged; local live DB check confirms readmodel dates restored (`11/11`) |
+
 ## Execution Log
 - CAM-CONFIG-REFORM-V0 activated in `work/now/campaign.md`.
 - P01 task list initialized in `work/now/tasks.md`.
@@ -226,3 +228,6 @@
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
 
 - CFG-P02-T073 completed: branch/deploy automation switched to `dev -> test -> main`; test deploy workflow now triggers on `test` push and auto-PR workflow ensures open promotion PR `test -> main`.
+
+- CFG-P02-T074 completed: readmodel builder supports explicit force rebuild and pipeline forwards `force_refresh` to rebuild path (no stale snapshot lock on equal source hash).
+- CFG-P02-T075 completed: local live test DB verification after forced rebuild shows `readmodel_with_any_date=11/11` for `frontend_v2:default`.

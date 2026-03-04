@@ -99,10 +99,12 @@
 - [x] CFG-P02-T071: add regression tests for numeric YDB milestone dates and verify no null-date regression in readmodel build path.
 - [x] CFG-P02-T072: validate fix against live test DB data locally (no deploy): builder dry-run with real operational rows yields tasks with non-null dates.
 - [x] CFG-P02-T073: switch test deploy automation to `test` branch flow (`dev -> test -> main`) and add auto PR creation workflow (`test -> main`).
+- [x] CFG-P02-T074: make `force_refresh` also force readmodel snapshot rebuild (ignore `built_from_source_hash` short-circuit) and cover with unit test.
+- [x] CFG-P02-T075: verify live test DB snapshot state locally: operational tasks contain dates; forced readmodel rebuild restores non-null API dates (11/11).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T073 completed: test deploy trigger moved to `test` branch, auto PR workflow `test -> main` added, docs/tracking synced)
+- 2026-03-04 (CFG-P02-T074..T075 completed: force_refresh now forces readmodel rebuild; live test DB local verification shows readmodel dates restored 11/11)
 

@@ -155,7 +155,10 @@ def run_ydb_sync_readmodel_pipeline(
                 env_name=runtime_env,
                 source_sheet_name=source_task_repository.source_sheet_info.spreadsheet_name,
             )
-            readmodel_result = readmodel_builder.run(readmodel_id="frontend_v2:default")
+            readmodel_result = readmodel_builder.run(
+                readmodel_id="frontend_v2:default",
+                force_rebuild=force_refresh,
+            )
             safe_print(
                 "migration_readmodel_build="
                 f"readmodel_id={readmodel_result.readmodel_id} "
