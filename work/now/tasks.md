@@ -95,10 +95,13 @@
 - [x] CFG-P02-T067: restore expanded HTML API docs sections (field status/query params/response fields) in `/api/v2/frontend/doc`.
 - [x] CFG-P02-T068: reduce null-heavy API payload noise in `core/api_payload_v2.py` (optional/reserved null fields and empty nullable defaults).
 - [x] CFG-P02-T069: verify full smoke contour after docs/payload cleanup (`api/core/services/adapters`).
+- [x] CFG-P02-T070: fix readmodel date normalization for YDB Date-encoded milestone values in `src/services/readmodel_builder.py` (days-since-epoch handling).
+- [x] CFG-P02-T071: add regression tests for numeric YDB milestone dates and verify no null-date regression in readmodel build path.
+- [x] CFG-P02-T072: validate fix against live test DB data locally (no deploy): builder dry-run with real operational rows yields tasks with non-null dates.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T067..T069 completed: expanded HTML docs restored and null-noise reduced in payload; smoke green)
+- 2026-03-04 (CFG-P02-T070..T072 completed: YDB date normalization fixed in readmodel builder; local test DB dry-run confirms non-null dates)
 

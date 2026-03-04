@@ -115,6 +115,8 @@ class ReadmodelUsesMilestonesTableTestCase(unittest.TestCase):
         self.assertEqual(len(tasks[0]["milestones"]), 2)
         self.assertEqual(tasks[0]["milestones"][0]["type"], "storyboard")
         self.assertEqual(tasks[0]["milestones"][1]["type"], "animatic")
+        self.assertEqual(tasks[0]["date"]["start"], "2026-03-04")
+        self.assertEqual(tasks[0]["date"]["end"], "2026-03-11")
 
     def test_builder_adds_synthetic_start_when_versioned_rows_missing(self) -> None:
         class _NoMilestonesRepo(_OperationalRepoStub):
@@ -139,6 +141,45 @@ class ReadmodelUsesMilestonesTableTestCase(unittest.TestCase):
         self.assertEqual(len(tasks[0]["milestones"]), 1)
         self.assertEqual(tasks[0]["milestones"][0]["type"], "start")
         self.assertIn("synthetic_start_used", payload["meta"].get("warnings", []))
+
+    def test_builder_handles_ydb_numeric_date_encoding(self) -> None:
+        class _NumericDateRepo(_OperationalRepoStub):
+            def list_milestones_for_versions(self, *, task_versions=None):  # noqa: ANN001
+                self.task_versions = task_versions
+                return [
+                    {
+                        "task_id": "42",
+                        "version": 3,
+                        "idx": 1,
+                        "type": "storyboard",
+                        "planned_date": 20516,  # 2026-03-04
+                        "status": "planned",
+                    },
+                    {
+                        "task_id": "42",
+                        "version": 3,
+                        "idx": 2,
+                        "type": "animatic",
+                        "planned_date": "20523",  # 2026-03-11
+                        "status": "planned",
+                    },
+                ]
+
+        operational_repo = _NumericDateRepo()
+        readmodel_repo = _ReadmodelRepoStub()
+        service = FrontendReadmodelBuilderService(
+            operational_repo=operational_repo,  # type: ignore[arg-type]
+            readmodel_repo=readmodel_repo,  # type: ignore[arg-type]
+            source_id="sheet:test",
+            env_name="test",
+            source_sheet_name="Sheet",
+        )
+
+        service.run(readmodel_id="frontend_v2:default")
+        payload = readmodel_repo.saved_payload
+        task = payload["tasks"][0]
+        self.assertEqual(task["date"]["start"], "2026-03-04")
+        self.assertEqual(task["date"]["end"], "2026-03-11")
 
 
 if __name__ == "__main__":
