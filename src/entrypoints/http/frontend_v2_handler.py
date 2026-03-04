@@ -47,11 +47,22 @@ def handle_frontend_api_v2_if_requested(
         tasks = payload.get("tasks", []) if isinstance(payload, dict) else []
         include_people = bool(filters.get("include_people", False))
         people_empty = isinstance(entities.get("people", []), list) and len(entities.get("people", [])) == 0
+        people_ids = {
+            str(item.get("id", "")).strip()
+            for item in entities.get("people", [])
+            if isinstance(item, dict) and str(item.get("id", "")).strip()
+        } if isinstance(entities.get("people", []), list) else set()
+        owner_ids = [
+            str(item.get("ownerId", "")).strip()
+            for item in tasks
+            if isinstance(item, dict) and str(item.get("ownerId", "")).strip()
+        ] if isinstance(tasks, list) else []
+        owner_people_mismatch = bool(owner_ids) and bool(people_ids) and any(owner not in people_ids for owner in owner_ids)
         first_task = tasks[0] if isinstance(tasks, list) and tasks else {}
         missing_business_fields = any(
             field not in first_task for field in ("brand", "format_", "customer")
         ) if isinstance(first_task, dict) else True
-        return (not include_people and people_empty) or missing_business_fields
+        return (not include_people and people_empty) or missing_business_fields or owner_people_mismatch
 
     def _enrich_payload_from_operational(payload: dict[str, Any]) -> dict[str, Any]:
         try:
@@ -87,8 +98,9 @@ def handle_frontend_api_v2_if_requested(
                     for field in ("brand", "format_", "customer"):
                         if field not in task or task.get(field) in (None, ""):
                             task[field] = str(row.get(field, "")).strip()
-                    if not task.get("ownerId"):
-                        task["ownerId"] = str(row.get("owner_id", "")).strip()
+                    owner_id = str(row.get("owner_id", "")).strip()
+                    if owner_id:
+                        task["ownerId"] = owner_id
 
             entities = payload.setdefault("entities", {})
             people = entities.get("people")

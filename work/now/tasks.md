@@ -162,10 +162,11 @@
 - [x] APICONTRACT-P04-T001: add API v2 readmodel self-heal on stale snapshot schema (`frontend_v2_handler` rebuild from operational tables when `people/fields` are missing in cached readmodel).
 - [x] APICONTRACT-P04-T002: add fallback payload enrichment from operational rows when readmodel rebuild is unavailable (serve people + business fields from YDB operational data in API response).
 - [x] APICONTRACT-P04-T003: enforce `tasks[].ownerId` reference consistency to `entities.people[].id` in payload builder; add regression test and refresh snapshots.
+- [x] APICONTRACT-P04-T004: detect owner/people id mismatch in stale readmodel snapshots and normalize task `ownerId` from operational rows during API fallback enrichment.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (APICONTRACT-P04-T003 completed: ownerId now references entities.people ids when people are present)
+- 2026-03-04 (APICONTRACT-P04-T004 completed: stale readmodel ownerId mismatch now normalized in API fallback path)
 
