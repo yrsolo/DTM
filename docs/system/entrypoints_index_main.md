@@ -25,6 +25,7 @@ Important behavior:
 - There is no legacy file-state hash gate in runtime.
 - Sync allow/skip decisions are made only inside canonical sync path (`YdbSyncService`).
 - Preflight-first pipeline can skip full snapshot fetch when unchanged.
+- Canonical sync module is `src/services/sync_service.py` (no runtime duplicate sync implementation).
 
 ## `index.py`
 
@@ -41,7 +42,8 @@ Key constraints now satisfied:
 ## API behavior
 
 - Primary contract: API v2 (`/api/v2/frontend` and docs endpoints).
-- Legacy-source failure on v2 path returns structured `503 frontend_source_unavailable`, with emergency YDB fallback path when available.
+- API v2 reads only frontend readmodel snapshot (YDB readmodel path, no planner rebuild in handler).
+- Readmodel unavailability returns structured `503 frontend_source_unavailable` (`details.source=readmodel`).
 - HTTP runtime has dispatch error boundary returning structured `503 http_dispatch_failed` instead of raw gateway failure.
 
 ## Why this doc exists

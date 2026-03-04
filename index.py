@@ -19,7 +19,6 @@ from src.adapters.telegram import TelegramNotifier
 from src.app.bootstrap import build_app_context
 from src.app.planner_bootstrap import build_planner_dependencies
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
-from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.entrypoints.http.event_parser import extract_payload as _extract_payload
 from src.entrypoints.http.event_parser import http_method as _http_method
 from src.entrypoints.http.event_parser import http_path as _http_path
@@ -44,7 +43,6 @@ from src.entrypoints.http.frontend_query_params import (
     parse_statuses as _parse_statuses,
     parse_window_query as _parse_window_query,
 )
-from src.entrypoints.http.frontend_tasks_loader import load_frontend_tasks as _load_frontend_tasks
 from src.entrypoints.http.runtime_mode import (
     extract_force_refresh as _extract_force_refresh,
     extract_run_mode as _extract_run_mode,
@@ -66,7 +64,6 @@ from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_
 from src.entrypoints.http.router import dispatch_http
 from src.legacy.http_core_bindings import (
     build_deadlines_reply,
-    build_frontend_api_payload_v2,
     build_tasks_reply,
     parse_group_query_request,
 )
@@ -76,7 +73,6 @@ APP_CONTEXT = build_app_context()
 APP_CFG = APP_CONTEXT.cfg
 APP_RUNTIME_ENV = APP_CFG.runtime.runtime.env_default
 APP_SOURCE_SHEET_NAME = str(APP_CFG.tables.google_sheets.get("source_sheet_name_default", ""))
-APP_READMODEL_SOURCE = APP_CFG.runtime.sources.readmodel_source_default
 APP_DEBUG_HTTP_EVENT = bool(APP_CFG.runtime.api.get("debug_http_event_default", False))
 APP_TRIGGERS = dict(APP_CFG.runtime.triggers)
 APP_TG_BOT_TOKEN = TG
@@ -134,31 +130,15 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         parse_limit=_parse_limit,
         parse_bool=_parse_bool,
         parse_window_query=_parse_window_query,
-        app_readmodel_source=APP_READMODEL_SOURCE,
         ydb_endpoint=YDB_ENDPOINT,
         ydb_database=YDB_DATABASE,
         ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
         ydb_sa_key_file=YC_SA_KEY_FILE,
         app_runtime_env=APP_RUNTIME_ENV,
         app_source_sheet_name=APP_SOURCE_SHEET_NAME,
-        key_json=KEY_JSON,
-        sheet_info=SHEET_INFO,
-        app_cfg=APP_CFG,
         frontend_api_v2_doc=frontend_api_v2_doc,
         frontend_api_v2_doc_html=frontend_api_v2_doc_html,
         frontend_readmodel_repo_cls=FrontendReadmodelRepo,
-        build_planner_dependencies=build_planner_dependencies,
-        load_frontend_tasks=lambda dependencies, statuses: _load_frontend_tasks(
-            dependencies,
-            statuses,
-            app_readmodel_source=APP_READMODEL_SOURCE,
-            ydb_endpoint=YDB_ENDPOINT,
-            ydb_database=YDB_DATABASE,
-            ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
-            ydb_sa_key_file=YC_SA_KEY_FILE,
-            ydb_operational_task_repo_cls=YdbOperationalTaskRepository,
-        ),
-        build_frontend_api_payload_v2=build_frontend_api_payload_v2,
     )
     root_handler, v2_handler = build_http_dispatch_handlers(dispatch_ctx)
     try:

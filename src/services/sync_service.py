@@ -1,4 +1,4 @@
-"""Sheets -> operational YDB sync service with source-range hash gate."""
+"""CANONICAL: Sheets -> operational YDB sync service with source-range hash gate."""
 
 from __future__ import annotations
 

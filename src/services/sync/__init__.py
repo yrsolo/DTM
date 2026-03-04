@@ -1,1 +1,5 @@
-"""Legacy package placeholder for removed source-hash gate helpers."""
+"""DEPRECATED - DO NOT USE.
+
+Legacy placeholder package after source-hash gate helper removal.
+Runtime canonical sync service lives in `src/services/sync_service.py`.
+"""

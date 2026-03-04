@@ -1,5 +1,21 @@
 # Active Tasks
 
+- [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T001: map runtime usage of `src/services/sync_service.py` vs `src/services/sync/sync_service.py`.
+- [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T002: confirm canonical sync module and add explicit `CANONICAL` header note.
+- [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T003: quarantine/remove duplicate sync module path from runtime imports.
+- [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T004: run local smoke for timer path and API v2 handler.
+- [x] CAM-PIPELINE-STRAIGHTEN-V2-P02-T001: verify old hash-gate artifacts are absent from standard timer path.
+- [x] CAM-PIPELINE-STRAIGHTEN-V2-P03-T001: verify preflight-first pipeline order and full snapshot skip behavior.
+- [x] CAM-PIPELINE-STRAIGHTEN-V2-P04-T001: sync `docs/system/dataflow.md` + `docs/system/entrypoints_index_main.md` with final runtime shape.
+- [x] CAM-PIPELINE-STRAIGHTEN-V2-P05-T001: record evidence logs for skipped/performed full snapshot fetch.
+- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P01-T001: verify `index.py` has no `main.main` coupling and uses direct runtime entry dispatch.
+- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P01-T002: verify `index.py` has no `import main` dependency.
+- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P02-T001: inventory legacy coupling in index/http handlers and classify removable vs legacy-isolated.
+- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P02-T002: ensure API v2 handler keeps fast readmodel path without planner rebuild.
+- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P02-T003: verify group-query isolation from API v2 path and update evidence.
+- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P03-T001: assess planner-world usage in standard timer path and define minimal safe extraction step.
+- [ ] CAM-ENTRYPOINT-DEHYBRID-V2-P03-T002: implement explicit legacy-planner mode boundary so standard timer path does not build planner world by default.
+
 - [x] Activate `CAM-CORE-CLEANUP-V1` from priorities.
 - [x] P01-T001: inventory `core/*` modules and classify domain vs infra-coupled pieces (`docs/system/core_boundaries.md`).
 - [x] P01-T002: map first atomic moves (`core/bootstrap.py`, `core/use_cases.py`) with concrete destination modules.
@@ -166,8 +182,8 @@
 - [x] APICONTRACT-P04-T005: make `entities.people[].id` stable owner hash (not display name) and keep `tasks[].ownerId` aligned to same id in both normal and fallback paths.
 
 ## Blockers
-- none
+- CAM-ENTRYPOINT-DEHYBRID-V2-P03-T002: decision required on timer-path redesign scope (owner notified via `agent/notify_owner.py` on 2026-03-04).
 
 ## Last Update
-- 2026-03-04 (APICONTRACT-P04-T005 completed: people ids switched to stable owner hash and ownerId linkage preserved)
+- 2026-03-04 (DEHYBRID-V2 in progress: API v2 switched to readmodel-only path; timer-path extraction decision pending owner input)
 

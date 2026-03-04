@@ -11,6 +11,10 @@ Hashes are computed on raw snapshot (before normalization).
 
 ## 2) Hash gate (single canonical gate in SyncService)
 
+Canonical implementation:
+- `src/services/sync_service.py` -> `YdbSyncService`
+- `src/services/sync/*` is legacy placeholder namespace and is not used in runtime path.
+
 ### Preflight hash (top rows)
 - Fetch top `PREFLIGHT_TOP_ROWS` rows (default 50) of the source-range (values + colors).
 - Compute `preflight_hash_50 = stable_json_hash(preflight_snapshot)`.
