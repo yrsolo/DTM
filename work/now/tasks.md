@@ -109,10 +109,12 @@
 - [x] PIPE-P03-T001: extract task-source switch orchestration from `main.py` to `src/entrypoints/jobs/source_switch_job.py`.
 - [x] PIPE-P03-T002: extract readmodel freshness probe/logging block from `main.py` to `src/entrypoints/jobs/readmodel_probe_job.py`.
 - [x] PIPE-P03-T003: extract quality-report summary printer from `main.py` to `src/entrypoints/jobs/quality_report_job.py`.
+- [x] PIPE-P03-T004: extract `db_migrate` early-return branch from `main.py` to `src/entrypoints/jobs/db_migrate_branch.py`.
+- [x] PIPE-P03-T005: extract runtime context resolution block (`mode/mock_external/force_refresh` + timer shell hook) from `main.py` to `src/entrypoints/jobs/runtime_context_job.py`.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (PIPE-P03-T003 completed: quality report printer extracted from `main.py`; targeted + routing smoke tests green)
+- 2026-03-04 (PIPE-P03-T005 completed: runtime context resolution extracted from `main.py`; targeted + routing smoke tests green)
 

@@ -29,6 +29,8 @@ Make the runtime pipeline explicit and thin at entrypoint level:
 - `PIPE-P03-T001`: extract task-source switch orchestration from `main.py` into dedicated jobs helper module. (done)
 - `PIPE-P03-T002`: extract readmodel freshness probe/logging block from `main.py` into dedicated jobs helper module. (done)
 - `PIPE-P03-T003`: extract quality-report summary printer from `main.py` into dedicated jobs helper module. (done)
+- `PIPE-P03-T004`: extract `db_migrate` early-return branch from `main.py` into dedicated jobs helper module. (done)
+- `PIPE-P03-T005`: extract runtime context resolution block (`mode/mock_external/force_refresh` + timer shell hook) from `main.py` into dedicated jobs helper module. (done)
 
 ## DoD
 - `main.py` contains only mode routing and high-level orchestration calls.

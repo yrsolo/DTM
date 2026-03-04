@@ -14,6 +14,8 @@
 5. Extract source-switch orchestration block to dedicated job helper module. (done: `src/entrypoints/jobs/source_switch_job.py`)
 6. Extract readmodel freshness probe/logging branch to dedicated job helper module. (done: `src/entrypoints/jobs/readmodel_probe_job.py`)
 7. Extract quality-report summary formatter/printer to dedicated job helper module. (done: `src/entrypoints/jobs/quality_report_job.py`)
+8. Extract `db_migrate` early-return branch to dedicated job helper module. (done: `src/entrypoints/jobs/db_migrate_branch.py`)
+9. Extract runtime context resolution (`mode/mock_external/force_refresh` + timer shell hook) to dedicated job helper module. (done: `src/entrypoints/jobs/runtime_context_job.py`)
 
 ## Constraints
 - No behavior changes in sync/readmodel path.

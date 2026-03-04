@@ -21,6 +21,7 @@ from src.app.planner_bootstrap import build_planner_dependencies
 from src.services.usecases.planner_runtime import resolve_run_mode, run_planner_use_case
 from src.app.bootstrap import build_app_context
 from src.adapters.store_ydb import build_operational_store
+from src.entrypoints.jobs.db_migrate_branch import run_db_migrate_if_requested
 from src.entrypoints.jobs.db_migrate_job import run_db_migrate
 from src.entrypoints.jobs.hash_gate_job import resolve_allow_sync_by_hash_gate
 from src.entrypoints.jobs.legacy_store_write_job import run_legacy_store_write
@@ -30,6 +31,7 @@ from src.entrypoints.jobs.readmodel_freshness import (
     safe_print as _safe_print,
 )
 from src.entrypoints.jobs.readmodel_probe_job import run_readmodel_freshness_probe
+from src.entrypoints.jobs.runtime_context_job import resolve_runtime_context
 from src.entrypoints.jobs.source_snapshot_reader import read_source_snapshot as _read_source_snapshot
 from src.entrypoints.jobs.source_switch_job import apply_task_source_switches
 from src.entrypoints.jobs.task_payloads import (
@@ -56,28 +58,33 @@ async def main(**kwargs):
         kwargs: Параметры запуска.
     """
     # ????????????? ????????????
-    mode = kwargs.get("mode")
-    event = kwargs.get("event")
     dry_run = kwargs.get("dry_run", False)
-    mock_external = kwargs.get("mock_external")
-    mode = resolve_run_mode(mode=mode, event=event, triggers=APP_TRIGGERS)
-    if mode == "timer":
-        shell_report = TIMER_JOB_SHELL.run(APP_CONTEXT)
-        print(f"timer_job_shell_steps={len(shell_report.get('steps', []))}")
-    if mock_external is None:
-        mock_external = mode == "test"
-    force_refresh = bool(kwargs.get("force_refresh", PIPELINE_CFG.force_refresh_default))
-    print(f"{mode=} {dry_run=} {mock_external=}")
+    runtime_ctx = resolve_runtime_context(
+        mode=kwargs.get("mode"),
+        event=kwargs.get("event"),
+        dry_run=dry_run,
+        mock_external=kwargs.get("mock_external"),
+        force_refresh_raw=kwargs.get("force_refresh"),
+        triggers=APP_TRIGGERS,
+        force_refresh_default=PIPELINE_CFG.force_refresh_default,
+        resolve_run_mode=resolve_run_mode,
+        timer_job_shell=TIMER_JOB_SHELL,
+        app_context=APP_CONTEXT,
+    )
+    mode = runtime_ctx.mode
+    mock_external = runtime_ctx.mock_external
+    force_refresh = runtime_ctx.force_refresh
 
-    if mode == "db_migrate":
-        result = run_db_migrate(
-            endpoint=YDB_ENDPOINT,
-            database=YDB_DATABASE,
-            sa_json_credentials=YC_SA_JSON_CREDENTIALS,
-            sa_key_file=YC_SA_KEY_FILE,
-        )
-        print("db_migrate_done=true")
-        return result
+    migrate_handled, migrate_result = run_db_migrate_if_requested(
+        mode=mode,
+        endpoint=YDB_ENDPOINT,
+        database=YDB_DATABASE,
+        sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+        sa_key_file=YC_SA_KEY_FILE,
+        run_db_migrate=run_db_migrate,
+    )
+    if migrate_handled:
+        return migrate_result
 
     dependencies = build_planner_dependencies(
         KEY_JSON,
