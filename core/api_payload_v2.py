@@ -52,22 +52,23 @@ def _serialize_task(task: Any) -> dict[str, Any]:
         }
         for item in task.milestones
     ]
+    date_payload = {
+        "start": start,
+        "end": end,
+        "nextDue": next_due,
+    }
+    # Keep only known dates to reduce noisy null-heavy responses.
+    date_payload = {key: value for key, value in date_payload.items() if value is not None}
+
     return {
         "id": str(task.task_id),
         "title": _to_str(task.title),
         "ownerId": _owner_id(task),
         "groupId": _group_id(task),
         "status": _to_str(task.color_status or task.status or "unknown"),
-        "date": {
-            "start": start,
-            "end": end,
-            "nextDue": next_due,
-        },
+        "date": date_payload,
         "tags": [],
-        "hash": None,
-        "revision": None,
         "links": {
-            "sheetRowUrl": None,
             "self": f"/api/v2/frontend/tasks/{task.task_id}",
         },
         "milestones": milestones,
@@ -165,7 +166,7 @@ def build_frontend_api_payload_v2(
                 "env": env_name,
                 "sourceId": source_sheet_name,
                 "sheetName": source_sheet_name,
-                "sheetUrl": None,
+                "sheetUrl": "",
             },
             "hash": "",
             "features": {
@@ -177,12 +178,12 @@ def build_frontend_api_payload_v2(
             },
             "paging": {
                 "limit": limit,
-                "nextCursor": None,
+                "nextCursor": "",
             },
         },
         "filters": {
             "statuses": statuses,
-            "designer": _to_str(designer_filter) or None,
+            "designer": _to_str(designer_filter),
             "limit": limit,
             "include_people": include_people,
             "window": {

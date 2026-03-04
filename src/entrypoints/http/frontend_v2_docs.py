@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import html
+import json
 from typing import Any
 
 
@@ -149,9 +151,9 @@ def frontend_api_v2_doc() -> dict[str, Any]:
                 "date.end": "YYYY-MM-DD|null",
                 "date.nextDue": "YYYY-MM-DD|null",
                 "tags": "string[]",
-                "hash": "string|null (reserved)",
-                "revision": "string|int|null (reserved)",
-                "links.sheetRowUrl": "string|null",
+                "hash": "string|null (reserved, optional)",
+                "revision": "string|int|null (reserved, optional)",
+                "links.sheetRowUrl": "string|null (reserved, optional)",
                 "links.self": "string",
                 "milestones[]": {
                     "type": "string",
@@ -177,7 +179,17 @@ def frontend_api_v2_doc() -> dict[str, Any]:
 
 
 def frontend_api_v2_doc_html() -> str:
-    return """<!doctype html>
+    doc = frontend_api_v2_doc()
+    query_json = html.escape(
+        json.dumps(doc.get("query", {}), ensure_ascii=False, indent=2, sort_keys=True)
+    )
+    response_fields_json = html.escape(
+        json.dumps(doc.get("response_fields", {}), ensure_ascii=False, indent=2, sort_keys=True)
+    )
+    field_status_json = html.escape(
+        json.dumps(doc.get("field_status", {}), ensure_ascii=False, indent=2, sort_keys=True)
+    )
+    html_doc = """<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
@@ -190,6 +202,7 @@ def frontend_api_v2_doc_html() -> str:
     table { width: 100%; border-collapse: collapse; }
     th, td { text-align: left; border-bottom: 1px solid #e5e7eb; padding: 8px; vertical-align: top; }
     code { background: #eef2f7; padding: 2px 6px; border-radius: 6px; }
+    pre { margin: 0; overflow: auto; background: #fbfcff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
   </style>
 </head>
 <body>
@@ -211,10 +224,23 @@ def frontend_api_v2_doc_html() -> str:
     </div>
     <div class="card">
       <h2>Field Status</h2>
-      <p><code>tasks[].revision</code> is <code>reserved</code>.</p>
-      <p>Most core fields are <code>implemented</code>.</p>
+      <pre><code>__FIELD_STATUS_JSON__</code></pre>
+    </div>
+    <div class="card">
+      <h2>Query Parameters</h2>
+      <pre><code>__QUERY_JSON__</code></pre>
+    </div>
+    <div class="card">
+      <h2>Response Fields</h2>
+      <pre><code>__RESPONSE_FIELDS_JSON__</code></pre>
     </div>
   </div>
 </body>
 </html>
 """
+    return (
+        html_doc
+        .replace("__FIELD_STATUS_JSON__", field_status_json)
+        .replace("__QUERY_JSON__", query_json)
+        .replace("__RESPONSE_FIELDS_JSON__", response_fields_json)
+    )

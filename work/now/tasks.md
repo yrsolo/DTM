@@ -92,10 +92,13 @@
 - [x] CFG-P02-T064: add emergency YDB snapshot fallback when legacy frontend source fails under `READMODEL_SOURCE=legacy`.
 - [x] CFG-P02-T065: add regression coverage for emergency YDB fallback path (`legacy failure -> ydb_emergency_fallback`).
 - [x] CFG-P02-T066: verify full smoke contour after emergency fallback rollout (`api/core/services/adapters`).
+- [x] CFG-P02-T067: restore expanded HTML API docs sections (field status/query params/response fields) in `/api/v2/frontend/doc`.
+- [x] CFG-P02-T068: reduce null-heavy API payload noise in `core/api_payload_v2.py` (optional/reserved null fields and empty nullable defaults).
+- [x] CFG-P02-T069: verify full smoke contour after docs/payload cleanup (`api/core/services/adapters`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T064..T066 completed: emergency YDB fallback added for legacy source failures; smoke green)
+- 2026-03-04 (CFG-P02-T067..T069 completed: expanded HTML docs restored and null-noise reduced in payload; smoke green)
 
