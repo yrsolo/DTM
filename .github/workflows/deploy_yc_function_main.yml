@@ -81,6 +81,14 @@ jobs:
             exit 1
           fi
 
+      - name: Show resolved function settings
+        shell: bash
+        run: |
+          echo "Resolved runtime=${YC_FUNCTION_RUNTIME}"
+          echo "Resolved timeout=${YC_FUNCTION_TIMEOUT}"
+          echo "Resolved memory=${YC_FUNCTION_MEMORY}"
+          echo "Resolved entrypoint=${YC_FUNCTION_ENTRYPOINT}"
+
       - name: Deploy function version
         id: deploy
         uses: yc-actions/yc-sls-function@v4
@@ -88,10 +96,10 @@ jobs:
           yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
           folder-id: ${{ vars.YC_FOLDER_ID || secrets.YC_FOLDER_ID || env.YC_FOLDER_ID }}
           function-name: ${{ vars.YC_CLOUD_FUNCTION_NAME || secrets.YC_CLOUD_FUNCTION_NAME || env.YC_CLOUD_FUNCTION_NAME }}
-          runtime: ${{ vars.YC_FUNCTION_RUNTIME || env.YC_FUNCTION_RUNTIME || 'python311' }}
-          memory: ${{ vars.YC_FUNCTION_MEMORY || env.YC_FUNCTION_MEMORY || '512Mb' }}
-          execution-timeout: ${{ vars.YC_FUNCTION_TIMEOUT || env.YC_FUNCTION_TIMEOUT || '60s' }}
-          entrypoint: ${{ vars.YC_FUNCTION_ENTRYPOINT || secrets.YC_FUNCTION_ENTRYPOINT || env.YC_FUNCTION_ENTRYPOINT || 'index.handler' }}
+          runtime: ${{ env.YC_FUNCTION_RUNTIME || vars.YC_FUNCTION_RUNTIME || 'python311' }}
+          memory: ${{ env.YC_FUNCTION_MEMORY || vars.YC_FUNCTION_MEMORY || '512Mb' }}
+          execution-timeout: ${{ env.YC_FUNCTION_TIMEOUT || vars.YC_FUNCTION_TIMEOUT || '60s' }}
+          entrypoint: ${{ env.YC_FUNCTION_ENTRYPOINT || vars.YC_FUNCTION_ENTRYPOINT || secrets.YC_FUNCTION_ENTRYPOINT || 'index.handler' }}
           service-account: ${{ vars.YC_RUNTIME_SERVICE_ACCOUNT_ID || secrets.YC_RUNTIME_SERVICE_ACCOUNT_ID || vars.YC_SERVICE_ACCOUNT_ID || secrets.YC_SERVICE_ACCOUNT_ID || env.YC_SERVICE_ACCOUNT_ID }}
           environment: |
             ENV=${{ vars.ENV || 'test' }}
