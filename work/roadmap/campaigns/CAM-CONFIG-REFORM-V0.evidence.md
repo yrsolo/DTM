@@ -27,6 +27,7 @@
 | `src/entrypoints/http/runtime_mode.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | runtime mode helper extraction + full smoke pack | high | trigger/mode/force-refresh extraction moved out of index into dedicated HTTP module; behavior retained |
 | `src/entrypoints/http/response_utils.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | response/path helper extraction + full smoke pack | high | JSON/HTML/error/path helpers moved out of index into dedicated HTTP module; behavior retained |
 | `src/entrypoints/http/frontend_tasks_loader.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | frontend task loader extraction + full smoke pack | high | frontend API task source selection/loading moved out of index into dedicated HTTP module; behavior retained |
+| `src/entrypoints/http/debug_utils.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | debug helper extraction + full smoke pack | high | HTTP debug event-shape logger moved out of index into dedicated module; behavior retained |
 
 ## Execution Log
 - CAM-CONFIG-REFORM-V0 activated in `work/now/campaign.md`.
@@ -71,6 +72,8 @@
 - CFG-P02-T037 completed: executed full smoke contour after response/path helper extraction (API routing + core/services/adapters unit smoke).
 - CFG-P02-T038 completed: extracted frontend task loading helper from `index.py` into `src/entrypoints/http/frontend_tasks_loader.py`.
 - CFG-P02-T039 completed: executed full smoke contour after frontend task loader extraction (API routing + core/services/adapters unit smoke).
+- CFG-P02-T040 completed: extracted HTTP debug event-shape logger from `index.py` into `src/entrypoints/http/debug_utils.py`.
+- CFG-P02-T041 completed: executed full smoke contour after HTTP debug helper extraction (API routing + core/services/adapters unit smoke).
 - P01 scaffold implemented (uncommitted):
   - YAML config files added: `config/runtime.yaml`, `config/tables.yaml`, `config/db.yaml`, `config/llm.yaml`, `config/mapping.yaml`
   - typed schema scaffold: `src/config/schema.py`
@@ -138,4 +141,6 @@
   - `python -m py_compile src/entrypoints/http/response_utils.py index.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
   - `python -m py_compile src/entrypoints/http/frontend_tasks_loader.py index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile src/entrypoints/http/debug_utils.py index.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`

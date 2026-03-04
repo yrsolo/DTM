@@ -31,6 +31,7 @@ from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.entrypoints.http.event_parser import extract_payload as _extract_payload
 from src.entrypoints.http.event_parser import http_method as _http_method
 from src.entrypoints.http.event_parser import http_path as _http_path
+from src.entrypoints.http.debug_utils import debug_http_shape as _debug_http_shape
 from src.entrypoints.http.group_query_handler import handle_group_query_if_requested
 from src.entrypoints.http.event_parser import normalize_path as _normalize_path
 from src.entrypoints.http.event_parser import query_params as _query_params
@@ -99,30 +100,6 @@ async def _handle_group_query_if_requested(
         load_work_tasks_for_group_query=_load_work_tasks_for_group_query,
         build_deadlines_reply=build_deadlines_reply,
         build_tasks_reply=build_tasks_reply,
-    )
-
-
-def _debug_http_shape(event: dict[str, Any], is_http_event: bool) -> None:
-    if not APP_DEBUG_HTTP_EVENT:
-        return
-    if not isinstance(event, dict):
-        print("api_debug non_dict_event")
-        return
-    request_context = event.get("requestContext")
-    rc_keys = sorted(request_context.keys()) if isinstance(request_context, dict) else []
-    params = event.get("params")
-    params_keys = sorted(params.keys()) if isinstance(params, dict) else []
-    qs = _query_params(event)
-    print(
-        "api_debug "
-        f"is_http={is_http_event} "
-        f"method={_http_method(event)!r} "
-        f"path={_http_path(event)!r} "
-        f"norm_path={_normalize_path(_http_path(event))!r} "
-        f"event_keys={sorted(event.keys())} "
-        f"request_context_keys={rc_keys} "
-        f"params_keys={params_keys} "
-        f"query_keys={sorted(qs.keys()) if isinstance(qs, dict) else []}"
     )
 
 
@@ -231,7 +208,15 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
     if http_response is not None:
         return http_response
 
-    _debug_http_shape(event_dict, is_http_event)
+    _debug_http_shape(
+        event_dict,
+        is_http_event,
+        debug_enabled=APP_DEBUG_HTTP_EVENT,
+        http_method=_http_method,
+        http_path=_http_path,
+        normalize_path=_normalize_path,
+        query_params=_query_params,
+    )
     run_mode = _extract_run_mode(
         event_dict,
         request_payload,
