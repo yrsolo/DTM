@@ -18,6 +18,7 @@
 | `config/constants.py`, `src/config/loader.py`, `docs/system/config.md` | 2026-03-04 | TeamLead agent | config contour cleanup + compile/test smoke | high | legacy API default-version knob removed from active config contour for v2-only runtime policy |
 | `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | dead-code cleanup + extended smoke pack | high | removed unused API v1 doc builders from runtime entrypoint; verified no regressions in API/core/services/adapters smoke contour |
 | `docs/system/entrypoints_index_main.md` | 2026-03-04 | TeamLead agent | documentation sync pass | high | entrypoint behavior doc now explicitly states runtime `410 api_v1_discontinued` response for API v1 paths |
+| `src/entrypoints/http/frontend_v2_docs.py`, `index.py`, `tests/api/test_frontend_api_routing.py` | 2026-03-04 | TeamLead agent | extraction refactor + compile + routing smoke | high | API v2 doc builders moved out of index entrypoint into dedicated HTTP module without behavior change |
 
 ## Execution Log
 - CAM-CONFIG-REFORM-V0 activated in `work/now/campaign.md`.
@@ -44,6 +45,8 @@
 - CFG-P02-T019 completed: removed dead API v1 documentation builders (`_frontend_api_doc`, `_frontend_api_doc_html`) from `index.py`.
 - CFG-P02-T020 completed: reran extended smoke pack after dead-code removal (api/core/services/adapters) with green result.
 - CFG-P02-T021 completed: updated entrypoint system doc with explicit runtime behavior for API v1 paths (`410 api_v1_discontinued`).
+- CFG-P02-T022 completed: extracted API v2 documentation builders from `index.py` to `src/entrypoints/http/frontend_v2_docs.py`.
+- CFG-P02-T023 completed: validated no behavior regressions with API routing/unit smoke and runtime smoke packs.
 - P01 scaffold implemented (uncommitted):
   - YAML config files added: `config/runtime.yaml`, `config/tables.yaml`, `config/db.yaml`, `config/llm.yaml`, `config/mapping.yaml`
   - typed schema scaffold: `src/config/schema.py`
@@ -93,3 +96,6 @@
   - `rg -n "^def _frontend_api_doc\\(|^def _frontend_api_doc_html\\(" index.py`
   - `python -m py_compile index.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile src/entrypoints/http/frontend_v2_docs.py index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing -v`
+  - `python -m unittest tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
