@@ -32,7 +32,7 @@ Entrypoints still import `config/constants.py`, but defaults are sourced from YA
 - `LEGACY_BLOB_WRITE`, `WRITE_LEGACY_MILESTONES`, `YDB_MIGRATE_ON_START`
 
 API policy note:
-- API v1 support is discontinued (owner decision dated 2026-03-04).
+- API v1 routes are compatibility aliases to API v2 runtime handlers (owner rollback decision dated 2026-03-04).
 - `FRONTEND_API_DEFAULT_VERSION` is removed from active runtime configuration contour.
 
 ## YDB

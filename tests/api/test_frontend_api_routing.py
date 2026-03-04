@@ -96,12 +96,12 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(params.get("limit"), "100")
         self.assertEqual(params.get("include_people"), "true")
 
-    def test_v1_endpoint_returns_gone(self) -> None:
+    def test_v1_endpoint_aliases_to_v2_payload(self) -> None:
         event = _fixture_event()
         response = asyncio.run(index.handler(event, None))
         payload = json.loads(response["body"])
-        self.assertEqual(response["statusCode"], 410)
-        self.assertEqual(payload.get("error", {}).get("code"), "api_v1_discontinued")
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(payload.get("meta", {}).get("artifact"), "dtm_frontend_api_v2")
 
     def test_v2_endpoint_returns_v2_payload(self) -> None:
         event = _fixture_event()
@@ -203,6 +203,32 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 200)
         self.assertEqual(payload.get("meta", {}).get("readmodelSource"), "ydb")
         self.assertEqual(payload.get("summary", {}).get("tasksReturned"), 1)
+
+    def test_v2_falls_back_to_legacy_when_ydb_readmodel_unavailable(self) -> None:
+        index.APP_READMODEL_SOURCE = "ydb"
+
+        class _BrokenReadmodelRepo:
+            def __init__(self, *args, **kwargs) -> None:  # noqa: D401, ANN002, ANN003
+                pass
+
+            def get_readmodel(self, readmodel_id):  # noqa: ANN001
+                _ = readmodel_id
+                raise RuntimeError("ydb package is required")
+
+        index.FrontendReadmodelRepo = _BrokenReadmodelRepo  # type: ignore[assignment]
+
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend?statuses=work"
+        event["queryStringParameters"] = {"statuses": "work"}
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response.get("body", "{}"))
+
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(payload.get("meta", {}).get("artifact"), "dtm_frontend_api_v2")
+        self.assertEqual(payload.get("meta", {}).get("readmodelSource"), "legacy_fallback")
+        self.assertEqual(payload.get("meta", {}).get("fallbackReason"), "ydb_unavailable")
 
 
 if __name__ == "__main__":
