@@ -122,8 +122,8 @@ Steps:
 - `index.py` keeps runtime orchestration and boundary wiring only
 
 ### Intended direction (not implemented in this document)
-- `index.py` should become thin: parse + route → call `src/handlers/api.py`.
-- group-query should live in `src/handlers/group_query.py` (or similar).
+- `index.py` should remain thin by keeping HTTP behavior inside `src/entrypoints/http/*` modules.
+- group-query should continue to be routed via dedicated HTTP modules (no re-introduction of legacy `src/handlers/*` skeletons).
 
 ## Why this doc exists
 `index.py` and `main.py` are known hotspots; this doc captures current behavior so refactors can be validated against reality.

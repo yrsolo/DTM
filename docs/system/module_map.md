@@ -46,7 +46,7 @@ This document is a **navigation map** of the codebase as it exists today. It is 
 
 | Path | Role | Responsibility | State | Notes |
 |---|---|---|---|---|
-| `src/handlers/api.py` | Entrypoint boundary | API v2 handler(s): read snapshot, apply filters, format response | OK / Refactor | `index.py` should dispatch here. API v1 handler surface is not a target. |
+| `src/handlers/api.py` | Legacy | Placeholder API handler skeleton | Removed | Removed from active tree in dedup wave; runtime uses `src/entrypoints/http/*`. |
 | `src/handlers/build_readmodels.py` | Legacy | Legacy build-readmodels handler | Removed | Removed from active tree in dedup wave. |
 | `src/handlers/render_sheets.py` | Entrypoint boundary | Render job handler | Refactor | |
 | `src/handlers/notify_morning.py` | Entrypoint boundary | Notify job handler | Refactor | |
