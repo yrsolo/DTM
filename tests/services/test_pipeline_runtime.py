@@ -1,4 +1,4 @@
-"""Smoke tests for extracted runtime YDB pipeline helper."""
+"""Smoke tests for canonical timer pipeline."""
 
 from __future__ import annotations
 
@@ -8,9 +8,11 @@ import types
 import unittest
 from types import SimpleNamespace
 
+from src.app.context import AppContext
 
-def _import_pipeline_runtime():
-    """Import pipeline runtime with lightweight dependency stubs."""
+
+def _import_timer_pipeline():
+    """Import timer pipeline with lightweight dependency stubs."""
 
     fake_readmodel_builder = types.ModuleType("src.services.readmodel_builder")
 
@@ -28,92 +30,76 @@ def _import_pipeline_runtime():
     fake_sync_service.YdbSyncService = _FakeYdbSyncService
     sys.modules.setdefault("src.services.sync_service", fake_sync_service)
 
-    module = importlib.import_module("src.services.pipeline_runtime")
+    module = importlib.import_module("src.services.timer_pipeline")
     return importlib.reload(module)
 
 
-class PipelineRuntimeSmokeTestCase(unittest.TestCase):
-    def test_pipeline_returns_early_for_legacy_store_mode(self) -> None:
-        module = _import_pipeline_runtime()
-        flags = {"snapshot_called": False, "payload_called": False}
-
-        def _snapshot(*args, **kwargs):
-            flags["snapshot_called"] = True
-            return {}
-
-        def _payload(*args, **kwargs):
-            flags["payload_called"] = True
-            return {}
-
-        ctx = module.SyncReadmodelPipelineContext(
-            store_mode="legacy",
-            allow_sync=True,
-            task_source=SimpleNamespace(
-                source_id="sheet:test:tasks:A1:Z2000",
-                source_sheet_name="sheet",
-            ),
-            ydb_endpoint="grpcs://example:2135",
-            ydb_database="/db",
-            ydb_sa_json_credentials=None,
-            ydb_sa_key_file=None,
-            ydb_migrate_on_start=False,
-            write_legacy_milestones=False,
-            runtime_env="dev",
-            pipeline_cfg=types.SimpleNamespace(
+def _cfg(store_mode: str = "ydb_primary") -> SimpleNamespace:
+    return SimpleNamespace(
+        runtime=SimpleNamespace(
+            sources=SimpleNamespace(store_mode_default=store_mode),
+            runtime=SimpleNamespace(env_default="dev"),
+            pipeline=SimpleNamespace(
                 preflight_top_rows=50,
                 readmodel_ttl_minutes=9,
                 full_sync_interval_hours=24,
             ),
-            safe_print=lambda *_: None,
-            task_to_operational_payload=_payload,
         )
-        request = module.SyncReadmodelPipelineRequest(
-            mode="timer",
-            force_refresh=False,
-        )
-        module.run_ydb_sync_readmodel_pipeline(ctx, request)
-        self.assertFalse(flags["snapshot_called"])
-        self.assertFalse(flags["payload_called"])
+    )
 
-    def test_pipeline_returns_early_when_sync_not_allowed(self) -> None:
-        module = _import_pipeline_runtime()
+
+class _FakeMapper:
+    def to_operational_payload(self, task):  # noqa: ANN001
+        if isinstance(task, dict):
+            return dict(task)
+        return {"task_id": "1"}
+
+
+class TimerPipelineSmokeTestCase(unittest.TestCase):
+    def test_pipeline_returns_early_for_legacy_store_mode(self) -> None:
+        module = _import_timer_pipeline()
         flags = {"snapshot_called": False}
 
         def _snapshot(*args, **kwargs):
+            _ = args, kwargs
             flags["snapshot_called"] = True
             return {}
 
-        ctx = module.SyncReadmodelPipelineContext(
-            store_mode="ydb_primary",
-            allow_sync=False,
-            task_source=SimpleNamespace(
-                source_id="sheet:test:tasks:A1:Z2000",
-                source_sheet_name="sheet",
-            ),
-            ydb_endpoint="grpcs://example:2135",
-            ydb_database="/db",
-            ydb_sa_json_credentials=None,
-            ydb_sa_key_file=None,
-            ydb_migrate_on_start=False,
-            write_legacy_milestones=False,
-            runtime_env="dev",
-            pipeline_cfg=types.SimpleNamespace(
-                preflight_top_rows=50,
-                readmodel_ttl_minutes=9,
-                full_sync_interval_hours=24,
-            ),
-            safe_print=lambda *_: None,
-            task_to_operational_payload=lambda *_: {},
+        task_source = SimpleNamespace(
+            source_id="sheet:test:tasks:A1:Z2000",
+            source_sheet_name="sheet",
+            read_snapshot=_snapshot,
+            build_tasks_from_snapshot=lambda *_: [],
         )
-        request = module.SyncReadmodelPipelineRequest(
-            mode="timer",
-            force_refresh=False,
+        ctx = AppContext(cfg=_cfg(store_mode="legacy"), deps={"task_payload_mapper": _FakeMapper()})
+        request = module.RunRequest(mode="timer", force_refresh=False, task_source=task_source)
+
+        module.TimerPipeline(ctx).run(request)
+        self.assertFalse(flags["snapshot_called"])
+
+    def test_pipeline_returns_early_for_non_timer_mode(self) -> None:
+        module = _import_timer_pipeline()
+        flags = {"snapshot_called": False}
+
+        def _snapshot(*args, **kwargs):
+            _ = args, kwargs
+            flags["snapshot_called"] = True
+            return {}
+
+        task_source = SimpleNamespace(
+            source_id="sheet:test:tasks:A1:Z2000",
+            source_sheet_name="sheet",
+            read_snapshot=_snapshot,
+            build_tasks_from_snapshot=lambda *_: [],
         )
-        module.run_ydb_sync_readmodel_pipeline(ctx, request)
+        ctx = AppContext(cfg=_cfg(), deps={"task_payload_mapper": _FakeMapper()})
+        request = module.RunRequest(mode="reminders-only", force_refresh=False, task_source=task_source)
+
+        module.TimerPipeline(ctx).run(request)
         self.assertFalse(flags["snapshot_called"])
 
     def test_pipeline_skips_full_snapshot_fetch_when_preflight_is_unchanged(self) -> None:
-        module = _import_pipeline_runtime()
+        module = _import_timer_pipeline()
         snapshot_ranges: list[str] = []
 
         class _FakeOperationalTaskRepo:
@@ -178,35 +164,25 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
             read_snapshot=_snapshot,
             build_tasks_from_snapshot=lambda *_: [],
         )
+        ctx = AppContext(
+            cfg=_cfg(),
+            deps={
+                "task_payload_mapper": _FakeMapper(),
+                "ydb_endpoint": "grpcs://example:2135",
+                "ydb_database": "/db",
+                "ydb_sa_json_credentials": None,
+                "ydb_sa_key_file": None,
+                "ydb_migrate_on_start": False,
+                "write_legacy_milestones": False,
+            },
+        )
+        request = module.RunRequest(mode="timer", force_refresh=False, task_source=task_source)
 
-        ctx = module.SyncReadmodelPipelineContext(
-            store_mode="ydb_primary",
-            allow_sync=True,
-            task_source=task_source,
-            ydb_endpoint="grpcs://example:2135",
-            ydb_database="/db",
-            ydb_sa_json_credentials=None,
-            ydb_sa_key_file=None,
-            ydb_migrate_on_start=False,
-            write_legacy_milestones=False,
-            runtime_env="dev",
-            pipeline_cfg=types.SimpleNamespace(
-                preflight_top_rows=50,
-                readmodel_ttl_minutes=9,
-                full_sync_interval_hours=24,
-            ),
-            safe_print=lambda *_: None,
-            task_to_operational_payload=lambda *_: {},
-        )
-        request = module.SyncReadmodelPipelineRequest(
-            mode="timer",
-            force_refresh=False,
-        )
-        module.run_ydb_sync_readmodel_pipeline(ctx, request)
+        module.TimerPipeline(ctx).run(request)
         self.assertEqual(snapshot_ranges, ["A1:Z50"])
 
     def test_pipeline_fetches_full_snapshot_when_preflight_requires_sync(self) -> None:
-        module = _import_pipeline_runtime()
+        module = _import_timer_pipeline()
         snapshot_ranges: list[str] = []
         sync_run_called = {"value": False}
 
@@ -278,30 +254,21 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
             build_tasks_from_snapshot=lambda snapshot: [{"task_id": "1"}] if snapshot else [],
         )
 
-        ctx = module.SyncReadmodelPipelineContext(
-            store_mode="ydb_primary",
-            allow_sync=True,
-            task_source=task_source,
-            ydb_endpoint="grpcs://example:2135",
-            ydb_database="/db",
-            ydb_sa_json_credentials=None,
-            ydb_sa_key_file=None,
-            ydb_migrate_on_start=False,
-            write_legacy_milestones=False,
-            runtime_env="dev",
-            pipeline_cfg=types.SimpleNamespace(
-                preflight_top_rows=50,
-                readmodel_ttl_minutes=9,
-                full_sync_interval_hours=24,
-            ),
-            safe_print=lambda *_: None,
-            task_to_operational_payload=lambda task: dict(task),
+        ctx = AppContext(
+            cfg=_cfg(),
+            deps={
+                "task_payload_mapper": _FakeMapper(),
+                "ydb_endpoint": "grpcs://example:2135",
+                "ydb_database": "/db",
+                "ydb_sa_json_credentials": None,
+                "ydb_sa_key_file": None,
+                "ydb_migrate_on_start": False,
+                "write_legacy_milestones": False,
+            },
         )
-        request = module.SyncReadmodelPipelineRequest(
-            mode="timer",
-            force_refresh=False,
-        )
-        module.run_ydb_sync_readmodel_pipeline(ctx, request)
+        request = module.RunRequest(mode="timer", force_refresh=False, task_source=task_source)
+
+        module.TimerPipeline(ctx).run(request)
         self.assertEqual(snapshot_ranges, ["A1:Z50", "A1:Z2000"])
         self.assertTrue(sync_run_called["value"])
 

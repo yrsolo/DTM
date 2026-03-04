@@ -9,31 +9,19 @@ from src.adapters.store_ydb import build_operational_store
 from src.app.bootstrap import build_app_context
 from src.entrypoints.jobs.db_migrate_branch import run_db_migrate_if_requested
 from src.entrypoints.jobs.db_migrate_job import run_db_migrate
-from src.entrypoints.jobs.legacy_store_write_job import run_legacy_store_write
-from src.entrypoints.jobs.planner_pipeline_job import (
-    PlannerPipelineContext,
-    PlannerPipelineRequest,
-    run_planner_pipeline,
-)
+from src.entrypoints.jobs.legacy_store_write_job import LegacyStoreWriteRequest, run_legacy_store_write
 from src.entrypoints.jobs.quality_report_job import print_quality_report as _print_quality_report
 from src.entrypoints.jobs.readmodel_freshness import (
     build_readmodel_freshness_marker as _readmodel_freshness_marker,
     safe_print as _safe_print,
 )
-from src.entrypoints.jobs.readmodel_probe_job import run_readmodel_freshness_probe
-from src.entrypoints.jobs.readmodel_probe_job import ReadmodelProbeRequest
+from src.entrypoints.jobs.readmodel_probe_job import ReadmodelProbeRequest, run_readmodel_freshness_probe
 from src.entrypoints.jobs.runtime_context_job import RuntimeContextRequest, resolve_runtime_context
-from src.entrypoints.jobs.task_payloads import (
-    task_to_operational_payload as _task_to_operational_payload,
-    task_to_store_record as _task_to_store_record,
-)
+from src.entrypoints.jobs.task_payloads import task_to_store_record as _task_to_store_record
 from src.entrypoints.jobs.timer_job import TimerJob
-from src.services.pipeline_runtime import (
-    SyncReadmodelPipelineContext,
-    SyncReadmodelPipelineRequest,
-    TimerPipeline,
-)
 from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
+from src.services.timer_pipeline import RunRequest as TimerRunRequest
+from src.services.timer_pipeline import TimerPipeline
 from src.services.usecases.planner_runtime import resolve_run_mode, run_planner_use_case
 
 APP_CONTEXT = build_app_context()
@@ -52,7 +40,6 @@ APP_YDB_SA_JSON_CREDENTIALS = APP_DEPS.get("ydb_sa_json_credentials")
 APP_YDB_SA_KEY_FILE = APP_DEPS.get("ydb_sa_key_file")
 APP_LEGACY_BLOB_WRITE = bool(APP_DEPS.get("legacy_blob_write", False))
 APP_MIGRATION_STORE_FILE = str(APP_DEPS.get("migration_store_file", "store.json"))
-APP_WRITE_LEGACY_MILESTONES = bool(APP_DEPS.get("write_legacy_milestones", False))
 APP_YDB_MIGRATE_ON_START = bool(APP_DEPS.get("ydb_migrate_on_start", False))
 TIMER_JOB_SHELL = TimerJob()
 
@@ -105,7 +92,8 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
         dry_run=dry_run,
     )
     use_legacy_planner = str(mode).startswith("legacy_planner_")
-    planner = None
+    quality_report: dict[str, Any] = {"summary": {"task_row_issue_count": 0}}
+
     if use_legacy_planner:
         from src.app.planner_bootstrap import build_planner_dependencies
         from src.entrypoints.jobs.planner_setup_job import PlannerRuntimeBuildRequest, build_planner_runtime
@@ -132,6 +120,30 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
                 log=_safe_print,
             )
         )
+        quality_report = await run_planner_use_case(planner, mode, allow_sync=True)
+
+        full_snapshot = task_source.read_snapshot("A1:Z2000")
+        tasks_for_legacy_store = task_source.build_tasks_from_snapshot(full_snapshot)
+        if tasks_for_legacy_store:
+            run_legacy_store_write(
+                LegacyStoreWriteRequest(
+                    legacy_blob_write=APP_LEGACY_BLOB_WRITE,
+                    store_mode=APP_STORE_MODE,
+                    mode=mode,
+                    allow_sync=True,
+                    tasks=tasks_for_legacy_store,
+                    task_to_store_record=_task_to_store_record,
+                    runtime_env=APP_RUNTIME_ENV,
+                    ydb_endpoint=APP_YDB_ENDPOINT,
+                    ydb_database=APP_YDB_DATABASE,
+                    migration_store_file=APP_MIGRATION_STORE_FILE,
+                    sa_json_credentials=APP_YDB_SA_JSON_CREDENTIALS,
+                    sa_key_file=APP_YDB_SA_KEY_FILE,
+                    build_store=build_operational_store,
+                    safe_print=_safe_print,
+                )
+            )
+
     run_readmodel_freshness_probe(
         ReadmodelProbeRequest(
             mode=mode,
@@ -145,34 +157,13 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
             safe_print=_safe_print,
         )
     )
-    pipeline_ctx = PlannerPipelineContext(
-        task_source=task_source,
-        legacy_blob_write=APP_LEGACY_BLOB_WRITE,
-        app_store_mode=APP_STORE_MODE,
-        app_runtime_env=APP_RUNTIME_ENV,
-        migration_store_file=APP_MIGRATION_STORE_FILE,
-        ydb_endpoint=APP_YDB_ENDPOINT,
-        ydb_database=APP_YDB_DATABASE,
-        ydb_sa_json_credentials=APP_YDB_SA_JSON_CREDENTIALS,
-        ydb_sa_key_file=APP_YDB_SA_KEY_FILE,
-        ydb_migrate_on_start=APP_YDB_MIGRATE_ON_START,
-        write_legacy_milestones=APP_WRITE_LEGACY_MILESTONES,
-        pipeline_cfg=PIPELINE_CFG,
-        safe_print=_safe_print,
-        run_planner_use_case=run_planner_use_case if use_legacy_planner else None,
-        run_legacy_store_write=run_legacy_store_write,
-        timer_pipeline_factory=lambda sync_ctx: TimerPipeline(sync_ctx),
-        pipeline_sync_context_factory=SyncReadmodelPipelineContext,
-        pipeline_sync_request_factory=SyncReadmodelPipelineRequest,
-        task_to_store_record=_task_to_store_record,
-        task_to_operational_payload=_task_to_operational_payload,
-        build_store=build_operational_store,
-        print_quality_report=_print_quality_report,
+
+    TimerPipeline(APP_CONTEXT).run(
+        TimerRunRequest(
+            mode=mode,
+            force_refresh=force_refresh,
+            task_source=task_source,
+        )
     )
-    pipeline_request = PlannerPipelineRequest(
-        planner=planner,
-        use_legacy_planner=use_legacy_planner,
-        mode=mode,
-        force_refresh=force_refresh,
-    )
-    return await run_planner_pipeline(pipeline_ctx, pipeline_request)
+    _print_quality_report(quality_report)
+    return quality_report

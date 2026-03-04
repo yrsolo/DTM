@@ -1,55 +1,54 @@
-﻿"""Group-query HTTP handler extracted from index entrypoint."""
+"""Group-query HTTP handler."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
+
+from src.adapters.telegram import TelegramNotifier
+from src.app.context import AppContext
+from src.entrypoints.http.dto import HttpRequest, HttpResponse
+from src.entrypoints.http.group_query_tasks_loader import load_work_tasks_for_group_query
+from src.entrypoints.http.response_utils import json_response
+from src.legacy.http_core_bindings import build_deadlines_reply, build_tasks_reply, parse_group_query_request
 
 
-@dataclass(frozen=True)
-class GroupQueryHandlerContext:
-    bot_username: str
-    parse_group_query_request: Callable[..., Any]
-    notifier_factory: Callable[[], Any]
-    load_work_tasks_for_group_query: Callable[[], list[Any]]
-    build_deadlines_reply: Callable[[list[Any]], str]
-    build_tasks_reply: Callable[[list[Any], str | None], str]
+class GroupQueryHandler:
+    """Telegram group query webhook handler."""
 
+    def __init__(self, ctx: AppContext) -> None:
+        self._ctx = ctx
 
-@dataclass(frozen=True)
-class GroupQueryHandlerRequest:
-    request_payload: dict[str, Any]
-    is_http_event: bool
+    async def handle(self, req: HttpRequest) -> HttpResponse | None:
+        if not req.is_http_event:
+            return None
 
+        deps = self._ctx.deps
+        bot_username = str(deps.get("tg_bot_username", ""))
+        query = parse_group_query_request(req.body, bot_username=bot_username)
+        if query is None:
+            return None
 
-async def handle_group_query_if_requested(
-    ctx: GroupQueryHandlerContext,
-    request: GroupQueryHandlerRequest,
-) -> bool:
-    if not request.is_http_event:
-        return False
-
-    query = ctx.parse_group_query_request(request.request_payload, bot_username=ctx.bot_username)
-    if query is None:
-        return False
-
-    notifier = ctx.notifier_factory()
-    try:
-        tasks = ctx.load_work_tasks_for_group_query()
-        if query.action == "deadlines":
-            reply = ctx.build_deadlines_reply(tasks)
-        else:
-            reply = ctx.build_tasks_reply(tasks, requester_name=query.requester_name)
-        await notifier.send_message(query.chat_id, reply, parse_mode=None)
-        return True
-    except Exception as error:
-        print(f"group_query_error={error}")
-        await notifier.send_message(
-            query.chat_id,
-            "\u041d\u0435 \u0441\u043c\u043e\u0433\u043b\u0430 \u0441\u043e\u0431\u0440\u0430\u0442\u044c "
-            "\u0441\u043f\u0438\u0441\u043e\u043a \u0437\u0430\u0434\u0430\u0447. "
-            "\u041f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0435\u0449\u0435 "
-            "\u0440\u0430\u0437 \u0447\u0435\u0440\u0435\u0437 \u043c\u0438\u043d\u0443\u0442\u0443.",
-            parse_mode=None,
+        notifier = TelegramNotifier(
+            bot_token=str(deps.get("tg_bot_token", "")),
+            default_chat_id=deps.get("default_chat_id"),
         )
-        return True
+        try:
+            tasks = load_work_tasks_for_group_query(
+                key_json=str(deps.get("key_json", "")),
+                sheet_info=dict(deps.get("sheet_info", {})),
+                app_cfg=self._ctx.cfg,
+            )
+            if query.action == "deadlines":
+                reply = build_deadlines_reply(tasks)
+            else:
+                reply = build_tasks_reply(tasks, requester_name=query.requester_name)
+            await notifier.send_message(query.chat_id, reply, parse_mode=None)
+            return json_response(200, {"artifact": "group_query", "status": "ok"})
+        except Exception as error:
+            print(f"group_query_error={error}")
+            await notifier.send_message(
+                query.chat_id,
+                "?? ?????? ??????? ?????? ?????. ?????????? ??? ??? ????? ??????.",
+                parse_mode=None,
+            )
+            return json_response(200, {"artifact": "group_query", "status": "error"})

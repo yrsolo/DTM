@@ -4,20 +4,13 @@ from __future__ import annotations
 
 import traceback
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable
+from typing import Any
 
-
-@dataclass(frozen=True)
-class RuntimeExecutionContext:
-    main_func: Callable[[Any], Awaitable[Any]]
-    runtime_request_factory: Callable[..., Any]
-    is_http_event: bool
-    app_error_cls: type
-    user_error_cls: type
-    transient_error_cls: type
-    permanent_error_cls: type
-    error_response: Callable[..., dict[str, Any]]
-    notifier_factory: Callable[[], Any]
+from src.adapters.telegram import TelegramNotifier
+from src.app.context import AppContext
+from src.entrypoints.http.dto import HttpResponse
+from src.entrypoints.http.response_utils import error_response
+from src.services.errors import AppError, PermanentError, TransientError, UserError
 
 
 @dataclass(frozen=True)
@@ -29,57 +22,59 @@ class RuntimeExecutionRequest:
     force_refresh: bool
 
 
-async def execute_runtime(
-    ctx: RuntimeExecutionContext,
-    request: RuntimeExecutionRequest,
-) -> dict[str, Any]:
-    try:
-        runtime_request = ctx.runtime_request_factory(
-            event=request.planner_event,
-            mode=request.mode,
-            dry_run=request.dry_run,
-            mock_external=request.mock_external,
-            force_refresh=request.force_refresh,
+class RuntimeExecutor:
+    """Execute planner runtime request and map errors to gateway response."""
+
+    def __init__(self, ctx: AppContext) -> None:
+        self._ctx = ctx
+
+    async def execute(self, request: RuntimeExecutionRequest, *, main_func: Any, request_factory: Any, is_http_event: bool) -> HttpResponse:
+        deps = self._ctx.deps
+        notifier = TelegramNotifier(
+            bot_token=str(deps.get("tg_bot_token", "")),
+            default_chat_id=deps.get("default_chat_id"),
         )
-        await ctx.main_func(runtime_request)
-    except Exception as ex:
-        if isinstance(ex, ctx.user_error_cls):
-            error_family = "user"
-        elif isinstance(ex, ctx.transient_error_cls):
-            error_family = "transient"
-        elif isinstance(ex, ctx.permanent_error_cls):
-            error_family = "permanent"
-        elif isinstance(ex, ctx.app_error_cls):
-            error_family = "app"
-        else:
-            error_family = "unknown"
-        tr = str(traceback.format_exc())
-        txt = f"Runtime failure:\n{ex}\nTRACEBACK\n{tr}\n"
-
-        print(f"runtime_error_classification={error_family}")
-        if isinstance(ex, ctx.app_error_cls) and ctx.is_http_event:
-            status_code = 500
-            if isinstance(ex, ctx.user_error_cls):
-                status_code = 400
-            elif isinstance(ex, ctx.transient_error_cls):
-                status_code = 503
-            return ctx.error_response(
-                status_code,
-                code=ex.code,
-                message=str(ex),
-            )
-        print(txt)
         try:
-            await ctx.notifier_factory().alog(txt)
-        except Exception as notifier_error:
-            print(f"Error notifier failed: {notifier_error}")
+            runtime_request = request_factory(
+                event=request.planner_event,
+                mode=request.mode,
+                dry_run=request.dry_run,
+                mock_external=request.mock_external,
+                force_refresh=request.force_refresh,
+            )
+            await main_func(runtime_request)
+        except Exception as ex:
+            if isinstance(ex, UserError):
+                error_family = "user"
+            elif isinstance(ex, TransientError):
+                error_family = "transient"
+            elif isinstance(ex, PermanentError):
+                error_family = "permanent"
+            elif isinstance(ex, AppError):
+                error_family = "app"
+            else:
+                error_family = "unknown"
+            tr = str(traceback.format_exc())
+            txt = f"Runtime failure:\n{ex}\nTRACEBACK\n{tr}\n"
 
-        return {
-            "statusCode": 200,
-            "body": "!!!EGGORR!!!",
-        }
+            print(f"runtime_error_classification={error_family}")
+            if isinstance(ex, AppError) and is_http_event:
+                status_code = 500
+                if isinstance(ex, UserError):
+                    status_code = 400
+                elif isinstance(ex, TransientError):
+                    status_code = 503
+                return error_response(
+                    status_code,
+                    code=ex.code,
+                    message=str(ex),
+                )
+            print(txt)
+            try:
+                await notifier.alog(txt)
+            except Exception as notifier_error:
+                print(f"Error notifier failed: {notifier_error}")
 
-    return {
-        "statusCode": 200,
-        "body": "!GOOD!",
-    }
+            return HttpResponse(status=200, body="!!!EGGORR!!!")
+
+        return HttpResponse(status=200, body="!GOOD!")

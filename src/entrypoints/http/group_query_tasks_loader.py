@@ -1,8 +1,8 @@
-"""Group-query task loading helper extracted from index entrypoint."""
+"""Group-query task loading helper."""
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any
 
 
 def load_work_tasks_for_group_query(
@@ -10,8 +10,9 @@ def load_work_tasks_for_group_query(
     key_json: str,
     sheet_info: dict[str, str],
     app_cfg: Any,
-    build_planner_dependencies: Callable[..., Any],
 ) -> list[Any]:
+    from src.app.planner_bootstrap import build_planner_dependencies
+
     dependencies = build_planner_dependencies(
         key_json,
         sheet_info,

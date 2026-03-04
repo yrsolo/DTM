@@ -1,5 +1,18 @@
 # Active Tasks
 
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P01-T001: inventory functional context dataclasses/lambda wiring and record replacements in `docs/system/demonster_inventory.md`.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P02-T001: normalize `AppContext` runtime deps (no callback/factory fields) and bootstrap wiring.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P03-T001: stabilize HTTP DTO contour (`HttpRequest`/`HttpResponse`) for router dispatch.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P03-T002: replace `HttpRouterContext` with `HttpRouter(AppContext)` and class handlers.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P03-T003: remove lambda notifier/loader wiring from `index.py` and group-query flow.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P04-T001: introduce canonical `TimerPipeline(AppContext)` in `src/services/timer_pipeline.py`.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P04-T002: extract task payload mapping to `src/services/mappers/task_payload_mapper.py`.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P04-T003: remove `SyncReadmodelPipelineContext` from runtime path and switch entry runtime to direct timer pipeline call.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P05-T001: remove runtime repo-mutation injection in standard path (`_apply_task_source_switches` contour).
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P06-T001: run targeted API/pipeline tests after demonster refactor.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P06-T002: add anti-recidive check script `scripts/check_no_monsters.py`.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P06-T003: update docs/evidence (`entrypoints_index_main`, `dataflow`, campaign evidence).
+
 - [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T001: map runtime usage of `src/services/sync_service.py` vs `src/services/sync/sync_service.py`.
 - [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T002: confirm canonical sync module and add explicit `CANONICAL` header note.
 - [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T003: quarantine/remove duplicate sync module path from runtime imports.
@@ -197,5 +210,5 @@
 - none
 
 ## Last Update
-- 2026-03-05 (YC deploy incident response: runtime rolled back to python311 for test contour stability; timeout remains 240s)
+- 2026-03-05 (CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1 implemented: HTTP/router/runtime demonster completed, timer pipeline canonicalized, tests+grep green)
 
