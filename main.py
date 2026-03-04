@@ -24,6 +24,7 @@ from src.adapters.store_ydb import build_operational_store
 from src.entrypoints.jobs.db_migrate_job import run_db_migrate
 from src.entrypoints.jobs.hash_gate_job import resolve_allow_sync_by_hash_gate
 from src.entrypoints.jobs.legacy_store_write_job import run_legacy_store_write
+from src.entrypoints.jobs.quality_report_job import print_quality_report as _print_quality_report
 from src.entrypoints.jobs.readmodel_freshness import (
     build_readmodel_freshness_marker as _readmodel_freshness_marker,
     safe_print as _safe_print,
@@ -46,27 +47,6 @@ APP_NOTIFY_SOURCE = APP_CONTEXT.cfg.runtime.sources.notify_source_default
 APP_RENDER_SOURCE = APP_CONTEXT.cfg.runtime.sources.render_source_default
 APP_TRIGGERS = APP_CONTEXT.cfg.runtime.triggers
 TIMER_JOB_SHELL = TimerJob()
-
-
-def _print_quality_report(report):
-    summary = report.get("summary", {})
-    print(
-        "quality_report_summary="
-        f"task_row_issues={summary.get('task_row_issue_count', 0)} "
-        f"people_row_issues={summary.get('people_row_issue_count', 0)} "
-        f"timing_parse_errors={summary.get('timing_parse_error_count', 0)} "
-        f"reminder_sent={summary.get('reminder_sent_count', 0)} "
-        f"reminder_send_errors={summary.get('reminder_send_error_count', 0)} "
-        f"reminder_retry_attempts={summary.get('reminder_send_retry_attempt_count', 0)} "
-        f"reminder_retry_exhausted={summary.get('reminder_send_retry_exhausted_count', 0)} "
-        f"reminder_enhancer_provider={summary.get('reminder_enhancer_provider', '')} "
-        f"reminder_enhancer_failover_mode={summary.get('reminder_enhancer_failover_mode', '')} "
-        f"reminder_enhancer_attempted={summary.get('reminder_enhancer_attempt_count', 0)} "
-        f"reminder_enhancer_fallback_empty={summary.get('reminder_enhancer_fallback_empty_count', 0)} "
-        f"reminder_attemptable={summary.get('reminder_delivery_attemptable_count')} "
-        f"reminder_delivery_rate={summary.get('reminder_delivery_rate')} "
-        f"reminder_failure_rate={summary.get('reminder_failure_rate')}"
-    )
 
 
 async def main(**kwargs):
