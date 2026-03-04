@@ -139,11 +139,12 @@
 - [x] OPS-CAMP-P01-T004: archive completed `CAM-PIPELINE-STRAIGHTEN-V1` and switch active execution to `CAM-ENTRYPOINT-DEHYBRID-V1`.
 - [x] DEHYBRID-P01-T001: trust-gate verification for `CAM-ENTRYPOINT-DEHYBRID-V1` against current entrypoint/runtime imports (`index.py`, `main.py`, `src/entrypoints/http/*`, `src/entrypoints/jobs/*`).
 - [x] DEHYBRID-P01-T002: remove direct `index -> main` coupling via shared runtime entry (`src/entrypoints/runtime/planner_runtime_entry.py`).
-- [ ] DEHYBRID-P03-T001: remove direct `core.*` imports from `index.py` by moving API/group-query composition behind `src/entrypoints/http/*` boundary.
+- [x] DEHYBRID-P03-T001: remove direct `core.*` imports from `index.py` by moving API/group-query composition behind `src/entrypoints/http/*` boundary.
+- [ ] DEHYBRID-P03-T002: isolate remaining legacy composition roots (group_query/API payload bindings) behind explicit legacy namespace and default-modern wiring.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (DEHYBRID-P01-T002 completed: `index.py` no longer imports/calls `main.main`)
+- 2026-03-04 (DEHYBRID-P03-T001 completed: direct `core.*` imports removed from `index.py`)
 

@@ -15,13 +15,13 @@ from config import (
     YDB_DATABASE,
     YDB_ENDPOINT,
 )
-from core.api_payload_v2 import build_frontend_api_payload_v2
-from core.group_query import (
+from src.adapters.telegram import TelegramNotifier
+from src.entrypoints.http.legacy_core_bindings import (
+    build_frontend_api_payload_v2,
     build_deadlines_reply,
     build_tasks_reply,
     parse_group_query_request,
 )
-from core.reminder import TelegramNotifier
 from src.app.bootstrap import build_app_context
 from src.app.planner_bootstrap import build_planner_dependencies
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
