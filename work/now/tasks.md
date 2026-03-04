@@ -123,10 +123,11 @@
 - [x] DEDUP-P02-T004: remove legacy placeholder `src/handlers/api.py` and align system docs to `src/entrypoints/http/*` runtime boundary.
 - [x] DEDUP-P02-T005: remove legacy placeholder handler stubs `src/handlers/render_sheets.py` and `src/handlers/notify_morning.py`; align dedup/module docs.
 - [x] DEDUP-P02-T006: remove empty legacy `src/handlers/__init__.py` package marker; confirm no active imports of `src.handlers` namespace.
+- [x] DEDUP-P02-T007: sync `docs/system/module_map.md` after handler/sync dedup wave (remove stale "two sync implementations" conflict note).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (DEDUP-P02-T006 completed: empty `src/handlers` package marker removed; active runtime uses `src/entrypoints/*`)
+- 2026-03-04 (DEDUP-P02-T007 completed: module map synced after dedup wave; stale sync-duplication note removed)
 

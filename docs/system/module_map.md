@@ -78,13 +78,12 @@ Legacy `src/handlers/*` placeholder package is fully removed from active tree in
 
 ## Known duplications / conflicts (to resolve)
 
-1) **Two sync implementations**: `src/services/sync_service.py` vs `src/services/sync/*` (legacy handler removed from active tree).
-2) **Two cores**: top-level `core/` (legacy mixed) vs `src/core/` (domain).
-3) **Legacy handler stubs removed**: runtime now relies on `src/entrypoints/http/*` and `src/entrypoints/jobs/*` instead of `src/handlers/*`.
+1) **Two cores**: top-level `core/` (legacy mixed) vs `src/core/` (domain).
+2) **Legacy handler stubs removed**: runtime now relies on `src/entrypoints/http/*` and `src/entrypoints/jobs/*` instead of `src/handlers/*`.
 
 ## Immediate recommendations
 
 - Treat `src/*` as the target structure; treat top-level `core/` as legacy.
 - Keep `index.py` thin: event parsing + routing in `src/entrypoints/http/*`.
 - Keep `main.py` thin: mode selection + orchestration delegated to `src/entrypoints/jobs/*`.
-- Consolidate sync path: pick one implementation and archive/remove the other.
+- Keep sync path consolidated on `src/services/sync_service.py` + `src/services/sync/*` hash primitives only.

@@ -15,6 +15,7 @@
 - `DEDUP-P02-T004` completed: removed legacy placeholder `src/handlers/api.py`; docs aligned to `src/entrypoints/http/*` as active API boundary.
 - `DEDUP-P02-T005` completed: removed legacy placeholder handler stubs `src/handlers/render_sheets.py` and `src/handlers/notify_morning.py`; docs aligned.
 - `DEDUP-P02-T006` completed: removed empty legacy package marker `src/handlers/__init__.py`; verified no active imports of `src.handlers` namespace.
+- `DEDUP-P02-T007` completed: synced `docs/system/module_map.md` to reflect finished sync/handler dedup wave (removed stale conflict note).
 
 ## Verification
 - `rg -n "from src\\.services\\.sync_service|from src\\.services\\.sync\\.sync_service|from src\\.services\\.readmodels\\.builder|from src\\.services\\.readmodel_builder" src main.py index.py tests`
@@ -31,6 +32,9 @@
 - `python -m unittest tests.services.test_planner_pipeline_job tests.services.test_sync_source_hash_gate tests.api.test_frontend_api_routing -v`
 - `rg -n "from src\\.handlers|import src\\.handlers|src\\.handlers" src tests main.py index.py docs work`
 - `python -m unittest tests.services.test_planner_pipeline_job tests.api.test_frontend_api_routing -v`
+- manual doc consistency pass:
+  - `docs/system/module_map.md`
+  - `docs/system/dedup_plan.md`
 - manual read pass:
   - `src/services/sync_service.py`
   - `src/services/sync/sync_service.py`
