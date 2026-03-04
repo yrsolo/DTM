@@ -115,10 +115,12 @@
 - [x] PIPE-P03-T007: extract planner pipeline orchestration block from `main.py` to `src/entrypoints/jobs/planner_pipeline_job.py`.
 - [x] PIPE-P03-T008: sync `docs/system/entrypoints_index_main.md` with current extracted `main.py` jobs-helper contour.
 - [x] PIPE-P03-T009: verify thin-entrypoint status for `main.py` (single async entrypoint + helper delegation) and rerun extended smoke.
+- [x] DEDUP-P01-T001: inventory runtime-adjacent duplicate implementations (sync/readmodel/handlers) with usage evidence.
+- [x] DEDUP-P01-T002: document keep/remove decisions in `docs/system/dedup_plan.md`.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (PIPE-P03-T009 completed: `main.py` thin-entrypoint audit passed; extended smoke pack remains green)
+- 2026-03-04 (DEDUP-P01-T001..T002 completed: duplicate map and keep/remove decisions documented for CAM-DEDUP-LEGACY-REMOVAL-V1)
 
