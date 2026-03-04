@@ -7,7 +7,7 @@ Activated from priority queue after stabilization of CAM-CONFIG-REFORM-V0 hotfix
 Keep runtime entrypoints thin by moving helper logic from `main.py` into dedicated jobs/services modules.
 
 ## Current Phase
-P01: inventory and first helper extractions (compatibility-preserving).
+P03: source-switch orchestration cleanup (compatibility-preserving).
 
 ## Important Rule
 - No business behavior changes during pipeline cleanup.

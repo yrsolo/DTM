@@ -23,7 +23,6 @@ from src.services.usecases.planner_runtime import resolve_run_mode, run_planner_
 from src.app.bootstrap import build_app_context
 from src.adapters.store_ydb import build_operational_store
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
-from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.entrypoints.jobs.db_migrate_job import run_db_migrate
 from src.entrypoints.jobs.hash_gate_job import resolve_allow_sync_by_hash_gate
 from src.entrypoints.jobs.legacy_store_write_job import run_legacy_store_write
@@ -32,13 +31,13 @@ from src.entrypoints.jobs.readmodel_freshness import (
     safe_print as _safe_print,
 )
 from src.entrypoints.jobs.source_snapshot_reader import read_source_snapshot as _read_source_snapshot
+from src.entrypoints.jobs.source_switch_job import apply_task_source_switches
 from src.entrypoints.jobs.task_payloads import (
     task_to_operational_payload as _task_to_operational_payload,
     task_to_store_record as _task_to_store_record,
 )
 from src.entrypoints.jobs.timer_job import TimerJob
 from src.services.pipeline_runtime import run_ydb_sync_readmodel_pipeline
-from src.services.source_policy import build_source_policy_matrix
 
 APP_CONTEXT = build_app_context()
 PIPELINE_CFG = APP_CONTEXT.cfg.runtime.pipeline
@@ -69,39 +68,6 @@ def _print_quality_report(report):
         f"reminder_delivery_rate={summary.get('reminder_delivery_rate')} "
         f"reminder_failure_rate={summary.get('reminder_failure_rate')}"
     )
-
-
-def _build_ydb_task_repository() -> YdbOperationalTaskRepository:
-    return YdbOperationalTaskRepository(
-        endpoint=YDB_ENDPOINT,
-        database=YDB_DATABASE,
-        sa_json_credentials=YC_SA_JSON_CREDENTIALS,
-        sa_key_file=YC_SA_KEY_FILE,
-    )
-
-
-def _apply_task_source_switches(planner: GoogleSheetPlanner, mode: str) -> tuple[bool, bool]:
-    policy = build_source_policy_matrix(
-        readmodel_source="legacy",
-        notify_source=APP_NOTIFY_SOURCE,
-        render_source=APP_RENDER_SOURCE,
-    )
-    render_reads_ydb = policy.render_reads_ydb(mode)
-    notify_reads_ydb = policy.notify_reads_ydb(mode)
-    if not (render_reads_ydb or notify_reads_ydb):
-        return False, False
-
-    ydb_repository = _build_ydb_task_repository()
-    if render_reads_ydb:
-        planner.task_repository = ydb_repository
-        planner.task_manager.repository = ydb_repository
-        planner.calendar_manager.repository = ydb_repository
-        planner.task_calendar_manager.repository = ydb_repository
-        print("render_source_switch=applied source=ydb")
-    if notify_reads_ydb:
-        planner.reminder.task_repository = ydb_repository
-        print("notify_source_switch=applied source=ydb")
-    return render_reads_ydb, notify_reads_ydb
 
 
 async def main(**kwargs):
@@ -150,7 +116,17 @@ async def main(**kwargs):
         mock_external=mock_external,
         dependencies=dependencies,
     )
-    _apply_task_source_switches(planner, mode)
+    apply_task_source_switches(
+        planner=planner,
+        mode=mode,
+        render_source=APP_RENDER_SOURCE,
+        notify_source=APP_NOTIFY_SOURCE,
+        ydb_endpoint=YDB_ENDPOINT,
+        ydb_database=YDB_DATABASE,
+        ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+        ydb_sa_key_file=YC_SA_KEY_FILE,
+        log=_safe_print,
+    )
     if mode in {"timer", "test", "morning", "reminders-only", "sync-only"} and (
         APP_RENDER_SOURCE == "ydb" or APP_NOTIFY_SOURCE == "ydb"
     ):

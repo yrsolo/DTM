@@ -106,10 +106,11 @@
 - [x] PIPE-P02-T001: extract source hash-gate decision block from `main.py` to `src/entrypoints/jobs/hash_gate_job.py`.
 - [x] PIPE-P02-T002: extract legacy store-write block from `main.py` to `src/entrypoints/jobs/legacy_store_write_job.py`.
 - [x] PIPE-P02-T003: extract task payload conversion helpers from `main.py` to `src/entrypoints/jobs/task_payloads.py`.
+- [x] PIPE-P03-T001: extract task-source switch orchestration from `main.py` to `src/entrypoints/jobs/source_switch_job.py`.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (PIPE-P02-T003 completed: task payload conversion helpers extracted from `main.py`; targeted + routing smoke tests green)
+- 2026-03-04 (PIPE-P03-T001 completed: source-switch orchestration extracted from `main.py`; targeted + routing smoke tests green)
 

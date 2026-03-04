@@ -25,6 +25,9 @@ Make the runtime pipeline explicit and thin at entrypoint level:
 - `PIPE-P02-T002`: extract legacy store-write logging block into dedicated jobs helper. (done)
 - `PIPE-P02-T003`: extract task payload conversion helpers from `main.py` into dedicated jobs helper module. (done)
 
+### P03 - Source-switch orchestration cleanup
+- `PIPE-P03-T001`: extract task-source switch orchestration from `main.py` into dedicated jobs helper module. (done)
+
 ## DoD
 - `main.py` contains only mode routing and high-level orchestration calls.
 - Helper logic lives in dedicated modules and is covered by smoke checks.
