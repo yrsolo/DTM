@@ -21,6 +21,7 @@ Flow:
 4. Probe readmodel freshness marker via `run_readmodel_freshness_probe(...)`.
 5. Run planner pipeline via `run_planner_pipeline(...)`:
    - standard timer path uses task source directly (no planner world),
+   - sync/readmodel step executes through object `TimerPipeline`,
    - legacy planner path is allowed only under explicit `mode=legacy_planner_*`.
 
 Important behavior:

@@ -42,7 +42,7 @@ from src.entrypoints.jobs.timer_job import TimerJob
 from src.services.pipeline_runtime import (
     SyncReadmodelPipelineContext,
     SyncReadmodelPipelineRequest,
-    run_ydb_sync_readmodel_pipeline,
+    TimerPipeline,
 )
 from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
 from src.services.usecases.planner_runtime import resolve_run_mode, run_planner_use_case
@@ -155,7 +155,7 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
         safe_print=_safe_print,
         run_planner_use_case=run_planner_use_case if use_legacy_planner else None,
         run_legacy_store_write=run_legacy_store_write,
-        run_ydb_sync_readmodel_pipeline=run_ydb_sync_readmodel_pipeline,
+        timer_pipeline_factory=lambda sync_ctx: TimerPipeline(sync_ctx),
         pipeline_sync_context_factory=SyncReadmodelPipelineContext,
         pipeline_sync_request_factory=SyncReadmodelPipelineRequest,
         task_to_store_record=_task_to_store_record,

@@ -16,6 +16,9 @@
   - `src/entrypoints/http/router.py` now provides `HttpRouterContext` + `HttpRouter`.
   - `index.py` now calls `HttpRouter(ctx).dispatch(event, is_http_event)`.
   - `build_http_dispatch_handlers(...)` remains only as legacy module (not in runtime path).
+- 2026-03-04: timer sync pipeline switched to object wrapper:
+  - added `TimerPipeline` in `src/services/pipeline_runtime.py`
+  - `planner_pipeline_job` now builds sync context/request and calls `TimerPipeline(...).run(...)`.
 - 2026-03-04: verification:
   - `rg "build_http_dispatch_handlers\\(" src index.py tests` -> only declaration left in `src/entrypoints/http/http_dispatch_chain.py`.
   - `python -m unittest tests.api.test_frontend_api_routing tests.api.test_frontend_api_v2_payload -v` passed.

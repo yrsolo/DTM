@@ -23,7 +23,7 @@ class PlannerPipelineContext:
     safe_print: Callable[[str], None]
     run_planner_use_case: Callable[..., Awaitable[dict[str, Any]]] | None
     run_legacy_store_write: Callable[..., None]
-    run_ydb_sync_readmodel_pipeline: Callable[..., None]
+    timer_pipeline_factory: Callable[[Any], Any]
     pipeline_sync_context_factory: Callable[..., Any]
     pipeline_sync_request_factory: Callable[..., Any]
     task_to_store_record: Callable[[Any], dict[str, object]]
@@ -71,26 +71,25 @@ async def run_planner_pipeline(
             safe_print=ctx.safe_print,
         )
 
-    ctx.run_ydb_sync_readmodel_pipeline(
-        ctx=ctx.pipeline_sync_context_factory(
-            store_mode=ctx.app_store_mode,
-            allow_sync=allow_sync,
-            task_source=ctx.task_source,
-            ydb_endpoint=ctx.ydb_endpoint,
-            ydb_database=ctx.ydb_database,
-            ydb_sa_json_credentials=ctx.ydb_sa_json_credentials,
-            ydb_sa_key_file=ctx.ydb_sa_key_file,
-            ydb_migrate_on_start=ctx.ydb_migrate_on_start,
-            write_legacy_milestones=ctx.write_legacy_milestones,
-            runtime_env=ctx.app_runtime_env,
-            pipeline_cfg=ctx.pipeline_cfg,
-            safe_print=ctx.safe_print,
-            task_to_operational_payload=ctx.task_to_operational_payload,
-        ),
-        request=ctx.pipeline_sync_request_factory(
-            mode=request.mode,
-            force_refresh=request.force_refresh,
-        ),
+    sync_ctx = ctx.pipeline_sync_context_factory(
+        store_mode=ctx.app_store_mode,
+        allow_sync=allow_sync,
+        task_source=ctx.task_source,
+        ydb_endpoint=ctx.ydb_endpoint,
+        ydb_database=ctx.ydb_database,
+        ydb_sa_json_credentials=ctx.ydb_sa_json_credentials,
+        ydb_sa_key_file=ctx.ydb_sa_key_file,
+        ydb_migrate_on_start=ctx.ydb_migrate_on_start,
+        write_legacy_milestones=ctx.write_legacy_milestones,
+        runtime_env=ctx.app_runtime_env,
+        pipeline_cfg=ctx.pipeline_cfg,
+        safe_print=ctx.safe_print,
+        task_to_operational_payload=ctx.task_to_operational_payload,
     )
+    sync_request = ctx.pipeline_sync_request_factory(
+        mode=request.mode,
+        force_refresh=request.force_refresh,
+    )
+    ctx.timer_pipeline_factory(sync_ctx).run(sync_request)
     ctx.print_quality_report(quality_report)
     return quality_report

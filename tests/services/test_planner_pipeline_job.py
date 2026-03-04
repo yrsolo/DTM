@@ -37,6 +37,13 @@ class PlannerPipelineJobTestCase(unittest.IsolatedAsyncioTestCase):
             calls["sync"] += 1
             self.assertEqual(kwargs["request"].mode, "test")
 
+        class _TimerPipelineStub:
+            def __init__(self, sync_ctx):  # noqa: ANN001
+                self.sync_ctx = sync_ctx
+
+            def run(self, sync_request):  # noqa: ANN001
+                run_sync(ctx=self.sync_ctx, request=sync_request)
+
         def print_quality(report):  # noqa: ANN001
             calls["quality"] += 1
             self.assertIn("summary", report)
@@ -57,7 +64,7 @@ class PlannerPipelineJobTestCase(unittest.IsolatedAsyncioTestCase):
             safe_print=lambda _: None,
             run_planner_use_case=run_use_case,
             run_legacy_store_write=run_store_write,
-            run_ydb_sync_readmodel_pipeline=run_sync,
+            timer_pipeline_factory=lambda sync_ctx: _TimerPipelineStub(sync_ctx),
             pipeline_sync_context_factory=lambda **kwargs: kwargs,
             pipeline_sync_request_factory=lambda **kwargs: type("Req", (), kwargs)(),
             task_to_store_record=lambda task: task,
