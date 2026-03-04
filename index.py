@@ -24,7 +24,11 @@ from src.entrypoints.http.event_parser import extract_payload as _extract_payloa
 from src.entrypoints.http.event_parser import http_method as _http_method
 from src.entrypoints.http.event_parser import http_path as _http_path
 from src.entrypoints.http.debug_utils import debug_http_shape as _debug_http_shape
-from src.entrypoints.http.group_query_handler import handle_group_query_if_requested
+from src.entrypoints.http.group_query_handler import (
+    GroupQueryHandlerContext,
+    GroupQueryHandlerRequest,
+    handle_group_query_if_requested,
+)
 from src.entrypoints.http.group_query_tasks_loader import (
     load_work_tasks_for_group_query as _load_work_tasks_for_group_query,
 )
@@ -46,7 +50,11 @@ from src.entrypoints.http.runtime_mode import (
     extract_run_mode as _extract_run_mode,
     resolve_trigger_mode as _resolve_trigger_mode,
 )
-from src.entrypoints.http.runtime_execution import execute_runtime
+from src.entrypoints.http.runtime_execution import (
+    RuntimeExecutionContext,
+    RuntimeExecutionRequest,
+    execute_runtime,
+)
 from src.entrypoints.runtime.planner_runtime_entry import run_planner_runtime
 from src.entrypoints.http.response_utils import (
     error_response as _error_response,
@@ -86,9 +94,7 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
             "body": "!HEALTHY!",
         }
 
-    if await handle_group_query_if_requested(
-        request_payload,
-        is_http_event,
+    group_query_ctx = GroupQueryHandlerContext(
         bot_username=TG_BOT_USERNAME,
         parse_group_query_request=parse_group_query_request,
         notifier_factory=lambda: TelegramNotifier(
@@ -103,7 +109,12 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         ),
         build_deadlines_reply=build_deadlines_reply,
         build_tasks_reply=build_tasks_reply,
-    ):
+    )
+    group_query_request = GroupQueryHandlerRequest(
+        request_payload=request_payload,
+        is_http_event=is_http_event,
+    )
+    if await handle_group_query_if_requested(group_query_ctx, group_query_request):
         return {
             "statusCode": 200,
             "body": "!GROUP_QUERY_OK!",
@@ -217,13 +228,8 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
     if planner_event is None and not is_http_event:
         planner_event = event
 
-    return await execute_runtime(
+    runtime_ctx = RuntimeExecutionContext(
         main_func=run_planner_runtime,
-        mode=run_mode,
-        planner_event=planner_event,
-        dry_run=dry_run,
-        mock_external=mock_external,
-        force_refresh=force_refresh,
         is_http_event=is_http_event,
         app_error_cls=AppError,
         user_error_cls=UserError,
@@ -235,3 +241,11 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
             default_chat_id=APP_TG_DEFAULT_CHAT_ID,
         ),
     )
+    runtime_request = RuntimeExecutionRequest(
+        mode=run_mode,
+        planner_event=planner_event,
+        dry_run=dry_run,
+        mock_external=mock_external,
+        force_refresh=force_refresh,
+    )
+    return await execute_runtime(runtime_ctx, runtime_request)

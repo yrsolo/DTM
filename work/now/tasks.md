@@ -145,11 +145,15 @@
 - [x] DEHYBRID-P04-T001: sync entrypoint docs and campaign evidence for dehybrid state (`index` no `core.*`, no `index -> main` coupling).
 - [x] HYGIENE-P01-T001: trust-gate verification for hyperfunction signatures in current entrypoint/runtime pipeline (`index.py`, `http_dispatch_chain.py`, `runtime_execution.py`, `planner_pipeline_job.py`, `pipeline_runtime.py`).
 - [x] HYGIENE-P02-T001: replace HTTP dispatch hyperfunction args with typed context object (`build_http_dispatch_handlers` + `index.py` wiring).
-- [ ] HYGIENE-P02-T002: replace runtime execution hyperfunction args with typed context object (`execute_runtime` + `index.py` wiring).
+- [x] HYGIENE-P02-T002: replace runtime execution hyperfunction args with typed context object (`execute_runtime` + `index.py` wiring).
+- [x] HYGIENE-P03-T001: replace planner pipeline hyperfunction args with typed context/request DTO (`run_planner_pipeline` + `planner_runtime_entry` wiring).
+- [x] HYGIENE-P03-T002: replace sync/readmodel pipeline hyperfunction args with typed context/request DTO (`run_ydb_sync_readmodel_pipeline` + planner pipeline wiring).
+- [x] HYGIENE-P03-T003: replace group-query handler hyperfunction args with typed context/request DTO (`handle_group_query_if_requested` + `index.py` wiring).
+- [x] HYGIENE-P04-T001: final hygiene verification + docs/tracking sync and campaign closeout decision.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (HYGIENE-P02-T001 completed: HTTP dispatch wiring moved to typed context object)
+- 2026-03-04 (HYGIENE-P04-T001 completed: hygiene verification passed; campaign prepared for archive)
 

@@ -20,7 +20,11 @@ from src.app.planner_bootstrap import build_planner_dependencies
 from src.entrypoints.jobs.db_migrate_branch import run_db_migrate_if_requested
 from src.entrypoints.jobs.db_migrate_job import run_db_migrate
 from src.entrypoints.jobs.legacy_store_write_job import run_legacy_store_write
-from src.entrypoints.jobs.planner_pipeline_job import run_planner_pipeline
+from src.entrypoints.jobs.planner_pipeline_job import (
+    PlannerPipelineContext,
+    PlannerPipelineRequest,
+    run_planner_pipeline,
+)
 from src.entrypoints.jobs.planner_setup_job import build_planner_runtime
 from src.entrypoints.jobs.quality_report_job import print_quality_report as _print_quality_report
 from src.entrypoints.jobs.readmodel_freshness import (
@@ -36,7 +40,11 @@ from src.entrypoints.jobs.task_payloads import (
     task_to_store_record as _task_to_store_record,
 )
 from src.entrypoints.jobs.timer_job import TimerJob
-from src.services.pipeline_runtime import run_ydb_sync_readmodel_pipeline
+from src.services.pipeline_runtime import (
+    SyncReadmodelPipelineContext,
+    SyncReadmodelPipelineRequest,
+    run_ydb_sync_readmodel_pipeline,
+)
 from src.services.planner_runtime import GoogleSheetPlanner
 from src.services.usecases.planner_runtime import resolve_run_mode, run_planner_use_case
 
@@ -109,11 +117,8 @@ async def run_planner_runtime(**kwargs):
         marker_builder=_readmodel_freshness_marker,
         safe_print=_safe_print,
     )
-    return await run_planner_pipeline(
-        planner=planner,
+    pipeline_ctx = PlannerPipelineContext(
         source_task_repository=source_task_repository,
-        mode=mode,
-        force_refresh=force_refresh,
         legacy_blob_write=LEGACY_BLOB_WRITE,
         app_store_mode=APP_STORE_MODE,
         app_runtime_env=APP_RUNTIME_ENV,
@@ -129,9 +134,17 @@ async def run_planner_runtime(**kwargs):
         run_planner_use_case=run_planner_use_case,
         run_legacy_store_write=run_legacy_store_write,
         run_ydb_sync_readmodel_pipeline=run_ydb_sync_readmodel_pipeline,
+        pipeline_sync_context_factory=SyncReadmodelPipelineContext,
+        pipeline_sync_request_factory=SyncReadmodelPipelineRequest,
         task_to_store_record=_task_to_store_record,
         task_to_operational_payload=_task_to_operational_payload,
         build_store=build_operational_store,
         read_source_snapshot=_read_source_snapshot,
         print_quality_report=_print_quality_report,
     )
+    pipeline_request = PlannerPipelineRequest(
+        planner=planner,
+        mode=mode,
+        force_refresh=force_refresh,
+    )
+    return await run_planner_pipeline(pipeline_ctx, pipeline_request)

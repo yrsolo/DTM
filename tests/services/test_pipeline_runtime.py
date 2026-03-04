@@ -45,13 +45,10 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
             flags["payload_called"] = True
             return {}
 
-        module.run_ydb_sync_readmodel_pipeline(
+        ctx = module.SyncReadmodelPipelineContext(
             store_mode="legacy",
-            mode="timer",
             allow_sync=True,
-            tasks=[],
             source_task_repository=object(),
-            force_refresh=False,
             ydb_endpoint="grpcs://example:2135",
             ydb_database="/db",
             ydb_sa_json_credentials=None,
@@ -68,6 +65,12 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
             read_source_snapshot=_snapshot,
             task_to_operational_payload=_payload,
         )
+        request = module.SyncReadmodelPipelineRequest(
+            mode="timer",
+            tasks=[],
+            force_refresh=False,
+        )
+        module.run_ydb_sync_readmodel_pipeline(ctx, request)
         self.assertFalse(flags["snapshot_called"])
         self.assertFalse(flags["payload_called"])
 
@@ -79,13 +82,10 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
             flags["snapshot_called"] = True
             return {}
 
-        module.run_ydb_sync_readmodel_pipeline(
+        ctx = module.SyncReadmodelPipelineContext(
             store_mode="ydb_primary",
-            mode="timer",
             allow_sync=False,
-            tasks=[],
             source_task_repository=object(),
-            force_refresh=False,
             ydb_endpoint="grpcs://example:2135",
             ydb_database="/db",
             ydb_sa_json_credentials=None,
@@ -102,6 +102,12 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
             read_source_snapshot=_snapshot,
             task_to_operational_payload=lambda *_: {},
         )
+        request = module.SyncReadmodelPipelineRequest(
+            mode="timer",
+            tasks=[],
+            force_refresh=False,
+        )
+        module.run_ydb_sync_readmodel_pipeline(ctx, request)
         self.assertFalse(flags["snapshot_called"])
 
     def test_pipeline_skips_full_snapshot_fetch_when_preflight_is_unchanged(self) -> None:
@@ -172,13 +178,10 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
             )
         )
 
-        module.run_ydb_sync_readmodel_pipeline(
+        ctx = module.SyncReadmodelPipelineContext(
             store_mode="ydb_primary",
-            mode="timer",
             allow_sync=True,
-            tasks=[],
             source_task_repository=source_task_repository,
-            force_refresh=False,
             ydb_endpoint="grpcs://example:2135",
             ydb_database="/db",
             ydb_sa_json_credentials=None,
@@ -195,6 +198,12 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
             read_source_snapshot=_snapshot,
             task_to_operational_payload=lambda *_: {},
         )
+        request = module.SyncReadmodelPipelineRequest(
+            mode="timer",
+            tasks=[],
+            force_refresh=False,
+        )
+        module.run_ydb_sync_readmodel_pipeline(ctx, request)
         self.assertEqual(snapshot_ranges, ["A1:Z50"])
 
     def test_pipeline_fetches_full_snapshot_when_preflight_requires_sync(self) -> None:
@@ -271,13 +280,10 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
             )
         )
 
-        module.run_ydb_sync_readmodel_pipeline(
+        ctx = module.SyncReadmodelPipelineContext(
             store_mode="ydb_primary",
-            mode="timer",
             allow_sync=True,
-            tasks=[{"task_id": "1"}],
             source_task_repository=source_task_repository,
-            force_refresh=False,
             ydb_endpoint="grpcs://example:2135",
             ydb_database="/db",
             ydb_sa_json_credentials=None,
@@ -294,6 +300,12 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
             read_source_snapshot=_snapshot,
             task_to_operational_payload=lambda task: dict(task),
         )
+        request = module.SyncReadmodelPipelineRequest(
+            mode="timer",
+            tasks=[{"task_id": "1"}],
+            force_refresh=False,
+        )
+        module.run_ydb_sync_readmodel_pipeline(ctx, request)
         self.assertEqual(snapshot_ranges, ["A1:Z50", "A1:Z2000"])
         self.assertTrue(sync_run_called["value"])
 

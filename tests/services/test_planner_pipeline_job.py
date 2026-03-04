@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import unittest
 
-from src.entrypoints.jobs.planner_pipeline_job import run_planner_pipeline
+from src.entrypoints.jobs.planner_pipeline_job import (
+    PlannerPipelineContext,
+    PlannerPipelineRequest,
+    run_planner_pipeline,
+)
 
 
 class _SourceRepoStub:
@@ -26,18 +30,15 @@ class PlannerPipelineJobTestCase(unittest.IsolatedAsyncioTestCase):
 
         def run_sync(**kwargs):  # noqa: ANN003
             calls["sync"] += 1
-            self.assertEqual(kwargs["mode"], "test")
-            self.assertEqual(len(kwargs["tasks"]), 1)
+            self.assertEqual(kwargs["request"].mode, "test")
+            self.assertEqual(len(kwargs["request"].tasks), 1)
 
         def print_quality(report):  # noqa: ANN001
             calls["quality"] += 1
             self.assertIn("summary", report)
 
-        result = await run_planner_pipeline(
-            planner=object(),
+        ctx = PlannerPipelineContext(
             source_task_repository=_SourceRepoStub(),
-            mode="test",
-            force_refresh=False,
             legacy_blob_write=True,
             app_store_mode="dual_write",
             app_runtime_env="dev",
@@ -53,12 +54,20 @@ class PlannerPipelineJobTestCase(unittest.IsolatedAsyncioTestCase):
             run_planner_use_case=run_use_case,
             run_legacy_store_write=run_store_write,
             run_ydb_sync_readmodel_pipeline=run_sync,
+            pipeline_sync_context_factory=lambda **kwargs: kwargs,
+            pipeline_sync_request_factory=lambda **kwargs: type("Req", (), kwargs)(),
             task_to_store_record=lambda task: task,
             task_to_operational_payload=lambda task: task,
             build_store=lambda *args, **kwargs: None,  # noqa: ARG005
             read_source_snapshot=lambda *args, **kwargs: {},  # noqa: ARG005
             print_quality_report=print_quality,
         )
+        request = PlannerPipelineRequest(
+            planner=object(),
+            mode="test",
+            force_refresh=False,
+        )
+        result = await run_planner_pipeline(ctx, request)
         self.assertEqual(result["summary"]["task_row_issue_count"], 0)
         self.assertEqual(calls["use_case"], 1)
         self.assertEqual(calls["store_write"], 1)

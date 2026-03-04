@@ -1,7 +1,7 @@
 # Backlog
 
 ## In Progress
-- CAM-ENTRYPOINT-HYGIENE-V1
+- none
 
 ## Planned
 - none
@@ -13,6 +13,7 @@
 - CAM-DEDUP-LEGACY-REMOVAL-V1 (archived)
 - CAM-PIPELINE-STRAIGHTEN-V1 (archived)
 - CAM-ENTRYPOINT-DEHYBRID-V1 (archived)
+- CAM-ENTRYPOINT-HYGIENE-V1 (archived)
 
 ## Parked
 - none

@@ -3,7 +3,7 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
-- CAM-ENTRYPOINT-HYGIENE-V1
+- none
 
 ## Planned
 - none
@@ -15,6 +15,7 @@ Single source of truth for campaign lifecycle state.
 - CAM-DEDUP-LEGACY-REMOVAL-V1 (archived in `work/archive/campaigns/CAM-DEDUP-LEGACY-REMOVAL-V1/`)
 - CAM-PIPELINE-STRAIGHTEN-V1 (archived in `work/archive/campaigns/CAM-PIPELINE-STRAIGHTEN-V1/`)
 - CAM-ENTRYPOINT-DEHYBRID-V1 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-DEHYBRID-V1/`)
+- CAM-ENTRYPOINT-HYGIENE-V1 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-HYGIENE-V1/`)
 
 ## Parked
 - none
