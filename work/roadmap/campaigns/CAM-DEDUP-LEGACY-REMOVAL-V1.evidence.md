@@ -16,6 +16,7 @@
 - `DEDUP-P02-T005` completed: removed legacy placeholder handler stubs `src/handlers/render_sheets.py` and `src/handlers/notify_morning.py`; docs aligned.
 - `DEDUP-P02-T006` completed: removed empty legacy package marker `src/handlers/__init__.py`; verified no active imports of `src.handlers` namespace.
 - `DEDUP-P02-T007` completed: synced `docs/system/module_map.md` to reflect finished sync/handler dedup wave (removed stale conflict note).
+- `DEDUP-P02-T008` completed: removed unused legacy frontend payload serializer `core/api_payload.py`; docs synced to v2 payload-only active contour.
 
 ## Verification
 - `rg -n "from src\\.services\\.sync_service|from src\\.services\\.sync\\.sync_service|from src\\.services\\.readmodels\\.builder|from src\\.services\\.readmodel_builder" src main.py index.py tests`
@@ -35,6 +36,8 @@
 - manual doc consistency pass:
   - `docs/system/module_map.md`
   - `docs/system/dedup_plan.md`
+- `rg -n "core\\.api_payload\\b|from core\\.api_payload import|build_frontend_api_payload\\(" src tests main.py index.py`
+- `python -m unittest tests.api.test_frontend_api_routing -v`
 - manual read pass:
   - `src/services/sync_service.py`
   - `src/services/sync/sync_service.py`

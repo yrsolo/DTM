@@ -16,6 +16,7 @@ This document tracks active duplicate/parallel implementations and defines `keep
 | API handler skeleton | `src/entrypoints/http/*` dispatch chain | `src/handlers/api.py` placeholder | no runtime imports; only static leftover | low (removed 2026-03-04) |
 | Render/notify handler skeletons | `src/entrypoints/jobs/*` + service use-cases | `src/handlers/render_sheets.py`, `src/handlers/notify_morning.py` placeholders | no runtime imports; static leftovers only | low (removed 2026-03-04) |
 | Handlers package placeholder | `src/entrypoints/http/*`, `src/entrypoints/jobs/*` | `src/handlers/__init__.py` marker-only package | no runtime imports of `src.handlers` namespace | low (removed 2026-03-04) |
+| Frontend v1 payload serializer | `core/api_payload_v2.py` | `core/api_payload.py` (legacy v1 payload builder) | no runtime/test imports in active contour | low (removed 2026-03-04) |
 
 ## Proposed removal sequence
 1. Add explicit `legacy-only` marking in docs for handler/readmodels old path.

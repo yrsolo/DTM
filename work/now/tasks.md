@@ -124,10 +124,11 @@
 - [x] DEDUP-P02-T005: remove legacy placeholder handler stubs `src/handlers/render_sheets.py` and `src/handlers/notify_morning.py`; align dedup/module docs.
 - [x] DEDUP-P02-T006: remove empty legacy `src/handlers/__init__.py` package marker; confirm no active imports of `src.handlers` namespace.
 - [x] DEDUP-P02-T007: sync `docs/system/module_map.md` after handler/sync dedup wave (remove stale "two sync implementations" conflict note).
+- [x] DEDUP-P02-T008: remove unused legacy frontend payload serializer `core/api_payload.py` (v1 artifact) and sync dedup/core-boundaries docs.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (DEDUP-P02-T007 completed: module map synced after dedup wave; stale sync-duplication note removed)
+- 2026-03-04 (DEDUP-P02-T008 completed: removed dead `core/api_payload.py`; docs synced to v2 payload-only active contour)
 

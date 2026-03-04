@@ -22,7 +22,6 @@ This document tracks what is domain-pure vs infrastructure-coupled inside `core/
 - `core/task_repository_contract.py`
 - `core/task_query_contract.py`
 - `core/task_query_adapter.py`
-- `core/api_payload.py`
 - `core/api_payload_v2.py`
 - `core/read_model.py`
 - `core/group_query.py`
@@ -65,6 +64,7 @@ This document tracks what is domain-pure vs infrastructure-coupled inside `core/
 - LLM and Telegram transport classes moved from `core/reminder.py` to `src/adapters/llm_*.py` and `src/adapters/telegram.py`.
 - Reminder error-classification policies moved to `core/reminder_policy.py`; `core/reminder.py` now has no direct SDK imports.
 - `CalendarManager` and `TaskCalendarManager` moved to `src/services/calendar_runtime.py`; `core/manager.py` keeps compatibility re-export.
+- Legacy frontend v1 payload serializer `core/api_payload.py` removed from active tree; HTTP runtime uses `core/api_payload_v2.py`.
 
 ## Next extraction candidates (ordered)
 1. `core/manager.py`: move remaining `TaskManager` write-path to `src/services/render/*` and keep core as thin shim.
