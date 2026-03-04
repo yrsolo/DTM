@@ -236,7 +236,16 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         def _raise_build_deps(*args, **kwargs):  # noqa: ANN002, ANN003
             raise ModuleNotFoundError("google")
 
+        class _BrokenReadmodelRepo:
+            def __init__(self, *args, **kwargs) -> None:  # noqa: D401, ANN002, ANN003
+                pass
+
+            def get_readmodel(self, readmodel_id):  # noqa: ANN001
+                _ = readmodel_id
+                raise RuntimeError("ydb unavailable")
+
         index.build_planner_dependencies = _raise_build_deps
+        index.FrontendReadmodelRepo = _BrokenReadmodelRepo  # type: ignore[assignment]
 
         event = _fixture_event()
         event["pathParams"]["proxy"] = "api/v2/frontend"
@@ -249,6 +258,41 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 503)
         self.assertEqual(payload.get("error", {}).get("code"), "frontend_source_unavailable")
         self.assertEqual(payload.get("error", {}).get("details", {}).get("errorType"), "ModuleNotFoundError")
+
+    def test_v2_uses_ydb_emergency_fallback_when_legacy_source_unavailable(self) -> None:
+        index.APP_READMODEL_SOURCE = "legacy"
+
+        def _raise_build_deps(*args, **kwargs):  # noqa: ANN002, ANN003
+            raise ValueError("sheet source unavailable")
+
+        index.build_planner_dependencies = _raise_build_deps
+        index.FrontendReadmodelRepo = lambda *args, **kwargs: SimpleNamespace(  # type: ignore[assignment]
+            get_readmodel=lambda readmodel_id: SimpleNamespace(  # noqa: ARG005
+                readmodel_id="frontend_v2:default",
+                payload_hash="sha256:test",
+                built_from_source_hash="source_hash",
+                payload=lambda: {
+                    "meta": {"artifact": "dtm_frontend_api_v2"},
+                    "summary": {"tasksReturned": 1},
+                    "filters": {},
+                    "entities": {"people": [], "groups": [], "tags": [], "enums": {}},
+                    "tasks": [{"id": "777"}],
+                },
+            )
+        )
+
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend?statuses=work"
+        event["queryStringParameters"] = {"statuses": "work"}
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response.get("body", "{}"))
+
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(payload.get("meta", {}).get("readmodelSource"), "ydb_emergency_fallback")
+        self.assertEqual(payload.get("meta", {}).get("fallbackReason"), "legacy_source_unavailable")
+        self.assertEqual(payload.get("meta", {}).get("legacyErrorType"), "ValueError")
 
 
 if __name__ == "__main__":

@@ -89,10 +89,13 @@
 - [x] CFG-P02-T061: add HTTP error boundary to prevent unhandled API handler exceptions from surfacing as gateway `502`.
 - [x] CFG-P02-T062: return structured `503 frontend_source_unavailable` when legacy frontend source path fails at runtime (`/api/v2/frontend`).
 - [x] CFG-P02-T063: add regression test for legacy source failure path and verify full smoke contour.
+- [x] CFG-P02-T064: add emergency YDB snapshot fallback when legacy frontend source fails under `READMODEL_SOURCE=legacy`.
+- [x] CFG-P02-T065: add regression coverage for emergency YDB fallback path (`legacy failure -> ydb_emergency_fallback`).
+- [x] CFG-P02-T066: verify full smoke contour after emergency fallback rollout (`api/core/services/adapters`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T061..T063 completed: HTTP runtime errors now return structured 503 instead of gateway 502; smoke green)
+- 2026-03-04 (CFG-P02-T064..T066 completed: emergency YDB fallback added for legacy source failures; smoke green)
 
