@@ -25,6 +25,7 @@ from src.entrypoints.jobs.db_migrate_branch import run_db_migrate_if_requested
 from src.entrypoints.jobs.db_migrate_job import run_db_migrate
 from src.entrypoints.jobs.hash_gate_job import resolve_allow_sync_by_hash_gate
 from src.entrypoints.jobs.legacy_store_write_job import run_legacy_store_write
+from src.entrypoints.jobs.planner_pipeline_job import run_planner_pipeline
 from src.entrypoints.jobs.planner_setup_job import build_planner_runtime
 from src.entrypoints.jobs.quality_report_job import print_quality_report as _print_quality_report
 from src.entrypoints.jobs.readmodel_freshness import (
@@ -116,57 +117,35 @@ async def main(**kwargs):
         marker_builder=_readmodel_freshness_marker,
         safe_print=_safe_print,
     )
-
-    allow_sync = True
-    allow_sync = resolve_allow_sync_by_hash_gate(
-        enabled=MIGRATION_ENABLE_SOURCE_HASH_GATE,
-        mode=mode,
+    return await run_planner_pipeline(
+        planner=planner,
         source_task_repository=source_task_repository,
-        state_file_path=MIGRATION_HASH_GATE_STATE_FILE,
-        safe_print=_safe_print,
-    )
-
-    quality_report = await run_planner_use_case(planner, mode, allow_sync=allow_sync)
-    tasks = source_task_repository.get_all_tasks()
-
-    run_legacy_store_write(
-        legacy_blob_write=LEGACY_BLOB_WRITE,
-        store_mode=APP_STORE_MODE,
         mode=mode,
-        allow_sync=allow_sync,
-        tasks=tasks,
-        task_to_store_record=_task_to_store_record,
-        runtime_env=APP_RUNTIME_ENV,
-        ydb_endpoint=YDB_ENDPOINT,
-        ydb_database=YDB_DATABASE,
-        migration_store_file=MIGRATION_STORE_FILE,
-        sa_json_credentials=YC_SA_JSON_CREDENTIALS,
-        sa_key_file=YC_SA_KEY_FILE,
-        build_store=build_operational_store,
-        safe_print=_safe_print,
-    )
-
-    run_ydb_sync_readmodel_pipeline(
-        store_mode=APP_STORE_MODE,
-        mode=mode,
-        allow_sync=allow_sync,
-        tasks=tasks,
-        source_task_repository=source_task_repository,
         force_refresh=force_refresh,
+        migration_enable_source_hash_gate=MIGRATION_ENABLE_SOURCE_HASH_GATE,
+        migration_hash_gate_state_file=MIGRATION_HASH_GATE_STATE_FILE,
+        legacy_blob_write=LEGACY_BLOB_WRITE,
+        app_store_mode=APP_STORE_MODE,
+        app_runtime_env=APP_RUNTIME_ENV,
+        migration_store_file=MIGRATION_STORE_FILE,
         ydb_endpoint=YDB_ENDPOINT,
         ydb_database=YDB_DATABASE,
         ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
         ydb_sa_key_file=YC_SA_KEY_FILE,
         ydb_migrate_on_start=YDB_MIGRATE_ON_START,
         write_legacy_milestones=WRITE_LEGACY_MILESTONES,
-        runtime_env=APP_RUNTIME_ENV,
         pipeline_cfg=PIPELINE_CFG,
         safe_print=_safe_print,
-        read_source_snapshot=_read_source_snapshot,
+        resolve_allow_sync_by_hash_gate=resolve_allow_sync_by_hash_gate,
+        run_planner_use_case=run_planner_use_case,
+        run_legacy_store_write=run_legacy_store_write,
+        run_ydb_sync_readmodel_pipeline=run_ydb_sync_readmodel_pipeline,
+        task_to_store_record=_task_to_store_record,
         task_to_operational_payload=_task_to_operational_payload,
+        build_store=build_operational_store,
+        read_source_snapshot=_read_source_snapshot,
+        print_quality_report=_print_quality_report,
     )
-    _print_quality_report(quality_report)
-    return quality_report
 
 
 if __name__ == "__main__":

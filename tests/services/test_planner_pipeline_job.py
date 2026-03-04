@@ -1,0 +1,79 @@
+from __future__ import annotations
+
+import unittest
+
+from src.entrypoints.jobs.planner_pipeline_job import run_planner_pipeline
+
+
+class _SourceRepoStub:
+    def get_all_tasks(self):
+        return [{"id": "1"}]
+
+
+class PlannerPipelineJobTestCase(unittest.IsolatedAsyncioTestCase):
+    async def test_runs_pipeline_sequence(self) -> None:
+        calls = {"hash_gate": 0, "use_case": 0, "store_write": 0, "sync": 0, "quality": 0}
+
+        async def run_use_case(planner, mode, allow_sync):  # noqa: ANN001
+            calls["use_case"] += 1
+            self.assertEqual(mode, "test")
+            self.assertTrue(allow_sync)
+            return {"summary": {"task_row_issue_count": 0}}
+
+        def resolve_hash_gate(**kwargs):  # noqa: ANN003
+            calls["hash_gate"] += 1
+            self.assertEqual(kwargs["mode"], "test")
+            return True
+
+        def run_store_write(**kwargs):  # noqa: ANN003
+            calls["store_write"] += 1
+            self.assertEqual(len(kwargs["tasks"]), 1)
+
+        def run_sync(**kwargs):  # noqa: ANN003
+            calls["sync"] += 1
+            self.assertEqual(kwargs["mode"], "test")
+            self.assertEqual(len(kwargs["tasks"]), 1)
+
+        def print_quality(report):  # noqa: ANN001
+            calls["quality"] += 1
+            self.assertIn("summary", report)
+
+        result = await run_planner_pipeline(
+            planner=object(),
+            source_task_repository=_SourceRepoStub(),
+            mode="test",
+            force_refresh=False,
+            migration_enable_source_hash_gate=True,
+            migration_hash_gate_state_file="state.json",
+            legacy_blob_write=True,
+            app_store_mode="dual_write",
+            app_runtime_env="dev",
+            migration_store_file="store.json",
+            ydb_endpoint="ep",
+            ydb_database="db",
+            ydb_sa_json_credentials=None,
+            ydb_sa_key_file=None,
+            ydb_migrate_on_start=False,
+            write_legacy_milestones=True,
+            pipeline_cfg=object(),
+            safe_print=lambda _: None,
+            resolve_allow_sync_by_hash_gate=resolve_hash_gate,
+            run_planner_use_case=run_use_case,
+            run_legacy_store_write=run_store_write,
+            run_ydb_sync_readmodel_pipeline=run_sync,
+            task_to_store_record=lambda task: task,
+            task_to_operational_payload=lambda task: task,
+            build_store=lambda *args, **kwargs: None,  # noqa: ARG005
+            read_source_snapshot=lambda *args, **kwargs: {},  # noqa: ARG005
+            print_quality_report=print_quality,
+        )
+        self.assertEqual(result["summary"]["task_row_issue_count"], 0)
+        self.assertEqual(calls["hash_gate"], 1)
+        self.assertEqual(calls["use_case"], 1)
+        self.assertEqual(calls["store_write"], 1)
+        self.assertEqual(calls["sync"], 1)
+        self.assertEqual(calls["quality"], 1)
+
+
+if __name__ == "__main__":
+    unittest.main()

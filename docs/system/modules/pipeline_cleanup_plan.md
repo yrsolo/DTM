@@ -17,6 +17,7 @@
 8. Extract `db_migrate` early-return branch to dedicated job helper module. (done: `src/entrypoints/jobs/db_migrate_branch.py`)
 9. Extract runtime context resolution (`mode/mock_external/force_refresh` + timer shell hook) to dedicated job helper module. (done: `src/entrypoints/jobs/runtime_context_job.py`)
 10. Extract planner/dependencies setup and source-switch wiring to dedicated job helper module. (done: `src/entrypoints/jobs/planner_setup_job.py`)
+11. Extract core planner pipeline orchestration to dedicated job helper module. (done: `src/entrypoints/jobs/planner_pipeline_job.py`)
 
 ## Constraints
 - No behavior changes in sync/readmodel path.
