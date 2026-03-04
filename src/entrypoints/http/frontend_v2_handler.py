@@ -41,6 +41,48 @@ def handle_frontend_api_v2_if_requested(
     load_frontend_tasks: Callable[[Any, list[str]], list[Any]],
     build_frontend_api_payload_v2: Callable[..., dict[str, Any]],
 ) -> dict[str, Any] | None:
+    def _needs_readmodel_self_heal(payload: dict[str, Any]) -> bool:
+        filters = payload.get("filters", {}) if isinstance(payload, dict) else {}
+        entities = payload.get("entities", {}) if isinstance(payload, dict) else {}
+        tasks = payload.get("tasks", []) if isinstance(payload, dict) else []
+        include_people = bool(filters.get("include_people", False))
+        people_empty = isinstance(entities.get("people", []), list) and len(entities.get("people", [])) == 0
+        first_task = tasks[0] if isinstance(tasks, list) and tasks else {}
+        missing_business_fields = any(
+            field not in first_task for field in ("brand", "format_", "customer")
+        ) if isinstance(first_task, dict) else True
+        return (not include_people and people_empty) or missing_business_fields
+
+    def _self_heal_readmodel_snapshot(repo: Any, payload: dict[str, Any]) -> bool:
+        try:
+            from src.adapters.ydb.operational_repo import OperationalTaskRepo
+            from src.services.readmodel_builder import FrontendReadmodelBuilderService
+
+            meta = payload.get("meta", {}) if isinstance(payload, dict) else {}
+            source = meta.get("source", {}) if isinstance(meta, dict) else {}
+            source_id = str(source.get("sourceId", "")).strip()
+            if not source_id:
+                return False
+            operational_repo = OperationalTaskRepo(
+                endpoint=ydb_endpoint,
+                database=ydb_database,
+                sa_json_credentials=ydb_sa_json_credentials,
+                sa_key_file=ydb_sa_key_file,
+                ensure_schema=False,
+            )
+            builder = FrontendReadmodelBuilderService(
+                operational_repo=operational_repo,
+                readmodel_repo=repo,
+                source_id=source_id,
+                env_name=str(source.get("env", app_runtime_env) or app_runtime_env),
+                source_sheet_name=str(source.get("sheetName", app_source_sheet_name) or app_source_sheet_name),
+            )
+            builder.run(readmodel_id="frontend_v2:default", force_rebuild=True)
+            return True
+        except Exception as error:
+            print(f"api_v2_readmodel_self_heal_failed error={error}")
+            return False
+
     def _read_ydb_snapshot() -> tuple[dict[str, Any] | None, str | None]:
         try:
             repo = frontend_readmodel_repo_cls(
@@ -56,6 +98,17 @@ def handle_frontend_api_v2_if_requested(
             payload = row.payload()
             if not isinstance(payload, dict):
                 return None, "readmodel_payload_invalid"
+            if _needs_readmodel_self_heal(payload):
+                healed = _self_heal_readmodel_snapshot(repo, payload)
+                if healed:
+                    refreshed_row = repo.get_readmodel("frontend_v2:default")
+                    if refreshed_row is not None:
+                        refreshed_payload = refreshed_row.payload()
+                        if isinstance(refreshed_payload, dict):
+                            payload = refreshed_payload
+                            row = refreshed_row
+                            payload.setdefault("meta", {})
+                            payload["meta"]["readmodelSelfHeal"] = "rebuilt_from_operational"
             payload.setdefault("meta", {})
             payload["meta"]["readmodelSource"] = "ydb"
             payload["meta"]["readmodelId"] = row.readmodel_id

@@ -159,10 +159,11 @@
 - [x] APICONTRACT-P02-T002: restore default people in readmodel-built API payload path (`src/services/readmodel_builder.py`) without changing API contract version.
 - [x] APICONTRACT-P02-T003: add concrete query examples to API v2 docs (`src/entrypoints/http/frontend_v2_docs.py` HTML+JSON).
 - [x] APICONTRACT-P03-T001: run targeted smoke/tests and sync campaign evidence/tracking.
+- [x] APICONTRACT-P04-T001: add API v2 readmodel self-heal on stale snapshot schema (`frontend_v2_handler` rebuild from operational tables when `people/fields` are missing in cached readmodel).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (APICONTRACT-P03-T001 completed: people default + task fields restored, docs examples added, smoke green)
+- 2026-03-04 (APICONTRACT-P04-T001 completed: readmodel self-heal added for stale cached snapshot on API path)
 
