@@ -140,11 +140,12 @@
 - [x] DEHYBRID-P01-T001: trust-gate verification for `CAM-ENTRYPOINT-DEHYBRID-V1` against current entrypoint/runtime imports (`index.py`, `main.py`, `src/entrypoints/http/*`, `src/entrypoints/jobs/*`).
 - [x] DEHYBRID-P01-T002: remove direct `index -> main` coupling via shared runtime entry (`src/entrypoints/runtime/planner_runtime_entry.py`).
 - [x] DEHYBRID-P03-T001: remove direct `core.*` imports from `index.py` by moving API/group-query composition behind `src/entrypoints/http/*` boundary.
-- [ ] DEHYBRID-P03-T002: isolate remaining legacy composition roots (group_query/API payload bindings) behind explicit legacy namespace and default-modern wiring.
+- [x] DEHYBRID-P03-T002: isolate remaining legacy composition roots (group_query/API payload bindings) behind explicit `src/legacy/*` namespace and default-modern wiring.
+- [ ] DEHYBRID-P04-T001: sync entrypoint docs and campaign evidence for dehybrid state (`index` no `core.*`, no `index -> main` coupling).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (DEHYBRID-P03-T001 completed: direct `core.*` imports removed from `index.py`)
+- 2026-03-04 (DEHYBRID-P03-T002 completed: legacy core bindings isolated under `src/legacy/*`)
 

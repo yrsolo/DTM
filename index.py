@@ -16,12 +16,6 @@ from config import (
     YDB_ENDPOINT,
 )
 from src.adapters.telegram import TelegramNotifier
-from src.entrypoints.http.legacy_core_bindings import (
-    build_frontend_api_payload_v2,
-    build_deadlines_reply,
-    build_tasks_reply,
-    parse_group_query_request,
-)
 from src.app.bootstrap import build_app_context
 from src.app.planner_bootstrap import build_planner_dependencies
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
@@ -59,6 +53,12 @@ from src.entrypoints.http.response_utils import (
 )
 from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_api_v2_doc_html
 from src.entrypoints.http.router import dispatch_http
+from src.legacy.http_core_bindings import (
+    build_deadlines_reply,
+    build_frontend_api_payload_v2,
+    build_tasks_reply,
+    parse_group_query_request,
+)
 from src.services.errors import AppError, PermanentError, TransientError, UserError
 
 APP_CONTEXT = build_app_context()
