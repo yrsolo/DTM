@@ -23,6 +23,10 @@
 - [x] CAM-ENTRYPOINT-HYGIENE-V2-T901: replace legacy source-switch job hyperfunction args with `SourceSwitchRequest` DTO.
 - [x] CAM-ENTRYPOINT-HYGIENE-V2-T902: replace planner-setup/legacy-store-write helper hyperfunction args with request DTOs and update runtime wiring.
 - [x] CAM-ENTRYPOINT-HYGIENE-V2-T903: refresh affected unit tests (`source_switch_job`, `planner_setup_job`, `legacy_store_write_job`, `planner_pipeline_job`) and rerun pipeline/api smoke.
+- [x] OPS-CI-YC-T001: add canonical `agent/export_deploy_defaults.py` CLI to export deploy.yaml defaults into GitHub env+outputs with strict required-field validation.
+- [x] OPS-CI-YC-T002: switch test/prod YC workflows to shared deploy-defaults script and deterministic `steps.deploy_defaults.outputs.*` wiring for runtime/timeout/memory/entrypoint.
+- [x] OPS-CI-YC-T003: validate CLI scenarios locally (`target=test`, `target=prod`, strict negative missing `function_timeout`) and keep deploy fail-fast surface explicit.
+- [x] OPS-CI-YC-T004: incident rollback for test contour runtime (`python314 -> python311`) after API 502 post-deploy; keep timeout at `240s`.
 
 - [x] Activate `CAM-CORE-CLEANUP-V1` from priorities.
 - [x] P01-T001: inventory `core/*` modules and classify domain vs infra-coupled pieces (`docs/system/core_boundaries.md`).
@@ -193,5 +197,5 @@
 - none
 
 ## Last Update
-- 2026-03-04 (HYGIENE-V2 follow-up: legacy job helpers switched to DTO requests; targeted + smoke tests green)
+- 2026-03-05 (YC deploy incident response: runtime rolled back to python311 for test contour stability; timeout remains 240s)
 

@@ -37,27 +37,16 @@ jobs:
           pip install -r requirements.actions.txt
 
       - name: Load deploy defaults from YAML
+        id: deploy_defaults
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY'
-          import yaml
-          from pathlib import Path
-
-          yc = (yaml.safe_load(Path("config/deploy.yaml").read_text(encoding="utf-8")) or {}).get("yandex_cloud", {})
-          values = {
-              "YC_FOLDER_ID": str(yc.get("folder_id", "")).strip(),
-              "YC_SERVICE_ACCOUNT_ID": str(yc.get("service_account_id", "")).strip(),
-              "YC_CLOUD_FUNCTION_NAME": str(yc.get("function_name_test", "")).strip(),
-              "YC_FUNCTION_RUNTIME": str(yc.get("function_runtime", "python311")).strip(),
-              "YC_FUNCTION_TIMEOUT": str(yc.get("function_timeout", "60s")).strip(),
-              "YC_FUNCTION_MEMORY": str(yc.get("function_memory", "512Mb")).strip(),
-              "YC_FUNCTION_ENTRYPOINT": str(yc.get("function_entrypoint", "index.handler")).strip(),
-          }
-          with Path("${GITHUB_ENV}").open("a", encoding="utf-8") as f:
-              for k, v in values.items():
-                  f.write(f"{k}={v}\\n")
-          PY
+          python agent/export_deploy_defaults.py \
+            --config config/deploy.yaml \
+            --target test \
+            --github-env "${GITHUB_ENV}" \
+            --github-output "${GITHUB_OUTPUT}" \
+            --strict
 
       - name: Contract regression smoke checks
         run: |
@@ -81,17 +70,45 @@ jobs:
             exit 1
           fi
 
+      - name: Show resolved function settings
+        shell: bash
+        run: |
+          echo "Resolved function=${{ steps.deploy_defaults.outputs.yc_cloud_function_name }}"
+          echo "Resolved runtime=${{ steps.deploy_defaults.outputs.yc_function_runtime }}"
+          echo "Resolved timeout=${{ steps.deploy_defaults.outputs.yc_function_timeout }}"
+          echo "Resolved memory=${{ steps.deploy_defaults.outputs.yc_function_memory }}"
+          echo "Resolved entrypoint=${{ steps.deploy_defaults.outputs.yc_function_entrypoint }}"
+
+      - name: Validate resolved deploy settings
+        shell: bash
+        env:
+          OUT_FUNCTION_NAME: ${{ steps.deploy_defaults.outputs.yc_cloud_function_name }}
+          OUT_RUNTIME: ${{ steps.deploy_defaults.outputs.yc_function_runtime }}
+          OUT_TIMEOUT: ${{ steps.deploy_defaults.outputs.yc_function_timeout }}
+          OUT_MEMORY: ${{ steps.deploy_defaults.outputs.yc_function_memory }}
+          OUT_ENTRYPOINT: ${{ steps.deploy_defaults.outputs.yc_function_entrypoint }}
+        run: |
+          set -euo pipefail
+          for key in OUT_FUNCTION_NAME OUT_RUNTIME OUT_TIMEOUT OUT_MEMORY OUT_ENTRYPOINT; do
+            val="${!key:-}"
+            if [ -z "${val}" ]; then
+              echo "Missing required deploy setting: ${key}" >&2
+              exit 1
+            fi
+          done
+          echo "Deploy settings: function=${OUT_FUNCTION_NAME} runtime=${OUT_RUNTIME} timeout=${OUT_TIMEOUT} memory=${OUT_MEMORY} entrypoint=${OUT_ENTRYPOINT}"
+
       - name: Deploy function version
         id: deploy
         uses: yc-actions/yc-sls-function@v4
         with:
           yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
-          folder-id: ${{ vars.YC_FOLDER_ID || secrets.YC_FOLDER_ID || env.YC_FOLDER_ID }}
-          function-name: ${{ vars.YC_CLOUD_FUNCTION_NAME || secrets.YC_CLOUD_FUNCTION_NAME || env.YC_CLOUD_FUNCTION_NAME }}
-          runtime: ${{ vars.YC_FUNCTION_RUNTIME || env.YC_FUNCTION_RUNTIME || 'python311' }}
-          memory: ${{ vars.YC_FUNCTION_MEMORY || env.YC_FUNCTION_MEMORY || '512Mb' }}
-          execution-timeout: ${{ vars.YC_FUNCTION_TIMEOUT || env.YC_FUNCTION_TIMEOUT || '60s' }}
-          entrypoint: ${{ vars.YC_FUNCTION_ENTRYPOINT || secrets.YC_FUNCTION_ENTRYPOINT || env.YC_FUNCTION_ENTRYPOINT || 'index.handler' }}
+          folder-id: ${{ steps.deploy_defaults.outputs.yc_folder_id }}
+          function-name: ${{ steps.deploy_defaults.outputs.yc_cloud_function_name }}
+          runtime: ${{ steps.deploy_defaults.outputs.yc_function_runtime }}
+          memory: ${{ steps.deploy_defaults.outputs.yc_function_memory }}
+          execution-timeout: ${{ steps.deploy_defaults.outputs.yc_function_timeout }}
+          entrypoint: ${{ steps.deploy_defaults.outputs.yc_function_entrypoint }}
           service-account: ${{ vars.YC_RUNTIME_SERVICE_ACCOUNT_ID || secrets.YC_RUNTIME_SERVICE_ACCOUNT_ID || vars.YC_SERVICE_ACCOUNT_ID || secrets.YC_SERVICE_ACCOUNT_ID || env.YC_SERVICE_ACCOUNT_ID }}
           environment: |
             ENV=${{ vars.ENV || 'test' }}
@@ -129,6 +146,6 @@ jobs:
         if: always()
         run: |
           echo "Function deploy action finished."
-          echo "Function: ${{ vars.YC_CLOUD_FUNCTION_NAME || env.YC_CLOUD_FUNCTION_NAME }}"
-          echo "Entrypoint: ${{ vars.YC_FUNCTION_ENTRYPOINT || env.YC_FUNCTION_ENTRYPOINT }}"
+          echo "Function: ${{ steps.deploy_defaults.outputs.yc_cloud_function_name }}"
+          echo "Entrypoint: ${{ steps.deploy_defaults.outputs.yc_function_entrypoint }}"
 
