@@ -46,6 +46,7 @@ jobs:
         run: |
           set -euo pipefail
           python - <<'PY'
+          import os
           import yaml
           from pathlib import Path
 
@@ -59,7 +60,10 @@ jobs:
               "YC_FUNCTION_MEMORY": str(yc.get("function_memory", "512Mb")).strip(),
               "YC_FUNCTION_ENTRYPOINT": str(yc.get("function_entrypoint", "index.handler")).strip(),
           }
-          with Path("${GITHUB_ENV}").open("a", encoding="utf-8") as f:
+          github_env = os.environ.get("GITHUB_ENV", "").strip()
+          if not github_env:
+              raise RuntimeError("GITHUB_ENV is not set")
+          with Path(github_env).open("a", encoding="utf-8") as f:
               for k, v in values.items():
                   f.write(f"{k}={v}\\n")
           PY
