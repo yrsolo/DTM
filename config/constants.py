@@ -15,7 +15,6 @@ ALLOWED_LLM_PROVIDERS = frozenset({"openai", "google", "yandex"})
 ALLOWED_LLM_FAILOVER_MODES = frozenset({"draft_only", "provider"})
 ALLOWED_STORE_MODES = frozenset({"legacy", "dual_write", "ydb_primary", "ydb_only"})
 ALLOWED_READ_SOURCES = frozenset({"legacy", "ydb"})
-ALLOWED_FRONTEND_API_DEFAULT_VERSIONS = frozenset({"v1", "v2"})
 ALLOWED_TIMING_YEAR_MODES = frozenset({"legacy", "anchors", "chain"})
 
 
@@ -93,12 +92,6 @@ API_DOMAIN_PROD = _env("API_DOMAIN_PROD")
 if not API_DOMAIN_PROD:
     API_DOMAIN_PROD = str(_RUNTIME_CFG.web.get("api_domain_prod", ""))
 API_DOMAIN = API_DOMAIN_PROD if RUNTIME_ENV == "prod" else API_DOMAIN_TEST
-FRONTEND_API_DEFAULT_VERSION = _env("FRONTEND_API_DEFAULT_VERSION", "v1").lower()
-if FRONTEND_API_DEFAULT_VERSION not in ALLOWED_FRONTEND_API_DEFAULT_VERSIONS:
-    raise ValueError(
-        f"Unsupported FRONTEND_API_DEFAULT_VERSION={FRONTEND_API_DEFAULT_VERSION!r}. "
-        "Allowed values: v1, v2."
-    )
 DEBUG_HTTP_EVENT = _env_flag(
     "DEBUG_HTTP_EVENT", "1" if _RUNTIME_CFG.api.get("debug_http_event_default", False) else "0"
 )

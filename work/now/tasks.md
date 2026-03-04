@@ -6,10 +6,51 @@
 - [x] P02-T001: extract bootstrap/usecase implementation out of `core/` with compatibility shims.
 - [x] P02-T002: remove `core.manager` dependency on `core.repository.TimingParser` via dedicated `core/timing_parser.py`.
 - [x] P02-T003: de-duplicate parser implementation by routing `core/repository.py` to `core/timing_parser.TimingParser`.
-- [ ] P02-T004: design next extraction target for `core/repository.py` IO logic into adapter/service boundary (without behavior change).
+- [x] P02-T004: design next extraction target for `core/repository.py` IO logic into adapter/service boundary (without behavior change).
+- [x] P03-T001: move `GoogleSheetsTaskRepository` implementation to `src/adapters/google_sheets/task_repository.py` with compatibility shim.
+- [x] P03-T002: extract `Task` model from `core/repository.py` to `core/models/task.py` with compatibility shim and import switches.
+- [x] P03-T003: switch non-legacy imports away from `core.repository` shims where direct module imports are available.
+- [x] P04-T001: audit `core/**` for external SDK/IO imports and record next extraction candidates.
+- [x] P04-T002: extract Google Sheets loading logic from `core/people.py` into adapter/service boundary with compatibility shim.
+- [x] P04-T003: remove `utils.service.GoogleSheetInfo` dependency from `core/planner.py` via local read-only sheet view.
+- [x] P05-T001: design safe extraction path for `core/reminder.py` transport clients into adapters.
+- [x] P05-T002: extract pure reminder helper policy functions into `core/reminder_policy.py` and wire `core/reminder.py` to them.
+- [x] P05-T003: move reminder transport adapter classes from `core/reminder.py` into `src/adapters/llm_*` and `src/adapters/telegram.py` with compatibility re-exports.
+- [x] P05-T004: make optional external SDK imports lazy in adapter modules to avoid import-time failures in non-LLM/non-TG flows.
+- [x] P06-T001: design extraction plan for `core/manager.py` service/render orchestration.
+- [x] P06-T002: extract `CalendarManager`/`TaskCalendarManager` runtime implementation from `core/manager.py` into `src/services/calendar_runtime.py`.
+- [x] P06-T003: extract `TaskManager` write-path from `core/manager.py` into `src/services/render/task_table_runtime.py`.
+- [x] P07-T001: design extraction plan for `core/planner.py` orchestration facade into `src/services/*`.
+- [x] P07-T002: extract `GoogleSheetPlanner` implementation from `core/planner.py` into `src/services/planner_runtime.py` with compatibility shim.
+- [x] P07-T003: audit internal usages of `core/*` compatibility shims and prepare deprecation checklist.
+- [x] P07-T004: move `TaskTimingProcessor` from `core/manager.py` to dedicated domain module and remove non-legacy shim import.
+- [x] P07-T005: owner decision received — keep `old/*` and notebooks untouched; keep compatibility re-exports for legacy contour.
+- [x] P08-T001: finalize shim scope docs and run active-path import audit to ensure no non-legacy shim usage.
+- [x] CFG-P02-T001: remove direct config dependency from src/services/planner_runtime.py where it can be derived from injected dependencies.
+- [x] CFG-P02-T002: design and start migration of src/app/planner_bootstrap.py from global config imports to cfg-driven wiring.
+- [x] CFG-P02-T003: implement first cfg-driven wiring slice for planner bootstrap (non-secret defaults).
+- [x] CFG-P02-T004: migrate non-secret runtime constants in index.py to APP_CFG-driven values.
+- [x] CFG-P02-T005: remove non-secret global config reads in src/app/planner_bootstrap.py by moving defaults to cfg-resolved settings object.
+- [x] CFG-P02-T006: remove `config.COLORS` import from `src/services/calendar_runtime.py` by injecting color palette from cfg/bootstrap.
+- [x] CFG-P02-T007: remove default config read from `core/timing_parser.py` and inject timing year mode from bootstrap.
+- [x] CFG-P02-T008: remove stale `config` import from `core/reminder.py` after reminder bootstrap token wiring.
+- [x] CFG-P02-T009: remove `config` import from `src/adapters/telegram.py`; pass bot token/chat id explicitly from entrypoint wiring.
+- [x] CFG-P02-T010: remove `config` imports from Google Sheets adapters (`task_repository`, `people_manager`) via cfg-backed constructor injection.
+- [x] CFG-P02-T011: restore legacy bootstrap shim compatibility (`core/bootstrap.py` expectations for planner bootstrap mutable knobs).
+- [x] CFG-P02-T012: document owner decision to discontinue API v1 support; align active system/campaign docs to v2-only maintenance policy.
+- [x] CFG-P02-T013: remove `config.constants` imports from YDB adapters (`src/adapters/ydb/client.py`, `src/adapters/store_ydb.py`) via explicit constructor parameters.
+- [x] CFG-P02-T014: update YDB/store adapter tests for explicit credential injection and confirm backoff/store factory behavior.
+- [x] CFG-P02-T015: enforce API v2-only runtime routing in `index.py`; return `410 api_v1_discontinued` for v1 routes.
+- [x] CFG-P02-T016: align API routing unit tests with v2-only policy and current index config knobs.
+- [x] CFG-P02-T017: remove legacy `FRONTEND_API_DEFAULT_VERSION` runtime knob from active config contour (`config/constants.py`, `src/config/loader.py` allowlist).
+- [x] CFG-P02-T018: validate consolidated v2-only + config-refactor contour with extended smoke pack (api/core/services/adapters).
+- [x] CFG-P02-T019: remove dead API v1 doc builders from `index.py` after v2-only routing enforcement.
+- [x] CFG-P02-T020: rerun extended smoke pack after dead-code removal to confirm no runtime regressions.
+- [x] CFG-P02-T021: sync entrypoint system docs with enforced runtime behavior (`/api/v1/* -> 410 api_v1_discontinued`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (P02-T003 completed: `core/repository.py` now uses shared parser module; parser duplication removed)
+- 2026-03-04 (CFG-P02-T021 completed: entrypoint docs aligned with runtime 410 policy for v1 paths)
+

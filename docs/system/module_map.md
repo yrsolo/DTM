@@ -10,7 +10,7 @@ This document is a **navigation map** of the codebase as it exists today. It is 
 
 | Path | Role | Responsibility | Key imports / deps | State | Notes |
 |---|---|---|---|---|---|
-| `index.py` | Entrypoint (HTTP) | Cloud Functions / API Gateway handler: parse event, route, serve API v1/v2, group-query, sometimes triggers jobs | imports both `core/*` (legacy) and `src/*` (new), may touch YDB repos | Refactor | Too many responsibilities; should delegate to `src/handlers/*` only. |
+| `index.py` | Entrypoint (HTTP) | Cloud Functions / API Gateway handler: parse event, route, serve API v2, group-query, sometimes triggers jobs | imports both `core/*` (legacy) and `src/*` (new), may touch YDB repos | Refactor | Too many responsibilities; should delegate to `src/handlers/*` only. API v1 is discontinued (owner decision 2026-03-04). |
 | `main.py` | Entrypoint (Jobs) | Orchestrates timer/test/morning/reminders-only/sync-only/db_migrate; hash gate; YDB sync; readmodel build | `GoogleSheetPlanner`, `OperationalTaskRepo`, `YdbSyncService`, `FrontendReadmodelBuilderService`, config/constants | Refactor | Acts as “god runner”. Should be split into job modules + service calls. |
 | `local_run.py` | Support | Local wrapper to run modes (dev convenience) | uses `main.main()` | OK | Keep as developer tool, but should target new job entrypoints after refactor. |
 
@@ -46,7 +46,7 @@ This document is a **navigation map** of the codebase as it exists today. It is 
 
 | Path | Role | Responsibility | State | Notes |
 |---|---|---|---|---|
-| `src/handlers/api.py` | Entrypoint boundary | API v2 handler(s): read snapshot, apply filters, format response | OK / Refactor | `index.py` should dispatch here. |
+| `src/handlers/api.py` | Entrypoint boundary | API v2 handler(s): read snapshot, apply filters, format response | OK / Refactor | `index.py` should dispatch here. API v1 handler surface is not a target. |
 | `src/handlers/sync.py` | Entrypoint boundary | Sync job handler | Refactor | Should become `jobs/sync_job.py` or similar. |
 | `src/handlers/build_readmodels.py` | Entrypoint boundary | Build readmodel job handler | Refactor | Same: should be called by a job runner. |
 | `src/handlers/render_sheets.py` | Entrypoint boundary | Render job handler | Refactor | |

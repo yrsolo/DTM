@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -119,8 +118,10 @@ class JsonOperationalStoreTestCase(unittest.TestCase):
             ),
             credentials_from_env_variables=mock.Mock(return_value="from_env"),
         )
-        with mock.patch.dict(os.environ, {"YC_SA_JSON_CREDENTIALS": "{\"id\":\"x\"}"}, clear=False):
-            credentials = YdbOperationalStore._build_credentials(fake_ydb)
+        credentials = YdbOperationalStore._build_credentials(
+            fake_ydb,
+            sa_json_credentials='{"id":"x"}',
+        )
         self.assertEqual(credentials, "from_content")
         fake_ydb.iam.ServiceAccountCredentials.from_content.assert_called_once()
         fake_ydb.credentials_from_env_variables.assert_not_called()

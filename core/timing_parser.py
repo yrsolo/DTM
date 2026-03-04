@@ -8,7 +8,6 @@ from typing import Any
 
 import pandas as pd
 
-from config import TIMING_YEAR_MODE
 from core.contracts import is_nullish, normalize_text
 from core.errors import TimingParseIssue
 
@@ -38,7 +37,7 @@ class TimingParser:
         self.date_pattern = re.compile(r"^(\d{2}\.\d{2})(?!\.\d{2,4})")
         self.parse_issues: list[TimingParseIssue] = []
         self.total_parse_errors = 0
-        self.timing_year_mode = (timing_year_mode or TIMING_YEAR_MODE).lower()
+        self.timing_year_mode = str(timing_year_mode or "legacy").lower()
         self.year_resolution_events: list[dict[str, Any]] = []
 
     def reset_diagnostics(self) -> None:
@@ -227,4 +226,3 @@ class TimingParser:
         if date > (next_task_date + pd.DateOffset(months=5)):
             return (date - pd.DateOffset(years=1)).normalize()
         return date.normalize()
-

@@ -12,4 +12,4 @@
 - `runbook.md` — minimal operations guide
 
 ## Module notes
-`docs/system/modules/` can contain module-level notes as the codebase is refactored.
+`docs/system/modules/` contains focused module plans/notes (for example `repository_extraction_plan.md`).

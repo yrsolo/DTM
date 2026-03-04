@@ -61,23 +61,11 @@ class _Deps:
 class FrontendApiRoutingTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self._orig_build_dependencies = index.build_planner_dependencies
-        self._orig_build_payload_v1 = index.build_frontend_api_payload
         self._orig_build_payload_v2 = index.build_frontend_api_payload_v2
-        self._orig_build_store = index.build_operational_store
         self._orig_readmodel_repo = index.FrontendReadmodelRepo
-        self._orig_readmodel_source = index.READMODEL_SOURCE
-        self._orig_default_api_version = index.FRONTEND_API_DEFAULT_VERSION
-        index.FRONTEND_API_DEFAULT_VERSION = "v2"
-        index.READMODEL_SOURCE = "legacy"
+        self._orig_readmodel_source = index.APP_READMODEL_SOURCE
+        index.APP_READMODEL_SOURCE = "legacy"
         index.build_planner_dependencies = lambda *args, **kwargs: _Deps()
-        index.build_operational_store = lambda *args, **kwargs: SimpleNamespace(list_tasks=lambda: [])
-        index.build_frontend_api_payload = lambda **kwargs: {
-            "artifact": "dtm_frontend_api_payload",
-            "generated_at_utc": "2026-03-02T00:00:00Z",
-            "summary": {"tasks_returned": 1},
-            "tasks": [{"id": "101"}],
-            "deadlines": [],
-        }
         index.build_frontend_api_payload_v2 = lambda **kwargs: {
             "meta": {
                 "artifact": "dtm_frontend_api_v2",
@@ -93,12 +81,9 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
 
     def tearDown(self) -> None:
         index.build_planner_dependencies = self._orig_build_dependencies
-        index.build_frontend_api_payload = self._orig_build_payload_v1
         index.build_frontend_api_payload_v2 = self._orig_build_payload_v2
-        index.build_operational_store = self._orig_build_store
         index.FrontendReadmodelRepo = self._orig_readmodel_repo
-        index.READMODEL_SOURCE = self._orig_readmodel_source
-        index.FRONTEND_API_DEFAULT_VERSION = self._orig_default_api_version
+        index.APP_READMODEL_SOURCE = self._orig_readmodel_source
 
     def test_http_path_from_proxy_template(self) -> None:
         event = _fixture_event()
@@ -111,12 +96,12 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(params.get("limit"), "100")
         self.assertEqual(params.get("include_people"), "true")
 
-    def test_v1_endpoint_no_longer_returns_noop_for_fixture(self) -> None:
+    def test_v1_endpoint_returns_gone(self) -> None:
         event = _fixture_event()
         response = asyncio.run(index.handler(event, None))
         payload = json.loads(response["body"])
-        self.assertEqual(response["statusCode"], 200)
-        self.assertEqual(payload.get("artifact"), "dtm_frontend_api_payload")
+        self.assertEqual(response["statusCode"], 410)
+        self.assertEqual(payload.get("error", {}).get("code"), "api_v1_discontinued")
 
     def test_v2_endpoint_returns_v2_payload(self) -> None:
         event = _fixture_event()
@@ -128,7 +113,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 200)
         self.assertEqual(payload.get("meta", {}).get("artifact"), "dtm_frontend_api_v2")
 
-    def test_root_uses_v2_doc_when_default_version_is_v2(self) -> None:
+    def test_root_returns_v2_doc(self) -> None:
         event = _fixture_event()
         event["pathParams"]["proxy"] = ""
         event["params"]["proxy"] = ""
@@ -193,7 +178,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(payload.get("error", {}).get("code"), "invalid_window")
 
     def test_v2_reads_tasks_from_readmodel_when_source_ydb(self) -> None:
-        index.READMODEL_SOURCE = "ydb"
+        index.APP_READMODEL_SOURCE = "ydb"
         index.FrontendReadmodelRepo = lambda *args, **kwargs: SimpleNamespace(  # type: ignore[assignment]
             get_readmodel=lambda readmodel_id: SimpleNamespace(  # noqa: ARG005
                 readmodel_id="frontend_v2:default",
@@ -222,4 +207,3 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

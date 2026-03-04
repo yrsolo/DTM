@@ -19,6 +19,9 @@
 - контролировать поведение между dev/prod.
 
 ## Scope
+Decision baseline (owner, 2026-03-04):
+- API v1 support is discontinued; this campaign should treat API v2 as the only maintained API contract.
+
 1) Ввести структуру конфигурационных файлов:
    - `config/runtime.yaml` — интервалы, TTL, включатели “feature-ish” (не секретные)
    - `config/tables.yaml` — Google Sheets: листы, ranges, колонки, лимиты

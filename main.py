@@ -12,17 +12,12 @@ from config import (
     MIGRATION_ENABLE_SOURCE_HASH_GATE,
     MIGRATION_HASH_GATE_STATE_FILE,
     MIGRATION_STORE_FILE,
-    NOTIFY_SOURCE,
-    RENDER_SOURCE,
-    STORE_MODE,
-    RUNTIME_ENV,
     YDB_MIGRATE_ON_START,
     YDB_DATABASE,
     YDB_ENDPOINT,
     SHEET_INFO,
-    TRIGGERS,
 )
-from core.planner import GoogleSheetPlanner
+from src.services.planner_runtime import GoogleSheetPlanner
 from src.app.planner_bootstrap import build_planner_dependencies
 from src.services.usecases.planner_runtime import resolve_run_mode, run_planner_use_case
 from src.app.bootstrap import build_app_context
@@ -38,6 +33,11 @@ from src.services.source_policy import build_source_policy_matrix
 
 APP_CONTEXT = build_app_context()
 PIPELINE_CFG = APP_CONTEXT.cfg.runtime.pipeline
+APP_RUNTIME_ENV = APP_CONTEXT.cfg.runtime.runtime.env_default
+APP_STORE_MODE = APP_CONTEXT.cfg.runtime.sources.store_mode_default
+APP_NOTIFY_SOURCE = APP_CONTEXT.cfg.runtime.sources.notify_source_default
+APP_RENDER_SOURCE = APP_CONTEXT.cfg.runtime.sources.render_source_default
+APP_TRIGGERS = APP_CONTEXT.cfg.runtime.triggers
 TIMER_JOB_SHELL = TimerJob()
 
 
@@ -206,8 +206,8 @@ def _build_ydb_task_repository() -> YdbOperationalTaskRepository:
 def _apply_task_source_switches(planner: GoogleSheetPlanner, mode: str) -> tuple[bool, bool]:
     policy = build_source_policy_matrix(
         readmodel_source="legacy",
-        notify_source=NOTIFY_SOURCE,
-        render_source=RENDER_SOURCE,
+        notify_source=APP_NOTIFY_SOURCE,
+        render_source=APP_RENDER_SOURCE,
     )
     render_reads_ydb = policy.render_reads_ydb(mode)
     notify_reads_ydb = policy.notify_reads_ydb(mode)
@@ -238,7 +238,7 @@ async def main(**kwargs):
     event = kwargs.get("event")
     dry_run = kwargs.get("dry_run", False)
     mock_external = kwargs.get("mock_external")
-    mode = resolve_run_mode(mode=mode, event=event, triggers=TRIGGERS)
+    mode = resolve_run_mode(mode=mode, event=event, triggers=APP_TRIGGERS)
     if mode == "timer":
         shell_report = TIMER_JOB_SHELL.run(APP_CONTEXT)
         print(f"timer_job_shell_steps={len(shell_report.get('steps', []))}")
@@ -257,6 +257,7 @@ async def main(**kwargs):
         SHEET_INFO,
         dry_run=dry_run,
         mock_external=mock_external,
+        cfg=APP_CONTEXT.cfg,
     )
     source_task_repository = dependencies.task_repository
     planner = GoogleSheetPlanner(
@@ -269,7 +270,7 @@ async def main(**kwargs):
     )
     _apply_task_source_switches(planner, mode)
     if mode in {"timer", "test", "morning", "reminders-only", "sync-only"} and (
-        RENDER_SOURCE == "ydb" or NOTIFY_SOURCE == "ydb"
+        APP_RENDER_SOURCE == "ydb" or APP_NOTIFY_SOURCE == "ydb"
     ):
         try:
             readmodel_repo = FrontendReadmodelRepo(
@@ -278,8 +279,8 @@ async def main(**kwargs):
                 ensure_schema=False,
             )
             marker = _readmodel_freshness_marker(readmodel_repo.get_readmodel("frontend_v2:default"))
-            marker["render_source"] = RENDER_SOURCE
-            marker["notify_source"] = NOTIFY_SOURCE
+            marker["render_source"] = APP_RENDER_SOURCE
+            marker["notify_source"] = APP_NOTIFY_SOURCE
             _safe_print(
                 "readmodel_freshness="
                 + json.dumps(marker, ensure_ascii=False, sort_keys=True)
@@ -325,14 +326,14 @@ async def main(**kwargs):
 
     if (
         LEGACY_BLOB_WRITE
-        and STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"}
+        and APP_STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"}
         and mode in {"timer", "test", "sync-only"}
         and allow_sync
     ):
         records = [_task_to_store_record(task) for task in tasks]
         store = build_operational_store(
-            STORE_MODE,
-            env_name=RUNTIME_ENV,
+            APP_STORE_MODE,
+            env_name=APP_RUNTIME_ENV,
             ydb_endpoint=YDB_ENDPOINT,
             ydb_database=YDB_DATABASE,
             json_file_path=MIGRATION_STORE_FILE,
@@ -340,17 +341,17 @@ async def main(**kwargs):
         store_result = store.upsert_tasks(records)
         print(
             "migration_store_write="
-            f"store_mode={STORE_MODE} "
+            f"store_mode={APP_STORE_MODE} "
             "write_path=dual_write_legacy "
             f"store_file={MIGRATION_STORE_FILE} "
             f"records={len(records)} "
             f"result={store_result}"
         )
-    elif STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"} and mode in {"timer", "test", "sync-only"}:
+    elif APP_STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"} and mode in {"timer", "test", "sync-only"}:
         print("migration_store_write=skipped write_path=normalized_only reason=LEGACY_BLOB_WRITE_disabled")
 
     run_ydb_sync_readmodel_pipeline(
-        store_mode=STORE_MODE,
+        store_mode=APP_STORE_MODE,
         mode=mode,
         allow_sync=allow_sync,
         tasks=tasks,
@@ -360,7 +361,7 @@ async def main(**kwargs):
         ydb_database=YDB_DATABASE,
         ydb_migrate_on_start=YDB_MIGRATE_ON_START,
         write_legacy_milestones=WRITE_LEGACY_MILESTONES,
-        runtime_env=RUNTIME_ENV,
+        runtime_env=APP_RUNTIME_ENV,
         pipeline_cfg=PIPELINE_CFG,
         safe_print=_safe_print,
         read_source_snapshot=_read_source_snapshot,
@@ -372,3 +373,4 @@ async def main(**kwargs):
 
 if __name__ == "__main__":
     asyncio.run(main())
+

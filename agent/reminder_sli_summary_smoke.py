@@ -7,7 +7,7 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from core.planner import build_reminder_sli_summary
+from src.services.planner_runtime import build_reminder_sli_summary
 
 BASE_COUNTERS = {
     "sent": 6,

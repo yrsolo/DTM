@@ -21,3 +21,4 @@
 
 ## Notes
 - Если в процессе CAM-CONFIG-REFORM-V0 обнаружатся критические legacy-дубли (например, два sync_service в runtime path), допускается сделать небольшой hotfix под CAM-DEDUP… в диапазоне “T900–T999” как вставку, но не разворачивать полностью кампанию раньше времени.
+- Owner decision (2026-03-04): API v1 support is discontinued; roadmap and active docs should assume API v2-only maintenance path.

@@ -45,7 +45,6 @@ ENV_ALLOWLIST = frozenset(
         "WEB_DOMAIN",
         "API_DOMAIN_TEST",
         "API_DOMAIN_PROD",
-        "FRONTEND_API_DEFAULT_VERSION",
         "DEBUG_HTTP_EVENT",
         "LLM_PROVIDER",
         "OPENAI_MODEL",

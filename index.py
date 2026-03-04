@@ -9,16 +9,14 @@ from datetime import datetime
 from typing import Any
 
 from config import (
-    DEBUG_HTTP_EVENT,
-    FRONTEND_API_DEFAULT_VERSION,
+    DEFAULT_CHAT_ID,
     KEY_JSON,
     SHEET_INFO,
+    TG,
     TG_BOT_USERNAME,
-    TRIGGERS,
     YDB_DATABASE,
     YDB_ENDPOINT,
 )
-from core.api_payload import build_frontend_api_payload
 from core.api_payload_v2 import build_frontend_api_payload_v2
 from core.group_query import (
     build_deadlines_reply,
@@ -45,6 +43,10 @@ APP_CFG = APP_CONTEXT.cfg
 APP_RUNTIME_ENV = APP_CFG.runtime.runtime.env_default
 APP_SOURCE_SHEET_NAME = str(APP_CFG.tables.google_sheets.get("source_sheet_name_default", ""))
 APP_READMODEL_SOURCE = APP_CFG.runtime.sources.readmodel_source_default
+APP_DEBUG_HTTP_EVENT = bool(APP_CFG.runtime.api.get("debug_http_event_default", False))
+APP_TRIGGERS = dict(APP_CFG.runtime.triggers)
+APP_TG_BOT_TOKEN = TG
+APP_TG_DEFAULT_CHAT_ID = DEFAULT_CHAT_ID
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
 
@@ -54,6 +56,7 @@ def _load_work_tasks_for_group_query() -> list[Any]:
         SHEET_INFO,
         dry_run=True,
         mock_external=True,
+        cfg=APP_CFG,
     )
     return dependencies.task_repository.get_task_by_color_status(["work", "pre_done"])
 
@@ -68,7 +71,7 @@ async def _handle_group_query_if_requested(
     if query is None:
         return False
 
-    notifier = TelegramNotifier()
+    notifier = TelegramNotifier(bot_token=APP_TG_BOT_TOKEN, default_chat_id=APP_TG_DEFAULT_CHAT_ID)
     try:
         tasks = _load_work_tasks_for_group_query()
         if query.action == "deadlines":
@@ -111,7 +114,7 @@ def _error_response(
 
 
 def _debug_http_shape(event: dict[str, Any], is_http_event: bool) -> None:
-    if not DEBUG_HTTP_EVENT:
+    if not APP_DEBUG_HTTP_EVENT:
         return
     if not isinstance(event, dict):
         print("api_debug non_dict_event")
@@ -148,7 +151,7 @@ def _resolve_trigger_mode(event: Any) -> str:
         trigger_id = str(messages[0]["details"]["trigger_id"]).strip()
     except (TypeError, KeyError, IndexError):
         return ""
-    return str(TRIGGERS.get(trigger_id, "")).strip().lower()
+    return str(APP_TRIGGERS.get(trigger_id, "")).strip().lower()
 
 
 def _parse_statuses(raw: str) -> list[str]:
@@ -275,57 +278,6 @@ def _extract_force_refresh(
         params = _query_params(event)
         return _parse_bool(params.get("force_refresh"), default=False)
     return False
-
-
-def _frontend_api_doc() -> dict[str, Any]:
-    return {
-        "artifact": "dtm_frontend_api_doc",
-        "version": "1.0.0",
-        "endpoints": [
-            {
-                "method": "GET",
-                "path": "/api/v1/frontend",
-                "query": {
-                    "statuses": "Comma-separated status filter, default: work,pre_done",
-                    "designer": "Optional designer exact-name filter (case-insensitive)",
-                    "limit": "Optional integer [1..1000], default: 200",
-                    "include_people": "Optional bool (1/0,true/false), default: true",
-                },
-            },
-            {"method": "GET", "path": "/api/v1/read-model", "alias_of": "/api/v1/frontend"},
-            {"method": "GET", "path": "/api/v1/frontend/doc"},
-        ],
-        "response_shape": {
-            "artifact": "dtm_frontend_api_payload",
-            "generated_at_utc": "ISO UTC timestamp",
-            "source": {"env": "dev|test|prod", "source_sheet_name": "string"},
-            "filters": {
-                "statuses": ["string"],
-                "designer": "string",
-                "limit": 200,
-                "include_people": True,
-            },
-            "summary": {
-                "tasks_total": 0,
-                "tasks_filtered": 0,
-                "tasks_returned": 0,
-                "people_total": 0,
-            },
-            "tasks": [
-                {
-                    "id": "string",
-                    "name": "string",
-                    "designer": "string",
-                    "status": "string",
-                    "color_status": "string",
-                    "timing": [{"date": "YYYY-MM-DD", "stages": ["string"]}],
-                    "next_due_date": "YYYY-MM-DD|null",
-                }
-            ],
-            "deadlines": [{"date": "YYYY-MM-DD", "task_id": "string", "task_name": "string"}],
-            "people": [{"id": "string", "name": "string", "position": "string"}],
-        },
-    }
 
 
 def _frontend_api_v2_doc() -> dict[str, Any]:
@@ -499,80 +451,6 @@ def _frontend_api_v2_doc() -> dict[str, Any]:
     }
 
 
-def _frontend_api_doc_html() -> str:
-    return """<!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DTM Frontend API</title>
-  <style>
-    :root { color-scheme: light; }
-    body { margin: 0; font-family: Segoe UI, Arial, sans-serif; background: #f6f8fb; color: #17212b; }
-    .wrap { max-width: 980px; margin: 0 auto; padding: 24px; }
-    .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 16px rgba(0,0,0,.06); margin-bottom: 16px; }
-    h1, h2, h3 { margin: 0 0 10px; }
-    p { margin: 8px 0; line-height: 1.45; }
-    code { background: #eef2f7; padding: 2px 6px; border-radius: 6px; }
-    pre { margin: 0; padding: 12px; background: #0f172a; color: #e2e8f0; border-radius: 10px; overflow: auto; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { text-align: left; border-bottom: 1px solid #e5e7eb; padding: 8px; vertical-align: top; }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <h1>DTM Frontend API</h1>
-      <p>Версия контракта: <code>1.0.0</code></p>
-      <p>Назначение: отдать фронту задачи, дедлайны и людей в одном JSON.</p>
-    </div>
-    <div class="card">
-      <h2>Endpoints</h2>
-      <table>
-        <thead><tr><th>Method</th><th>Path</th><th>Назначение</th></tr></thead>
-        <tbody>
-          <tr><td>GET</td><td><code>/api/v1/frontend</code></td><td>Основной payload для UI</td></tr>
-          <tr><td>GET</td><td><code>/api/v1/read-model</code></td><td>Alias к <code>/api/v1/frontend</code></td></tr>
-          <tr><td>GET</td><td><code>/api/v1/frontend/doc</code></td><td>Эта страница</td></tr>
-          <tr><td>GET</td><td><code>/api/v1/frontend/doc?format=json</code></td><td>JSON-док с форматом</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="card">
-      <h2>Query params</h2>
-      <table>
-        <thead><tr><th>Param</th><th>Тип</th><th>Default</th><th>Описание</th></tr></thead>
-        <tbody>
-          <tr><td><code>statuses</code></td><td>string</td><td><code>work,pre_done</code></td><td>Фильтр статусов через запятую</td></tr>
-          <tr><td><code>designer</code></td><td>string</td><td><code></code></td><td>Фильтр по имени дизайнера (без учета регистра)</td></tr>
-          <tr><td><code>limit</code></td><td>int</td><td><code>200</code></td><td>Лимит задач, диапазон 1..1000</td></tr>
-          <tr><td><code>include_people</code></td><td>bool</td><td><code>true</code></td><td>Добавлять блок <code>people</code></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="card">
-      <h2>Пример запроса</h2>
-      <pre>GET /api/v1/frontend?statuses=work,pre_done&amp;limit=100&amp;include_people=true</pre>
-    </div>
-    <div class="card">
-      <h2>Ключевые поля ответа</h2>
-      <pre>{
-  "artifact": "dtm_frontend_api_payload",
-  "generated_at_utc": "2026-03-02T19:00:00Z",
-  "source": {"env": "test", "source_sheet_name": "Спонсорские ТНТ"},
-  "filters": {"statuses": ["work","pre_done"], "designer": "", "limit": 100, "include_people": true},
-  "summary": {"tasks_total": 0, "tasks_filtered": 0, "tasks_returned": 0, "people_total": 0},
-  "tasks": [{"id": "...", "name": "...", "designer": "...", "next_due_date": "YYYY-MM-DD|null"}],
-  "deadlines": [{"date": "YYYY-MM-DD", "task_id": "...", "task_name": "..."}],
-  "people": [{"id": "...", "name": "...", "position": "..."}]
-}</pre>
-    </div>
-  </div>
-</body>
-</html>
-"""
-
-
 def _frontend_api_v2_doc_html() -> str:
     return """<!doctype html>
 <html lang="ru">
@@ -694,68 +572,27 @@ def _handle_frontend_api_if_requested(
     if not is_http_event:
         return None
     path = _normalize_path(_http_path(event))
-    method = _http_method(event)
-    if not method:
-        # Some API Gateway integrations omit explicit HTTP method in event payload.
-        # Browser/API usage for frontend endpoint is read-only GET.
-        method = "GET"
+    method = _http_method(event) or "GET"
     if method == "ANY":
-        # Yandex API Gateway with x-yc-apigateway-any-method can pass "ANY" as method.
-        # Frontend endpoints are read-only, so treat it as GET.
         method = "GET"
     if method != "GET":
         return None
 
-    params = _query_params(event)
-    doc_paths = {"/", "/api", "/api/v1", "/api/v1/frontend/doc", "/api/v1/read-model/doc"}
-    data_paths = {"/api/v1/frontend", "/api/v1/read-model"}
-
-    started = time.perf_counter()
-    if _path_matches(path, doc_paths):
-        if str(params.get("format", "")).strip().lower() == "json":
-            return _json_response(200, _frontend_api_doc())
-        return _html_response(200, _frontend_api_doc_html())
-    if not _path_matches(path, data_paths):
+    v1_paths = {
+        "/api/v1",
+        "/api/v1/frontend",
+        "/api/v1/read-model",
+        "/api/v1/frontend/doc",
+        "/api/v1/read-model/doc",
+    }
+    if not _path_matches(path, v1_paths):
         return None
 
-    statuses = _parse_statuses(params.get("statuses", "work,pre_done"))
-    designer = str(params.get("designer", "")).strip()
-    limit = _parse_limit(params.get("limit", "200"))
-    include_people = _parse_bool(params.get("include_people"), default=True)
-
-    dependencies = build_planner_dependencies(
-        KEY_JSON,
-        SHEET_INFO,
-        dry_run=True,
-        mock_external=True,
+    return _error_response(
+        410,
+        code="api_v1_discontinued",
+        message="API v1 is discontinued. Use /api/v2/frontend and /api/v2/frontend/doc.",
     )
-    tasks = _load_frontend_tasks(dependencies, statuses)
-    people = []
-    if include_people:
-        dependencies.people_manager.get_designers()
-        people = list(dependencies.people_manager.people.values())
-
-    payload = build_frontend_api_payload(
-        tasks=tasks,
-        people=people,
-        env_name=APP_RUNTIME_ENV,
-        source_sheet_name=APP_SOURCE_SHEET_NAME,
-        statuses=statuses,
-        limit=limit,
-        include_people=include_people,
-        designer_filter=designer,
-    )
-    duration_ms = int((time.perf_counter() - started) * 1000)
-    print(
-        "api_response "
-        f"artifact={payload.get('artifact', '')} "
-        "contractVersion=1.0.0 "
-        f"generatedAt={payload.get('generated_at_utc', '')} "
-        "syncedAt= "
-        f"tasksReturned={payload.get('summary', {}).get('tasks_returned', 0)} "
-        f"duration_ms={duration_ms}"
-    )
-    return _json_response(200, payload)
 
 
 def _handle_frontend_api_v2_if_requested(
@@ -795,11 +632,7 @@ def _handle_frontend_api_v2_if_requested(
             details=window_error.get("details", {}),
         )
 
-    policy = build_source_policy_matrix(
-        readmodel_source=APP_READMODEL_SOURCE,
-        notify_source="legacy",
-        render_source="legacy",
-    )
+    policy = build_source_policy_matrix(readmodel_source=APP_READMODEL_SOURCE, notify_source="legacy", render_source="legacy")
     if policy.api_reads_ydb():
         repo = FrontendReadmodelRepo(
             endpoint=YDB_ENDPOINT,
@@ -845,6 +678,7 @@ def _handle_frontend_api_v2_if_requested(
         SHEET_INFO,
         dry_run=True,
         mock_external=True,
+        cfg=APP_CFG,
     )
     tasks = _load_frontend_tasks(dependencies, statuses)
     people = []
@@ -934,8 +768,6 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
     if not run_mode and trigger_mode:
         run_mode = trigger_mode
     if is_http_event and not run_mode:
-        # Keep future default-version knob explicit for planned generic `/api/frontend` alias.
-        _ = FRONTEND_API_DEFAULT_VERSION
         return _json_response(
             200,
             {
@@ -993,7 +825,10 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
             )
         print(txt)
         try:
-            await TelegramNotifier().alog(txt)
+            await TelegramNotifier(
+                bot_token=APP_TG_BOT_TOKEN,
+                default_chat_id=APP_TG_DEFAULT_CHAT_ID,
+            ).alog(txt)
         except Exception as notifier_error:
             print(f"Error notifier failed: {notifier_error}")
 
@@ -1006,3 +841,4 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         "statusCode": 200,
         "body": "!GOOD!",
     }
+

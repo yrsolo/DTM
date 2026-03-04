@@ -97,9 +97,14 @@ Steps:
 ### What it currently does
 `index.py` is a large multi-purpose handler:
 - parse raw serverless event → method/path/query/body
-- route to API v1 and v2 endpoints
+- route to API v2 endpoints (API v1 support is discontinued by owner decision on 2026-03-04)
 - supports “group query” flows (Telegram chat commands)
 - may call into planner logic and/or YDB readmodel repositories
+
+### API version policy
+- Active public contract: API v2 only.
+- API v1 routes are treated as legacy and are not supported for further maintenance work.
+- Runtime behavior for API v1 paths: explicit `410 Gone` with error code `api_v1_discontinued`.
 
 ### Extraction progress (CAM-ENTRYPOINT-REFORM-V1)
 - event payload/path/method/query parsing moved to `src/entrypoints/http/event_parser.py`

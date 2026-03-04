@@ -12,7 +12,6 @@ from typing import Any, Protocol
 from urllib.parse import urlsplit
 
 import pandas as pd
-from config.constants import YC_SA_JSON_CREDENTIALS, YC_SA_KEY_FILE
 
 
 class OperationalStore(Protocol):
@@ -199,12 +198,22 @@ class YdbOperationalStore:
     - payload Utf8
     """
 
-    def __init__(self, endpoint: str, database: str, table_path: str = "dtm_operational_tasks") -> None:
+    def __init__(
+        self,
+        endpoint: str,
+        database: str,
+        table_path: str = "dtm_operational_tasks",
+        *,
+        sa_json_credentials: str | None = None,
+        sa_key_file: str | None = None,
+    ) -> None:
         if not endpoint.strip() or not database.strip():
             raise ValueError("YDB endpoint/database are required for YdbOperationalStore")
         self.endpoint = self._normalize_endpoint(endpoint)
         self.database = database
         self.table_path = table_path
+        self.sa_json_credentials = str(sa_json_credentials or "")
+        self.sa_key_file = str(sa_key_file or "")
         self._driver = None
         self._session_pool = None
         self._retry_settings = None
@@ -222,12 +231,17 @@ class YdbOperationalStore:
         return raw.split("?", 1)[0]
 
     @staticmethod
-    def _build_credentials(ydb_module: Any) -> Any:
+    def _build_credentials(
+        ydb_module: Any,
+        *,
+        sa_json_credentials: str | None = None,
+        sa_key_file: str | None = None,
+    ) -> Any:
         """Resolve YDB credentials with explicit SA-json priority for local/dev use."""
-        sa_json = str(YC_SA_JSON_CREDENTIALS).strip()
+        sa_json = str(sa_json_credentials or "").strip()
         if sa_json:
             return ydb_module.iam.ServiceAccountCredentials.from_content(sa_json)
-        sa_key_file = str(YC_SA_KEY_FILE).strip()
+        sa_key_file = str(sa_key_file or "").strip()
         if sa_key_file:
             return ydb_module.iam.ServiceAccountCredentials.from_file(sa_key_file)
         return ydb_module.credentials_from_env_variables()
@@ -243,7 +257,11 @@ class YdbOperationalStore:
         driver = ydb.Driver(
             endpoint=self.endpoint,
             database=self.database,
-            credentials=self._build_credentials(ydb),
+            credentials=self._build_credentials(
+                ydb,
+                sa_json_credentials=self.sa_json_credentials,
+                sa_key_file=self.sa_key_file,
+            ),
         )
         driver.wait(fail_fast=True, timeout=5)
         self._driver = driver
@@ -382,6 +400,8 @@ def build_operational_store(
     ydb_endpoint: str,
     ydb_database: str,
     json_file_path: str,
+    sa_json_credentials: str | None = None,
+    sa_key_file: str | None = None,
 ) -> OperationalStore:
     """Select store backend for current rollout mode.
 
@@ -404,12 +424,22 @@ def build_operational_store(
             if env_name == "prod":
                 raise RuntimeError("STORE_MODE=dual_write requires YDB config in prod.")
             return json_store
-        ydb_store = YdbOperationalStore(endpoint=ydb_endpoint, database=ydb_database)
+        ydb_store = YdbOperationalStore(
+            endpoint=ydb_endpoint,
+            database=ydb_database,
+            sa_json_credentials=sa_json_credentials,
+            sa_key_file=sa_key_file,
+        )
         return DualWriteOperationalStore(primary=json_store, secondary=ydb_store)
 
     if mode in {"ydb_primary", "ydb_only"}:
         if has_ydb:
-            return YdbOperationalStore(endpoint=ydb_endpoint, database=ydb_database)
+            return YdbOperationalStore(
+                endpoint=ydb_endpoint,
+                database=ydb_database,
+                sa_json_credentials=sa_json_credentials,
+                sa_key_file=sa_key_file,
+            )
         if env_name == "prod":
             raise RuntimeError(f"STORE_MODE={mode} requires YDB config in prod.")
         return json_store

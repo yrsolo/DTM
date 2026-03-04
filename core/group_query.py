@@ -7,7 +7,7 @@ from typing import Any, Iterable
 
 import pandas as pd
 
-from core.repository import Task
+from core.models.task import Task
 
 
 SUPPORTED_CHAT_TYPES = frozenset({"group", "supergroup"})

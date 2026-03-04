@@ -25,12 +25,15 @@ Entrypoints still import `config/constants.py`, but defaults are sourced from YA
 - `API_DOMAIN` is derived from `ENV`
 
 ## Runtime switches (YAML defaults, ENV overrides optional)
-- `FRONTEND_API_DEFAULT_VERSION`
 - `DEBUG_HTTP_EVENT`
 - `TIMING_YEAR_MODE`
 - `STORE_MODE`, `READMODEL_SOURCE`, `NOTIFY_SOURCE`, `RENDER_SOURCE`
 - `FORCE_REFRESH`, `READMODEL_TTL_MINUTES`, `PREFLIGHT_TOP_ROWS`, `FULL_SYNC_INTERVAL_HOURS`
 - `LEGACY_BLOB_WRITE`, `WRITE_LEGACY_MILESTONES`, `YDB_MIGRATE_ON_START`
+
+API policy note:
+- API v1 support is discontinued (owner decision dated 2026-03-04).
+- `FRONTEND_API_DEFAULT_VERSION` is removed from active runtime configuration contour.
 
 ## YDB
 Contour-aware env keys:
