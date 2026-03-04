@@ -41,6 +41,44 @@ def handle_frontend_api_v2_if_requested(
     load_frontend_tasks: Callable[[Any, list[str]], list[Any]],
     build_frontend_api_payload_v2: Callable[..., dict[str, Any]],
 ) -> dict[str, Any] | None:
+    def _read_ydb_snapshot() -> tuple[dict[str, Any] | None, str | None]:
+        try:
+            repo = frontend_readmodel_repo_cls(
+                endpoint=ydb_endpoint,
+                database=ydb_database,
+                sa_json_credentials=ydb_sa_json_credentials,
+                sa_key_file=ydb_sa_key_file,
+                ensure_schema=False,
+            )
+            row = repo.get_readmodel("frontend_v2:default")
+            if row is None:
+                return None, "readmodel_unavailable"
+            payload = row.payload()
+            if not isinstance(payload, dict):
+                return None, "readmodel_payload_invalid"
+            payload.setdefault("meta", {})
+            payload["meta"]["readmodelSource"] = "ydb"
+            payload["meta"]["readmodelId"] = row.readmodel_id
+            payload["meta"]["readmodelHash"] = row.payload_hash
+            payload["meta"]["builtFromSourceHash"] = row.built_from_source_hash
+            if any(
+                [
+                    designer,
+                    limit != 200,
+                    include_people is not True,
+                    window_data.get("enabled", False),
+                    statuses != ["work", "pre_done"],
+                ]
+            ):
+                payload["meta"]["queryFilterApplied"] = False
+                payload["meta"]["queryFilterNote"] = (
+                    "YDB readmodel endpoint returns stored snapshot without per-request rebuild."
+                )
+            return payload, None
+        except Exception as error:
+            print(f"api_v2_readmodel_fallback=ydb_unavailable error={error}")
+            return None, type(error).__name__
+
     if not is_http_event:
         return None
     path = normalize_path(http_path(event))
@@ -91,50 +129,22 @@ def handle_frontend_api_v2_if_requested(
     )
     ydb_fallback = False
     if policy.api_reads_ydb():
-        try:
-            repo = frontend_readmodel_repo_cls(
-                endpoint=ydb_endpoint,
-                database=ydb_database,
-                sa_json_credentials=ydb_sa_json_credentials,
-                sa_key_file=ydb_sa_key_file,
-                ensure_schema=False,
-            )
-            row = repo.get_readmodel("frontend_v2:default")
-            if row is None:
-                return error_response(
-                    503,
-                    code="readmodel_unavailable",
-                    message="frontend_v2 readmodel snapshot is not built yet.",
-                )
-            payload = row.payload()
-            if not isinstance(payload, dict):
-                return error_response(
-                    500,
-                    code="readmodel_payload_invalid",
-                    message="Stored readmodel payload is not a valid JSON object.",
-                )
-            payload.setdefault("meta", {})
-            payload["meta"]["readmodelSource"] = "ydb"
-            payload["meta"]["readmodelId"] = row.readmodel_id
-            payload["meta"]["readmodelHash"] = row.payload_hash
-            payload["meta"]["builtFromSourceHash"] = row.built_from_source_hash
-            if any(
-                [
-                    designer,
-                    limit != 200,
-                    include_people is not True,
-                    window_data.get("enabled", False),
-                    statuses != ["work", "pre_done"],
-                ]
-            ):
-                payload["meta"]["queryFilterApplied"] = False
-                payload["meta"]["queryFilterNote"] = (
-                    "YDB readmodel endpoint returns stored snapshot without per-request rebuild."
-                )
+        payload, ydb_error = _read_ydb_snapshot()
+        if payload is not None:
             return json_response(200, payload)
-        except Exception as error:
-            print(f"api_v2_readmodel_fallback=ydb_unavailable error={error}")
-            ydb_fallback = True
+        if ydb_error == "readmodel_unavailable":
+            return error_response(
+                503,
+                code="readmodel_unavailable",
+                message="frontend_v2 readmodel snapshot is not built yet.",
+            )
+        if ydb_error == "readmodel_payload_invalid":
+            return error_response(
+                500,
+                code="readmodel_payload_invalid",
+                message="Stored readmodel payload is not a valid JSON object.",
+            )
+        ydb_fallback = True
 
     try:
         dependencies = build_planner_dependencies(
@@ -154,6 +164,14 @@ def handle_frontend_api_v2_if_requested(
             people = list(dependencies.people_manager.people.values())
     except Exception as error:
         print(f"api_v2_legacy_source_unavailable error={error}")
+        # Emergency path: if legacy source is unavailable, try serving cached YDB snapshot.
+        payload, ydb_error = _read_ydb_snapshot()
+        if payload is not None:
+            payload.setdefault("meta", {})
+            payload["meta"]["readmodelSource"] = "ydb_emergency_fallback"
+            payload["meta"]["fallbackReason"] = "legacy_source_unavailable"
+            payload["meta"]["legacyErrorType"] = type(error).__name__
+            return json_response(200, payload)
         return error_response(
             503,
             code="frontend_source_unavailable",
@@ -161,6 +179,7 @@ def handle_frontend_api_v2_if_requested(
             details={
                 "source": "legacy",
                 "errorType": type(error).__name__,
+                "ydbFallbackErrorType": ydb_error,
             },
         )
 

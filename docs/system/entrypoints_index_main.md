@@ -106,6 +106,7 @@ Steps:
 - API v1 routes are treated as legacy compatibility aliases and mapped to v2 handlers.
 - Runtime behavior for supported API v1 paths (`/api/v1`, `/api/v1/frontend`, `/api/v1/read-model`, `/api/v1/frontend/doc`, `/api/v1/read-model/doc`): same payload/documentation as v2 endpoints.
 - Runtime resilience for API v2 data endpoint: if `READMODEL_SOURCE=ydb` and YDB readmodel is temporarily unavailable (driver/runtime/init error), handler falls back to legacy source path to avoid hard HTTP failure.
+- Runtime resilience for API v2 with `READMODEL_SOURCE=legacy`: if legacy source fails at runtime, handler attempts emergency YDB snapshot fallback and serves payload with `meta.readmodelSource=ydb_emergency_fallback` when available.
 - Runtime error boundary: unexpected exceptions in HTTP dispatch/runtime paths are converted to structured API `503` responses (`http_dispatch_failed` / `frontend_source_unavailable`) instead of uncaught gateway `502`.
 
 ### Extraction progress (CAM-ENTRYPOINT-REFORM-V1)
