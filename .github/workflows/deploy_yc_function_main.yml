@@ -103,21 +103,20 @@ jobs:
       - name: Validate deploy defaults outputs
         shell: bash
         env:
-          OUT_FUNCTION_NAME: ${{ steps.deploy_defaults.outputs.yc_cloud_function_name }}
           OUT_RUNTIME: ${{ steps.deploy_defaults.outputs.yc_function_runtime }}
           OUT_TIMEOUT: ${{ steps.deploy_defaults.outputs.yc_function_timeout }}
           OUT_MEMORY: ${{ steps.deploy_defaults.outputs.yc_function_memory }}
           OUT_ENTRYPOINT: ${{ steps.deploy_defaults.outputs.yc_function_entrypoint }}
         run: |
           set -euo pipefail
-          for key in OUT_FUNCTION_NAME OUT_RUNTIME OUT_TIMEOUT OUT_MEMORY OUT_ENTRYPOINT; do
+          for key in OUT_RUNTIME OUT_TIMEOUT OUT_MEMORY OUT_ENTRYPOINT; do
             val="${!key:-}"
             if [ -z "${val}" ]; then
               echo "Missing required deploy output: ${key}" >&2
               exit 1
             fi
           done
-          echo "Deploy outputs: function=${OUT_FUNCTION_NAME} runtime=${OUT_RUNTIME} timeout=${OUT_TIMEOUT} memory=${OUT_MEMORY} entrypoint=${OUT_ENTRYPOINT}"
+          echo "Deploy outputs: runtime=${OUT_RUNTIME} timeout=${OUT_TIMEOUT} memory=${OUT_MEMORY} entrypoint=${OUT_ENTRYPOINT}"
 
       - name: Deploy function version
         id: deploy
@@ -125,7 +124,7 @@ jobs:
         with:
           yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
           folder-id: ${{ vars.YC_FOLDER_ID || secrets.YC_FOLDER_ID || env.YC_FOLDER_ID }}
-          function-name: ${{ steps.deploy_defaults.outputs.yc_cloud_function_name }}
+          function-name: ${{ vars.YC_CLOUD_FUNCTION_NAME || secrets.YC_CLOUD_FUNCTION_NAME || env.YC_CLOUD_FUNCTION_NAME }}
           runtime: ${{ steps.deploy_defaults.outputs.yc_function_runtime }}
           memory: ${{ steps.deploy_defaults.outputs.yc_function_memory }}
           execution-timeout: ${{ steps.deploy_defaults.outputs.yc_function_timeout }}
