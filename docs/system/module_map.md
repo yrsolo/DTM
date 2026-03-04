@@ -47,7 +47,6 @@ This document is a **navigation map** of the codebase as it exists today. It is 
 | Path | Role | Responsibility | State | Notes |
 |---|---|---|---|---|
 | `src/handlers/api.py` | Entrypoint boundary | API v2 handler(s): read snapshot, apply filters, format response | OK / Refactor | `index.py` should dispatch here. API v1 handler surface is not a target. |
-| `src/handlers/sync.py` | Entrypoint boundary | Sync job handler | Refactor | Should become `jobs/sync_job.py` or similar. |
 | `src/handlers/build_readmodels.py` | Entrypoint boundary | Build readmodel job handler | Refactor | Same: should be called by a job runner. |
 | `src/handlers/render_sheets.py` | Entrypoint boundary | Render job handler | Refactor | |
 | `src/handlers/notify_morning.py` | Entrypoint boundary | Notify job handler | Refactor | |
@@ -77,7 +76,7 @@ This document is a **navigation map** of the codebase as it exists today. It is 
 
 ## Known duplications / conflicts (to resolve)
 
-1) **Two sync implementations**: `src/services/sync_service.py` vs `src/services/sync/*`.
+1) **Two sync implementations**: `src/services/sync_service.py` vs `src/services/sync/*` (legacy handler removed from active tree).
 2) **Two cores**: top-level `core/` (legacy mixed) vs `src/core/` (domain).
 3) **Entrypoints bypass handlers**: `index.py` and `main.py` implement logic that should live in `src/handlers/*`.
 

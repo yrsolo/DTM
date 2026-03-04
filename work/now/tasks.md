@@ -117,10 +117,11 @@
 - [x] PIPE-P03-T009: verify thin-entrypoint status for `main.py` (single async entrypoint + helper delegation) and rerun extended smoke.
 - [x] DEDUP-P01-T001: inventory runtime-adjacent duplicate implementations (sync/readmodel/handlers) with usage evidence.
 - [x] DEDUP-P01-T002: document keep/remove decisions in `docs/system/dedup_plan.md`.
+- [x] DEDUP-P02-T001: remove legacy `src/handlers/sync.py` branch and related handler test from active tree (runtime-unused duplicate).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (DEDUP-P01-T001..T002 completed: duplicate map and keep/remove decisions documented for CAM-DEDUP-LEGACY-REMOVAL-V1)
+- 2026-03-04 (DEDUP-P02-T001 completed: legacy sync handler duplicate removed from active tree; docs/dedup map updated)
 

@@ -7,7 +7,7 @@ Activated from priority queue after `main.py` thin-entrypoint extraction wave re
 Remove parallel duplicate implementations in runtime-adjacent roles (sync/readmodel/handlers) and define one source of truth per role.
 
 ## Current Phase
-P01: duplicate inventory and keep/remove decisions.
+P02: first removal wave (atomic duplicate cleanup).
 
 ## Important Rule
 - No business behavior changes during dedup mapping; removal goes in follow-up atomic PRs only.
