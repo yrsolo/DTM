@@ -6,7 +6,9 @@ Single source of truth for campaign lifecycle state.
 - none
 
 ## Planned
-- none
+- CAM-PIPELINE-STRAIGHTEN-V1
+- CAM-ENTRYPOINT-DEHYBRID-V1
+- CAM-ENTRYPOINT-HYGIENE-V1
 
 ## Done
 - CAM-CONFIG-REFORM-V0 (archived in `work/archive/campaigns/CAM-CONFIG-REFORM-V0/`)

@@ -130,10 +130,11 @@
 - [x] DEDUP-P03-T002: move compatibility shims from `core/*` to `old/v1/*` and add legacy-archaeology markdown notes in `old/v1`.
 - [x] OPS-CAMP-P01-T001: normalize campaign lifecycle registry (`in progress / planned / done / parked`) in `work/now/campaign.md` and align `work/roadmap/backlog.md`.
 - [x] OPS-CAMP-P01-T002: archive all current campaign files from `work/roadmap/campaigns` to `work/archive/campaigns/*` and mark them completed in status registries.
+- [x] OPS-CAMP-P01-T003: register new campaign pack (`CAM-PIPELINE-STRAIGHTEN-V1`, `CAM-ENTRYPOINT-DEHYBRID-V1`, `CAM-ENTRYPOINT-HYGIENE-V1`) with charter/evidence templates and priorities file.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (OPS-CAMP-P01-T002 completed: all current campaigns archived and marked done)
+- 2026-03-04 (OPS-CAMP-P01-T003 completed: new campaign pack added and planned status synced)
 
