@@ -37,7 +37,7 @@ This document is a **navigation map** of the codebase as it exists today. It is 
 | `src/services/sync_service.py` | Application | YDB sync orchestration: hash gate (preflight+full), normalize payloads, versioning, write operational tables | OK / Refactor | Looks like primary sync path. Duplicates exist in `src/services/sync/*`. |
 | `src/services/readmodel_builder.py` | Application | Bulk-load operational head + versioned milestones, build frontend v2 snapshot | OK | Should be the only builder used by API v2. |
 | `src/services/source_policy.py` | Application | Decide which data source to use for render/notify per mode | Refactor | Policy is fine, but wiring should live in bootstrap, not in main.py. |
-| `src/services/sync/` | Application (dup/legacy) | Alternative sync implementation (hash_basis/hash_gate) | Legacy | Coexists with `src/services/sync_service.py`. Must be consolidated. |
+| `src/services/sync/` | Application support | Hash-basis/hash-gate primitives shared by runtime helpers | Refactor | Legacy `sync_service.py` duplicate removed; keep only stateless primitives. |
 | `src/services/render/*` | Application | Rendering jobs (Sheets renderer) | Refactor | Ensure it reads from readmodel/operational bulk, not Sheets directly. |
 | `src/services/notify/*` | Application | Reminder selection + formatting pipeline | Refactor | Ensure no N+1 YDB calls; prefer readmodel. |
 | `src/services/readmodels/*` | Application | Readmodel job wrappers | Refactor | Consider merging with `readmodel_builder.py` or clearly separating “use-case wrappers” from “builder”. |

@@ -10,12 +10,15 @@
 - `DEDUP-P01-T001` completed: duplicate-role inventory prepared for sync/readmodel/handler branches.
 - `DEDUP-P01-T002` completed: keep/remove decisions documented in `docs/system/dedup_plan.md`.
 - `DEDUP-P02-T001` completed: removed legacy runtime-unused `src/handlers/sync.py` and `tests/handlers/test_sync_handler.py`.
+- `DEDUP-P02-T002` completed: removed unused duplicate `src/services/sync/sync_service.py`; `src/services/sync/__init__.py` now exports only hash primitives.
 
 ## Verification
 - `rg -n "from src\\.services\\.sync_service|from src\\.services\\.sync\\.sync_service|from src\\.services\\.readmodels\\.builder|from src\\.services\\.readmodel_builder" src main.py index.py tests`
 - `rg -n "from src\\.handlers\\.sync|from src\\.handlers\\.build_readmodels" src main.py index.py tests`
 - `rg -n "src\\.handlers\\.sync|handle_sync\\(" src tests`
 - `python -m unittest tests.handlers.test_build_readmodels_handler tests.services.test_planner_pipeline_job tests.api.test_frontend_api_routing -v`
+- `rg -n "from src\\.services\\.sync\\.sync_service|SyncService\\(" src tests`
+- `python -m unittest tests.services.test_hash_gate_job tests.services.test_sync_source_hash_gate tests.services.test_planner_pipeline_job tests.api.test_frontend_api_routing -v`
 - manual read pass:
   - `src/services/sync_service.py`
   - `src/services/sync/sync_service.py`
