@@ -86,10 +86,13 @@
 - [x] CFG-P02-T058: verify full smoke contour after dead compatibility code removal (`api/core/services/adapters`).
 - [x] CFG-P02-T059: extract source snapshot reader helpers from `main.py` into `src/entrypoints/jobs/source_snapshot_reader.py`.
 - [x] CFG-P02-T060: verify full smoke contour after `main.py` snapshot-reader extraction (`api/core/services/adapters`).
+- [x] CFG-P02-T061: add HTTP error boundary to prevent unhandled API handler exceptions from surfacing as gateway `502`.
+- [x] CFG-P02-T062: return structured `503 frontend_source_unavailable` when legacy frontend source path fails at runtime (`/api/v2/frontend`).
+- [x] CFG-P02-T063: add regression test for legacy source failure path and verify full smoke contour.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T059..T060 completed: main snapshot reader helpers extracted; smoke green)
+- 2026-03-04 (CFG-P02-T061..T063 completed: HTTP runtime errors now return structured 503 instead of gateway 502; smoke green)
 

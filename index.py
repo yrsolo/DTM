@@ -146,14 +146,23 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         ),
         build_frontend_api_payload_v2=build_frontend_api_payload_v2,
     )
-    http_response = dispatch_http(
-        event_dict,
-        is_http_event,
-        (
-            root_handler,
-            v2_handler,
-        ),
-    )
+    try:
+        http_response = dispatch_http(
+            event_dict,
+            is_http_event,
+            (
+                root_handler,
+                v2_handler,
+            ),
+        )
+    except Exception as error:
+        print(f"http_dispatch_error={error}")
+        return _error_response(
+            503,
+            code="http_dispatch_failed",
+            message="HTTP handler execution failed.",
+            details={"errorType": type(error).__name__},
+        )
     if http_response is not None:
         return http_response
 

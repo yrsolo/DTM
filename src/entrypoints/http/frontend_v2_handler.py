@@ -136,21 +136,33 @@ def handle_frontend_api_v2_if_requested(
             print(f"api_v2_readmodel_fallback=ydb_unavailable error={error}")
             ydb_fallback = True
 
-    dependencies = build_planner_dependencies(
-        key_json,
-        sheet_info,
-        dry_run=True,
-        mock_external=True,
-        cfg=app_cfg,
-    )
-    if ydb_fallback:
-        tasks = dependencies.task_repository.get_task_by_color_status(statuses)
-    else:
-        tasks = load_frontend_tasks(dependencies, statuses)
-    people = []
-    if include_people:
-        dependencies.people_manager.get_designers()
-        people = list(dependencies.people_manager.people.values())
+    try:
+        dependencies = build_planner_dependencies(
+            key_json,
+            sheet_info,
+            dry_run=True,
+            mock_external=True,
+            cfg=app_cfg,
+        )
+        if ydb_fallback:
+            tasks = dependencies.task_repository.get_task_by_color_status(statuses)
+        else:
+            tasks = load_frontend_tasks(dependencies, statuses)
+        people = []
+        if include_people:
+            dependencies.people_manager.get_designers()
+            people = list(dependencies.people_manager.people.values())
+    except Exception as error:
+        print(f"api_v2_legacy_source_unavailable error={error}")
+        return error_response(
+            503,
+            code="frontend_source_unavailable",
+            message="Frontend data source is temporarily unavailable.",
+            details={
+                "source": "legacy",
+                "errorType": type(error).__name__,
+            },
+        )
 
     payload = build_frontend_api_payload_v2(
         tasks=tasks,

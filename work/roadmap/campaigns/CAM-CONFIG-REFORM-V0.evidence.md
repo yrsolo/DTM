@@ -38,6 +38,7 @@
 | `docs/system/entrypoints_index_main.md`, `docs/system/module_map.md`, `index.py`, `src/entrypoints/http/*` | 2026-03-04 | TeamLead agent | docs sync pass against current code contour | high | system docs now reflect thinned index orchestration role and extracted HTTP module boundaries |
 | `src/entrypoints/http/frontend_compat_handlers.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | dead compatibility code cleanup + full smoke pack | high | removed unused `v1_discontinued` compatibility handler code after switching to v1->v2 alias policy |
 | `src/entrypoints/jobs/source_snapshot_reader.py`, `main.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | main snapshot helper extraction + full smoke pack | high | source snapshot (values/colors/range) IO helpers moved out of main entrypoint into dedicated jobs module; behavior retained |
+| `index.py`, `src/entrypoints/http/frontend_v2_handler.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | HTTP error-boundary hardening + full smoke pack | high | unhandled HTTP runtime exceptions now produce structured API `503` responses (`http_dispatch_failed` / `frontend_source_unavailable`) instead of gateway-level `502` |
 
 ## Execution Log
 - CAM-CONFIG-REFORM-V0 activated in `work/now/campaign.md`.
@@ -103,6 +104,9 @@
 - CFG-P02-T058 completed: executed full smoke contour after dead compatibility code removal (API routing + core/services/adapters unit smoke).
 - CFG-P02-T059 completed: extracted source snapshot reader helpers from `main.py` into `src/entrypoints/jobs/source_snapshot_reader.py`.
 - CFG-P02-T060 completed: executed full smoke contour after snapshot-reader extraction from `main.py` (API routing + core/services/adapters unit smoke).
+- CFG-P02-T061 completed: added HTTP dispatch error boundary in `index.py` so handler exceptions return structured API errors instead of bubbling to gateway `502`.
+- CFG-P02-T062 completed: added structured `503 frontend_source_unavailable` response in `frontend_v2_handler` when legacy source path fails at runtime.
+- CFG-P02-T063 completed: added regression test for legacy source failure path and validated full smoke contour.
 - P01 scaffold implemented (uncommitted):
   - YAML config files added: `config/runtime.yaml`, `config/tables.yaml`, `config/db.yaml`, `config/llm.yaml`, `config/mapping.yaml`
   - typed schema scaffold: `src/config/schema.py`
@@ -159,6 +163,9 @@
   - `python -m py_compile src/entrypoints/http/frontend_compat_handlers.py index.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
   - `python -m py_compile src/entrypoints/jobs/source_snapshot_reader.py main.py index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile src/entrypoints/http/frontend_v2_handler.py index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing -v`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
   - `python -m py_compile index.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
