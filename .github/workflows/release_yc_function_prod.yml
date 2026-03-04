@@ -1,4 +1,4 @@
-name: Release Yandex Cloud Function (prod manual)
+﻿name: Release Yandex Cloud Function (prod manual)
 
 on:
   workflow_dispatch:
@@ -31,11 +31,44 @@ jobs:
         with:
           ref: ${{ inputs.git_ref }}
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.actions.txt
+
+      - name: Load deploy defaults from YAML
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import yaml
+          from pathlib import Path
+
+          yc = (yaml.safe_load(Path("config/deploy.yaml").read_text(encoding="utf-8")) or {}).get("yandex_cloud", {})
+          values = {
+              "YC_FOLDER_ID": str(yc.get("folder_id", "")).strip(),
+              "YC_SERVICE_ACCOUNT_ID": str(yc.get("service_account_id", "")).strip(),
+              "YC_CLOUD_FUNCTION_PROD_NAME": str(yc.get("function_name_prod", "")).strip(),
+              "YC_FUNCTION_RUNTIME": str(yc.get("function_runtime", "python311")).strip(),
+              "YC_FUNCTION_TIMEOUT": str(yc.get("function_timeout", "60s")).strip(),
+              "YC_FUNCTION_MEMORY": str(yc.get("function_memory", "512Mb")).strip(),
+              "YC_FUNCTION_ENTRYPOINT": str(yc.get("function_entrypoint", "index.handler")).strip(),
+          }
+          with Path("${GITHUB_ENV}").open("a", encoding="utf-8") as f:
+              for k, v in values.items():
+                  f.write(f"{k}={v}\\n")
+          PY
+
       - name: Resolve function target
         id: target
         shell: bash
         env:
-          YC_CLOUD_FUNCTION_PROD_NAME: ${{ vars.YC_CLOUD_FUNCTION_PROD_NAME || secrets.YC_CLOUD_FUNCTION_PROD_NAME }}
+          YC_CLOUD_FUNCTION_PROD_NAME: ${{ vars.YC_CLOUD_FUNCTION_PROD_NAME || secrets.YC_CLOUD_FUNCTION_PROD_NAME || env.YC_CLOUD_FUNCTION_PROD_NAME }}
           YC_CLOUD_FUNCTION_PROD_ID: ${{ vars.YC_CLOUD_FUNCTION_PROD_ID || secrets.YC_CLOUD_FUNCTION_PROD_ID }}
           DEFAULT_PROD_FUNCTION_TARGET: dtm-prod
           INPUT_FUNCTION_TARGET: ${{ inputs.function_target }}
@@ -48,16 +81,6 @@ jobs:
           fi
           echo "target=${target}" >> "${GITHUB_OUTPUT}"
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.actions.txt
-
       - name: Contract regression smoke checks
         run: |
           python agent/read_model_contract_compat_smoke.py
@@ -67,7 +90,7 @@ jobs:
         shell: bash
         env:
           YC_LOCKBOX_SECRET_ID: ${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}
-          YC_SERVICE_ACCOUNT_ID: ${{ vars.YC_SERVICE_ACCOUNT_ID || secrets.YC_SERVICE_ACCOUNT_ID }}
+          YC_SERVICE_ACCOUNT_ID: ${{ vars.YC_SERVICE_ACCOUNT_ID || secrets.YC_SERVICE_ACCOUNT_ID || env.YC_SERVICE_ACCOUNT_ID }}
           YC_RUNTIME_SERVICE_ACCOUNT_ID: ${{ vars.YC_RUNTIME_SERVICE_ACCOUNT_ID || secrets.YC_RUNTIME_SERVICE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
@@ -85,16 +108,15 @@ jobs:
         uses: yc-actions/yc-sls-function@v4
         with:
           yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
-          folder-id: ${{ vars.YC_FOLDER_ID || secrets.YC_FOLDER_ID }}
+          folder-id: ${{ vars.YC_FOLDER_ID || secrets.YC_FOLDER_ID || env.YC_FOLDER_ID }}
           function-name: ${{ steps.target.outputs.target }}
-          runtime: ${{ vars.YC_FUNCTION_RUNTIME || 'python311' }}
-          memory: ${{ vars.YC_FUNCTION_MEMORY || '512Mb' }}
-          execution-timeout: ${{ vars.YC_FUNCTION_TIMEOUT || '60s' }}
-          entrypoint: ${{ vars.YC_FUNCTION_ENTRYPOINT || secrets.YC_FUNCTION_ENTRYPOINT || 'index.handler' }}
-          service-account: ${{ vars.YC_RUNTIME_SERVICE_ACCOUNT_ID || secrets.YC_RUNTIME_SERVICE_ACCOUNT_ID || vars.YC_SERVICE_ACCOUNT_ID || secrets.YC_SERVICE_ACCOUNT_ID }}
+          runtime: ${{ vars.YC_FUNCTION_RUNTIME || env.YC_FUNCTION_RUNTIME || 'python311' }}
+          memory: ${{ vars.YC_FUNCTION_MEMORY || env.YC_FUNCTION_MEMORY || '512Mb' }}
+          execution-timeout: ${{ vars.YC_FUNCTION_TIMEOUT || env.YC_FUNCTION_TIMEOUT || '60s' }}
+          entrypoint: ${{ vars.YC_FUNCTION_ENTRYPOINT || secrets.YC_FUNCTION_ENTRYPOINT || env.YC_FUNCTION_ENTRYPOINT || 'index.handler' }}
+          service-account: ${{ vars.YC_RUNTIME_SERVICE_ACCOUNT_ID || secrets.YC_RUNTIME_SERVICE_ACCOUNT_ID || vars.YC_SERVICE_ACCOUNT_ID || secrets.YC_SERVICE_ACCOUNT_ID || env.YC_SERVICE_ACCOUNT_ID }}
           environment: |
             ENV=prod
-            STRICT_ENV_GUARD=0
             RELEASE_DRY_RUN=${{ inputs.dry_run_release }}
           secrets: |
             TG_TOKEN=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/TG_TOKEN
@@ -103,16 +125,6 @@ jobs:
             PROXY_URL=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/PROXY_URL
             GOOGLE_KEY_JSON=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/GOOGLE_KEY_JSON
             DEFAULT_CHAT_ID=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/DEFAULT_CHAT_ID
-            SOURCE_SHEET_NAME=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/SOURCE_SHEET_NAME
-            TARGET_SHEET_NAME=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/TARGET_SHEET_NAME_PROD
-            TARGET_SHEET_NAME_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/TARGET_SHEET_NAME_PROD
-            WEB_DOMAIN=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/WEB_DOMAIN
-            API_DOMAIN_TEST=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/API_DOMAIN_TEST
-            API_DOMAIN_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/API_DOMAIN_PROD
-            STORE_MODE=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/STORE_MODE
-            READMODEL_SOURCE=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/READMODEL_SOURCE
-            NOTIFY_SOURCE=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/NOTIFY_SOURCE
-            RENDER_SOURCE=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/RENDER_SOURCE
             YDB_ID_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_ID_PROD
             YDB_ENDPOINT_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_ENDPOINT_PROD
             YDB_DATABASE_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_DATABASE_PROD
@@ -122,8 +134,8 @@ jobs:
             run_timer.cmd
             AGENTS.md
             README.md
-            doc/**/*.md
-            agile/**/*.md
+            docs/**/*.md
+            work/**/*.md
           exclude: |
             .env
             .env.*

@@ -1,0 +1,95 @@
+# CAM-CONFIG-REFORM-V0 Evidence
+
+## Trust Registry
+| source | last_verified_at | verified_by | evidence | trust_level | notes |
+|---|---|---|---|---|---|
+| `docs/system/config.md`, `docs/system/architecture.md`, `work/roadmap/campaigns/priorities.md` | 2026-03-03 | TeamLead agent | direct read of current docs + priority queue | high | campaign priority and target contour confirmed |
+| `config/constants.py`, `index.py`, `main.py`, `src/adapters/ydb/client.py` | 2026-03-03 | TeamLead agent | code scan (`rg`) for env/constants coupling and runtime entrypoints | high | current state has strong env/constants coupling; refactor needed |
+| `src/services/planner_runtime.py`, `core/planner.py`, `main.py` | 2026-03-04 | TeamLead agent | direct code scan + compile/test smoke | high | confirms planner runtime no longer needs direct `config.SOURCE_SHEET_INFO` import when dependencies already provide source sheet context |
+| `index.py`, `main.py`, `src/app/planner_bootstrap.py`, `src/services/calendar_runtime.py`, adapters` | 2026-03-04 | TeamLead agent | code scan (`rg`) for remaining direct config imports in active contour | high | migration checklist built with ordered safe path for cfg-driven wiring |
+| `src/app/planner_bootstrap.py`, `main.py`, `index.py` | 2026-03-04 | TeamLead agent | direct code scan + compile/test smoke | high | first cfg-driven wiring slice applied for planner bootstrap and main runtime source policy inputs |
+| `index.py`, `main.py` | 2026-03-04 | TeamLead agent | direct code scan + compile/test smoke | high | non-secret runtime toggles in entrypoints now sourced from `APP_CONTEXT.cfg` instead of direct config globals |
+| `src/app/planner_bootstrap.py`, `src/services/planner_runtime.py`, `main.py`, `index.py` | 2026-03-04 | TeamLead agent | `py_compile` + targeted unit smoke after cfg wiring cleanup | high | planner bootstrap non-secret defaults now sourced from cfg object; runtime path remains green |
+| `src/services/calendar_runtime.py`, `src/app/planner_bootstrap.py`, `core/timing_parser.py`, `core/task_timing_processor.py`, `src/adapters/google_sheets/task_repository.py`, `core/reminder.py` | 2026-03-04 | TeamLead agent | direct code edits + compile/test smoke + import scan | high | removed active non-secret config reads from services/core timing path; core reminder stale config import dropped |
+| `src/adapters/telegram.py`, `index.py`, `src/adapters/google_sheets/task_repository.py`, `src/adapters/google_sheets/people_manager.py`, `src/app/planner_bootstrap.py` | 2026-03-04 | TeamLead agent | direct code edits + compile/test smoke + import scan | high | adapter config imports reduced to entrypoint/bootstrap boundary; legacy bootstrap shim compatibility preserved |
+| `work/roadmap/campaigns/priorities.md`, `docs/system/entrypoints_index_main.md`, `docs/system/module_map.md`, `docs/system/config.md` | 2026-03-04 | TeamLead agent | owner instruction in chat + docs update pass | high | API v1 support discontinued; active documentation switched to API v2-only maintenance policy |
+| `src/adapters/ydb/client.py`, `src/adapters/store_ydb.py`, `tests/services/test_ydb_backoff.py`, `tests/adapters/test_json_store_adapter.py` | 2026-03-04 | TeamLead agent | adapter refactor + compile + targeted unit tests + import scan | high | YDB adapters no longer import `config.constants`; credentials/backoff are explicit parameters at adapter boundary |
+| `index.py`, `tests/api/test_frontend_api_routing.py` | 2026-03-04 | TeamLead agent | runtime routing change + unit smoke | high | API v1 routes now explicitly return `410 api_v1_discontinued`; API v2 remains active and tested |
+| `config/constants.py`, `src/config/loader.py`, `docs/system/config.md` | 2026-03-04 | TeamLead agent | config contour cleanup + compile/test smoke | high | legacy API default-version knob removed from active config contour for v2-only runtime policy |
+| `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | dead-code cleanup + extended smoke pack | high | removed unused API v1 doc builders from runtime entrypoint; verified no regressions in API/core/services/adapters smoke contour |
+| `docs/system/entrypoints_index_main.md` | 2026-03-04 | TeamLead agent | documentation sync pass | high | entrypoint behavior doc now explicitly states runtime `410 api_v1_discontinued` response for API v1 paths |
+
+## Execution Log
+- CAM-CONFIG-REFORM-V0 activated in `work/now/campaign.md`.
+- P01 task list initialized in `work/now/tasks.md`.
+- Owner rule acknowledged: no commits before YAML transfer scope review.
+- CFG-P02-T001 completed: removed direct `config.SOURCE_SHEET_INFO` dependency from `src/services/planner_runtime.py`; source sheet info now derived from injected dependencies (with safe fallback).
+- CFG-P02-T002 completed: created config import migration checklist (`docs/system/modules/config_import_migration_checklist.md`) with active contour inventory and ordered implementation steps.
+- CFG-P02-T003 completed: `build_planner_dependencies(..., cfg=...)` added; `main.py` now reads non-secret runtime toggles (triggers/source modes/runtime env/store mode) from `APP_CONTEXT.cfg` instead of direct config globals.
+- CFG-P02-T004 completed: `index.py` moved non-secret runtime toggles (`debug_http_event`, `triggers`, `frontend_api_default_version`) to `APP_CFG`.
+- CFG-P02-T005 completed: `src/app/planner_bootstrap.py` now resolves non-secret LLM/runtime defaults from `cfg` (with `load_config()` fallback), keeping only secret/deployment constants in direct config imports.
+- CFG-P02-T006 completed: `src/services/calendar_runtime.py` no longer imports `config.COLORS`; palette is now injectable and wired from `cfg.mapping.palette` in planner bootstrap.
+- CFG-P02-T007 completed: `core/timing_parser.py` no longer reads `TIMING_YEAR_MODE` from config; mode now defaults locally and is injected from cfg via planner bootstrap into repository/timing processor.
+- CFG-P02-T008 completed: removed stale `from config import DEFAULT_CHAT_ID, TG` import from `core/reminder.py` (unused after adapter/token injection path).
+- CFG-P02-T009 completed: `src/adapters/telegram.py` no longer imports config defaults; token/chat id are passed explicitly from entrypoint wiring (`index.py`) and bootstrap flows.
+- CFG-P02-T010 completed: Google Sheets adapters (`task_repository`, `people_manager`) moved off direct `config` imports; mappings/status aliases now come from cfg-backed constructor inputs (with loader fallback).
+- CFG-P02-T011 completed: restored backward compatibility for legacy shim path by reintroducing planner bootstrap mutable knobs consumed by `core/bootstrap.py`.
+- CFG-P02-T012 completed: owner decision recorded in active docs - API v1 support discontinued; v2-only maintenance policy documented across system and campaign docs.
+- CFG-P02-T013 completed: removed direct `config.constants` imports from `src/adapters/ydb/client.py` and `src/adapters/store_ydb.py`; switched to explicit constructor parameters for credentials/backoff policy.
+- CFG-P02-T014 completed: updated adapter tests for explicit credential injection path and validated YDB backoff/store factory behaviors.
+- CFG-P02-T015 completed: `index.py` runtime routing switched to v2-only policy; all API v1 routes return `410` with `api_v1_discontinued`.
+- CFG-P02-T016 completed: `tests/api/test_frontend_api_routing.py` aligned with v2-only policy and current mutable runtime knobs (`APP_READMODEL_SOURCE`).
+- CFG-P02-T017 completed: removed legacy `FRONTEND_API_DEFAULT_VERSION` from active runtime config contour (`config/constants.py`, `src/config/loader.py` allowlist, docs note).
+- CFG-P02-T018 completed: executed extended smoke pack across API/core/services/adapters after v2-only/config cleanup.
+- CFG-P02-T019 completed: removed dead API v1 documentation builders (`_frontend_api_doc`, `_frontend_api_doc_html`) from `index.py`.
+- CFG-P02-T020 completed: reran extended smoke pack after dead-code removal (api/core/services/adapters) with green result.
+- CFG-P02-T021 completed: updated entrypoint system doc with explicit runtime behavior for API v1 paths (`410 api_v1_discontinued`).
+- P01 scaffold implemented (uncommitted):
+  - YAML config files added: `config/runtime.yaml`, `config/tables.yaml`, `config/db.yaml`, `config/llm.yaml`, `config/mapping.yaml`
+  - typed schema scaffold: `src/config/schema.py`
+  - loader scaffold + env allowlist: `src/config/loader.py`
+  - bootstrap scaffold: `src/app/bootstrap.py`
+  - docs update: `docs/system/config.md`
+  - dependency note: `PyYAML` added to `requirements.txt`
+  - constants dedup: `config/constants.py` now sources sheet names/field maps/color maps/hidden stages and runtime defaults from YAML loader (`load_config()`), without hardcoded duplicates.
+  - constants transfer: `HELPER_CHARACTER` moved to `config/llm.yaml` (`assistant.helper_character`), `TRIGGERS` moved to `config/runtime.yaml` (`triggers`).
+  - env cleanup: removed YAML-covered defaults from `.env`, `.env.example`, `.env.dev.example`, `.env.prod.example` (runtime/sheet/source/pipeline/source-select keys).
+  - added deploy defaults map: `config/deploy.yaml` (folder/function/runtime/timeout/entrypoint/service-account id).
+  - moved web defaults to `config/runtime.yaml` and object storage defaults to `config/db.yaml`.
+  - updated workflows to consume YAML defaults instead of repo vars/secrets for non-sensitive deploy settings:
+    - `.github/workflows/deploy_yc_function_main.yml`
+    - `.github/workflows/release_yc_function_prod.yml`
+  - `.env` cleaned to secrets/override-only keys; non-secret constants removed.
+  - `.env.example` rewritten to minimal secret/override template; `.env.dev.example` and `.env.prod.example` reduced to optional override stubs.
+- Local smoke check:
+  - `.venv\\Scripts\\python.exe -c "from src.config.loader import load_config; cfg=load_config(); print('ok', bool(cfg.tables.sheet_names), bool(cfg.mapping.project_aliases), cfg.db.tables.get('tasks'))"`
+  - result: `ok True True dtm_tasks`
+  - `.venv\\Scripts\\python.exe -c "from src.config.loader import load_config; cfg=load_config(); import config.constants as c; print('cfg', bool(cfg.tables.sheet_names), bool(cfg.mapping.project_aliases)); print('const', len(c.SHEET_NAMES), len(c.TASK_FIELD_MAP), len(c.PEOPLE_FIELD_MAP), len(c.REPLACE_NAMES), len(c.COLOR_STATUS), len(c.NO_VISIBLE_STAGES))"`
+  - result: `cfg True True` and `const 7 11 8 26 5 6`
+  - `python -m py_compile src/services/planner_runtime.py core/planner.py main.py`
+  - `python -m unittest tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty -v`
+  - `rg -n "from config import|from config\\.constants import|import config\\.constants" src core main.py index.py agent tests`
+  - `python -m py_compile src/app/planner_bootstrap.py src/services/planner_runtime.py main.py index.py`
+  - `python -m unittest tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty -v`
+  - `python -m py_compile index.py main.py src/app/planner_bootstrap.py src/services/planner_runtime.py`
+  - `python -m unittest tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty -v`
+  - `python -m py_compile src/app/planner_bootstrap.py main.py index.py src/services/planner_runtime.py`
+  - `python -m unittest tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty -v`
+  - `python -m py_compile src/services/calendar_runtime.py src/app/planner_bootstrap.py src/services/planner_runtime.py main.py index.py`
+  - `python -m py_compile core/timing_parser.py core/task_timing_processor.py src/adapters/google_sheets/task_repository.py src/app/planner_bootstrap.py src/services/calendar_runtime.py main.py index.py`
+  - `python -m py_compile core/reminder.py core/timing_parser.py core/task_timing_processor.py src/services/calendar_runtime.py src/app/planner_bootstrap.py src/adapters/google_sheets/task_repository.py main.py index.py`
+  - `python -m unittest tests.core.test_timing_year_modes tests.services.test_pipeline_runtime tests.core.test_manager_calendar_empty -v`
+  - `python -m py_compile src/adapters/telegram.py index.py main.py src/app/planner_bootstrap.py src/services/calendar_runtime.py core/timing_parser.py core/task_timing_processor.py src/adapters/google_sheets/task_repository.py src/adapters/google_sheets/people_manager.py`
+  - `python -m unittest tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty -v`
+  - `python -m unittest tests.api.test_frontend_api_routing -v` (known pre-existing drift: expects `index.build_operational_store` symbol not present in current branch contour)
+  - `python -m py_compile src/adapters/ydb/client.py src/adapters/store_ydb.py tests/adapters/test_json_store_adapter.py`
+  - `python -m unittest tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `rg -n "from config import|from config\\.constants import|import config\\.constants" src core main.py index.py`
+  - `python -m py_compile index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing -v`
+  - `python -m unittest tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile config/constants.py src/config/loader.py index.py main.py`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `rg -n "^def _frontend_api_doc\\(|^def _frontend_api_doc_html\\(" index.py`
+  - `python -m py_compile index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`

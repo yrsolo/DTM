@@ -6,25 +6,22 @@ Purpose: single runtime control document for any agent session in this repositor
 Before any planning or coding, agent must:
 1. Read this file (`agent/OPERATING_CONTRACT.md`).
 2. Read `AGENTS.md`.
-3. Read role file if applicable (for TeamLead: `agent/teamlead.md`).
-4. Confirm in first response: `CONTRACT CHECK: OK`.
+3. Confirm in first response: `CONTRACT CHECK: OK`.
 
-If step 1-4 is not completed, agent must not continue execution.
+If step 1-3 is not completed, agent must not continue execution.
 
 ## 1) Priority Order
 1. Direct owner instruction in current chat.
 2. This operating contract.
 3. `AGENTS.md`.
-4. Role-specific protocol (`agent/teamlead.md`).
-5. Other docs (`docs/README.md`, `work/*`, `README.md`).
+4. Other docs (`docs/README.md`, `work/*`, `README.md`).
 
 ## 2) Task Tracking Runtime Rules
-1. Jira is preferred for execution lifecycle, but not mandatory.
-2. If Jira is not used, execution lifecycle must be tracked in local files:
+1. execution lifecycle must be tracked in local files:
    - `work/now/tasks.md` (Now/Done/Blocked),
    - `work/roadmap/backlog.md` (groomed queue),
    - `work/roadmap/campaigns/<CAMPAIGN>/{plan,evidence}.md` (task breakdown and evidence).
-3. Required lifecycle per task (in Jira or local tracker):
+3. Required lifecycle per task:
    - register/start task before code changes,
    - record evidence during execution,
    - mark completion with outcome notes.

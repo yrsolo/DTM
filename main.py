@@ -2,45 +2,43 @@
 
 import asyncio
 import json
-import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 
 from config import (
-    FORCE_REFRESH,
-    FULL_SYNC_INTERVAL_HOURS,
     KEY_JSON,
     LEGACY_BLOB_WRITE,
     WRITE_LEGACY_MILESTONES,
     MIGRATION_ENABLE_SOURCE_HASH_GATE,
     MIGRATION_HASH_GATE_STATE_FILE,
     MIGRATION_STORE_FILE,
-    NOTIFY_SOURCE,
-    RENDER_SOURCE,
-    STORE_MODE,
-    RUNTIME_ENV,
-    PREFLIGHT_TOP_ROWS,
-    READMODEL_TTL_MINUTES,
     YDB_MIGRATE_ON_START,
     YDB_DATABASE,
     YDB_ENDPOINT,
     SHEET_INFO,
-    TRIGGERS,
 )
-from core.bootstrap import build_planner_dependencies
-from core.planner import GoogleSheetPlanner
-from core.use_cases import resolve_run_mode, run_planner_use_case
+from src.services.planner_runtime import GoogleSheetPlanner
+from src.app.planner_bootstrap import build_planner_dependencies
+from src.services.usecases.planner_runtime import resolve_run_mode, run_planner_use_case
+from src.app.bootstrap import build_app_context
 from src.adapters.store_ydb import build_operational_store
-from src.adapters.ydb.operational_repo import OperationalTaskRepo
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
 from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
-from src.adapters.ydb.schema import ensure_tables
-from src.adapters.ydb.client import YdbClient
-from src.services.readmodel_builder import FrontendReadmodelBuilderService
-from src.services.sync_service import YdbSyncService
+from src.entrypoints.jobs.db_migrate_job import run_db_migrate
+from src.entrypoints.jobs.timer_job import TimerJob
+from src.services.pipeline_runtime import run_ydb_sync_readmodel_pipeline
 from src.services.sync.hash_basis import build_hash_basis
 from src.services.sync.hash_gate import evaluate_hash_gate, save_last_hash
 from src.services.source_policy import build_source_policy_matrix
+
+APP_CONTEXT = build_app_context()
+PIPELINE_CFG = APP_CONTEXT.cfg.runtime.pipeline
+APP_RUNTIME_ENV = APP_CONTEXT.cfg.runtime.runtime.env_default
+APP_STORE_MODE = APP_CONTEXT.cfg.runtime.sources.store_mode_default
+APP_NOTIFY_SOURCE = APP_CONTEXT.cfg.runtime.sources.notify_source_default
+APP_RENDER_SOURCE = APP_CONTEXT.cfg.runtime.sources.render_source_default
+APP_TRIGGERS = APP_CONTEXT.cfg.runtime.triggers
+TIMER_JOB_SHELL = TimerJob()
 
 
 def _print_quality_report(report):
@@ -208,8 +206,8 @@ def _build_ydb_task_repository() -> YdbOperationalTaskRepository:
 def _apply_task_source_switches(planner: GoogleSheetPlanner, mode: str) -> tuple[bool, bool]:
     policy = build_source_policy_matrix(
         readmodel_source="legacy",
-        notify_source=NOTIFY_SOURCE,
-        render_source=RENDER_SOURCE,
+        notify_source=APP_NOTIFY_SOURCE,
+        render_source=APP_RENDER_SOURCE,
     )
     render_reads_ydb = policy.render_reads_ydb(mode)
     notify_reads_ydb = policy.notify_reads_ydb(mode)
@@ -240,31 +238,26 @@ async def main(**kwargs):
     event = kwargs.get("event")
     dry_run = kwargs.get("dry_run", False)
     mock_external = kwargs.get("mock_external")
-    mode = resolve_run_mode(mode=mode, event=event, triggers=TRIGGERS)
+    mode = resolve_run_mode(mode=mode, event=event, triggers=APP_TRIGGERS)
+    if mode == "timer":
+        shell_report = TIMER_JOB_SHELL.run(APP_CONTEXT)
+        print(f"timer_job_shell_steps={len(shell_report.get('steps', []))}")
     if mock_external is None:
         mock_external = mode == "test"
-    force_refresh = bool(kwargs.get("force_refresh", FORCE_REFRESH))
+    force_refresh = bool(kwargs.get("force_refresh", PIPELINE_CFG.force_refresh_default))
     print(f"{mode=} {dry_run=} {mock_external=}")
 
     if mode == "db_migrate":
-        client = YdbClient(endpoint=YDB_ENDPOINT, database=YDB_DATABASE)
-        ensure_tables(client)
+        result = run_db_migrate(endpoint=YDB_ENDPOINT, database=YDB_DATABASE)
         print("db_migrate_done=true")
-        return {
-            "mode": "db_migrate",
-            "summary": {
-                "db_migrate_done": True,
-                "ydb_queries_count": client.stats.ydb_queries_count,
-                "ydb_duration_ms": client.stats.duration_ms,
-                "ydb_error_code": client.stats.error_code,
-            },
-        }
+        return result
 
     dependencies = build_planner_dependencies(
         KEY_JSON,
         SHEET_INFO,
         dry_run=dry_run,
         mock_external=mock_external,
+        cfg=APP_CONTEXT.cfg,
     )
     source_task_repository = dependencies.task_repository
     planner = GoogleSheetPlanner(
@@ -277,7 +270,7 @@ async def main(**kwargs):
     )
     _apply_task_source_switches(planner, mode)
     if mode in {"timer", "test", "morning", "reminders-only", "sync-only"} and (
-        RENDER_SOURCE == "ydb" or NOTIFY_SOURCE == "ydb"
+        APP_RENDER_SOURCE == "ydb" or APP_NOTIFY_SOURCE == "ydb"
     ):
         try:
             readmodel_repo = FrontendReadmodelRepo(
@@ -286,8 +279,8 @@ async def main(**kwargs):
                 ensure_schema=False,
             )
             marker = _readmodel_freshness_marker(readmodel_repo.get_readmodel("frontend_v2:default"))
-            marker["render_source"] = RENDER_SOURCE
-            marker["notify_source"] = NOTIFY_SOURCE
+            marker["render_source"] = APP_RENDER_SOURCE
+            marker["notify_source"] = APP_NOTIFY_SOURCE
             _safe_print(
                 "readmodel_freshness="
                 + json.dumps(marker, ensure_ascii=False, sort_keys=True)
@@ -333,14 +326,14 @@ async def main(**kwargs):
 
     if (
         LEGACY_BLOB_WRITE
-        and STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"}
+        and APP_STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"}
         and mode in {"timer", "test", "sync-only"}
         and allow_sync
     ):
         records = [_task_to_store_record(task) for task in tasks]
         store = build_operational_store(
-            STORE_MODE,
-            env_name=RUNTIME_ENV,
+            APP_STORE_MODE,
+            env_name=APP_RUNTIME_ENV,
             ydb_endpoint=YDB_ENDPOINT,
             ydb_database=YDB_DATABASE,
             json_file_path=MIGRATION_STORE_FILE,
@@ -348,141 +341,36 @@ async def main(**kwargs):
         store_result = store.upsert_tasks(records)
         print(
             "migration_store_write="
-            f"store_mode={STORE_MODE} "
+            f"store_mode={APP_STORE_MODE} "
             "write_path=dual_write_legacy "
             f"store_file={MIGRATION_STORE_FILE} "
             f"records={len(records)} "
             f"result={store_result}"
         )
-    elif STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"} and mode in {"timer", "test", "sync-only"}:
+    elif APP_STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"} and mode in {"timer", "test", "sync-only"}:
         print("migration_store_write=skipped write_path=normalized_only reason=LEGACY_BLOB_WRITE_disabled")
 
-    if STORE_MODE in {"dual_write", "ydb_primary", "ydb_only"} and mode in {"timer", "test", "sync-only"} and allow_sync:
-        sync_deferred = False
-        readmodel_deferred = False
-        source_id = (
-            "sheet:"
-            f"{source_task_repository.source_sheet_info.spreadsheet_name}:"
-            f"{source_task_repository.source_sheet_info.get_sheet_name('tasks')}:A1:Z2000"
-        )
-        try:
-            operational_repo = OperationalTaskRepo(
-                endpoint=YDB_ENDPOINT,
-                database=YDB_DATABASE,
-                ensure_schema=YDB_MIGRATE_ON_START,
-            )
-            sync_service = YdbSyncService(
-                operational_repo,
-                write_legacy_milestones=WRITE_LEGACY_MILESTONES,
-            )
-            preflight_range = f"A1:Z{max(PREFLIGHT_TOP_ROWS, 1)}"
-            full_range = "A1:Z2000"
-            preflight_snapshot = _read_source_snapshot(source_task_repository, worksheet_range=preflight_range)
-            full_snapshot = _read_source_snapshot(source_task_repository, worksheet_range=full_range)
-            normalized_tasks = [_task_to_operational_payload(task) for task in tasks]
-            existing_readmodel = FrontendReadmodelRepo(
-                endpoint=YDB_ENDPOINT,
-                database=YDB_DATABASE,
-                ensure_schema=False,
-            ).get_readmodel("frontend_v2:default")
-            ttl_skip = False
-            if existing_readmodel is not None and existing_readmodel.generated_at_utc is not None and not force_refresh:
-                age_seconds = (datetime.now(timezone.utc) - existing_readmodel.generated_at_utc).total_seconds()
-                ttl_skip = age_seconds < READMODEL_TTL_MINUTES * 60
-            if ttl_skip:
-                _safe_print(
-                    "migration_operational_sync="
-                    "skipped=true "
-                    f"reason=readmodel_ttl_fresh ttl_minutes={READMODEL_TTL_MINUTES}"
-                )
-            else:
-                sync_result = sync_service.run(
-                    source_id=source_id,
-                    preflight_range_values=preflight_snapshot,
-                    source_range_values=full_snapshot,
-                    normalized_tasks=normalized_tasks,
-                    force_refresh=force_refresh,
-                    full_sync_interval_hours=FULL_SYNC_INTERVAL_HOURS,
-                )
-                _safe_print(
-                    "migration_operational_sync="
-                    f"source_id={sync_result.source_id} "
-                    f"preflight_hash_50={sync_result.preflight_hash_50} "
-                    f"source_hash_full={sync_result.source_hash_full} "
-                    f"previous_preflight_hash_50={sync_result.previous_preflight_hash_50} "
-                    f"previous_source_hash_full={sync_result.previous_source_hash_full} "
-                    f"no_changes={sync_result.no_changes} "
-                    f"full_sync_performed={sync_result.full_sync_performed} "
-                    f"forced_refresh={sync_result.forced_refresh} "
-                    f"tasks_upserted={sync_result.tasks_upserted} "
-                    f"milestones_upserted={sync_result.milestones_upserted} "
-                    f"ydb_queries_count={sync_result.ydb_queries_count} "
-                    f"error_code={sync_result.ydb_error_code}"
-                )
-        except Exception as exc:
-            sync_deferred = True
-            safe_error = str(exc).encode("ascii", "backslashreplace").decode("ascii")
-            _safe_print(f"migration_ydb_pipeline_error={safe_error}")
-            safe_trace = traceback.format_exc().encode("ascii", "backslashreplace").decode("ascii")
-            _safe_print(f"migration_ydb_pipeline_trace={safe_trace}")
-            try:
-                state = operational_repo.get_sync_state(source_id) if "operational_repo" in locals() else None
-                if state is not None:
-                    operational_repo.set_sync_state(
-                        source_id=source_id,
-                        preflight_hash_50=state.preflight_hash_50,
-                        source_hash_full=state.source_hash_full,
-                        synced_at_utc=datetime.now(timezone.utc),
-                        last_full_sync_at_utc=state.last_full_sync_at_utc,
-                        last_success_at_utc=state.last_success_at_utc or datetime.now(timezone.utc),
-                        last_error=safe_error,
-                        last_error_code="ydb_resource_exhausted" if "resourceexhausted" in safe_error.lower() else "ydb_error",
-                        last_error_at_utc=datetime.now(timezone.utc),
-                    )
-            except Exception:
-                pass
-        if not sync_deferred and not ttl_skip:
-            try:
-                operational_repo = OperationalTaskRepo(
-                    endpoint=YDB_ENDPOINT,
-                    database=YDB_DATABASE,
-                    ensure_schema=False,
-                )
-                readmodel_repo = FrontendReadmodelRepo(
-                    endpoint=YDB_ENDPOINT,
-                    database=YDB_DATABASE,
-                    ensure_schema=False,
-                )
-                readmodel_builder = FrontendReadmodelBuilderService(
-                    operational_repo=operational_repo,
-                    readmodel_repo=readmodel_repo,
-                    source_id=source_id,
-                    env_name=RUNTIME_ENV,
-                    source_sheet_name=source_task_repository.source_sheet_info.spreadsheet_name,
-                )
-                readmodel_result = readmodel_builder.run(readmodel_id="frontend_v2:default")
-                _safe_print(
-                    "migration_readmodel_build="
-                    f"readmodel_id={readmodel_result.readmodel_id} "
-                    f"source_hash={readmodel_result.source_hash} "
-                    f"changed={readmodel_result.changed} "
-                    f"tasks_count={readmodel_result.tasks_count} "
-                    f"ydb_queries_count={readmodel_result.ydb_queries_count}"
-                )
-            except Exception as exc:
-                readmodel_deferred = True
-                safe_error = str(exc).encode("ascii", "backslashreplace").decode("ascii")
-                _safe_print(f"migration_readmodel_error={safe_error}")
-                safe_trace = traceback.format_exc().encode("ascii", "backslashreplace").decode("ascii")
-                _safe_print(f"migration_readmodel_trace={safe_trace}")
-        print(
-            "migration_defer_status "
-            f"sync_deferred={sync_deferred} "
-            f"readmodel_deferred={readmodel_deferred}"
-        )
+    run_ydb_sync_readmodel_pipeline(
+        store_mode=APP_STORE_MODE,
+        mode=mode,
+        allow_sync=allow_sync,
+        tasks=tasks,
+        source_task_repository=source_task_repository,
+        force_refresh=force_refresh,
+        ydb_endpoint=YDB_ENDPOINT,
+        ydb_database=YDB_DATABASE,
+        ydb_migrate_on_start=YDB_MIGRATE_ON_START,
+        write_legacy_milestones=WRITE_LEGACY_MILESTONES,
+        runtime_env=APP_RUNTIME_ENV,
+        pipeline_cfg=PIPELINE_CFG,
+        safe_print=_safe_print,
+        read_source_snapshot=_read_source_snapshot,
+        task_to_operational_payload=_task_to_operational_payload,
+    )
     _print_quality_report(quality_report)
     return quality_report
 
 
 if __name__ == "__main__":
     asyncio.run(main())
+

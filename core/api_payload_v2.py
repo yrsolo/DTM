@@ -8,7 +8,7 @@ from datetime import date
 from datetime import datetime, timezone
 from typing import Any, Iterable
 
-from core.people import Person
+from core.models.people import Person
 from core.task_query_adapter import TaskQueryContext, build_task_query_context, query_projections
 from core.task_query_contract import TimeWindow, milestone_type_labels
 

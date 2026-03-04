@@ -1,7 +1,9 @@
 # Backlog
 
 ## Ready
-- Define next campaign after milestones hardening closeout.
+- CAM-CONFIG-REFORM-V0 (completed core scope, hardening follow-ups possible).
+- CAM-CORE-CLEANUP-V1.
+- CAM-DEDUP-LEGACY-REMOVAL-V1.
 
 ## Parked
 - Legacy process normalization beyond structural split.

@@ -1,91 +1,141 @@
-# AGENTS
+# AGENTS.md
 
-## Purpose
 Operational rules for AI agents working in this repository.
 
-## Runtime Contract (Mandatory)
-- Primary runtime control document: `agent/OPERATING_CONTRACT.md`.
-- Every agent session must start with contract read and explicit confirmation:
-  - `CONTRACT CHECK: OK`
-- If contract check is missing, execution/planning must not continue.
+> Primary runtime control doc: `agent/OPERATING_CONTRACT.md`. It has priority. :contentReference[oaicite:2]{index=2}
 
-## Scope
-- Applies to the whole repository unless overridden by a deeper `AGENTS.md`.
-- If user instruction conflicts with this file, user instruction has priority.
+## 0) Start gate (mandatory)
+At the beginning of every agent session:
+1) Read `agent/OPERATING_CONTRACT.md`
+2) Read this `AGENTS.md`
+3) If role-specific doc is applicable, read it (e.g. TeamLead).
+4) First response must include: `CONTRACT CHECK: OK`
 
-## Working Mode
-- Main working branch: `dev`.
-- Never push directly to `main` without explicit user approval.
-- Keep changes small, reversible, and testable.
-- Do not delete files/folders without explicit user approval.
+If missing, do not proceed.
 
-## Task Tracking Control Plane
-- Jira is preferred for execution state (task creation, status transitions, comments with evidence), but it is not mandatory.
-- If Jira is unavailable or does not add value for current work, use local tracking in `work/now/tasks.md` and `work/roadmap/backlog.md`.
-- Execution is allowed without Jira key when local tracking is kept up to date.
+## 1) Scope and branch rules
+- Default working branch: `dev`.
+- Never push/merge to `main` without explicit owner approval.
+- Keep changes small, reversible, testable.
+- Do not delete or move large modules/folders without explicit owner approval.
 
-## Autonomous Commits
-- Agent may create small safe commits in `dev` without waiting for user confirmation when all are true:
-  - scope is local and low-risk (docs, tooling config, non-breaking refactor, isolated bugfix),
-  - relevant smoke-check passed,
-  - no schema/storage migration,
-  - no secrets/security-sensitive edits.
-- Agent must still report commit summary and proposed next action.
-- Merge/push to `main` always requires explicit user approval.
+## 2) Tracking (Jira optional, local tracking required otherwise)
+- Jira is preferred but not mandatory.
+- If Jira is not used, keep local tracking up to date:
+  - `work/now/tasks.md`
+  - `work/roadmap/backlog.md`
+  - `work/roadmap/campaigns/<CAMPAIGN>/{plan,evidence}.md`
 
-## Mandatory Iteration Status
-After each meaningful iteration, agent must report:
-1. Current status (`in progress` / `blocked` / `done`).
-2. Is it ready to commit? (`yes/no` with reason).
-3. Proposed commit message (if ready).
-4. Is it ready for merge/push to `main`? (`yes/no` with reason).
-5. Documentation status (`updated/not needed`) with affected files.
-6. Tracking update status (`done/blocked`) with concrete actions (Jira or local files updated).
+## 3) Commit autonomy (safe commits only)
+Agent may create small safe commits on `dev` without waiting for owner approval only if all are true:
+- scope is local and low-risk (docs, tooling config, non-breaking refactor, isolated bugfix),
+- relevant smoke-check passed,
+- no schema/storage migration,
+- no secrets/security-sensitive edits.
 
-Use this template:
-- `Status: ...`
-- `Ready to commit: yes/no`
-- `Proposed commit message: ...`
+Merge/push to `main` always requires explicit owner approval.
+
+## 4) Iteration status report (mandatory)
+After each meaningful iteration, report:
+- `Status: in progress/blocked/done`
 - `Ready for main: yes/no`
-- `Docs status: updated/not needed (...)`
-- `Tracking: done/blocked (...)`
+- `Docs status: updated/not needed (files...)`
+- `Tracking: done/blocked (where updated)`
 
-## Stage Transition Summary (Mandatory)
-When a stage is completed, the agent must provide a plain-language transition summary before starting next stage:
-1. What was done in the completed stage and why it matters.
-2. What is planned for the next stage and why it is needed.
-3. Planned task count for the next stage (initial estimate), plus note that estimate may be adjusted during execution.
-4. Explicit owner decision request: continue to next stage now (`yes/no`).
+## 5) Freshness & trust gate (mandatory)
+Text docs are hypotheses until verified against code/runnable artifacts.
+Before decomposing execution tasks:
+- compare docs with current runnable paths/scripts/config used by the real flow,
+- check drift (recent changes),
+- record trust status in campaign evidence:
+  - `source`, `last_verified_at`, `verified_by`, `evidence`, `trust_level (high/medium/low)`, `notes`
 
-## Quality Gate Before Commit
-- Changed code runs for relevant flow (`run_timer.cmd` for timer changes).
-- No obvious secret leaks in changed files.
-- Docs updated when behavior/config/architecture/process changed.
+If trust level is `low` for required sources, do not start execution; create a verification task first.
 
-## Documentation Freshness (Mandatory)
-- If code/config/process changes, update relevant docs in the same change set.
-- At minimum check:
-  - `README.md` (project positioning/behavior level),
-  - `docs/README.md` (active map),
-  - `work/archive/roadmap_legacy/plan_legacy/*` (legacy process/risk),
-  - `work/roadmap/campaigns/*` (active campaign charter/plan/evidence),
-  - `work/now/tasks.md` and `work/roadmap/backlog.md` (execution status).
-- For merge/push to `main`, stale documentation is a blocker.
-- If docs are intentionally unchanged, agent must state why (`not needed` with reason).
-
-## Source Trust And Freshness (Mandatory)
-- Text docs are hypotheses, not guaranteed truth, until verified against runnable artifacts.
-- Before task decomposition, agent must perform a freshness check:
-  - compare docs with current code paths/scripts/config used by real flow,
-  - check recent repository changes (`git log`/`git blame`) for drift,
-  - confirm whether validations/smoke checks still represent current behavior.
-- Agent must record trust status in current campaign evidence file under `work/roadmap/campaigns/<CAMPAIGN>/evidence.md`:
-  - `source`, `last_verified_at`, `verified_by`, `evidence`, `trust_level` (`high/medium/low`), `notes`.
-- If trust level is `low` for a source required by current task, do not start execution tasking; create a clarification/verification task first.
-
-## Safety
+## 6) Security
 - Never print or expose secrets from `.env`, key files, tokens, proxy credentials.
 - Respect `.gitignore` and security docs.
+
+---
+
+# Engineering rules to keep the pipeline clean (DTM-specific)
+
+These rules are meant to prevent the pipeline code from drowning in `if` chains, env checks, and scattered error handling.
+
+## 7) No env access outside config/bootstrap
+- `os.getenv()` is allowed only in:
+  - `src/config/loader.py` (or equivalent config loader)
+  - `src/app/bootstrap.py` (composition root)
+- `config/constants.py` must not be imported from:
+  - `src/services/**`
+  - `src/core/**`
+
+Services must receive a typed `cfg` object.
+
+## 8) Thin entrypoints only
+Entrypoints (`index.py`, `main.py`) must be thin wrappers:
+- parse input
+- call one handler/job
+- translate result to HTTP response / exit code
+
+Entrypoints must not contain:
+- domain rules (normalization, year inference, timing parsing),
+- YDB SQL/YQL,
+- feature-flag matrices,
+- multi-step orchestration logic.
+
+## 9) No feature-flag matrices inside services
+Source selection / rollout selection must happen in bootstrap via policy injection:
+- choose implementation once,
+- pass selected service into use-cases.
+
+Do not introduce:
+- `if READMODEL_SOURCE == ...` inside a service,
+- `if STORE_MODE == ...` inside a service,
+- similar env-driven branching in the core pipeline.
+
+## 10) Core is domain-only
+`src/core/**` must contain only domain logic:
+- models
+- pure functions (normalization, parsing, inference)
+- business rules
+
+Forbidden in `src/core/**`:
+- external SDK clients (YDB/Sheets/Telegram/OpenAI)
+- IO/network calls
+- env/config reading
+
+## 11) Bulk reads/writes only (no N+1)
+YDB is serverless; quota matters.
+Do not introduce query-per-task loops.
+Prefer:
+- 1 bulk query for tasks
+- 1 bulk query for milestones
+- 1 upsert for readmodel snapshot
+
+## 12) Error handling boundary
+Application services may raise typed errors:
+- `TransientError` (retryable/quota/timeouts)
+- `PermanentError` (schema mismatch, invalid data, logic bug)
+- `UserError` (bad input)
+
+Only entrypoints translate errors to HTTP codes / exit codes.
+
+## 13) Documentation discipline (minimal, focused)
+- System documentation lives in `docs/`.
+- Development process lives in `work/` (now/roadmap/archive).
+- Do not create new doc roots (`doc/`, `documentation/`, etc.)
+- If code/config/process changes, update relevant docs in the same change set or explicitly state why docs are unchanged.
+
+## 14) Owner escalation (when blocked or risky)
+Escalate to owner when:
+- business behavior ambiguity,
+- destructive operations (delete/move large modules, history rewrite),
+- security-sensitive operations,
+- changes impacting production flow or external costs,
+- any wait-state (blocked-state).
+
+Follow `agent/OPERATING_CONTRACT.md` escalation procedure. :contentReference[oaicite:3]{index=3}
 
 ## Owner Decision Escalation
 - If progress is blocked and owner input is required, mark task as blocked and notify owner.
@@ -97,12 +147,4 @@ When a stage is completed, the agent must provide a plain-language transition su
   - `2) reply to TeamLead that task is ready / continue current chat`
 - Telegram notification language: Russian only.
 - Telegram notification style: include one suitable emoji in title/details (for example `🚨` for blockers, `✅` for completion, `❓` for decision).
-
-## Mandatory Escalation Cases
-- Business behavior ambiguity (two valid product outcomes).
-- Destructive operations (delete/move large modules, history rewrite, force push).
-- Security-sensitive operations (credential rotation, access scope changes).
-- Any change that can impact production flow or external costs.
-- Any state where execution stops because agent is waiting for response (from owner or another agent).
-
 

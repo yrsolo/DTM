@@ -7,8 +7,8 @@ from typing import Any, Iterable
 
 import pandas as pd
 
-from core.people import Person
-from core.repository import Task
+from core.models.people import Person
+from core.models.task import Task
 from core.task_query_adapter import build_task_query_context, query_projections
 from core.task_query_contract import TimeWindow
 

@@ -1,0 +1,36 @@
+google_sheets:
+  source_sheet_name_default: Спонсорские ТНТ
+  target_sheet_name_default: Спонсорские ТНТ ТЕСТ
+  target_sheet_name_prod_default: Спонсорские ТНТ
+
+sheet_names:
+  tasks: ТАБЛИЧКА
+  designers: Дизайнеры
+  calendar: Календарь
+  task_calendar: Задачи
+  people: Люди
+  assistant: Галя
+  temp: ТЕСТ2
+
+field_maps:
+  tasks:
+    brand: БРЕНД
+    format_: ФОРМАТ
+    project_name: ПРОЕКТ
+    customer: ЗАКАЗЧИК
+    designer: ДИЗАЙНЕР
+    raw_timing: Тайминг
+    status: Статус
+    color: color
+    color_status: color_status
+    name: name
+    task_id: id
+  people:
+    person_id: Id
+    name: Имя
+    email: Почта
+    telegram_id: Телеграмм id
+    chat_id: Телеграмм chat_id
+    info: Информация
+    position: Должность
+    vacation: Отпуск

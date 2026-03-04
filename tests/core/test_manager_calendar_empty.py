@@ -6,7 +6,7 @@ import unittest
 
 import pandas as pd
 
-from core.manager import CalendarManager
+from src.services.calendar_runtime import CalendarManager
 
 
 class _Renderer:

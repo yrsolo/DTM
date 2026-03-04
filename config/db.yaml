@@ -1,0 +1,30 @@
+ydb:
+  migrate_on_start_default: false
+  endpoint_env_key_base: YDB_ENDPOINT
+  database_env_key_base: YDB_DATABASE
+  id_env_key_base: YDB_ID
+
+object_storage:
+  endpoint_url_default: https://storage.yandexcloud.net
+  bucket_default: dtm
+
+tables:
+  tasks: dtm_tasks
+  task_versions: dtm_task_versions
+  task_milestones_legacy: dtm_task_milestones
+  task_milestones_versioned: dtm_task_milestones_v
+  sync_state: dtm_sync_state
+  readmodel_frontend_v2: dtm_readmodel_frontend_v2
+
+readmodel:
+  default_id: frontend_v2:default
+
+compat:
+  legacy_blob_write_default: false
+  write_legacy_milestones_default: false
+
+retry:
+  exhausted_max_attempts: 6
+  exhausted_base_backoff_seconds: 0.2
+  exhausted_max_backoff_seconds: 4.0
+  exhausted_jitter_ratio: 0.3
