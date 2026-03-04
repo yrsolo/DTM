@@ -69,10 +69,12 @@
 - [x] CFG-P02-T041: verify full smoke contour after HTTP debug helper extraction (`api/core/services/adapters`).
 - [x] CFG-P02-T042: restore API v1 runtime compatibility by mapping v1 frontend/read-model routes to v2 handlers.
 - [x] CFG-P02-T043: align API routing tests and system docs with v1 compatibility-alias policy.
+- [x] CFG-P02-T044: prevent API v2 hard-fail when YDB readmodel path is unavailable; add runtime fallback to legacy source path.
+- [x] CFG-P02-T045: add regression test for API v2 fallback path (`READMODEL_SOURCE=ydb` + YDB failure) and verify full smoke contour.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T042..T043 completed: API v1 compatibility restored via v2 aliases; smoke green)
+- 2026-03-04 (CFG-P02-T044..T045 completed: API v2 fallback added for YDB unavailability; smoke green)
 
