@@ -40,14 +40,14 @@ This document is a **navigation map** of the codebase as it exists today. It is 
 | `src/services/sync/` | Application support | Hash-basis/hash-gate primitives shared by runtime helpers | Refactor | Legacy `sync_service.py` duplicate removed; keep only stateless primitives. |
 | `src/services/render/*` | Application | Rendering jobs (Sheets renderer) | Refactor | Ensure it reads from readmodel/operational bulk, not Sheets directly. |
 | `src/services/notify/*` | Application | Reminder selection + formatting pipeline | Refactor | Ensure no N+1 YDB calls; prefer readmodel. |
-| `src/services/readmodels/*` | Application | Readmodel job wrappers | Refactor | Consider merging with `readmodel_builder.py` or clearly separating “use-case wrappers” from “builder”. |
+| `src/services/readmodels/*` | Legacy | Legacy readmodel wrapper path | Removed | Removed from active tree in dedup wave; runtime uses `src/services/readmodel_builder.py`. |
 
 ## Handlers (new)
 
 | Path | Role | Responsibility | State | Notes |
 |---|---|---|---|---|
 | `src/handlers/api.py` | Entrypoint boundary | API v2 handler(s): read snapshot, apply filters, format response | OK / Refactor | `index.py` should dispatch here. API v1 handler surface is not a target. |
-| `src/handlers/build_readmodels.py` | Entrypoint boundary | Build readmodel job handler | Refactor | Same: should be called by a job runner. |
+| `src/handlers/build_readmodels.py` | Legacy | Legacy build-readmodels handler | Removed | Removed from active tree in dedup wave. |
 | `src/handlers/render_sheets.py` | Entrypoint boundary | Render job handler | Refactor | |
 | `src/handlers/notify_morning.py` | Entrypoint boundary | Notify job handler | Refactor | |
 

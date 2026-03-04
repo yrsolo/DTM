@@ -119,10 +119,11 @@
 - [x] DEDUP-P01-T002: document keep/remove decisions in `docs/system/dedup_plan.md`.
 - [x] DEDUP-P02-T001: remove legacy `src/handlers/sync.py` branch and related handler test from active tree (runtime-unused duplicate).
 - [x] DEDUP-P02-T002: remove unused duplicate `src/services/sync/sync_service.py` and keep only sync hash primitives in `src/services/sync/*`.
+- [x] DEDUP-P02-T003: remove legacy build-readmodels path (`src/handlers/build_readmodels.py`, `src/services/readmodels/*`) and related tests from active tree.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (DEDUP-P02-T002 completed: duplicate `src/services/sync/sync_service.py` removed; sync role consolidated to `src/services/sync_service.py`)
+- 2026-03-04 (DEDUP-P02-T003 completed: legacy build-readmodels branch and readmodels wrapper package removed; dedup map/module map synced)
 
