@@ -154,10 +154,15 @@
 - [x] WRAPPERDTO-P02-T001: introduce `PlannerRuntimeRequest` DTO and canonical runtime entry method without `**kwargs` in `planner_runtime_entry.py`.
 - [x] WRAPPERDTO-P02-T002: switch `main.py` and `runtime_execution/index.py` to explicit typed runtime request handoff.
 - [x] WRAPPERDTO-P03-T001: run smoke contour and sync campaign docs/tracking; close/archive campaign if DoD met.
+- [x] APICONTRACT-P01-T001: trust-gate verification for API v2 contract drift (`include_people` default, task business fields, docs examples).
+- [x] APICONTRACT-P02-T001: restore task payload fields `brand`, `format_`, `customer` in `core/api_payload_v2.py` and update snapshots/tests.
+- [x] APICONTRACT-P02-T002: restore default people in readmodel-built API payload path (`src/services/readmodel_builder.py`) without changing API contract version.
+- [x] APICONTRACT-P02-T003: add concrete query examples to API v2 docs (`src/entrypoints/http/frontend_v2_docs.py` HTML+JSON).
+- [x] APICONTRACT-P03-T001: run targeted smoke/tests and sync campaign evidence/tracking.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (WRAPPERDTO-P03-T001 completed: runtime wrappers converted to DTO flow and verified)
+- 2026-03-04 (APICONTRACT-P03-T001 completed: people default + task fields restored, docs examples added, smoke green)
 

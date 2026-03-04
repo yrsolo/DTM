@@ -15,6 +15,7 @@
 - CAM-ENTRYPOINT-DEHYBRID-V1 (archived)
 - CAM-ENTRYPOINT-HYGIENE-V1 (archived)
 - CAM-ENTRYPOINT-WRAPPER-DTO-V1 (archived)
+- CAM-API-V2-CONTRACT-RESTORE-V1 (archived)
 
 ## Parked
 - none

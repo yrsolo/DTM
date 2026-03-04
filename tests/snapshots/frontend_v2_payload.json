@@ -10,7 +10,7 @@
       "sheetName": "SourceSheet",
       "sheetUrl": ""
     },
-    "hash": "34ce37177bf75b2f77a1c2ea49460b6830201480e8655d679189765623f74896",
+    "hash": "208015418f5446e6f443f71ba31f3ea4f7fda4f4ea316d858e3a3074272c9f77",
     "features": {
       "taskHash": true,
       "taskRevision": true,
@@ -114,6 +114,9 @@
     {
       "id": "101",
       "title": "Task Alpha",
+      "brand": "BrandA",
+      "format_": "Banner",
+      "customer": "Cust",
       "ownerId": "ae078c0616e907b1",
       "groupId": "9f33f1e54cc26a14",
       "status": "work",
@@ -144,6 +147,9 @@
     {
       "id": "102",
       "title": "Task Beta",
+      "brand": "BrandB",
+      "format_": "Video",
+      "customer": "Cust",
       "ownerId": "4194979ffab99f87",
       "groupId": "3f41549ff6592954",
       "status": "pre_done",

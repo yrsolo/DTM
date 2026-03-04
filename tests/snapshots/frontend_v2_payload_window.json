@@ -10,7 +10,7 @@
       "sheetName": "SourceSheet",
       "sheetUrl": ""
     },
-    "hash": "8ae76e26c2ac49bb7f2e78c2f15077c05f72142b2e3a9e5f5ca4ff0dba84bde9",
+    "hash": "a662433c67184c178278df6dca4f51696fb1e1ed92cd887837930260ae8eec46",
     "features": {
       "taskHash": true,
       "taskRevision": true,
@@ -106,6 +106,9 @@
     {
       "id": "101",
       "title": "Task Alpha",
+      "brand": "BrandA",
+      "format_": "Banner",
+      "customer": "Cust",
       "ownerId": "ae078c0616e907b1",
       "groupId": "9f33f1e54cc26a14",
       "status": "work",

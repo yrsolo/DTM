@@ -150,10 +150,15 @@ class ReadmodelUsesMilestonesTableTestCase(unittest.TestCase):
         tasks = readmodel_repo.saved_payload["tasks"]
         self.assertEqual(len(tasks), 1)
         self.assertEqual(len(tasks[0]["milestones"]), 2)
+        self.assertEqual(tasks[0]["brand"], "Brand")
+        self.assertEqual(tasks[0]["format_"], "Format")
+        self.assertEqual(tasks[0]["customer"], "Customer")
         self.assertEqual(tasks[0]["milestones"][0]["type"], "storyboard")
         self.assertEqual(tasks[0]["milestones"][1]["type"], "animatic")
         self.assertEqual(tasks[0]["date"]["start"], "2026-03-04")
         self.assertEqual(tasks[0]["date"]["end"], "2026-03-11")
+        self.assertTrue(readmodel_repo.saved_payload["filters"]["include_people"])
+        self.assertEqual(len(readmodel_repo.saved_payload["entities"]["people"]), 1)
 
     def test_builder_adds_synthetic_start_when_versioned_rows_missing(self) -> None:
         class _NoMilestonesRepo(_OperationalRepoStub):

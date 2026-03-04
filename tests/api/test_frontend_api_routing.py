@@ -132,7 +132,11 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         body = response.get("body", "")
         self.assertEqual(response["statusCode"], 200)
         self.assertIn("Endpoints", body)
+        self.assertIn("Query Examples", body)
         self.assertIn("tasks[].revision", body)
+        self.assertIn("brand", body)
+        self.assertIn("format_", body)
+        self.assertIn("customer", body)
         self.assertIn("reserved", body)
         self.assertIn("implemented", body)
 

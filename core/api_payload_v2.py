@@ -63,6 +63,9 @@ def _serialize_task(task: Any) -> dict[str, Any]:
     return {
         "id": str(task.task_id),
         "title": _to_str(task.title),
+        "brand": _to_str(getattr(task, "brand", "")),
+        "format_": _to_str(getattr(task, "format_", "")),
+        "customer": _to_str(getattr(task, "customer", "")),
         "ownerId": _owner_id(task),
         "groupId": _group_id(task),
         "status": _to_str(task.color_status or task.status or "unknown"),
