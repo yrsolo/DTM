@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import traceback
 from typing import Any
 
 from config import (
@@ -51,6 +50,7 @@ from src.entrypoints.http.runtime_mode import (
     extract_run_mode as _extract_run_mode,
     resolve_trigger_mode as _resolve_trigger_mode,
 )
+from src.entrypoints.http.runtime_execution import execute_runtime
 from src.entrypoints.http.response_utils import (
     error_response as _error_response,
     html_response as _html_response,
@@ -204,55 +204,21 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
     if planner_event is None and not is_http_event:
         planner_event = event
 
-    try:
-        await main(
-            event=planner_event,
-            mode=run_mode,
-            dry_run=dry_run,
-            mock_external=mock_external,
-            force_refresh=force_refresh,
-        )
-    except Exception as ex:
-        if isinstance(ex, UserError):
-            error_family = "user"
-        elif isinstance(ex, TransientError):
-            error_family = "transient"
-        elif isinstance(ex, PermanentError):
-            error_family = "permanent"
-        elif isinstance(ex, AppError):
-            error_family = "app"
-        else:
-            error_family = "unknown"
-        tr = str(traceback.format_exc())
-        txt = f"Runtime failure:\n{ex}\nTRACEBACK\n{tr}\n"
-
-        print(f"runtime_error_classification={error_family}")
-        if isinstance(ex, AppError) and is_http_event:
-            status_code = 500
-            if isinstance(ex, UserError):
-                status_code = 400
-            elif isinstance(ex, TransientError):
-                status_code = 503
-            return _error_response(
-                status_code,
-                code=ex.code,
-                message=str(ex),
-            )
-        print(txt)
-        try:
-            await TelegramNotifier(
-                bot_token=APP_TG_BOT_TOKEN,
-                default_chat_id=APP_TG_DEFAULT_CHAT_ID,
-            ).alog(txt)
-        except Exception as notifier_error:
-            print(f"Error notifier failed: {notifier_error}")
-
-        return {
-            "statusCode": 200,
-            "body": "!!!EGGORR!!!",
-        }
-
-    return {
-        "statusCode": 200,
-        "body": "!GOOD!",
-    }
+    return await execute_runtime(
+        main_func=main,
+        mode=run_mode,
+        planner_event=planner_event,
+        dry_run=dry_run,
+        mock_external=mock_external,
+        force_refresh=force_refresh,
+        is_http_event=is_http_event,
+        app_error_cls=AppError,
+        user_error_cls=UserError,
+        transient_error_cls=TransientError,
+        permanent_error_cls=PermanentError,
+        error_response=_error_response,
+        notifier_factory=lambda: TelegramNotifier(
+            bot_token=APP_TG_BOT_TOKEN,
+            default_chat_id=APP_TG_DEFAULT_CHAT_ID,
+        ),
+    )

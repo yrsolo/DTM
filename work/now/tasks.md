@@ -79,10 +79,12 @@
 - [x] CFG-P02-T051: verify full smoke contour after HTTP dispatch chain simplification (`api/core/services/adapters`).
 - [x] CFG-P02-T052: extract HTTP dispatch-chain wiring for root/v2 handlers from `index.py` into `src/entrypoints/http/http_dispatch_chain.py`.
 - [x] CFG-P02-T053: verify full smoke contour after dispatch-chain wiring extraction (`api/core/services/adapters`).
+- [x] CFG-P02-T054: extract runtime execution/error-handling block from `index.py` into `src/entrypoints/http/runtime_execution.py`.
+- [x] CFG-P02-T055: verify full smoke contour after runtime execution extraction (`api/core/services/adapters`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T052..T053 completed: HTTP dispatch wiring extracted from index; smoke green)
+- 2026-03-04 (CFG-P02-T054..T055 completed: runtime execution helper extracted from index; smoke green)
 
