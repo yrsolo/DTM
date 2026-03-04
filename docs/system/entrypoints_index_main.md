@@ -34,7 +34,7 @@ Important behavior:
 
 `index.py` is an HTTP/runtime shell:
 - parses incoming event
-- dispatches HTTP routes via `src/entrypoints/http/*`
+- dispatches HTTP routes via object router `HttpRouter(ctx).dispatch(...)` from `src/entrypoints/http/router.py`
 - runs group-query flow via HTTP handlers and explicit legacy bindings namespace (`src/legacy/http_core_bindings.py`)
 - for planner modes delegates to `execute_runtime(...)`, which constructs `PlannerRuntimeRequest` and calls `run_planner_runtime(request)`
 
