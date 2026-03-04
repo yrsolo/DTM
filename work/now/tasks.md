@@ -82,10 +82,12 @@
 - [x] CFG-P02-T054: extract runtime execution/error-handling block from `index.py` into `src/entrypoints/http/runtime_execution.py`.
 - [x] CFG-P02-T055: verify full smoke contour after runtime execution extraction (`api/core/services/adapters`).
 - [x] CFG-P02-T056: sync system docs with current thinned `index.py` entrypoint contour and extracted HTTP modules.
+- [x] CFG-P02-T057: remove dead `v1_discontinued` compatibility handler code from `src/entrypoints/http/frontend_compat_handlers.py`.
+- [x] CFG-P02-T058: verify full smoke contour after dead compatibility code removal (`api/core/services/adapters`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T056 completed: system docs synced with current index/http extraction contour)
+- 2026-03-04 (CFG-P02-T057..T058 completed: dead v1-discontinued compatibility code removed; smoke green)
 
