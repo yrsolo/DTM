@@ -34,6 +34,7 @@ Make the runtime pipeline explicit and thin at entrypoint level:
 - `PIPE-P03-T006`: extract planner/dependencies setup block from `main.py` into dedicated jobs helper module. (done)
 - `PIPE-P03-T007`: extract core planner pipeline orchestration block from `main.py` into dedicated jobs helper module. (done)
 - `PIPE-P03-T008`: sync system entrypoint docs with extracted `main.py` jobs-helper contour. (done)
+- `PIPE-P03-T009`: verify `main.py` thin-entrypoint status (single `async def main`, orchestration-only) with extended smoke pack. (done)
 
 ## DoD
 - `main.py` contains only mode routing and high-level orchestration calls.

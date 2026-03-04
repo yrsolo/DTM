@@ -19,6 +19,7 @@
 - `PIPE-P03-T006` completed: planner/dependencies setup extracted to `src/entrypoints/jobs/planner_setup_job.py`; `main.py` delegates runtime planner assembly and source-switch wiring.
 - `PIPE-P03-T007` completed: planner pipeline orchestration extracted to `src/entrypoints/jobs/planner_pipeline_job.py`; `main.py` delegates hash-gate/use-case/store-write/readmodel-sync sequence.
 - `PIPE-P03-T008` completed: `docs/system/entrypoints_index_main.md` updated to reflect extracted `main.py` jobs helper modules and current orchestration flow.
+- `PIPE-P03-T009` completed: thin-entrypoint audit confirms `main.py` exposes a single `async def main` orchestration shell; extended smoke pack remains green.
 
 ## Verification
 - `python -m py_compile main.py src/entrypoints/jobs/readmodel_freshness.py`
@@ -42,6 +43,8 @@
 - `python -m py_compile main.py src/entrypoints/jobs/planner_pipeline_job.py tests/services/test_planner_pipeline_job.py`
 - `python -m unittest tests.services.test_planner_pipeline_job tests.services.test_planner_setup_job tests.services.test_runtime_context_job tests.services.test_db_migrate_branch_job tests.services.test_quality_report_job tests.services.test_readmodel_probe_job tests.services.test_source_switch_job tests.services.test_task_payloads_job tests.services.test_hash_gate_job tests.services.test_legacy_store_write_job tests.services.test_pipeline_runtime tests.api.test_frontend_api_routing -v`
 - `manual docs sync pass: docs/system/entrypoints_index_main.md vs current main.py + src/entrypoints/jobs/*`
+- `rg -n "^def |^async def " main.py`
+- `python -m unittest tests.services.test_planner_pipeline_job tests.services.test_planner_setup_job tests.services.test_runtime_context_job tests.services.test_db_migrate_branch_job tests.services.test_quality_report_job tests.services.test_readmodel_probe_job tests.services.test_source_switch_job tests.services.test_task_payloads_job tests.services.test_hash_gate_job tests.services.test_legacy_store_write_job tests.services.test_pipeline_runtime tests.api.test_frontend_api_routing -v`
 
 ## Results
 - `py_compile`: pass.
