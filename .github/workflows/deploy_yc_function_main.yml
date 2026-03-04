@@ -37,7 +37,6 @@ jobs:
           pip install -r requirements.actions.txt
 
       - name: Load deploy defaults from YAML
-        id: deploy_defaults
         shell: bash
         run: |
           set -euo pipefail
@@ -62,12 +61,6 @@ jobs:
           with Path(github_env).open("a", encoding="utf-8") as f:
               for k, v in values.items():
                   f.write(f"{k}={v}\\n")
-          github_output = os.environ.get("GITHUB_OUTPUT", "").strip()
-          if not github_output:
-              raise RuntimeError("GITHUB_OUTPUT is not set")
-          with Path(github_output).open("a", encoding="utf-8") as f:
-              for k, v in values.items():
-                  f.write(f"{k.lower()}={v}\\n")
           PY
 
       - name: Contract regression smoke checks
@@ -100,23 +93,18 @@ jobs:
           echo "Resolved memory=${YC_FUNCTION_MEMORY}"
           echo "Resolved entrypoint=${YC_FUNCTION_ENTRYPOINT}"
 
-      - name: Validate deploy defaults outputs
+      - name: Validate resolved deploy settings
         shell: bash
-        env:
-          OUT_RUNTIME: ${{ steps.deploy_defaults.outputs.yc_function_runtime }}
-          OUT_TIMEOUT: ${{ steps.deploy_defaults.outputs.yc_function_timeout }}
-          OUT_MEMORY: ${{ steps.deploy_defaults.outputs.yc_function_memory }}
-          OUT_ENTRYPOINT: ${{ steps.deploy_defaults.outputs.yc_function_entrypoint }}
         run: |
           set -euo pipefail
-          for key in OUT_RUNTIME OUT_TIMEOUT OUT_MEMORY OUT_ENTRYPOINT; do
+          for key in YC_FUNCTION_RUNTIME YC_FUNCTION_TIMEOUT YC_FUNCTION_MEMORY YC_FUNCTION_ENTRYPOINT; do
             val="${!key:-}"
             if [ -z "${val}" ]; then
-              echo "Missing required deploy output: ${key}" >&2
+              echo "Missing required deploy setting: ${key}" >&2
               exit 1
             fi
           done
-          echo "Deploy outputs: runtime=${OUT_RUNTIME} timeout=${OUT_TIMEOUT} memory=${OUT_MEMORY} entrypoint=${OUT_ENTRYPOINT}"
+          echo "Deploy settings: runtime=${YC_FUNCTION_RUNTIME} timeout=${YC_FUNCTION_TIMEOUT} memory=${YC_FUNCTION_MEMORY} entrypoint=${YC_FUNCTION_ENTRYPOINT}"
 
       - name: Deploy function version
         id: deploy
@@ -125,10 +113,10 @@ jobs:
           yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
           folder-id: ${{ vars.YC_FOLDER_ID || secrets.YC_FOLDER_ID || env.YC_FOLDER_ID }}
           function-name: ${{ vars.YC_CLOUD_FUNCTION_NAME || secrets.YC_CLOUD_FUNCTION_NAME || env.YC_CLOUD_FUNCTION_NAME }}
-          runtime: ${{ steps.deploy_defaults.outputs.yc_function_runtime }}
-          memory: ${{ steps.deploy_defaults.outputs.yc_function_memory }}
-          execution-timeout: ${{ steps.deploy_defaults.outputs.yc_function_timeout }}
-          entrypoint: ${{ steps.deploy_defaults.outputs.yc_function_entrypoint }}
+          runtime: ${{ env.YC_FUNCTION_RUNTIME }}
+          memory: ${{ env.YC_FUNCTION_MEMORY }}
+          execution-timeout: ${{ env.YC_FUNCTION_TIMEOUT }}
+          entrypoint: ${{ env.YC_FUNCTION_ENTRYPOINT }}
           service-account: ${{ vars.YC_RUNTIME_SERVICE_ACCOUNT_ID || secrets.YC_RUNTIME_SERVICE_ACCOUNT_ID || vars.YC_SERVICE_ACCOUNT_ID || secrets.YC_SERVICE_ACCOUNT_ID || env.YC_SERVICE_ACCOUNT_ID }}
           environment: |
             ENV=${{ vars.ENV || 'test' }}
