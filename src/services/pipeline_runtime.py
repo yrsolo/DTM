@@ -17,7 +17,7 @@ from src.services.sync_service import YdbSyncService
 class SyncReadmodelPipelineContext:
     store_mode: str
     allow_sync: bool
-    source_task_repository: Any
+    task_source: Any
     ydb_endpoint: str
     ydb_database: str
     ydb_sa_json_credentials: str | None
@@ -27,14 +27,12 @@ class SyncReadmodelPipelineContext:
     runtime_env: str
     pipeline_cfg: Any
     safe_print: Callable[[str], None]
-    read_source_snapshot: Callable[..., dict[str, Any]]
     task_to_operational_payload: Callable[[Any], dict[str, Any]]
 
 
 @dataclass(frozen=True)
 class SyncReadmodelPipelineRequest:
     mode: str
-    tasks: list[Any]
     force_refresh: bool
 
 
@@ -53,11 +51,7 @@ def run_ydb_sync_readmodel_pipeline(
 
     sync_deferred = False
     readmodel_deferred = False
-    source_id = (
-        "sheet:"
-        f"{ctx.source_task_repository.source_sheet_info.spreadsheet_name}:"
-        f"{ctx.source_task_repository.source_sheet_info.get_sheet_name('tasks')}:A1:Z2000"
-    )
+    source_id = str(ctx.task_source.source_id)
     ttl_skip = False
     operational_repo: OperationalTaskRepo | None = None
     try:
@@ -74,7 +68,7 @@ def run_ydb_sync_readmodel_pipeline(
         )
         preflight_range = f"A1:Z{max(ctx.pipeline_cfg.preflight_top_rows, 1)}"
         full_range = "A1:Z2000"
-        preflight_snapshot = ctx.read_source_snapshot(ctx.source_task_repository, worksheet_range=preflight_range)
+        preflight_snapshot = ctx.task_source.read_snapshot(preflight_range)
         preflight_result = sync_service.run_preflight_only(
             source_id=source_id,
             preflight_range_values=preflight_snapshot,
@@ -103,8 +97,9 @@ def run_ydb_sync_readmodel_pipeline(
                 sync_result = preflight_result
             else:
                 ctx.safe_print("full_snapshot_fetch=performed reason=sync_required")
-                full_snapshot = ctx.read_source_snapshot(ctx.source_task_repository, worksheet_range=full_range)
-                normalized_tasks = [ctx.task_to_operational_payload(task) for task in request.tasks]
+                full_snapshot = ctx.task_source.read_snapshot(full_range)
+                tasks = ctx.task_source.build_tasks_from_snapshot(full_snapshot)
+                normalized_tasks = [ctx.task_to_operational_payload(task) for task in tasks]
                 sync_result = sync_service.run(
                     source_id=source_id,
                     preflight_range_values=preflight_snapshot,
@@ -174,7 +169,7 @@ def run_ydb_sync_readmodel_pipeline(
                 readmodel_repo=readmodel_repo,
                 source_id=source_id,
                 env_name=ctx.runtime_env,
-                source_sheet_name=ctx.source_task_repository.source_sheet_info.spreadsheet_name,
+                source_sheet_name=ctx.task_source.source_sheet_name,
             )
             readmodel_result = readmodel_builder.run(
                 readmodel_id="frontend_v2:default",

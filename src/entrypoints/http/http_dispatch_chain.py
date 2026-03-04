@@ -23,22 +23,15 @@ class HttpDispatchHandlersContext:
     parse_limit: Callable[[str, int], int]
     parse_bool: Callable[[str | None, bool], bool]
     parse_window_query: Callable[[dict[str, Any]], tuple[dict[str, Any], dict[str, Any] | None]]
-    app_readmodel_source: str
     ydb_endpoint: str
     ydb_database: str
     ydb_sa_json_credentials: str | None
     ydb_sa_key_file: str | None
     app_runtime_env: str
     app_source_sheet_name: str
-    key_json: str
-    sheet_info: dict[str, str]
-    app_cfg: Any
     frontend_api_v2_doc: Callable[[], dict[str, Any]]
     frontend_api_v2_doc_html: Callable[[], str]
     frontend_readmodel_repo_cls: Any
-    build_planner_dependencies: Callable[..., Any]
-    load_frontend_tasks: Callable[[Any, list[str]], list[Any]]
-    build_frontend_api_payload_v2: Callable[..., dict[str, Any]]
 
 
 def build_http_dispatch_handlers(
@@ -77,22 +70,15 @@ def build_http_dispatch_handlers(
             parse_limit=ctx.parse_limit,
             parse_bool=ctx.parse_bool,
             parse_window_query=ctx.parse_window_query,
-            app_readmodel_source=ctx.app_readmodel_source,
             ydb_endpoint=ctx.ydb_endpoint,
             ydb_database=ctx.ydb_database,
             ydb_sa_json_credentials=ctx.ydb_sa_json_credentials,
             ydb_sa_key_file=ctx.ydb_sa_key_file,
             app_runtime_env=ctx.app_runtime_env,
             app_source_sheet_name=ctx.app_source_sheet_name,
-            key_json=ctx.key_json,
-            sheet_info=ctx.sheet_info,
-            app_cfg=ctx.app_cfg,
             frontend_api_v2_doc=ctx.frontend_api_v2_doc,
             frontend_api_v2_doc_html=ctx.frontend_api_v2_doc_html,
             frontend_readmodel_repo_cls=ctx.frontend_readmodel_repo_cls,
-            build_planner_dependencies=ctx.build_planner_dependencies,
-            load_frontend_tasks=ctx.load_frontend_tasks,
-            build_frontend_api_payload_v2=ctx.build_frontend_api_payload_v2,
         )
 
     return (_handle_api_root, _handle_api_v2)

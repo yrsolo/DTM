@@ -8,7 +8,7 @@ from typing import Any, Awaitable, Callable
 
 @dataclass(frozen=True)
 class PlannerPipelineContext:
-    source_task_repository: Any
+    task_source: Any
     legacy_blob_write: bool
     app_store_mode: str
     app_runtime_env: str
@@ -21,7 +21,7 @@ class PlannerPipelineContext:
     write_legacy_milestones: bool
     pipeline_cfg: Any
     safe_print: Callable[[str], None]
-    run_planner_use_case: Callable[..., Awaitable[dict[str, Any]]]
+    run_planner_use_case: Callable[..., Awaitable[dict[str, Any]]] | None
     run_legacy_store_write: Callable[..., None]
     run_ydb_sync_readmodel_pipeline: Callable[..., None]
     pipeline_sync_context_factory: Callable[..., Any]
@@ -29,13 +29,13 @@ class PlannerPipelineContext:
     task_to_store_record: Callable[[Any], dict[str, object]]
     task_to_operational_payload: Callable[[Any], dict[str, object]]
     build_store: Callable[..., Any]
-    read_source_snapshot: Callable[..., dict[str, Any]]
     print_quality_report: Callable[[dict[str, Any]], None]
 
 
 @dataclass(frozen=True)
 class PlannerPipelineRequest:
-    planner: Any
+    planner: Any | None
+    use_legacy_planner: bool
     mode: str
     force_refresh: bool
 
@@ -46,31 +46,36 @@ async def run_planner_pipeline(
 ) -> dict[str, Any]:
     allow_sync = True
 
-    quality_report = await ctx.run_planner_use_case(request.planner, request.mode, allow_sync=allow_sync)
-    tasks = ctx.source_task_repository.get_all_tasks()
+    quality_report: dict[str, Any] = {"summary": {"task_row_issue_count": 0}}
+    tasks_for_legacy_store: list[Any] = []
+    if request.use_legacy_planner and request.planner is not None and ctx.run_planner_use_case is not None:
+        quality_report = await ctx.run_planner_use_case(request.planner, request.mode, allow_sync=allow_sync)
+        full_snapshot = ctx.task_source.read_snapshot("A1:Z2000")
+        tasks_for_legacy_store = ctx.task_source.build_tasks_from_snapshot(full_snapshot)
 
-    ctx.run_legacy_store_write(
-        legacy_blob_write=ctx.legacy_blob_write,
-        store_mode=ctx.app_store_mode,
-        mode=request.mode,
-        allow_sync=allow_sync,
-        tasks=tasks,
-        task_to_store_record=ctx.task_to_store_record,
-        runtime_env=ctx.app_runtime_env,
-        ydb_endpoint=ctx.ydb_endpoint,
-        ydb_database=ctx.ydb_database,
-        migration_store_file=ctx.migration_store_file,
-        sa_json_credentials=ctx.ydb_sa_json_credentials,
-        sa_key_file=ctx.ydb_sa_key_file,
-        build_store=ctx.build_store,
-        safe_print=ctx.safe_print,
-    )
+    if tasks_for_legacy_store:
+        ctx.run_legacy_store_write(
+            legacy_blob_write=ctx.legacy_blob_write,
+            store_mode=ctx.app_store_mode,
+            mode=request.mode,
+            allow_sync=allow_sync,
+            tasks=tasks_for_legacy_store,
+            task_to_store_record=ctx.task_to_store_record,
+            runtime_env=ctx.app_runtime_env,
+            ydb_endpoint=ctx.ydb_endpoint,
+            ydb_database=ctx.ydb_database,
+            migration_store_file=ctx.migration_store_file,
+            sa_json_credentials=ctx.ydb_sa_json_credentials,
+            sa_key_file=ctx.ydb_sa_key_file,
+            build_store=ctx.build_store,
+            safe_print=ctx.safe_print,
+        )
 
     ctx.run_ydb_sync_readmodel_pipeline(
         ctx=ctx.pipeline_sync_context_factory(
             store_mode=ctx.app_store_mode,
             allow_sync=allow_sync,
-            source_task_repository=ctx.source_task_repository,
+            task_source=ctx.task_source,
             ydb_endpoint=ctx.ydb_endpoint,
             ydb_database=ctx.ydb_database,
             ydb_sa_json_credentials=ctx.ydb_sa_json_credentials,
@@ -80,12 +85,10 @@ async def run_planner_pipeline(
             runtime_env=ctx.app_runtime_env,
             pipeline_cfg=ctx.pipeline_cfg,
             safe_print=ctx.safe_print,
-            read_source_snapshot=ctx.read_source_snapshot,
             task_to_operational_payload=ctx.task_to_operational_payload,
         ),
         request=ctx.pipeline_sync_request_factory(
             mode=request.mode,
-            tasks=tasks,
             force_refresh=request.force_refresh,
         ),
     )

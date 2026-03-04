@@ -6,8 +6,6 @@ import hashlib
 import time
 from typing import Any, Callable
 
-from src.services.source_policy import build_source_policy_matrix
-
 
 def handle_frontend_api_v2_if_requested(
     event: dict[str, Any],
@@ -25,22 +23,15 @@ def handle_frontend_api_v2_if_requested(
     parse_limit: Callable[[str, int], int],
     parse_bool: Callable[[str, bool], bool],
     parse_window_query: Callable[[dict[str, Any]], tuple[dict[str, Any], dict[str, Any] | None]],
-    app_readmodel_source: str,
     ydb_endpoint: str,
     ydb_database: str,
     ydb_sa_json_credentials: str | None,
     ydb_sa_key_file: str | None,
     app_runtime_env: str,
     app_source_sheet_name: str,
-    key_json: str,
-    sheet_info: dict[str, str],
-    app_cfg: Any,
     frontend_api_v2_doc: Callable[[], dict[str, Any]],
     frontend_api_v2_doc_html: Callable[[], str],
     frontend_readmodel_repo_cls: Any,
-    build_planner_dependencies: Callable[..., Any],
-    load_frontend_tasks: Callable[[Any, list[str]], list[Any]],
-    build_frontend_api_payload_v2: Callable[..., dict[str, Any]],
 ) -> dict[str, Any] | None:
     def _stable_owner_id(value: str) -> str:
         seed = str(value or "").strip()
@@ -275,16 +266,8 @@ def handle_frontend_api_v2_if_requested(
             details=window_error.get("details", {}),
         )
 
-    policy = build_source_policy_matrix(
-        readmodel_source=app_readmodel_source,
-        notify_source="legacy",
-        render_source="legacy",
-    )
-    ydb_fallback = False
-    if policy.api_reads_ydb():
-        payload, ydb_error = _read_ydb_snapshot()
-        if payload is not None:
-            return json_response(200, payload)
+    payload, ydb_error = _read_ydb_snapshot()
+    if payload is None:
         if ydb_error == "readmodel_unavailable":
             return error_response(
                 503,
@@ -297,62 +280,16 @@ def handle_frontend_api_v2_if_requested(
                 code="readmodel_payload_invalid",
                 message="Stored readmodel payload is not a valid JSON object.",
             )
-        ydb_fallback = True
-
-    try:
-        dependencies = build_planner_dependencies(
-            key_json,
-            sheet_info,
-            dry_run=True,
-            mock_external=True,
-            cfg=app_cfg,
-        )
-        if ydb_fallback:
-            tasks = dependencies.task_repository.get_task_by_color_status(statuses)
-        else:
-            tasks = load_frontend_tasks(dependencies, statuses)
-        people = []
-        if include_people:
-            dependencies.people_manager.get_designers()
-            people = list(dependencies.people_manager.people.values())
-    except Exception as error:
-        print(f"api_v2_legacy_source_unavailable error={error}")
-        # Emergency path: if legacy source is unavailable, try serving cached YDB snapshot.
-        payload, ydb_error = _read_ydb_snapshot()
-        if payload is not None:
-            payload.setdefault("meta", {})
-            payload["meta"]["readmodelSource"] = "ydb_emergency_fallback"
-            payload["meta"]["fallbackReason"] = "legacy_source_unavailable"
-            payload["meta"]["legacyErrorType"] = type(error).__name__
-            return json_response(200, payload)
         return error_response(
             503,
             code="frontend_source_unavailable",
             message="Frontend data source is temporarily unavailable.",
             details={
-                "source": "legacy",
-                "errorType": type(error).__name__,
-                "ydbFallbackErrorType": ydb_error,
+                "source": "readmodel",
+                "errorType": ydb_error,
             },
         )
 
-    payload = build_frontend_api_payload_v2(
-        tasks=tasks,
-        people=people,
-        env_name=app_runtime_env,
-        source_sheet_name=app_source_sheet_name,
-        statuses=statuses,
-        limit=limit,
-        include_people=include_people,
-        designer_filter=designer,
-        window_start=window_data.get("start"),
-        window_end=window_data.get("end"),
-        window_mode=str(window_data.get("mode", "intersects")),
-    )
-    if ydb_fallback:
-        payload.setdefault("meta", {})
-        payload["meta"]["readmodelSource"] = "legacy_fallback"
-        payload["meta"]["fallbackReason"] = "ydb_unavailable"
     duration_ms = int((time.perf_counter() - started) * 1000)
     print(
         "api_response "

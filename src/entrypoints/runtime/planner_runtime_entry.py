@@ -19,7 +19,6 @@ from config import (
 )
 from src.adapters.store_ydb import build_operational_store
 from src.app.bootstrap import build_app_context
-from src.app.planner_bootstrap import build_planner_dependencies
 from src.entrypoints.jobs.db_migrate_branch import run_db_migrate_if_requested
 from src.entrypoints.jobs.db_migrate_job import run_db_migrate
 from src.entrypoints.jobs.legacy_store_write_job import run_legacy_store_write
@@ -28,7 +27,6 @@ from src.entrypoints.jobs.planner_pipeline_job import (
     PlannerPipelineRequest,
     run_planner_pipeline,
 )
-from src.entrypoints.jobs.planner_setup_job import build_planner_runtime
 from src.entrypoints.jobs.quality_report_job import print_quality_report as _print_quality_report
 from src.entrypoints.jobs.readmodel_freshness import (
     build_readmodel_freshness_marker as _readmodel_freshness_marker,
@@ -36,8 +34,6 @@ from src.entrypoints.jobs.readmodel_freshness import (
 )
 from src.entrypoints.jobs.readmodel_probe_job import run_readmodel_freshness_probe
 from src.entrypoints.jobs.runtime_context_job import resolve_runtime_context
-from src.entrypoints.jobs.source_snapshot_reader import read_source_snapshot as _read_source_snapshot
-from src.entrypoints.jobs.source_switch_job import apply_task_source_switches
 from src.entrypoints.jobs.task_payloads import (
     task_to_operational_payload as _task_to_operational_payload,
     task_to_store_record as _task_to_store_record,
@@ -48,7 +44,7 @@ from src.services.pipeline_runtime import (
     SyncReadmodelPipelineRequest,
     run_ydb_sync_readmodel_pipeline,
 )
-from src.services.planner_runtime import GoogleSheetPlanner
+from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
 from src.services.usecases.planner_runtime import resolve_run_mode, run_planner_use_case
 
 APP_CONTEXT = build_app_context()
@@ -100,24 +96,38 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
     if migrate_handled:
         return migrate_result
 
-    planner, source_task_repository = build_planner_runtime(
+    task_source = build_sheets_normalized_task_source(
         key_json=KEY_JSON,
-        sheet_info=SHEET_INFO,
-        dry_run=dry_run,
-        mock_external=mock_external,
+        sheet_info_data=SHEET_INFO,
         cfg=APP_CONTEXT.cfg,
-        mode=mode,
-        render_source=APP_RENDER_SOURCE,
-        notify_source=APP_NOTIFY_SOURCE,
-        ydb_endpoint=YDB_ENDPOINT,
-        ydb_database=YDB_DATABASE,
-        ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
-        ydb_sa_key_file=YC_SA_KEY_FILE,
-        build_planner_dependencies=build_planner_dependencies,
-        planner_cls=GoogleSheetPlanner,
-        apply_task_source_switches=apply_task_source_switches,
-        log=_safe_print,
+        dry_run=dry_run,
     )
+    use_legacy_planner = str(mode).startswith("legacy_planner_")
+    planner = None
+    if use_legacy_planner:
+        from src.app.planner_bootstrap import build_planner_dependencies
+        from src.entrypoints.jobs.planner_setup_job import build_planner_runtime
+        from src.entrypoints.jobs.source_switch_job import apply_task_source_switches
+        from src.services.planner_runtime import GoogleSheetPlanner
+
+        planner, _ = build_planner_runtime(
+            key_json=KEY_JSON,
+            sheet_info=SHEET_INFO,
+            dry_run=dry_run,
+            mock_external=mock_external,
+            cfg=APP_CONTEXT.cfg,
+            mode=mode,
+            render_source=APP_RENDER_SOURCE,
+            notify_source=APP_NOTIFY_SOURCE,
+            ydb_endpoint=YDB_ENDPOINT,
+            ydb_database=YDB_DATABASE,
+            ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+            ydb_sa_key_file=YC_SA_KEY_FILE,
+            build_planner_dependencies=build_planner_dependencies,
+            planner_cls=GoogleSheetPlanner,
+            apply_task_source_switches=apply_task_source_switches,
+            log=_safe_print,
+        )
     run_readmodel_freshness_probe(
         mode=mode,
         render_source=APP_RENDER_SOURCE,
@@ -130,7 +140,7 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
         safe_print=_safe_print,
     )
     pipeline_ctx = PlannerPipelineContext(
-        source_task_repository=source_task_repository,
+        task_source=task_source,
         legacy_blob_write=LEGACY_BLOB_WRITE,
         app_store_mode=APP_STORE_MODE,
         app_runtime_env=APP_RUNTIME_ENV,
@@ -143,7 +153,7 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
         write_legacy_milestones=WRITE_LEGACY_MILESTONES,
         pipeline_cfg=PIPELINE_CFG,
         safe_print=_safe_print,
-        run_planner_use_case=run_planner_use_case,
+        run_planner_use_case=run_planner_use_case if use_legacy_planner else None,
         run_legacy_store_write=run_legacy_store_write,
         run_ydb_sync_readmodel_pipeline=run_ydb_sync_readmodel_pipeline,
         pipeline_sync_context_factory=SyncReadmodelPipelineContext,
@@ -151,11 +161,11 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
         task_to_store_record=_task_to_store_record,
         task_to_operational_payload=_task_to_operational_payload,
         build_store=build_operational_store,
-        read_source_snapshot=_read_source_snapshot,
         print_quality_report=_print_quality_report,
     )
     pipeline_request = PlannerPipelineRequest(
         planner=planner,
+        use_legacy_planner=use_legacy_planner,
         mode=mode,
         force_refresh=force_refresh,
     )
