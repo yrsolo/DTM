@@ -8,9 +8,9 @@
       "env": "test",
       "sourceId": "SourceSheet",
       "sheetName": "SourceSheet",
-      "sheetUrl": null
+      "sheetUrl": ""
     },
-    "hash": "7094b6c8da4af104dfa0b54576e7832df8c8a25cb639554d74b8091c87b68f74",
+    "hash": "04705df72d90a5a835ed2c22189ffcdb9f1f6bdb6d927f576d27de6ca1b72d64",
     "features": {
       "taskHash": true,
       "taskRevision": true,
@@ -20,7 +20,7 @@
     },
     "paging": {
       "limit": 100,
-      "nextCursor": null
+      "nextCursor": ""
     }
   },
   "filters": {
@@ -28,7 +28,7 @@
       "work",
       "pre_done"
     ],
-    "designer": null,
+    "designer": "",
     "limit": 100,
     "include_people": true,
     "window": {
@@ -48,19 +48,19 @@
   "entities": {
     "people": [
       {
-        "id": "p1",
-        "name": "Designer One",
-        "position": "designer",
-        "links": {
-          "self": "/api/v2/frontend/entities/people/p1"
-        }
-      },
-      {
-        "id": "p2",
+        "id": "4194979ffab99f87",
         "name": "Designer Two",
         "position": "designer",
         "links": {
-          "self": "/api/v2/frontend/entities/people/p2"
+          "self": "/api/v2/frontend/entities/people/4194979ffab99f87"
+        }
+      },
+      {
+        "id": "ae078c0616e907b1",
+        "name": "Designer One",
+        "position": "designer",
+        "links": {
+          "self": "/api/v2/frontend/entities/people/ae078c0616e907b1"
         }
       }
     ],
@@ -106,6 +106,9 @@
     {
       "id": "101",
       "title": "Task Alpha",
+      "brand": "BrandA",
+      "format_": "Banner",
+      "customer": "Cust",
       "ownerId": "ae078c0616e907b1",
       "groupId": "9f33f1e54cc26a14",
       "status": "work",
@@ -115,10 +118,7 @@
         "nextDue": "2026-03-03"
       },
       "tags": [],
-      "hash": null,
-      "revision": null,
       "links": {
-        "sheetRowUrl": null,
         "self": "/api/v2/frontend/tasks/101"
       },
       "milestones": [

@@ -1,22 +1,30 @@
-# CAM-CORE-CLEANUP-V1
+# Campaign Status Registry
 
-## Status
-Activated from priority queue after CAM-ENTRYPOINT-REFORM-V1 core scope completion.
+Single source of truth for campaign lifecycle state.
 
-## Goal
-Keep `core/` domain-only and move infra-coupled runtime pieces to adapters/services/app layers.
+## In Progress
+- none
 
-## Current Phase
-P02: first extraction wave (compatibility-preserving).
+## Planned
+- none
 
-## Important Rule
-- No business behavior changes during core boundary cleanup.
+## Done
+- CAM-ENTRYPOINT-HYGIENE-V2 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-HYGIENE-V2/`)
+- CAM-ENTRYPOINT-DEHYBRID-V2 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-DEHYBRID-V2/`)
+- CAM-PIPELINE-STRAIGHTEN-V2 (archived in `work/archive/campaigns/CAM-PIPELINE-STRAIGHTEN-V2/`)
+- CAM-CONFIG-REFORM-V0 (archived in `work/archive/campaigns/CAM-CONFIG-REFORM-V0/`)
+- CAM-PIPELINE-CLEAN-SKELETON-V1 (archived in `work/archive/campaigns/CAM-PIPELINE-CLEAN-SKELETON-V1/`)
+- CAM-CORE-CLEANUP-V1 (archived in `work/archive/campaigns/CAM-CORE-CLEANUP-V1/`)
+- CAM-DEDUP-LEGACY-REMOVAL-V1 (archived in `work/archive/campaigns/CAM-DEDUP-LEGACY-REMOVAL-V1/`)
+- CAM-PIPELINE-STRAIGHTEN-V1 (archived in `work/archive/campaigns/CAM-PIPELINE-STRAIGHTEN-V1/`)
+- CAM-ENTRYPOINT-DEHYBRID-V1 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-DEHYBRID-V1/`)
+- CAM-ENTRYPOINT-HYGIENE-V1 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-HYGIENE-V1/`)
+- CAM-ENTRYPOINT-WRAPPER-DTO-V1 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-WRAPPER-DTO-V1/`)
+- CAM-API-V2-CONTRACT-RESTORE-V1 (archived in `work/archive/campaigns/CAM-API-V2-CONTRACT-RESTORE-V1/`)
 
-## Exit Criteria
-- `docs/system/core_boundaries.md` lists domain vs infra-coupled core modules.
-- first extraction targets are defined and tracked in `work/now/tasks.md`.
-- extraction wave for `core/bootstrap.py` and `core/use_cases.py` is completed with shims.
-- no runtime regressions introduced by boundary work.
+## Parked
+- none
 
-## Archive
-- closeouts stored in `work/archive/campaigns/*/closeout.md`.
+## Rule
+- Update this file first when campaign state changes.
+- Keep `work/roadmap/backlog.md` aligned with the same state buckets.

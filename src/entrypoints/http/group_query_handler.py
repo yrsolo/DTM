@@ -2,34 +2,44 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any, Callable
 
 
+@dataclass(frozen=True)
+class GroupQueryHandlerContext:
+    bot_username: str
+    parse_group_query_request: Callable[..., Any]
+    notifier_factory: Callable[[], Any]
+    load_work_tasks_for_group_query: Callable[[], list[Any]]
+    build_deadlines_reply: Callable[[list[Any]], str]
+    build_tasks_reply: Callable[[list[Any], str | None], str]
+
+
+@dataclass(frozen=True)
+class GroupQueryHandlerRequest:
+    request_payload: dict[str, Any]
+    is_http_event: bool
+
+
 async def handle_group_query_if_requested(
-    request_payload: dict[str, Any],
-    is_http_event: bool,
-    *,
-    bot_username: str,
-    parse_group_query_request: Callable[..., Any],
-    notifier_factory: Callable[[], Any],
-    load_work_tasks_for_group_query: Callable[[], list[Any]],
-    build_deadlines_reply: Callable[[list[Any]], str],
-    build_tasks_reply: Callable[[list[Any], str | None], str],
+    ctx: GroupQueryHandlerContext,
+    request: GroupQueryHandlerRequest,
 ) -> bool:
-    if not is_http_event:
+    if not request.is_http_event:
         return False
 
-    query = parse_group_query_request(request_payload, bot_username=bot_username)
+    query = ctx.parse_group_query_request(request.request_payload, bot_username=ctx.bot_username)
     if query is None:
         return False
 
-    notifier = notifier_factory()
+    notifier = ctx.notifier_factory()
     try:
-        tasks = load_work_tasks_for_group_query()
+        tasks = ctx.load_work_tasks_for_group_query()
         if query.action == "deadlines":
-            reply = build_deadlines_reply(tasks)
+            reply = ctx.build_deadlines_reply(tasks)
         else:
-            reply = build_tasks_reply(tasks, requester_name=query.requester_name)
+            reply = ctx.build_tasks_reply(tasks, requester_name=query.requester_name)
         await notifier.send_message(query.chat_id, reply, parse_mode=None)
         return True
     except Exception as error:

@@ -1,15 +1,5 @@
-"""Sync service modules."""
+"""DEPRECATED - DO NOT USE.
 
-from .hash_basis import DEFAULT_HASH_FIELDS, build_hash_basis
-from .hash_gate import HashGateDecision, compute_source_hash, evaluate_hash_gate
-from .sync_service import SyncService, SyncServiceResult
-
-__all__ = [
-    "DEFAULT_HASH_FIELDS",
-    "HashGateDecision",
-    "SyncService",
-    "SyncServiceResult",
-    "build_hash_basis",
-    "compute_source_hash",
-    "evaluate_hash_gate",
-]
+Legacy placeholder package after source-hash gate helper removal.
+Runtime canonical sync service lives in `src/services/sync_service.py`.
+"""

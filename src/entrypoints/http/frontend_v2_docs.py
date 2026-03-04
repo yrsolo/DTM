@@ -73,6 +73,28 @@ def frontend_api_v2_doc() -> dict[str, Any]:
                 "description": "Task enters window if start or end intersects.",
             },
         },
+        "examples": [
+            {
+                "title": "Default active queue (people included by default)",
+                "request": "/api/v2/frontend",
+                "notes": "Equivalent to statuses=work,pre_done and include_people=true.",
+            },
+            {
+                "title": "Limit and explicit people include",
+                "request": "/api/v2/frontend?statuses=work,pre_done&include_people=true&limit=200",
+                "notes": "Typical UI request for active tasks.",
+            },
+            {
+                "title": "Filter by designer",
+                "request": "/api/v2/frontend?statuses=work,pre_done&designer=Designer%20Name",
+                "notes": "Case-insensitive exact-name filter on designer.",
+            },
+            {
+                "title": "Date window filter",
+                "request": "/api/v2/frontend?statuses=work,pre_done&window_start=2026-03-01&window_end=2026-03-31&window_mode=intersects",
+                "notes": "Returns tasks intersecting the specified window.",
+            },
+        ],
         "top_level": ["meta", "filters", "summary", "entities", "tasks"],
         "field_status": {
             "meta": "implemented",
@@ -144,6 +166,9 @@ def frontend_api_v2_doc() -> dict[str, Any]:
             "tasks[]": {
                 "id": "string",
                 "title": "string",
+                "brand": "string",
+                "format_": "string",
+                "customer": "string",
                 "ownerId": "string|null",
                 "groupId": "string|null",
                 "status": "string",
@@ -166,6 +191,9 @@ def frontend_api_v2_doc() -> dict[str, Any]:
         "task_fields": [
             "id",
             "title",
+            "brand",
+            "format_",
+            "customer",
             "ownerId",
             "groupId",
             "status",
@@ -185,6 +213,9 @@ def frontend_api_v2_doc_html() -> str:
     )
     response_fields_json = html.escape(
         json.dumps(doc.get("response_fields", {}), ensure_ascii=False, indent=2, sort_keys=True)
+    )
+    examples_json = html.escape(
+        json.dumps(doc.get("examples", []), ensure_ascii=False, indent=2, sort_keys=True)
     )
     field_status_json = html.escape(
         json.dumps(doc.get("field_status", {}), ensure_ascii=False, indent=2, sort_keys=True)
@@ -234,6 +265,10 @@ def frontend_api_v2_doc_html() -> str:
       <h2>Response Fields</h2>
       <pre><code>__RESPONSE_FIELDS_JSON__</code></pre>
     </div>
+    <div class="card">
+      <h2>Query Examples</h2>
+      <pre><code>__EXAMPLES_JSON__</code></pre>
+    </div>
   </div>
 </body>
 </html>
@@ -243,4 +278,5 @@ def frontend_api_v2_doc_html() -> str:
         .replace("__FIELD_STATUS_JSON__", field_status_json)
         .replace("__QUERY_JSON__", query_json)
         .replace("__RESPONSE_FIELDS_JSON__", response_fields_json)
+        .replace("__EXAMPLES_JSON__", examples_json)
     )

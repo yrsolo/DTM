@@ -63,6 +63,9 @@ def _serialize_task(task: Any) -> dict[str, Any]:
     return {
         "id": str(task.task_id),
         "title": _to_str(task.title),
+        "brand": _to_str(getattr(task, "brand", "")),
+        "format_": _to_str(getattr(task, "format_", "")),
+        "customer": _to_str(getattr(task, "customer", "")),
         "ownerId": _owner_id(task),
         "groupId": _group_id(task),
         "status": _to_str(task.color_status or task.status or "unknown"),
@@ -75,10 +78,43 @@ def _serialize_task(task: Any) -> dict[str, Any]:
     }
 
 
+def _person_id(person: Person) -> str:
+    # Keep person id stable and aligned with task owner ids.
+    seed = _to_str(person.name) or _to_str(person.id)
+    return _stable_id("owner", seed) if seed else "owner:unassigned"
+
+
+def _build_owner_lookup(people: Iterable[Person]) -> dict[str, str]:
+    lookup: dict[str, str] = {}
+    for person in people:
+        pid = _person_id(person)
+        pname = _to_str(person.name)
+        if pname:
+            lookup[pname.casefold()] = pid
+        if pid:
+            lookup[pid.casefold()] = pid
+    return lookup
+
+
+def _resolve_owner_id(task: Any, owner_lookup: dict[str, str]) -> str:
+    raw = _to_str(task.designer)
+    if raw:
+        mapped = owner_lookup.get(raw.casefold())
+        if mapped:
+            return mapped
+    return _owner_id(task)
+
+
+def _serialize_task_with_owner(task: Any, owner_lookup: dict[str, str]) -> dict[str, Any]:
+    payload = _serialize_task(task)
+    payload["ownerId"] = _resolve_owner_id(task, owner_lookup)
+    return payload
+
+
 def _serialize_people(people: Iterable[Person]) -> list[dict[str, Any]]:
     result: dict[str, dict[str, Any]] = {}
     for person in people:
-        person_id = _to_str(person.id) or _stable_id("person", _to_str(person.name))
+        person_id = _person_id(person)
         if person_id in result:
             continue
         result[person_id] = {
@@ -149,10 +185,12 @@ def build_frontend_api_payload_v2(
         limit=max(limit, 0),
         window=query_window,
     )
-    tasks_v2 = [_serialize_task(item) for item in filtered]
+    people_list = list(people)
+    owner_lookup = _build_owner_lookup(people_list)
+    tasks_v2 = [_serialize_task_with_owner(item, owner_lookup) for item in filtered]
     milestone_types = milestone_type_labels(filtered)
 
-    people_v2 = _serialize_people(people) if include_people else []
+    people_v2 = _serialize_people(people_list) if include_people else []
     groups_v2 = _serialize_groups(filtered)
     milestones_total = sum(len(task_payload.get("milestones", [])) for task_payload in tasks_v2)
 

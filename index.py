@@ -4,38 +4,22 @@ from __future__ import annotations
 
 from typing import Any
 
-from config import (
-    DEFAULT_CHAT_ID,
-    KEY_JSON,
-    SHEET_INFO,
-    TG,
-    TG_BOT_USERNAME,
-    YC_SA_JSON_CREDENTIALS,
-    YC_SA_KEY_FILE,
-    YDB_DATABASE,
-    YDB_ENDPOINT,
-)
-from core.api_payload_v2 import build_frontend_api_payload_v2
-from core.group_query import (
-    build_deadlines_reply,
-    build_tasks_reply,
-    parse_group_query_request,
-)
-from core.reminder import TelegramNotifier
-from main import main
+from src.adapters.telegram import TelegramNotifier
 from src.app.bootstrap import build_app_context
 from src.app.planner_bootstrap import build_planner_dependencies
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
-from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.entrypoints.http.event_parser import extract_payload as _extract_payload
 from src.entrypoints.http.event_parser import http_method as _http_method
 from src.entrypoints.http.event_parser import http_path as _http_path
 from src.entrypoints.http.debug_utils import debug_http_shape as _debug_http_shape
-from src.entrypoints.http.group_query_handler import handle_group_query_if_requested
+from src.entrypoints.http.group_query_handler import (
+    GroupQueryHandlerContext,
+    GroupQueryHandlerRequest,
+    handle_group_query_if_requested,
+)
 from src.entrypoints.http.group_query_tasks_loader import (
     load_work_tasks_for_group_query as _load_work_tasks_for_group_query,
 )
-from src.entrypoints.http.http_dispatch_chain import build_http_dispatch_handlers
 from src.entrypoints.http.event_parser import normalize_path as _normalize_path
 from src.entrypoints.http.event_parser import query_params as _query_params
 from src.entrypoints.http.frontend_query_params import (
@@ -44,13 +28,17 @@ from src.entrypoints.http.frontend_query_params import (
     parse_statuses as _parse_statuses,
     parse_window_query as _parse_window_query,
 )
-from src.entrypoints.http.frontend_tasks_loader import load_frontend_tasks as _load_frontend_tasks
 from src.entrypoints.http.runtime_mode import (
     extract_force_refresh as _extract_force_refresh,
     extract_run_mode as _extract_run_mode,
     resolve_trigger_mode as _resolve_trigger_mode,
 )
-from src.entrypoints.http.runtime_execution import execute_runtime
+from src.entrypoints.http.runtime_execution import (
+    RuntimeExecutionContext,
+    RuntimeExecutionRequest,
+    execute_runtime,
+)
+from src.entrypoints.runtime.planner_runtime_entry import PlannerRuntimeRequest, run_planner_runtime
 from src.entrypoints.http.response_utils import (
     error_response as _error_response,
     html_response as _html_response,
@@ -58,18 +46,30 @@ from src.entrypoints.http.response_utils import (
     path_matches as _path_matches,
 )
 from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_api_v2_doc_html
-from src.entrypoints.http.router import dispatch_http
+from src.entrypoints.http.router import HttpRouter, HttpRouterContext
+from src.legacy.http_core_bindings import (
+    build_deadlines_reply,
+    build_tasks_reply,
+    parse_group_query_request,
+)
 from src.services.errors import AppError, PermanentError, TransientError, UserError
 
 APP_CONTEXT = build_app_context()
 APP_CFG = APP_CONTEXT.cfg
+APP_DEPS = APP_CONTEXT.deps
 APP_RUNTIME_ENV = APP_CFG.runtime.runtime.env_default
 APP_SOURCE_SHEET_NAME = str(APP_CFG.tables.google_sheets.get("source_sheet_name_default", ""))
-APP_READMODEL_SOURCE = APP_CFG.runtime.sources.readmodel_source_default
 APP_DEBUG_HTTP_EVENT = bool(APP_CFG.runtime.api.get("debug_http_event_default", False))
 APP_TRIGGERS = dict(APP_CFG.runtime.triggers)
-APP_TG_BOT_TOKEN = TG
-APP_TG_DEFAULT_CHAT_ID = DEFAULT_CHAT_ID
+APP_TG_BOT_TOKEN = str(APP_DEPS.get("tg_bot_token", ""))
+APP_TG_BOT_USERNAME = str(APP_DEPS.get("tg_bot_username", ""))
+APP_TG_DEFAULT_CHAT_ID = APP_DEPS.get("default_chat_id")
+APP_KEY_JSON = str(APP_DEPS.get("key_json", ""))
+APP_SHEET_INFO = dict(APP_DEPS.get("sheet_info", {}))
+APP_YDB_ENDPOINT = str(APP_DEPS.get("ydb_endpoint", ""))
+APP_YDB_DATABASE = str(APP_DEPS.get("ydb_database", ""))
+APP_YDB_SA_JSON_CREDENTIALS = APP_DEPS.get("ydb_sa_json_credentials")
+APP_YDB_SA_KEY_FILE = APP_DEPS.get("ydb_sa_key_file")
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
 
@@ -83,31 +83,34 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
             "body": "!HEALTHY!",
         }
 
-    if await handle_group_query_if_requested(
-        request_payload,
-        is_http_event,
-        bot_username=TG_BOT_USERNAME,
+    group_query_ctx = GroupQueryHandlerContext(
+        bot_username=APP_TG_BOT_USERNAME,
         parse_group_query_request=parse_group_query_request,
         notifier_factory=lambda: TelegramNotifier(
             bot_token=APP_TG_BOT_TOKEN,
             default_chat_id=APP_TG_DEFAULT_CHAT_ID,
         ),
         load_work_tasks_for_group_query=lambda: _load_work_tasks_for_group_query(
-            key_json=KEY_JSON,
-            sheet_info=SHEET_INFO,
+            key_json=APP_KEY_JSON,
+            sheet_info=APP_SHEET_INFO,
             app_cfg=APP_CFG,
             build_planner_dependencies=build_planner_dependencies,
         ),
         build_deadlines_reply=build_deadlines_reply,
         build_tasks_reply=build_tasks_reply,
-    ):
+    )
+    group_query_request = GroupQueryHandlerRequest(
+        request_payload=request_payload,
+        is_http_event=is_http_event,
+    )
+    if await handle_group_query_if_requested(group_query_ctx, group_query_request):
         return {
             "statusCode": 200,
             "body": "!GROUP_QUERY_OK!",
         }
 
     event_dict = event if isinstance(event, dict) else {}
-    root_handler, v2_handler = build_http_dispatch_handlers(
+    router_ctx = HttpRouterContext(
         json_response=_json_response,
         html_response=_html_response,
         error_response=_error_response,
@@ -120,41 +123,19 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         parse_limit=_parse_limit,
         parse_bool=_parse_bool,
         parse_window_query=_parse_window_query,
-        app_readmodel_source=APP_READMODEL_SOURCE,
-        ydb_endpoint=YDB_ENDPOINT,
-        ydb_database=YDB_DATABASE,
-        ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
-        ydb_sa_key_file=YC_SA_KEY_FILE,
+        ydb_endpoint=APP_YDB_ENDPOINT,
+        ydb_database=APP_YDB_DATABASE,
+        ydb_sa_json_credentials=APP_YDB_SA_JSON_CREDENTIALS,
+        ydb_sa_key_file=APP_YDB_SA_KEY_FILE,
         app_runtime_env=APP_RUNTIME_ENV,
         app_source_sheet_name=APP_SOURCE_SHEET_NAME,
-        key_json=KEY_JSON,
-        sheet_info=SHEET_INFO,
-        app_cfg=APP_CFG,
         frontend_api_v2_doc=frontend_api_v2_doc,
         frontend_api_v2_doc_html=frontend_api_v2_doc_html,
         frontend_readmodel_repo_cls=FrontendReadmodelRepo,
-        build_planner_dependencies=build_planner_dependencies,
-        load_frontend_tasks=lambda dependencies, statuses: _load_frontend_tasks(
-            dependencies,
-            statuses,
-            app_readmodel_source=APP_READMODEL_SOURCE,
-            ydb_endpoint=YDB_ENDPOINT,
-            ydb_database=YDB_DATABASE,
-            ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
-            ydb_sa_key_file=YC_SA_KEY_FILE,
-            ydb_operational_task_repo_cls=YdbOperationalTaskRepository,
-        ),
-        build_frontend_api_payload_v2=build_frontend_api_payload_v2,
     )
+    router = HttpRouter(router_ctx)
     try:
-        http_response = dispatch_http(
-            event_dict,
-            is_http_event,
-            (
-                root_handler,
-                v2_handler,
-            ),
-        )
+        http_response = router.dispatch(event_dict, is_http_event)
     except Exception as error:
         print(f"http_dispatch_error={error}")
         return _error_response(
@@ -213,13 +194,9 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
     if planner_event is None and not is_http_event:
         planner_event = event
 
-    return await execute_runtime(
-        main_func=main,
-        mode=run_mode,
-        planner_event=planner_event,
-        dry_run=dry_run,
-        mock_external=mock_external,
-        force_refresh=force_refresh,
+    runtime_ctx = RuntimeExecutionContext(
+        main_func=run_planner_runtime,
+        runtime_request_factory=PlannerRuntimeRequest,
         is_http_event=is_http_event,
         app_error_cls=AppError,
         user_error_cls=UserError,
@@ -231,3 +208,11 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
             default_chat_id=APP_TG_DEFAULT_CHAT_ID,
         ),
     )
+    runtime_request = RuntimeExecutionRequest(
+        mode=run_mode,
+        planner_event=planner_event,
+        dry_run=dry_run,
+        mock_external=mock_external,
+        force_refresh=force_refresh,
+    )
+    return await execute_runtime(runtime_ctx, runtime_request)

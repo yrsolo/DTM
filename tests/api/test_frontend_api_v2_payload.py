@@ -8,6 +8,7 @@ import unittest
 from datetime import date, datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import pandas as pd
 
@@ -68,8 +69,12 @@ def _people() -> list[SimpleNamespace]:
 
 
 class FrontendApiV2PayloadTestCase(unittest.TestCase):
+    def _build_payload(self, **kwargs) -> dict[str, object]:
+        with patch("core.task_query_contract.pd.Timestamp.today", return_value=pd.Timestamp("2026-03-01")):
+            return build_frontend_api_payload_v2(**kwargs)
+
     def test_payload_has_required_top_level_structure(self) -> None:
-        payload = build_frontend_api_payload_v2(
+        payload = self._build_payload(
             tasks=_tasks(),
             people=_people(),
             env_name="test",
@@ -88,7 +93,7 @@ class FrontendApiV2PayloadTestCase(unittest.TestCase):
         self.assertTrue(all("milestones" in item for item in payload["tasks"]))
 
     def test_milestone_type_enum_contains_only_used_types(self) -> None:
-        payload = build_frontend_api_payload_v2(
+        payload = self._build_payload(
             tasks=_tasks(),
             people=_people(),
             env_name="test",
@@ -106,7 +111,7 @@ class FrontendApiV2PayloadTestCase(unittest.TestCase):
         self.assertNotIn("draft", milestone_types)
 
     def test_window_filter_by_task_dates(self) -> None:
-        payload = build_frontend_api_payload_v2(
+        payload = self._build_payload(
             tasks=_tasks(),
             people=_people(),
             env_name="test",
@@ -126,7 +131,7 @@ class FrontendApiV2PayloadTestCase(unittest.TestCase):
         self.assertGreaterEqual(len(payload["tasks"][0]["milestones"]), 2)
 
     def test_payload_matches_snapshot_default(self) -> None:
-        payload = build_frontend_api_payload_v2(
+        payload = self._build_payload(
             tasks=_tasks(),
             people=_people(),
             env_name="test",
@@ -141,7 +146,7 @@ class FrontendApiV2PayloadTestCase(unittest.TestCase):
         self.assertEqual(payload, expected)
 
     def test_payload_matches_snapshot_with_window(self) -> None:
-        payload = build_frontend_api_payload_v2(
+        payload = self._build_payload(
             tasks=_tasks(),
             people=_people(),
             env_name="test",
@@ -157,6 +162,22 @@ class FrontendApiV2PayloadTestCase(unittest.TestCase):
         )
         expected = json.loads(SNAPSHOT_WINDOW_PATH.read_text(encoding="utf-8"))
         self.assertEqual(payload, expected)
+
+    def test_owner_ids_reference_people_entities_when_people_included(self) -> None:
+        payload = self._build_payload(
+            tasks=_tasks(),
+            people=_people(),
+            env_name="test",
+            source_sheet_name="SourceSheet",
+            statuses=["work", "pre_done"],
+            limit=100,
+            include_people=True,
+            generated_at=datetime(2026, 3, 2, 20, 0, 0, tzinfo=timezone.utc),
+            synced_at=datetime(2026, 3, 2, 19, 30, 0, tzinfo=timezone.utc),
+        )
+        people_ids = {item["id"] for item in payload["entities"]["people"]}
+        for task in payload["tasks"]:
+            self.assertIn(task["ownerId"], people_ids)
 
 
 if __name__ == "__main__":

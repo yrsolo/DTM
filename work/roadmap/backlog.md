@@ -1,9 +1,24 @@
 # Backlog
 
-## Ready
-- CAM-CONFIG-REFORM-V0 (completed core scope, hardening follow-ups possible).
-- CAM-CORE-CLEANUP-V1.
-- CAM-DEDUP-LEGACY-REMOVAL-V1.
+## In Progress
+- none
+
+## Planned
+- none
+
+## Done
+- CAM-ENTRYPOINT-HYGIENE-V2 (archived)
+- CAM-ENTRYPOINT-DEHYBRID-V2 (archived)
+- CAM-PIPELINE-STRAIGHTEN-V2 (archived)
+- CAM-CONFIG-REFORM-V0 (archived)
+- CAM-PIPELINE-CLEAN-SKELETON-V1 (archived)
+- CAM-CORE-CLEANUP-V1 (archived)
+- CAM-DEDUP-LEGACY-REMOVAL-V1 (archived)
+- CAM-PIPELINE-STRAIGHTEN-V1 (archived)
+- CAM-ENTRYPOINT-DEHYBRID-V1 (archived)
+- CAM-ENTRYPOINT-HYGIENE-V1 (archived)
+- CAM-ENTRYPOINT-WRAPPER-DTO-V1 (archived)
+- CAM-API-V2-CONTRACT-RESTORE-V1 (archived)
 
 ## Parked
-- Legacy process normalization beyond structural split.
+- none

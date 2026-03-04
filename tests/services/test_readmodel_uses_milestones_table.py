@@ -93,6 +93,43 @@ class _ReadmodelRepoStub:
         )()
 
 
+class _ReadmodelRepoWithExistingStub(_ReadmodelRepoStub):
+    def __init__(self) -> None:
+        super().__init__()
+        self.upsert_calls = 0
+        self.existing_payload = {
+            "tasks": [
+                {
+                    "id": "42",
+                    "date": {"start": None, "end": None, "nextDue": None},
+                    "milestones": [],
+                }
+            ]
+        }
+
+    def get_readmodel(self, readmodel_id: str):  # noqa: ARG002
+        return type(
+            "Row",
+            (),
+            {
+                "readmodel_id": "frontend_v2:default",
+                "payload_json": json.dumps(self.existing_payload, ensure_ascii=False),
+                "payload_hash": "sha256:existing",
+                "built_from_source_hash": "hash-1",
+                "payload": lambda self_obj: self.existing_payload,
+            },
+        )()
+
+    def upsert_readmodel(self, payload, *, readmodel_id, contract_version, built_from_source_hash):  # noqa: ANN001
+        self.upsert_calls += 1
+        return super().upsert_readmodel(
+            payload,
+            readmodel_id=readmodel_id,
+            contract_version=contract_version,
+            built_from_source_hash=built_from_source_hash,
+        )
+
+
 class ReadmodelUsesMilestonesTableTestCase(unittest.TestCase):
     def test_builder_populates_task_milestones_from_rows(self) -> None:
         operational_repo = _OperationalRepoStub()
@@ -113,10 +150,15 @@ class ReadmodelUsesMilestonesTableTestCase(unittest.TestCase):
         tasks = readmodel_repo.saved_payload["tasks"]
         self.assertEqual(len(tasks), 1)
         self.assertEqual(len(tasks[0]["milestones"]), 2)
+        self.assertEqual(tasks[0]["brand"], "Brand")
+        self.assertEqual(tasks[0]["format_"], "Format")
+        self.assertEqual(tasks[0]["customer"], "Customer")
         self.assertEqual(tasks[0]["milestones"][0]["type"], "storyboard")
         self.assertEqual(tasks[0]["milestones"][1]["type"], "animatic")
         self.assertEqual(tasks[0]["date"]["start"], "2026-03-04")
         self.assertEqual(tasks[0]["date"]["end"], "2026-03-11")
+        self.assertTrue(readmodel_repo.saved_payload["filters"]["include_people"])
+        self.assertEqual(len(readmodel_repo.saved_payload["entities"]["people"]), 1)
 
     def test_builder_adds_synthetic_start_when_versioned_rows_missing(self) -> None:
         class _NoMilestonesRepo(_OperationalRepoStub):
@@ -178,6 +220,25 @@ class ReadmodelUsesMilestonesTableTestCase(unittest.TestCase):
         service.run(readmodel_id="frontend_v2:default")
         payload = readmodel_repo.saved_payload
         task = payload["tasks"][0]
+        self.assertEqual(task["date"]["start"], "2026-03-04")
+        self.assertEqual(task["date"]["end"], "2026-03-11")
+
+    def test_builder_force_rebuild_ignores_same_source_hash_short_circuit(self) -> None:
+        operational_repo = _OperationalRepoStub()
+        readmodel_repo = _ReadmodelRepoWithExistingStub()
+        service = FrontendReadmodelBuilderService(
+            operational_repo=operational_repo,  # type: ignore[arg-type]
+            readmodel_repo=readmodel_repo,  # type: ignore[arg-type]
+            source_id="sheet:test",
+            env_name="test",
+            source_sheet_name="Sheet",
+        )
+
+        result = service.run(readmodel_id="frontend_v2:default", force_rebuild=True)
+
+        self.assertTrue(result.changed)
+        self.assertEqual(readmodel_repo.upsert_calls, 1)
+        task = readmodel_repo.saved_payload["tasks"][0]
         self.assertEqual(task["date"]["start"], "2026-03-04")
         self.assertEqual(task["date"]["end"], "2026-03-11")
 

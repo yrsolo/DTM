@@ -8,9 +8,9 @@
       "env": "test",
       "sourceId": "SourceSheet",
       "sheetName": "SourceSheet",
-      "sheetUrl": null
+      "sheetUrl": ""
     },
-    "hash": "e538ef62bbc071bd7cc9404f6dc14d5a97dfaf2bebd4864f64f98644b287bda5",
+    "hash": "c9dd2e0b67ed80ef84f23e75afffde2c3c8507d234a28fbfbae5585f3242a002",
     "features": {
       "taskHash": true,
       "taskRevision": true,
@@ -20,7 +20,7 @@
     },
     "paging": {
       "limit": 100,
-      "nextCursor": null
+      "nextCursor": ""
     }
   },
   "filters": {
@@ -28,7 +28,7 @@
       "work",
       "pre_done"
     ],
-    "designer": null,
+    "designer": "",
     "limit": 100,
     "include_people": true,
     "window": {
@@ -48,19 +48,19 @@
   "entities": {
     "people": [
       {
-        "id": "p1",
-        "name": "Designer One",
-        "position": "designer",
-        "links": {
-          "self": "/api/v2/frontend/entities/people/p1"
-        }
-      },
-      {
-        "id": "p2",
+        "id": "4194979ffab99f87",
         "name": "Designer Two",
         "position": "designer",
         "links": {
-          "self": "/api/v2/frontend/entities/people/p2"
+          "self": "/api/v2/frontend/entities/people/4194979ffab99f87"
+        }
+      },
+      {
+        "id": "ae078c0616e907b1",
+        "name": "Designer One",
+        "position": "designer",
+        "links": {
+          "self": "/api/v2/frontend/entities/people/ae078c0616e907b1"
         }
       }
     ],
@@ -114,6 +114,9 @@
     {
       "id": "101",
       "title": "Task Alpha",
+      "brand": "BrandA",
+      "format_": "Banner",
+      "customer": "Cust",
       "ownerId": "ae078c0616e907b1",
       "groupId": "9f33f1e54cc26a14",
       "status": "work",
@@ -123,10 +126,7 @@
         "nextDue": "2026-03-03"
       },
       "tags": [],
-      "hash": null,
-      "revision": null,
       "links": {
-        "sheetRowUrl": null,
         "self": "/api/v2/frontend/tasks/101"
       },
       "milestones": [
@@ -147,6 +147,9 @@
     {
       "id": "102",
       "title": "Task Beta",
+      "brand": "BrandB",
+      "format_": "Video",
+      "customer": "Cust",
       "ownerId": "4194979ffab99f87",
       "groupId": "3f41549ff6592954",
       "status": "pre_done",
@@ -156,10 +159,7 @@
         "nextDue": "2026-04-12"
       },
       "tags": [],
-      "hash": null,
-      "revision": null,
       "links": {
-        "sheetRowUrl": null,
         "self": "/api/v2/frontend/tasks/102"
       },
       "milestones": [

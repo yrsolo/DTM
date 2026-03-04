@@ -8,6 +8,7 @@ from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
 from core.api_payload_v2 import build_frontend_api_payload_v2
+from core.models.people import Person
 from src.adapters.ydb.operational_repo import OperationalTaskRepo
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
 
@@ -71,7 +72,12 @@ class FrontendReadmodelBuilderService:
         self.env_name = env_name
         self.source_sheet_name = source_sheet_name
 
-    def run(self, *, readmodel_id: str = "frontend_v2:default") -> ReadmodelBuildResult:
+    def run(
+        self,
+        *,
+        readmodel_id: str = "frontend_v2:default",
+        force_rebuild: bool = False,
+    ) -> ReadmodelBuildResult:
         sync_state = self.operational_repo.get_sync_state(self.source_id)
         source_hash = sync_state.source_hash if sync_state is not None else ""
         if not source_hash:
@@ -83,7 +89,7 @@ class FrontendReadmodelBuilderService:
                 ydb_queries_count=self.operational_repo.client.stats.ydb_queries_count,
             )
         existing = self.readmodel_repo.get_readmodel(readmodel_id)
-        if existing is not None and existing.built_from_source_hash == source_hash:
+        if (not force_rebuild) and existing is not None and existing.built_from_source_hash == source_hash:
             payload = existing.payload()
             tasks_count = len(payload.get("tasks", [])) if isinstance(payload, dict) else 0
             return ReadmodelBuildResult(
@@ -95,6 +101,7 @@ class FrontendReadmodelBuilderService:
             )
 
         task_rows = self.operational_repo.list_tasks(statuses=["work", "pre_done"])
+        people_views = self._build_people_from_task_rows(task_rows)
         task_versions: dict[str, int] = {}
         for row in task_rows:
             task_id = str(row.get("task_id", "")).strip()
@@ -153,12 +160,12 @@ class FrontendReadmodelBuilderService:
 
         payload = build_frontend_api_payload_v2(
             tasks=task_views,
-            people=[],
+            people=people_views,
             env_name=self.env_name,
             source_sheet_name=self.source_sheet_name,
             statuses=["work", "pre_done"],
             limit=500,
-            include_people=False,
+            include_people=True,
             designer_filter="",
         )
         payload["meta"]["syncedAt"] = _utc_iso(sync_state.last_success_at_utc if sync_state else None)
@@ -221,3 +228,27 @@ class FrontendReadmodelBuilderService:
             except ValueError:
                 return None
         return None
+
+    @staticmethod
+    def _build_people_from_task_rows(rows: list[dict[str, Any]]) -> list[Person]:
+        people_by_id: dict[str, Person] = {}
+        for row in rows:
+            owner_id = str(row.get("owner_id", "")).strip()
+            if not owner_id:
+                continue
+            raw_payload = row.get("raw_payload")
+            designer_name = ""
+            if isinstance(raw_payload, dict):
+                designer_name = str(raw_payload.get("designer", "")).strip()
+            person = Person(
+                person_id=owner_id,
+                name=designer_name or owner_id,
+                email="",
+                position="designer",
+                telegram_id="",
+                chat_id="",
+                info="",
+                vacation="",
+            )
+            people_by_id[owner_id] = person
+        return sorted(people_by_id.values(), key=lambda item: item.id)

@@ -1,5 +1,29 @@
 # Active Tasks
 
+- [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T001: map runtime usage of `src/services/sync_service.py` vs `src/services/sync/sync_service.py`.
+- [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T002: confirm canonical sync module and add explicit `CANONICAL` header note.
+- [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T003: quarantine/remove duplicate sync module path from runtime imports.
+- [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T004: run local smoke for timer path and API v2 handler.
+- [x] CAM-PIPELINE-STRAIGHTEN-V2-P02-T001: verify old hash-gate artifacts are absent from standard timer path.
+- [x] CAM-PIPELINE-STRAIGHTEN-V2-P03-T001: verify preflight-first pipeline order and full snapshot skip behavior.
+- [x] CAM-PIPELINE-STRAIGHTEN-V2-P04-T001: sync `docs/system/dataflow.md` + `docs/system/entrypoints_index_main.md` with final runtime shape.
+- [x] CAM-PIPELINE-STRAIGHTEN-V2-P05-T001: record evidence logs for skipped/performed full snapshot fetch.
+- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P01-T001: verify `index.py` has no `main.main` coupling and uses direct runtime entry dispatch.
+- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P01-T002: verify `index.py` has no `import main` dependency.
+- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P02-T001: inventory legacy coupling in index/http handlers and classify removable vs legacy-isolated.
+- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P02-T002: ensure API v2 handler keeps fast readmodel path without planner rebuild.
+- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P02-T003: verify group-query isolation from API v2 path and update evidence.
+- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P03-T001: assess planner-world usage in standard timer path and define minimal safe extraction step.
+- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P03-T002: implement explicit legacy-planner mode boundary so standard timer path does not build planner world by default.
+- [x] CAM-ENTRYPOINT-HYGIENE-V2-P01-T001: trust-gate check for remaining hyperfunctions/long signatures in entrypoints and pipeline runtime.
+- [x] CAM-ENTRYPOINT-HYGIENE-V2-P03-T001: replace `build_http_dispatch_handlers(...)` runtime usage with object router `HttpRouter(ctx).dispatch(req)`.
+- [x] CAM-ENTRYPOINT-HYGIENE-V2-P02-T001: introduce/align AppContext usage as single dependency carrier for runtime router/pipeline objects.
+- [x] CAM-ENTRYPOINT-HYGIENE-V2-P04-T001: replace remaining timer pipeline wrapper orchestration with explicit pipeline object (`TimerPipeline`).
+- [x] CAM-ENTRYPOINT-HYGIENE-V2-P06-T001: final evidence grep (`build_http_dispatch_handlers` runtime absence, long signatures audit) and campaign closeout.
+- [x] CAM-ENTRYPOINT-HYGIENE-V2-T901: replace legacy source-switch job hyperfunction args with `SourceSwitchRequest` DTO.
+- [x] CAM-ENTRYPOINT-HYGIENE-V2-T902: replace planner-setup/legacy-store-write helper hyperfunction args with request DTOs and update runtime wiring.
+- [x] CAM-ENTRYPOINT-HYGIENE-V2-T903: refresh affected unit tests (`source_switch_job`, `planner_setup_job`, `legacy_store_write_job`, `planner_pipeline_job`) and rerun pipeline/api smoke.
+
 - [x] Activate `CAM-CORE-CLEANUP-V1` from priorities.
 - [x] P01-T001: inventory `core/*` modules and classify domain vs infra-coupled pieces (`docs/system/core_boundaries.md`).
 - [x] P01-T002: map first atomic moves (`core/bootstrap.py`, `core/use_cases.py`) with concrete destination modules.
@@ -99,10 +123,75 @@
 - [x] CFG-P02-T071: add regression tests for numeric YDB milestone dates and verify no null-date regression in readmodel build path.
 - [x] CFG-P02-T072: validate fix against live test DB data locally (no deploy): builder dry-run with real operational rows yields tasks with non-null dates.
 - [x] CFG-P02-T073: switch test deploy automation to `test` branch flow (`dev -> test -> main`) and add auto PR creation workflow (`test -> main`).
+- [x] CFG-P02-T074: make `force_refresh` also force readmodel snapshot rebuild (ignore `built_from_source_hash` short-circuit) and cover with unit test.
+- [x] CFG-P02-T075: verify live test DB snapshot state locally: operational tasks contain dates; forced readmodel rebuild restores non-null API dates (11/11).
+- [x] PIPE-P01-T001: activate `CAM-PIPELINE-CLEAN-SKELETON-V1` and record first extraction sequence for `main.py` helper thinning.
+- [x] PIPE-P01-T002: extract readmodel freshness helper from `main.py` to `src/entrypoints/jobs/readmodel_freshness.py` without behavior change.
+- [x] PIPE-P02-T001: extract source hash-gate decision block from `main.py` to `src/entrypoints/jobs/hash_gate_job.py`.
+- [x] PIPE-P02-T002: extract legacy store-write block from `main.py` to `src/entrypoints/jobs/legacy_store_write_job.py`.
+- [x] PIPE-P02-T003: extract task payload conversion helpers from `main.py` to `src/entrypoints/jobs/task_payloads.py`.
+- [x] PIPE-P03-T001: extract task-source switch orchestration from `main.py` to `src/entrypoints/jobs/source_switch_job.py`.
+- [x] PIPE-P03-T002: extract readmodel freshness probe/logging block from `main.py` to `src/entrypoints/jobs/readmodel_probe_job.py`.
+- [x] PIPE-P03-T003: extract quality-report summary printer from `main.py` to `src/entrypoints/jobs/quality_report_job.py`.
+- [x] PIPE-P03-T004: extract `db_migrate` early-return branch from `main.py` to `src/entrypoints/jobs/db_migrate_branch.py`.
+- [x] PIPE-P03-T005: extract runtime context resolution block (`mode/mock_external/force_refresh` + timer shell hook) from `main.py` to `src/entrypoints/jobs/runtime_context_job.py`.
+- [x] PIPE-P03-T006: extract planner/dependencies setup block from `main.py` to `src/entrypoints/jobs/planner_setup_job.py`.
+- [x] PIPE-P03-T007: extract planner pipeline orchestration block from `main.py` to `src/entrypoints/jobs/planner_pipeline_job.py`.
+- [x] PIPE-P03-T008: sync `docs/system/entrypoints_index_main.md` with current extracted `main.py` jobs-helper contour.
+- [x] PIPE-P03-T009: verify thin-entrypoint status for `main.py` (single async entrypoint + helper delegation) and rerun extended smoke.
+- [x] DEDUP-P01-T001: inventory runtime-adjacent duplicate implementations (sync/readmodel/handlers) with usage evidence.
+- [x] DEDUP-P01-T002: document keep/remove decisions in `docs/system/dedup_plan.md`.
+- [x] DEDUP-P02-T001: remove legacy `src/handlers/sync.py` branch and related handler test from active tree (runtime-unused duplicate).
+- [x] DEDUP-P02-T002: remove unused duplicate `src/services/sync/sync_service.py` and keep only sync hash primitives in `src/services/sync/*`.
+- [x] DEDUP-P02-T003: remove legacy build-readmodels path (`src/handlers/build_readmodels.py`, `src/services/readmodels/*`) and related tests from active tree.
+- [x] DEDUP-P02-T004: remove legacy placeholder `src/handlers/api.py` and align system docs to `src/entrypoints/http/*` runtime boundary.
+- [x] DEDUP-P02-T005: remove legacy placeholder handler stubs `src/handlers/render_sheets.py` and `src/handlers/notify_morning.py`; align dedup/module docs.
+- [x] DEDUP-P02-T006: remove empty legacy `src/handlers/__init__.py` package marker; confirm no active imports of `src.handlers` namespace.
+- [x] DEDUP-P02-T007: sync `docs/system/module_map.md` after handler/sync dedup wave (remove stale "two sync implementations" conflict note).
+- [x] DEDUP-P02-T008: remove unused legacy frontend payload serializer `core/api_payload.py` (v1 artifact) and sync dedup/core-boundaries docs.
+- [x] DEDUP-P02-T009: stabilize API v2 snapshot tests (`tests.api.test_frontend_api_v2_payload`) by freezing `today()` and refreshing snapshots to current v2 payload contract.
+- [x] DEDUP-P03-T001: audit `core/*` compatibility shims for active-code imports and document keep-policy boundary (owner decision: preserve legacy shims).
+- [x] DEDUP-P03-T002: move compatibility shims from `core/*` to `old/v1/*` and add legacy-archaeology markdown notes in `old/v1`.
+- [x] OPS-CAMP-P01-T001: normalize campaign lifecycle registry (`in progress / planned / done / parked`) in `work/now/campaign.md` and align `work/roadmap/backlog.md`.
+- [x] OPS-CAMP-P01-T002: archive all current campaign files from `work/roadmap/campaigns` to `work/archive/campaigns/*` and mark them completed in status registries.
+- [x] OPS-CAMP-P01-T003: register new campaign pack (`CAM-PIPELINE-STRAIGHTEN-V1`, `CAM-ENTRYPOINT-DEHYBRID-V1`, `CAM-ENTRYPOINT-HYGIENE-V1`) with charter/evidence templates and priorities file.
+- [x] STRAIGHTEN-P01-T001: trust-gate verification for `CAM-PIPELINE-STRAIGHTEN-V1` against current runtime code paths (`main.py`, `planner_pipeline_job.py`, `pipeline_runtime.py`, `sync_service.py`).
+- [x] STRAIGHTEN-P02-T001: remove old main hash-gate coupling from runtime path (`main.py` + `planner_pipeline_job.py` + tests).
+- [x] STRAIGHTEN-P03-T001: make preflight cheap in `run_ydb_sync_readmodel_pipeline` (skip full snapshot fetch when no sync is needed).
+- [x] STRAIGHTEN-P04-T001: update `docs/system/dataflow.md` and campaign evidence with skipped/performed full-snapshot logs.
+- [x] STRAIGHTEN-P02-T002: remove dead old-gate artifacts (`hash_gate_job`, `src/services/sync/hash_*`, hash-gate constants/tests) from active contour.
+- [x] OPS-CAMP-P01-T004: archive completed `CAM-PIPELINE-STRAIGHTEN-V1` and switch active execution to `CAM-ENTRYPOINT-DEHYBRID-V1`.
+- [x] OPS-CAMP-P01-T005: archive completed `CAM-ENTRYPOINT-DEHYBRID-V1` and switch active execution to `CAM-ENTRYPOINT-HYGIENE-V1`.
+- [x] DEHYBRID-P01-T001: trust-gate verification for `CAM-ENTRYPOINT-DEHYBRID-V1` against current entrypoint/runtime imports (`index.py`, `main.py`, `src/entrypoints/http/*`, `src/entrypoints/jobs/*`).
+- [x] DEHYBRID-P01-T002: remove direct `index -> main` coupling via shared runtime entry (`src/entrypoints/runtime/planner_runtime_entry.py`).
+- [x] DEHYBRID-P03-T001: remove direct `core.*` imports from `index.py` by moving API/group-query composition behind `src/entrypoints/http/*` boundary.
+- [x] DEHYBRID-P03-T002: isolate remaining legacy composition roots (group_query/API payload bindings) behind explicit `src/legacy/*` namespace and default-modern wiring.
+- [x] DEHYBRID-P04-T001: sync entrypoint docs and campaign evidence for dehybrid state (`index` no `core.*`, no `index -> main` coupling).
+- [x] HYGIENE-P01-T001: trust-gate verification for hyperfunction signatures in current entrypoint/runtime pipeline (`index.py`, `http_dispatch_chain.py`, `runtime_execution.py`, `planner_pipeline_job.py`, `pipeline_runtime.py`).
+- [x] HYGIENE-P02-T001: replace HTTP dispatch hyperfunction args with typed context object (`build_http_dispatch_handlers` + `index.py` wiring).
+- [x] HYGIENE-P02-T002: replace runtime execution hyperfunction args with typed context object (`execute_runtime` + `index.py` wiring).
+- [x] HYGIENE-P03-T001: replace planner pipeline hyperfunction args with typed context/request DTO (`run_planner_pipeline` + `planner_runtime_entry` wiring).
+- [x] HYGIENE-P03-T002: replace sync/readmodel pipeline hyperfunction args with typed context/request DTO (`run_ydb_sync_readmodel_pipeline` + planner pipeline wiring).
+- [x] HYGIENE-P03-T003: replace group-query handler hyperfunction args with typed context/request DTO (`handle_group_query_if_requested` + `index.py` wiring).
+- [x] HYGIENE-P04-T001: final hygiene verification + docs/tracking sync and campaign closeout decision.
+- [x] WRAPPERDTO-P01-T001: trust-gate verification for remaining `**kwargs` wrappers in runtime handoff path (`main.py`, `planner_runtime_entry.py`, `runtime_execution.py`, `index.py`).
+- [x] WRAPPERDTO-P02-T001: introduce `PlannerRuntimeRequest` DTO and canonical runtime entry method without `**kwargs` in `planner_runtime_entry.py`.
+- [x] WRAPPERDTO-P02-T002: switch `main.py` and `runtime_execution/index.py` to explicit typed runtime request handoff.
+- [x] WRAPPERDTO-P03-T001: run smoke contour and sync campaign docs/tracking; close/archive campaign if DoD met.
+- [x] APICONTRACT-P01-T001: trust-gate verification for API v2 contract drift (`include_people` default, task business fields, docs examples).
+- [x] APICONTRACT-P02-T001: restore task payload fields `brand`, `format_`, `customer` in `core/api_payload_v2.py` and update snapshots/tests.
+- [x] APICONTRACT-P02-T002: restore default people in readmodel-built API payload path (`src/services/readmodel_builder.py`) without changing API contract version.
+- [x] APICONTRACT-P02-T003: add concrete query examples to API v2 docs (`src/entrypoints/http/frontend_v2_docs.py` HTML+JSON).
+- [x] APICONTRACT-P03-T001: run targeted smoke/tests and sync campaign evidence/tracking.
+- [x] APICONTRACT-P04-T001: add API v2 readmodel self-heal on stale snapshot schema (`frontend_v2_handler` rebuild from operational tables when `people/fields` are missing in cached readmodel).
+- [x] APICONTRACT-P04-T002: add fallback payload enrichment from operational rows when readmodel rebuild is unavailable (serve people + business fields from YDB operational data in API response).
+- [x] APICONTRACT-P04-T003: enforce `tasks[].ownerId` reference consistency to `entities.people[].id` in payload builder; add regression test and refresh snapshots.
+- [x] APICONTRACT-P04-T004: detect owner/people id mismatch in stale readmodel snapshots and normalize task `ownerId` from operational rows during API fallback enrichment.
+- [x] APICONTRACT-P04-T005: make `entities.people[].id` stable owner hash (not display name) and keep `tasks[].ownerId` aligned to same id in both normal and fallback paths.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T073 completed: test deploy trigger moved to `test` branch, auto PR workflow `test -> main` added, docs/tracking synced)
+- 2026-03-04 (HYGIENE-V2 follow-up: legacy job helpers switched to DTO requests; targeted + smoke tests green)
 
