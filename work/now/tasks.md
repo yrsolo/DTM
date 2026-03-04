@@ -61,10 +61,12 @@
 - [x] CFG-P02-T033: verify full smoke contour after frontend query parser extraction (`api/core/services/adapters`).
 - [x] CFG-P02-T034: extract runtime mode/trigger/force-refresh parsing helpers from `index.py` into `src/entrypoints/http/runtime_mode.py`.
 - [x] CFG-P02-T035: verify full smoke contour after runtime mode helper extraction (`api/core/services/adapters`).
+- [x] CFG-P02-T036: extract HTTP response/path helper functions from `index.py` into `src/entrypoints/http/response_utils.py`.
+- [x] CFG-P02-T037: verify full smoke contour after response/path helper extraction (`api/core/services/adapters`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T034..T035 completed: runtime mode helpers extracted from index; full smoke green)
+- 2026-03-04 (CFG-P02-T036..T037 completed: response/path helpers extracted from index; full smoke green)
 

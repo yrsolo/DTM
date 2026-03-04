@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import traceback
 from typing import Any
 
@@ -49,6 +48,12 @@ from src.entrypoints.http.runtime_mode import (
     extract_force_refresh as _extract_force_refresh,
     extract_run_mode as _extract_run_mode,
     resolve_trigger_mode as _resolve_trigger_mode,
+)
+from src.entrypoints.http.response_utils import (
+    error_response as _error_response,
+    html_response as _html_response,
+    json_response as _json_response,
+    path_matches as _path_matches,
 )
 from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_api_v2_doc_html
 from src.entrypoints.http.frontend_v2_handler import handle_frontend_api_v2_if_requested
@@ -97,29 +102,6 @@ async def _handle_group_query_if_requested(
     )
 
 
-def _json_response(status_code: int, payload: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "statusCode": status_code,
-        "headers": {"Content-Type": "application/json; charset=utf-8"},
-        "body": json.dumps(payload, ensure_ascii=False),
-    }
-
-
-def _error_response(
-    status_code: int, *, code: str, message: str, details: dict[str, Any] | None = None
-) -> dict[str, Any]:
-    return _json_response(
-        status_code,
-        {
-            "error": {
-                "code": code,
-                "message": message,
-                "details": details or {},
-            }
-        },
-    )
-
-
 def _debug_http_shape(event: dict[str, Any], is_http_event: bool) -> None:
     if not APP_DEBUG_HTTP_EVENT:
         return
@@ -144,14 +126,6 @@ def _debug_http_shape(event: dict[str, Any], is_http_event: bool) -> None:
     )
 
 
-def _html_response(status_code: int, html: str) -> dict[str, Any]:
-    return {
-        "statusCode": status_code,
-        "headers": {"Content-Type": "text/html; charset=utf-8"},
-        "body": html,
-    }
-
-
 def _load_frontend_tasks(dependencies: Any, statuses: list[str]) -> list[Any]:
     policy = build_source_policy_matrix(
         readmodel_source=APP_READMODEL_SOURCE,
@@ -169,13 +143,6 @@ def _load_frontend_tasks(dependencies: Any, statuses: list[str]) -> list[Any]:
     return task_repo.get_task_by_color_status(statuses)
 
 
-def _path_matches(path: str, candidates: set[str]) -> bool:
-    normalized = _normalize_path(path)
-    if normalized in candidates:
-        return True
-    return any(normalized.endswith(candidate) for candidate in candidates)
-
-
 def _handle_frontend_api_if_requested(
     event: dict[str, Any], is_http_event: bool
 ) -> dict[str, Any] | None:
@@ -186,7 +153,7 @@ def _handle_frontend_api_if_requested(
         normalize_path=_normalize_path,
         http_path=_http_path,
         http_method=_http_method,
-        path_matches=_path_matches,
+        path_matches=lambda path, candidates: _path_matches(path, candidates, _normalize_path),
     )
 
 
@@ -203,7 +170,7 @@ def _handle_frontend_api_v2_if_requested(
         http_path=_http_path,
         http_method=_http_method,
         query_params=_query_params,
-        path_matches=_path_matches,
+        path_matches=lambda path, candidates: _path_matches(path, candidates, _normalize_path),
         parse_statuses=_parse_statuses,
         parse_limit=_parse_limit,
         parse_bool=_parse_bool,
