@@ -23,6 +23,7 @@
 | `src/entrypoints/http/frontend_compat_handlers.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | compatibility handler extraction + full smoke pack | high | API root/v1-discontinued HTTP handlers moved out of index into dedicated module; index delegation contour reduced further |
 | `main.py`, `index.py`, `src/services/pipeline_runtime.py`, `src/entrypoints/jobs/db_migrate_job.py`, `src/adapters/ydb/{operational_repo,readmodel_repo,task_repository}.py`, `src/entrypoints/http/frontend_v2_handler.py` | 2026-03-04 | TeamLead agent | boundary credential propagation refactor + full smoke pack | high | explicit YDB SA credential wiring restored from entrypoints/services into adapters after removing adapter-level config constants imports |
 | `src/entrypoints/http/group_query_handler.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | group-query handler extraction + full smoke pack | high | group-query branch moved out of index entrypoint into dedicated HTTP module; index delegates with injected boundaries |
+| `src/entrypoints/http/frontend_query_params.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | query parser extraction + full smoke pack | high | frontend API query parsing helpers moved out of index entrypoint into dedicated HTTP module; behavior retained |
 
 ## Execution Log
 - CAM-CONFIG-REFORM-V0 activated in `work/now/campaign.md`.
@@ -59,6 +60,8 @@
 - CFG-P02-T029 completed: executed full smoke contour after credential wiring updates (API routing + core/services/adapters unit smoke).
 - CFG-P02-T030 completed: extracted group-query request handling from `index.py` to `src/entrypoints/http/group_query_handler.py` with dependency injection boundary.
 - CFG-P02-T031 completed: executed full smoke contour after group-query extraction (API routing + core/services/adapters unit smoke).
+- CFG-P02-T032 completed: extracted frontend API query parameter parsers from `index.py` into `src/entrypoints/http/frontend_query_params.py`.
+- CFG-P02-T033 completed: executed full smoke contour after parser extraction (API routing + core/services/adapters unit smoke).
 - P01 scaffold implemented (uncommitted):
   - YAML config files added: `config/runtime.yaml`, `config/tables.yaml`, `config/db.yaml`, `config/llm.yaml`, `config/mapping.yaml`
   - typed schema scaffold: `src/config/schema.py`
@@ -118,4 +121,6 @@
   - `python -m py_compile main.py index.py src/services/pipeline_runtime.py src/entrypoints/jobs/db_migrate_job.py src/adapters/ydb/readmodel_repo.py src/adapters/ydb/operational_repo.py src/adapters/ydb/task_repository.py src/entrypoints/http/frontend_v2_handler.py tests/services/test_pipeline_runtime.py`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
   - `python -m py_compile src/entrypoints/http/group_query_handler.py index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile src/entrypoints/http/frontend_query_params.py index.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`

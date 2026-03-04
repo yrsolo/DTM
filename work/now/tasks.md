@@ -57,10 +57,12 @@
 - [x] CFG-P02-T029: verify full smoke contour after YDB credential propagation updates (`api/core/services/adapters`).
 - [x] CFG-P02-T030: extract group-query request handler from `index.py` into `src/entrypoints/http/group_query_handler.py`.
 - [x] CFG-P02-T031: verify full smoke contour after group-query handler extraction (`api/core/services/adapters`).
+- [x] CFG-P02-T032: extract frontend API query parameter parsing helpers from `index.py` into `src/entrypoints/http/frontend_query_params.py`.
+- [x] CFG-P02-T033: verify full smoke contour after frontend query parser extraction (`api/core/services/adapters`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T030..T031 completed: group-query handler extracted from index; full smoke green)
+- 2026-03-04 (CFG-P02-T032..T033 completed: frontend query parsers extracted from index; full smoke green)
 
