@@ -1,12 +1,13 @@
 # Backlog
 
 ## In Progress
-- CAM-ENTRYPOINT-DEHYBRID-V2
-
-## Planned
 - CAM-ENTRYPOINT-HYGIENE-V2
 
+## Planned
+- none
+
 ## Done
+- CAM-ENTRYPOINT-DEHYBRID-V2 (archived)
 - CAM-PIPELINE-STRAIGHTEN-V2 (archived)
 - CAM-CONFIG-REFORM-V0 (archived)
 - CAM-PIPELINE-CLEAN-SKELETON-V1 (archived)

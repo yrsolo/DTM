@@ -14,7 +14,9 @@
 - [x] CAM-ENTRYPOINT-DEHYBRID-V2-P02-T002: ensure API v2 handler keeps fast readmodel path without planner rebuild.
 - [x] CAM-ENTRYPOINT-DEHYBRID-V2-P02-T003: verify group-query isolation from API v2 path and update evidence.
 - [x] CAM-ENTRYPOINT-DEHYBRID-V2-P03-T001: assess planner-world usage in standard timer path and define minimal safe extraction step.
-- [ ] CAM-ENTRYPOINT-DEHYBRID-V2-P03-T002: implement explicit legacy-planner mode boundary so standard timer path does not build planner world by default.
+- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P03-T002: implement explicit legacy-planner mode boundary so standard timer path does not build planner world by default.
+- [ ] CAM-ENTRYPOINT-HYGIENE-V2-P01-T001: trust-gate check for remaining hyperfunctions/long signatures in entrypoints and pipeline runtime.
+- [ ] CAM-ENTRYPOINT-HYGIENE-V2-P02-T001: introduce/align AppContext usage as single dependency carrier for runtime router/pipeline objects.
 
 - [x] Activate `CAM-CORE-CLEANUP-V1` from priorities.
 - [x] P01-T001: inventory `core/*` modules and classify domain vs infra-coupled pieces (`docs/system/core_boundaries.md`).
@@ -182,8 +184,8 @@
 - [x] APICONTRACT-P04-T005: make `entities.people[].id` stable owner hash (not display name) and keep `tasks[].ownerId` aligned to same id in both normal and fallback paths.
 
 ## Blockers
-- CAM-ENTRYPOINT-DEHYBRID-V2-P03-T002: decision required on timer-path redesign scope (owner notified via `agent/notify_owner.py` on 2026-03-04).
+- none
 
 ## Last Update
-- 2026-03-04 (DEHYBRID-V2 in progress: API v2 switched to readmodel-only path; timer-path extraction decision pending owner input)
+- 2026-03-04 (DEHYBRID-V2 archived; switched active campaign to HYGIENE-V2)
 

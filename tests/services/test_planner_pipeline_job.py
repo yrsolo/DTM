@@ -9,8 +9,13 @@ from src.entrypoints.jobs.planner_pipeline_job import (
 )
 
 
-class _SourceRepoStub:
-    def get_all_tasks(self):
+class _TaskSourceStub:
+    def read_snapshot(self, worksheet_range):  # noqa: ANN001
+        _ = worksheet_range
+        return {"values": [["ID"], ["1"]], "colors": ["#fff"]}
+
+    def build_tasks_from_snapshot(self, full_snapshot):  # noqa: ANN001
+        _ = full_snapshot
         return [{"id": "1"}]
 
 
@@ -31,14 +36,13 @@ class PlannerPipelineJobTestCase(unittest.IsolatedAsyncioTestCase):
         def run_sync(**kwargs):  # noqa: ANN003
             calls["sync"] += 1
             self.assertEqual(kwargs["request"].mode, "test")
-            self.assertEqual(len(kwargs["request"].tasks), 1)
 
         def print_quality(report):  # noqa: ANN001
             calls["quality"] += 1
             self.assertIn("summary", report)
 
         ctx = PlannerPipelineContext(
-            source_task_repository=_SourceRepoStub(),
+            task_source=_TaskSourceStub(),
             legacy_blob_write=True,
             app_store_mode="dual_write",
             app_runtime_env="dev",
@@ -59,11 +63,11 @@ class PlannerPipelineJobTestCase(unittest.IsolatedAsyncioTestCase):
             task_to_store_record=lambda task: task,
             task_to_operational_payload=lambda task: task,
             build_store=lambda *args, **kwargs: None,  # noqa: ARG005
-            read_source_snapshot=lambda *args, **kwargs: {},  # noqa: ARG005
             print_quality_report=print_quality,
         )
         request = PlannerPipelineRequest(
             planner=object(),
+            use_legacy_planner=True,
             mode="test",
             force_refresh=False,
         )

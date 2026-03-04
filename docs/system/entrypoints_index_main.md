@@ -17,15 +17,18 @@ Canonical runtime path used by jobs and HTTP-triggered planner modes.
 Flow:
 1. Resolve mode/context with `resolve_runtime_context(...)`.
 2. Handle `db_migrate` via `run_db_migrate_if_requested(...)`.
-3. Build planner runtime via `build_planner_runtime(...)`.
+3. Build canonical Sheets task source via `build_sheets_normalized_task_source(...)`.
 4. Probe readmodel freshness marker via `run_readmodel_freshness_probe(...)`.
-5. Run planner pipeline via `run_planner_pipeline(...)`.
+5. Run planner pipeline via `run_planner_pipeline(...)`:
+   - standard timer path uses task source directly (no planner world),
+   - legacy planner path is allowed only under explicit `mode=legacy_planner_*`.
 
 Important behavior:
 - There is no legacy file-state hash gate in runtime.
 - Sync allow/skip decisions are made only inside canonical sync path (`YdbSyncService`).
 - Preflight-first pipeline can skip full snapshot fetch when unchanged.
 - Canonical sync module is `src/services/sync_service.py` (no runtime duplicate sync implementation).
+- Standard timer mode does not import or execute `GoogleSheetPlanner` wiring.
 
 ## `index.py`
 

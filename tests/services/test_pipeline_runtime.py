@@ -48,7 +48,10 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
         ctx = module.SyncReadmodelPipelineContext(
             store_mode="legacy",
             allow_sync=True,
-            source_task_repository=object(),
+            task_source=SimpleNamespace(
+                source_id="sheet:test:tasks:A1:Z2000",
+                source_sheet_name="sheet",
+            ),
             ydb_endpoint="grpcs://example:2135",
             ydb_database="/db",
             ydb_sa_json_credentials=None,
@@ -62,12 +65,10 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
                 full_sync_interval_hours=24,
             ),
             safe_print=lambda *_: None,
-            read_source_snapshot=_snapshot,
             task_to_operational_payload=_payload,
         )
         request = module.SyncReadmodelPipelineRequest(
             mode="timer",
-            tasks=[],
             force_refresh=False,
         )
         module.run_ydb_sync_readmodel_pipeline(ctx, request)
@@ -85,7 +86,10 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
         ctx = module.SyncReadmodelPipelineContext(
             store_mode="ydb_primary",
             allow_sync=False,
-            source_task_repository=object(),
+            task_source=SimpleNamespace(
+                source_id="sheet:test:tasks:A1:Z2000",
+                source_sheet_name="sheet",
+            ),
             ydb_endpoint="grpcs://example:2135",
             ydb_database="/db",
             ydb_sa_json_credentials=None,
@@ -99,12 +103,10 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
                 full_sync_interval_hours=24,
             ),
             safe_print=lambda *_: None,
-            read_source_snapshot=_snapshot,
             task_to_operational_payload=lambda *_: {},
         )
         request = module.SyncReadmodelPipelineRequest(
             mode="timer",
-            tasks=[],
             force_refresh=False,
         )
         module.run_ydb_sync_readmodel_pipeline(ctx, request)
@@ -166,22 +168,21 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
         module.YdbSyncService = _FakeSyncService
         module.FrontendReadmodelBuilderService = _FakeReadmodelBuilder
 
-        def _snapshot(repo, worksheet_range):  # noqa: ANN001
-            _ = repo
+        def _snapshot(worksheet_range):  # noqa: ANN001
             snapshot_ranges.append(str(worksheet_range))
             return {"range": worksheet_range}
 
-        source_task_repository = SimpleNamespace(
-            source_sheet_info=SimpleNamespace(
-                spreadsheet_name="sheet",
-                get_sheet_name=lambda _: "tasks",
-            )
+        task_source = SimpleNamespace(
+            source_id="sheet:sheet:tasks:A1:Z2000",
+            source_sheet_name="sheet",
+            read_snapshot=_snapshot,
+            build_tasks_from_snapshot=lambda *_: [],
         )
 
         ctx = module.SyncReadmodelPipelineContext(
             store_mode="ydb_primary",
             allow_sync=True,
-            source_task_repository=source_task_repository,
+            task_source=task_source,
             ydb_endpoint="grpcs://example:2135",
             ydb_database="/db",
             ydb_sa_json_credentials=None,
@@ -195,12 +196,10 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
                 full_sync_interval_hours=24,
             ),
             safe_print=lambda *_: None,
-            read_source_snapshot=_snapshot,
             task_to_operational_payload=lambda *_: {},
         )
         request = module.SyncReadmodelPipelineRequest(
             mode="timer",
-            tasks=[],
             force_refresh=False,
         )
         module.run_ydb_sync_readmodel_pipeline(ctx, request)
@@ -268,22 +267,21 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
         module.YdbSyncService = _FakeSyncService
         module.FrontendReadmodelBuilderService = _FakeReadmodelBuilder
 
-        def _snapshot(repo, worksheet_range):  # noqa: ANN001
-            _ = repo
+        def _snapshot(worksheet_range):  # noqa: ANN001
             snapshot_ranges.append(str(worksheet_range))
             return {"range": worksheet_range}
 
-        source_task_repository = SimpleNamespace(
-            source_sheet_info=SimpleNamespace(
-                spreadsheet_name="sheet",
-                get_sheet_name=lambda _: "tasks",
-            )
+        task_source = SimpleNamespace(
+            source_id="sheet:sheet:tasks:A1:Z2000",
+            source_sheet_name="sheet",
+            read_snapshot=_snapshot,
+            build_tasks_from_snapshot=lambda snapshot: [{"task_id": "1"}] if snapshot else [],
         )
 
         ctx = module.SyncReadmodelPipelineContext(
             store_mode="ydb_primary",
             allow_sync=True,
-            source_task_repository=source_task_repository,
+            task_source=task_source,
             ydb_endpoint="grpcs://example:2135",
             ydb_database="/db",
             ydb_sa_json_credentials=None,
@@ -297,12 +295,10 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
                 full_sync_interval_hours=24,
             ),
             safe_print=lambda *_: None,
-            read_source_snapshot=_snapshot,
             task_to_operational_payload=lambda task: dict(task),
         )
         request = module.SyncReadmodelPipelineRequest(
             mode="timer",
-            tasks=[{"task_id": "1"}],
             force_refresh=False,
         )
         module.run_ydb_sync_readmodel_pipeline(ctx, request)

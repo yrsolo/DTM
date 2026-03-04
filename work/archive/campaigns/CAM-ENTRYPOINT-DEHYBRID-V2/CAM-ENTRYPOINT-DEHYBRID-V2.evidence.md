@@ -19,8 +19,13 @@
 - 2026-03-04: timer path assessment:
   - `planner_runtime_entry` still initializes planner dependencies for standard timer flow.
   - next safe extraction step is moving planner-only assembly behind explicit legacy mode while preserving current timer behavior.
-- 2026-03-04: blocker raised for P03-T002 (owner decision required on timer-path redesign scope).
-  - owner notification sent via `python agent/notify_owner.py --mode blocked ...`.
+- 2026-03-04: owner decision received: redesign timer path now.
+- 2026-03-04: implemented TaskSource-based timer path:
+  - added `src/services/sources/task_source.py`
+  - added `src/services/sources/sheets_normalized_source.py`
+  - `src/services/pipeline_runtime.py` now reads preflight/full snapshot from task source and builds tasks only after full fetch is required.
+  - `src/entrypoints/runtime/planner_runtime_entry.py` standard path uses `build_sheets_normalized_task_source(...)`.
+  - planner wiring is isolated behind explicit `mode=legacy_planner_*` lazy branch.
 - 2026-03-04: tests passed.
   - `python -m unittest tests.api.test_frontend_api_routing tests.api.test_frontend_api_v2_payload -v`
-  - `python -m unittest tests.services.test_pipeline_runtime tests.services.test_sync_source_hash_gate -v`
+  - `python -m unittest tests.services.test_pipeline_runtime tests.services.test_planner_pipeline_job tests.services.test_sync_source_hash_gate -v`
