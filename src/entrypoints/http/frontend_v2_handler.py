@@ -4,35 +4,71 @@ from __future__ import annotations
 
 import hashlib
 import time
+from dataclasses import dataclass
 from typing import Any, Callable
+
+
+@dataclass(frozen=True)
+class FrontendV2HandlerContext:
+    json_response: Callable[[int, dict[str, Any]], dict[str, Any]]
+    html_response: Callable[[int, str], dict[str, Any]]
+    error_response: Callable[..., dict[str, Any]]
+    normalize_path: Callable[[str], str]
+    http_path: Callable[[dict[str, Any]], str]
+    http_method: Callable[[dict[str, Any]], str]
+    query_params: Callable[[dict[str, Any]], dict[str, Any]]
+    path_matches: Callable[[str, set[str]], bool]
+    parse_statuses: Callable[[str], list[str]]
+    parse_limit: Callable[[str, int], int]
+    parse_bool: Callable[[str, bool], bool]
+    parse_window_query: Callable[[dict[str, Any]], tuple[dict[str, Any], dict[str, Any] | None]]
+    ydb_endpoint: str
+    ydb_database: str
+    ydb_sa_json_credentials: str | None
+    ydb_sa_key_file: str | None
+    app_runtime_env: str
+    app_source_sheet_name: str
+    frontend_api_v2_doc: Callable[[], dict[str, Any]]
+    frontend_api_v2_doc_html: Callable[[], str]
+    frontend_readmodel_repo_cls: Any
+
+
+class FrontendV2Handler:
+    """Object HTTP handler for frontend v2 routes."""
+
+    def __init__(self, ctx: FrontendV2HandlerContext) -> None:
+        self._ctx = ctx
+
+    def handle(self, event: dict[str, Any], is_http_event: bool) -> dict[str, Any] | None:
+        return handle_frontend_api_v2_if_requested(event, is_http_event, self._ctx)
 
 
 def handle_frontend_api_v2_if_requested(
     event: dict[str, Any],
     is_http_event: bool,
-    *,
-    json_response: Callable[[int, dict[str, Any]], dict[str, Any]],
-    html_response: Callable[[int, str], dict[str, Any]],
-    error_response: Callable[..., dict[str, Any]],
-    normalize_path: Callable[[str], str],
-    http_path: Callable[[dict[str, Any]], str],
-    http_method: Callable[[dict[str, Any]], str],
-    query_params: Callable[[dict[str, Any]], dict[str, Any]],
-    path_matches: Callable[[str, set[str]], bool],
-    parse_statuses: Callable[[str], list[str]],
-    parse_limit: Callable[[str, int], int],
-    parse_bool: Callable[[str, bool], bool],
-    parse_window_query: Callable[[dict[str, Any]], tuple[dict[str, Any], dict[str, Any] | None]],
-    ydb_endpoint: str,
-    ydb_database: str,
-    ydb_sa_json_credentials: str | None,
-    ydb_sa_key_file: str | None,
-    app_runtime_env: str,
-    app_source_sheet_name: str,
-    frontend_api_v2_doc: Callable[[], dict[str, Any]],
-    frontend_api_v2_doc_html: Callable[[], str],
-    frontend_readmodel_repo_cls: Any,
+    ctx: FrontendV2HandlerContext,
 ) -> dict[str, Any] | None:
+    json_response = ctx.json_response
+    html_response = ctx.html_response
+    error_response = ctx.error_response
+    normalize_path = ctx.normalize_path
+    http_path = ctx.http_path
+    http_method = ctx.http_method
+    query_params = ctx.query_params
+    path_matches = ctx.path_matches
+    parse_statuses = ctx.parse_statuses
+    parse_limit = ctx.parse_limit
+    parse_bool = ctx.parse_bool
+    parse_window_query = ctx.parse_window_query
+    ydb_endpoint = ctx.ydb_endpoint
+    ydb_database = ctx.ydb_database
+    ydb_sa_json_credentials = ctx.ydb_sa_json_credentials
+    ydb_sa_key_file = ctx.ydb_sa_key_file
+    app_runtime_env = ctx.app_runtime_env
+    app_source_sheet_name = ctx.app_source_sheet_name
+    frontend_api_v2_doc = ctx.frontend_api_v2_doc
+    frontend_api_v2_doc_html = ctx.frontend_api_v2_doc_html
+    frontend_readmodel_repo_cls = ctx.frontend_readmodel_repo_cls
     def _stable_owner_id(value: str) -> str:
         seed = str(value or "").strip()
         if not seed:

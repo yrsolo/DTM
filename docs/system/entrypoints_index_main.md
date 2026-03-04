@@ -38,6 +38,7 @@ Important behavior:
 - dispatches HTTP routes via object router `HttpRouter(ctx).dispatch(...)` from `src/entrypoints/http/router.py`
 - runs group-query flow via HTTP handlers and explicit legacy bindings namespace (`src/legacy/http_core_bindings.py`)
 - for planner modes delegates to `execute_runtime(...)`, which constructs `PlannerRuntimeRequest` and calls `run_planner_runtime(request)`
+- runtime credentials/endpoints/tokens are consumed from `AppContext.deps` (bootstrap-owned binding surface)
 
 Key constraints now satisfied:
 - `index.py` does not import or call `main.main`

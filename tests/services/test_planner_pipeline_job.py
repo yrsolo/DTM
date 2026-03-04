@@ -29,9 +29,9 @@ class PlannerPipelineJobTestCase(unittest.IsolatedAsyncioTestCase):
             self.assertTrue(allow_sync)
             return {"summary": {"task_row_issue_count": 0}}
 
-        def run_store_write(**kwargs):  # noqa: ANN003
+        def run_store_write(request):  # noqa: ANN001
             calls["store_write"] += 1
-            self.assertEqual(len(kwargs["tasks"]), 1)
+            self.assertEqual(len(request.tasks), 1)
 
         def run_sync(**kwargs):  # noqa: ANN003
             calls["sync"] += 1

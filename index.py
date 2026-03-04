@@ -4,17 +4,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from config import (
-    DEFAULT_CHAT_ID,
-    KEY_JSON,
-    SHEET_INFO,
-    TG,
-    TG_BOT_USERNAME,
-    YC_SA_JSON_CREDENTIALS,
-    YC_SA_KEY_FILE,
-    YDB_DATABASE,
-    YDB_ENDPOINT,
-)
 from src.adapters.telegram import TelegramNotifier
 from src.app.bootstrap import build_app_context
 from src.app.planner_bootstrap import build_planner_dependencies
@@ -67,12 +56,20 @@ from src.services.errors import AppError, PermanentError, TransientError, UserEr
 
 APP_CONTEXT = build_app_context()
 APP_CFG = APP_CONTEXT.cfg
+APP_DEPS = APP_CONTEXT.deps
 APP_RUNTIME_ENV = APP_CFG.runtime.runtime.env_default
 APP_SOURCE_SHEET_NAME = str(APP_CFG.tables.google_sheets.get("source_sheet_name_default", ""))
 APP_DEBUG_HTTP_EVENT = bool(APP_CFG.runtime.api.get("debug_http_event_default", False))
 APP_TRIGGERS = dict(APP_CFG.runtime.triggers)
-APP_TG_BOT_TOKEN = TG
-APP_TG_DEFAULT_CHAT_ID = DEFAULT_CHAT_ID
+APP_TG_BOT_TOKEN = str(APP_DEPS.get("tg_bot_token", ""))
+APP_TG_BOT_USERNAME = str(APP_DEPS.get("tg_bot_username", ""))
+APP_TG_DEFAULT_CHAT_ID = APP_DEPS.get("default_chat_id")
+APP_KEY_JSON = str(APP_DEPS.get("key_json", ""))
+APP_SHEET_INFO = dict(APP_DEPS.get("sheet_info", {}))
+APP_YDB_ENDPOINT = str(APP_DEPS.get("ydb_endpoint", ""))
+APP_YDB_DATABASE = str(APP_DEPS.get("ydb_database", ""))
+APP_YDB_SA_JSON_CREDENTIALS = APP_DEPS.get("ydb_sa_json_credentials")
+APP_YDB_SA_KEY_FILE = APP_DEPS.get("ydb_sa_key_file")
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
 
@@ -87,15 +84,15 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         }
 
     group_query_ctx = GroupQueryHandlerContext(
-        bot_username=TG_BOT_USERNAME,
+        bot_username=APP_TG_BOT_USERNAME,
         parse_group_query_request=parse_group_query_request,
         notifier_factory=lambda: TelegramNotifier(
             bot_token=APP_TG_BOT_TOKEN,
             default_chat_id=APP_TG_DEFAULT_CHAT_ID,
         ),
         load_work_tasks_for_group_query=lambda: _load_work_tasks_for_group_query(
-            key_json=KEY_JSON,
-            sheet_info=SHEET_INFO,
+            key_json=APP_KEY_JSON,
+            sheet_info=APP_SHEET_INFO,
             app_cfg=APP_CFG,
             build_planner_dependencies=build_planner_dependencies,
         ),
@@ -126,10 +123,10 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         parse_limit=_parse_limit,
         parse_bool=_parse_bool,
         parse_window_query=_parse_window_query,
-        ydb_endpoint=YDB_ENDPOINT,
-        ydb_database=YDB_DATABASE,
-        ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
-        ydb_sa_key_file=YC_SA_KEY_FILE,
+        ydb_endpoint=APP_YDB_ENDPOINT,
+        ydb_database=APP_YDB_DATABASE,
+        ydb_sa_json_credentials=APP_YDB_SA_JSON_CREDENTIALS,
+        ydb_sa_key_file=APP_YDB_SA_KEY_FILE,
         app_runtime_env=APP_RUNTIME_ENV,
         app_source_sheet_name=APP_SOURCE_SHEET_NAME,
         frontend_api_v2_doc=frontend_api_v2_doc,
