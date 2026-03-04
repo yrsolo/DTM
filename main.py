@@ -1,7 +1,6 @@
 """Основной файл для запуска планировщика задач."""
 
 import asyncio
-import json
 
 from config import (
     KEY_JSON,
@@ -22,7 +21,6 @@ from src.app.planner_bootstrap import build_planner_dependencies
 from src.services.usecases.planner_runtime import resolve_run_mode, run_planner_use_case
 from src.app.bootstrap import build_app_context
 from src.adapters.store_ydb import build_operational_store
-from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
 from src.entrypoints.jobs.db_migrate_job import run_db_migrate
 from src.entrypoints.jobs.hash_gate_job import resolve_allow_sync_by_hash_gate
 from src.entrypoints.jobs.legacy_store_write_job import run_legacy_store_write
@@ -30,6 +28,7 @@ from src.entrypoints.jobs.readmodel_freshness import (
     build_readmodel_freshness_marker as _readmodel_freshness_marker,
     safe_print as _safe_print,
 )
+from src.entrypoints.jobs.readmodel_probe_job import run_readmodel_freshness_probe
 from src.entrypoints.jobs.source_snapshot_reader import read_source_snapshot as _read_source_snapshot
 from src.entrypoints.jobs.source_switch_job import apply_task_source_switches
 from src.entrypoints.jobs.task_payloads import (
@@ -127,26 +126,17 @@ async def main(**kwargs):
         ydb_sa_key_file=YC_SA_KEY_FILE,
         log=_safe_print,
     )
-    if mode in {"timer", "test", "morning", "reminders-only", "sync-only"} and (
-        APP_RENDER_SOURCE == "ydb" or APP_NOTIFY_SOURCE == "ydb"
-    ):
-        try:
-            readmodel_repo = FrontendReadmodelRepo(
-                endpoint=YDB_ENDPOINT,
-                database=YDB_DATABASE,
-                sa_json_credentials=YC_SA_JSON_CREDENTIALS,
-                sa_key_file=YC_SA_KEY_FILE,
-                ensure_schema=False,
-            )
-            marker = _readmodel_freshness_marker(readmodel_repo.get_readmodel("frontend_v2:default"))
-            marker["render_source"] = APP_RENDER_SOURCE
-            marker["notify_source"] = APP_NOTIFY_SOURCE
-            _safe_print(
-                "readmodel_freshness="
-                + json.dumps(marker, ensure_ascii=False, sort_keys=True)
-            )
-        except Exception as exc:
-            _safe_print(f"readmodel_freshness_error={str(exc)}")
+    run_readmodel_freshness_probe(
+        mode=mode,
+        render_source=APP_RENDER_SOURCE,
+        notify_source=APP_NOTIFY_SOURCE,
+        ydb_endpoint=YDB_ENDPOINT,
+        ydb_database=YDB_DATABASE,
+        ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+        ydb_sa_key_file=YC_SA_KEY_FILE,
+        marker_builder=_readmodel_freshness_marker,
+        safe_print=_safe_print,
+    )
 
     allow_sync = True
     allow_sync = resolve_allow_sync_by_hash_gate(
