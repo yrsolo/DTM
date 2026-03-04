@@ -30,6 +30,7 @@
 | `src/entrypoints/http/debug_utils.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | debug helper extraction + full smoke pack | high | HTTP debug event-shape logger moved out of index into dedicated module; behavior retained |
 | `src/entrypoints/http/frontend_v2_handler.py`, `tests/api/test_frontend_api_routing.py`, `docs/system/{entrypoints_index_main,module_map}.md` | 2026-03-04 | TeamLead agent | compatibility rollback fix + smoke/docs sync | high | API v1 compatibility restored by mapping supported v1 routes to v2 handlers; docs/tests aligned with alias policy |
 | `src/entrypoints/http/frontend_v2_handler.py`, `tests/api/test_frontend_api_routing.py` | 2026-03-04 | TeamLead agent | v2 availability hotfix + regression smoke | high | API v2 no longer hard-fails when YDB readmodel path is unavailable; runtime falls back to legacy data source and returns payload |
+| `src/entrypoints/http/group_query_tasks_loader.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | group-query task loader extraction + full smoke pack | high | group-query task loading moved out of index into dedicated HTTP helper module; behavior retained |
 
 ## Execution Log
 - CAM-CONFIG-REFORM-V0 activated in `work/now/campaign.md`.
@@ -80,6 +81,8 @@
 - CFG-P02-T043 completed: aligned API routing tests and system docs with v1 compatibility-alias policy and validated full smoke contour.
 - CFG-P02-T044 completed: added API v2 runtime fallback when YDB readmodel access fails under `READMODEL_SOURCE=ydb`; fallback serves payload from legacy source path instead of crashing the request.
 - CFG-P02-T045 completed: added regression test for `READMODEL_SOURCE=ydb` + YDB failure path and validated full smoke contour.
+- CFG-P02-T046 completed: extracted group-query task loading helper from `index.py` into `src/entrypoints/http/group_query_tasks_loader.py`.
+- CFG-P02-T047 completed: executed full smoke contour after group-query task loader extraction (API routing + core/services/adapters unit smoke).
 - P01 scaffold implemented (uncommitted):
   - YAML config files added: `config/runtime.yaml`, `config/tables.yaml`, `config/db.yaml`, `config/llm.yaml`, `config/mapping.yaml`
   - typed schema scaffold: `src/config/schema.py`
@@ -152,6 +155,8 @@
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
   - `python -m py_compile src/entrypoints/http/frontend_v2_handler.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing -v`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile src/entrypoints/http/group_query_tasks_loader.py index.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
   - `python -m py_compile src/entrypoints/http/frontend_v2_handler.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing -v`

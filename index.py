@@ -33,6 +33,9 @@ from src.entrypoints.http.event_parser import http_method as _http_method
 from src.entrypoints.http.event_parser import http_path as _http_path
 from src.entrypoints.http.debug_utils import debug_http_shape as _debug_http_shape
 from src.entrypoints.http.group_query_handler import handle_group_query_if_requested
+from src.entrypoints.http.group_query_tasks_loader import (
+    load_work_tasks_for_group_query as _load_work_tasks_for_group_query,
+)
 from src.entrypoints.http.event_parser import normalize_path as _normalize_path
 from src.entrypoints.http.event_parser import query_params as _query_params
 from src.entrypoints.http.frontend_compat_handlers import (
@@ -74,16 +77,6 @@ APP_TG_DEFAULT_CHAT_ID = DEFAULT_CHAT_ID
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
 
-def _load_work_tasks_for_group_query() -> list[Any]:
-    dependencies = build_planner_dependencies(
-        KEY_JSON,
-        SHEET_INFO,
-        dry_run=True,
-        mock_external=True,
-        cfg=APP_CFG,
-    )
-    return dependencies.task_repository.get_task_by_color_status(["work", "pre_done"])
-
 
 async def _handle_group_query_if_requested(
     request_payload: dict[str, Any], is_http_event: bool
@@ -97,7 +90,12 @@ async def _handle_group_query_if_requested(
             bot_token=APP_TG_BOT_TOKEN,
             default_chat_id=APP_TG_DEFAULT_CHAT_ID,
         ),
-        load_work_tasks_for_group_query=_load_work_tasks_for_group_query,
+        load_work_tasks_for_group_query=lambda: _load_work_tasks_for_group_query(
+            key_json=KEY_JSON,
+            sheet_info=SHEET_INFO,
+            app_cfg=APP_CFG,
+            build_planner_dependencies=build_planner_dependencies,
+        ),
         build_deadlines_reply=build_deadlines_reply,
         build_tasks_reply=build_tasks_reply,
     )
