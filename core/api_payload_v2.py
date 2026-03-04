@@ -79,10 +79,9 @@ def _serialize_task(task: Any) -> dict[str, Any]:
 
 
 def _person_id(person: Person) -> str:
-    raw_id = _to_str(person.id)
-    if raw_id:
-        return raw_id
-    return _stable_id("person", _to_str(person.name))
+    # Keep person id stable and aligned with task owner ids.
+    seed = _to_str(person.name) or _to_str(person.id)
+    return _stable_id("owner", seed) if seed else "owner:unassigned"
 
 
 def _build_owner_lookup(people: Iterable[Person]) -> dict[str, str]:

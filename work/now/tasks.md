@@ -163,10 +163,11 @@
 - [x] APICONTRACT-P04-T002: add fallback payload enrichment from operational rows when readmodel rebuild is unavailable (serve people + business fields from YDB operational data in API response).
 - [x] APICONTRACT-P04-T003: enforce `tasks[].ownerId` reference consistency to `entities.people[].id` in payload builder; add regression test and refresh snapshots.
 - [x] APICONTRACT-P04-T004: detect owner/people id mismatch in stale readmodel snapshots and normalize task `ownerId` from operational rows during API fallback enrichment.
+- [x] APICONTRACT-P04-T005: make `entities.people[].id` stable owner hash (not display name) and keep `tasks[].ownerId` aligned to same id in both normal and fallback paths.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (APICONTRACT-P04-T004 completed: stale readmodel ownerId mismatch now normalized in API fallback path)
+- 2026-03-04 (APICONTRACT-P04-T005 completed: people ids switched to stable owner hash and ownerId linkage preserved)
 

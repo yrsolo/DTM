@@ -10,7 +10,7 @@
       "sheetName": "SourceSheet",
       "sheetUrl": ""
     },
-    "hash": "c870c4ff067486718fdc9aaae70d0f0a6df6155c05a93dd16b641c53751ce4a6",
+    "hash": "04705df72d90a5a835ed2c22189ffcdb9f1f6bdb6d927f576d27de6ca1b72d64",
     "features": {
       "taskHash": true,
       "taskRevision": true,
@@ -48,19 +48,19 @@
   "entities": {
     "people": [
       {
-        "id": "p1",
-        "name": "Designer One",
-        "position": "designer",
-        "links": {
-          "self": "/api/v2/frontend/entities/people/p1"
-        }
-      },
-      {
-        "id": "p2",
+        "id": "4194979ffab99f87",
         "name": "Designer Two",
         "position": "designer",
         "links": {
-          "self": "/api/v2/frontend/entities/people/p2"
+          "self": "/api/v2/frontend/entities/people/4194979ffab99f87"
+        }
+      },
+      {
+        "id": "ae078c0616e907b1",
+        "name": "Designer One",
+        "position": "designer",
+        "links": {
+          "self": "/api/v2/frontend/entities/people/ae078c0616e907b1"
         }
       }
     ],
@@ -109,7 +109,7 @@
       "brand": "BrandA",
       "format_": "Banner",
       "customer": "Cust",
-      "ownerId": "p1",
+      "ownerId": "ae078c0616e907b1",
       "groupId": "9f33f1e54cc26a14",
       "status": "work",
       "date": {

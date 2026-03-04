@@ -10,7 +10,7 @@
       "sheetName": "SourceSheet",
       "sheetUrl": ""
     },
-    "hash": "c0d977ec2a27f5c57f8cd4a61f3f5910c62c46242fe597e63ac021b71b303882",
+    "hash": "c9dd2e0b67ed80ef84f23e75afffde2c3c8507d234a28fbfbae5585f3242a002",
     "features": {
       "taskHash": true,
       "taskRevision": true,
@@ -48,19 +48,19 @@
   "entities": {
     "people": [
       {
-        "id": "p1",
-        "name": "Designer One",
-        "position": "designer",
-        "links": {
-          "self": "/api/v2/frontend/entities/people/p1"
-        }
-      },
-      {
-        "id": "p2",
+        "id": "4194979ffab99f87",
         "name": "Designer Two",
         "position": "designer",
         "links": {
-          "self": "/api/v2/frontend/entities/people/p2"
+          "self": "/api/v2/frontend/entities/people/4194979ffab99f87"
+        }
+      },
+      {
+        "id": "ae078c0616e907b1",
+        "name": "Designer One",
+        "position": "designer",
+        "links": {
+          "self": "/api/v2/frontend/entities/people/ae078c0616e907b1"
         }
       }
     ],
@@ -117,7 +117,7 @@
       "brand": "BrandA",
       "format_": "Banner",
       "customer": "Cust",
-      "ownerId": "p1",
+      "ownerId": "ae078c0616e907b1",
       "groupId": "9f33f1e54cc26a14",
       "status": "work",
       "date": {
@@ -150,7 +150,7 @@
       "brand": "BrandB",
       "format_": "Video",
       "customer": "Cust",
-      "ownerId": "p2",
+      "ownerId": "4194979ffab99f87",
       "groupId": "3f41549ff6592954",
       "status": "pre_done",
       "date": {

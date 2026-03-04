@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import time
 from typing import Any, Callable
 
@@ -41,6 +42,12 @@ def handle_frontend_api_v2_if_requested(
     load_frontend_tasks: Callable[[Any, list[str]], list[Any]],
     build_frontend_api_payload_v2: Callable[..., dict[str, Any]],
 ) -> dict[str, Any] | None:
+    def _stable_owner_id(value: str) -> str:
+        seed = str(value or "").strip()
+        if not seed:
+            return "owner:unassigned"
+        return hashlib.sha1(f"owner:{seed}".encode("utf-8")).hexdigest()[:16]
+
     def _needs_readmodel_self_heal(payload: dict[str, Any]) -> bool:
         filters = payload.get("filters", {}) if isinstance(payload, dict) else {}
         entities = payload.get("entities", {}) if isinstance(payload, dict) else {}
@@ -112,12 +119,14 @@ def handle_frontend_api_v2_if_requested(
                 for task in tasks if isinstance(tasks, list) else []:
                     if not isinstance(task, dict):
                         continue
-                    owner_id = str(task.get("ownerId", "")).strip()
-                    if not owner_id:
+                    owner_name = str(task.get("ownerId", "")).strip()
+                    if not owner_name:
                         continue
+                    owner_id = _stable_owner_id(owner_name)
+                    task["ownerId"] = owner_id
                     people_index[owner_id] = {
                         "id": owner_id,
-                        "name": owner_id,
+                        "name": owner_name,
                         "position": "designer",
                         "links": {
                             "self": f"/api/v2/frontend/entities/people/{owner_id}",
