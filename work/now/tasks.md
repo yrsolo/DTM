@@ -101,10 +101,12 @@
 - [x] CFG-P02-T073: switch test deploy automation to `test` branch flow (`dev -> test -> main`) and add auto PR creation workflow (`test -> main`).
 - [x] CFG-P02-T074: make `force_refresh` also force readmodel snapshot rebuild (ignore `built_from_source_hash` short-circuit) and cover with unit test.
 - [x] CFG-P02-T075: verify live test DB snapshot state locally: operational tasks contain dates; forced readmodel rebuild restores non-null API dates (11/11).
+- [x] PIPE-P01-T001: activate `CAM-PIPELINE-CLEAN-SKELETON-V1` and record first extraction sequence for `main.py` helper thinning.
+- [x] PIPE-P01-T002: extract readmodel freshness helper from `main.py` to `src/entrypoints/jobs/readmodel_freshness.py` without behavior change.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T074..T075 completed: force_refresh now forces readmodel rebuild; live test DB local verification shows readmodel dates restored 11/11)
+- 2026-03-04 (PIPE-P01-T001..T002 completed: pipeline campaign activated, first `main.py` helper extraction delivered with no behavior change)
 

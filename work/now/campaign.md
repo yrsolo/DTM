@@ -1,22 +1,21 @@
-# CAM-CORE-CLEANUP-V1
+# CAM-PIPELINE-CLEAN-SKELETON-V1
 
 ## Status
-Activated from priority queue after CAM-ENTRYPOINT-REFORM-V1 core scope completion.
+Activated from priority queue after stabilization of CAM-CONFIG-REFORM-V0 hotfix track.
 
 ## Goal
-Keep `core/` domain-only and move infra-coupled runtime pieces to adapters/services/app layers.
+Keep runtime entrypoints thin by moving helper logic from `main.py` into dedicated jobs/services modules.
 
 ## Current Phase
-P02: first extraction wave (compatibility-preserving).
+P01: inventory and first helper extractions (compatibility-preserving).
 
 ## Important Rule
-- No business behavior changes during core boundary cleanup.
+- No business behavior changes during pipeline cleanup.
 
 ## Exit Criteria
-- `docs/system/core_boundaries.md` lists domain vs infra-coupled core modules.
-- first extraction targets are defined and tracked in `work/now/tasks.md`.
-- extraction wave for `core/bootstrap.py` and `core/use_cases.py` is completed with shims.
-- no runtime regressions introduced by boundary work.
+- `main.py` orchestration remains behavior-equivalent and helper logic is extracted.
+- extraction targets are tracked in `work/now/tasks.md`.
+- smoke checks stay green after each atomic extraction.
 
 ## Archive
 - closeouts stored in `work/archive/campaigns/*/closeout.md`.

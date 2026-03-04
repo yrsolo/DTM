@@ -2,7 +2,6 @@
 
 import asyncio
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 
 from config import (
@@ -27,6 +26,10 @@ from src.adapters.store_ydb import build_operational_store
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
 from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.entrypoints.jobs.db_migrate_job import run_db_migrate
+from src.entrypoints.jobs.readmodel_freshness import (
+    build_readmodel_freshness_marker as _readmodel_freshness_marker,
+    safe_print as _safe_print,
+)
 from src.entrypoints.jobs.source_snapshot_reader import read_source_snapshot as _read_source_snapshot
 from src.entrypoints.jobs.timer_job import TimerJob
 from src.services.pipeline_runtime import run_ydb_sync_readmodel_pipeline
@@ -63,34 +66,6 @@ def _print_quality_report(report):
         f"reminder_delivery_rate={summary.get('reminder_delivery_rate')} "
         f"reminder_failure_rate={summary.get('reminder_failure_rate')}"
     )
-
-
-def _safe_print(text: str) -> None:
-    print(str(text).encode("ascii", "backslashreplace").decode("ascii"))
-
-
-def _readmodel_freshness_marker(row: object | None) -> dict[str, object]:
-    if row is None:
-        return {
-            "available": False,
-            "readmodel_id": "frontend_v2:default",
-            "generated_at_utc": None,
-            "age_seconds": None,
-            "built_from_source_hash": "",
-            "payload_hash": "",
-        }
-    generated_at = getattr(row, "generated_at_utc", None)
-    age_seconds = None
-    if isinstance(generated_at, datetime):
-        age_seconds = int((datetime.now(timezone.utc) - generated_at).total_seconds())
-    return {
-        "available": True,
-        "readmodel_id": getattr(row, "readmodel_id", "frontend_v2:default"),
-        "generated_at_utc": generated_at.isoformat() if isinstance(generated_at, datetime) else None,
-        "age_seconds": age_seconds,
-        "built_from_source_hash": str(getattr(row, "built_from_source_hash", "") or ""),
-        "payload_hash": str(getattr(row, "payload_hash", "") or ""),
-    }
 
 
 def _task_to_store_record(task) -> dict[str, object]:
