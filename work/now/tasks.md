@@ -161,10 +161,11 @@
 - [x] APICONTRACT-P03-T001: run targeted smoke/tests and sync campaign evidence/tracking.
 - [x] APICONTRACT-P04-T001: add API v2 readmodel self-heal on stale snapshot schema (`frontend_v2_handler` rebuild from operational tables when `people/fields` are missing in cached readmodel).
 - [x] APICONTRACT-P04-T002: add fallback payload enrichment from operational rows when readmodel rebuild is unavailable (serve people + business fields from YDB operational data in API response).
+- [x] APICONTRACT-P04-T003: enforce `tasks[].ownerId` reference consistency to `entities.people[].id` in payload builder; add regression test and refresh snapshots.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (APICONTRACT-P04-T002 completed: stale readmodel payload now enriched from operational rows on API path)
+- 2026-03-04 (APICONTRACT-P04-T003 completed: ownerId now references entities.people ids when people are present)
 

@@ -163,6 +163,22 @@ class FrontendApiV2PayloadTestCase(unittest.TestCase):
         expected = json.loads(SNAPSHOT_WINDOW_PATH.read_text(encoding="utf-8"))
         self.assertEqual(payload, expected)
 
+    def test_owner_ids_reference_people_entities_when_people_included(self) -> None:
+        payload = self._build_payload(
+            tasks=_tasks(),
+            people=_people(),
+            env_name="test",
+            source_sheet_name="SourceSheet",
+            statuses=["work", "pre_done"],
+            limit=100,
+            include_people=True,
+            generated_at=datetime(2026, 3, 2, 20, 0, 0, tzinfo=timezone.utc),
+            synced_at=datetime(2026, 3, 2, 19, 30, 0, tzinfo=timezone.utc),
+        )
+        people_ids = {item["id"] for item in payload["entities"]["people"]}
+        for task in payload["tasks"]:
+            self.assertIn(task["ownerId"], people_ids)
+
 
 if __name__ == "__main__":
     unittest.main()
