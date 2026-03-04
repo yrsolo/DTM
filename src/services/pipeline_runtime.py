@@ -22,6 +22,8 @@ def run_ydb_sync_readmodel_pipeline(
     force_refresh: bool,
     ydb_endpoint: str,
     ydb_database: str,
+    ydb_sa_json_credentials: str | None,
+    ydb_sa_key_file: str | None,
     ydb_migrate_on_start: bool,
     write_legacy_milestones: bool,
     runtime_env: str,
@@ -52,6 +54,8 @@ def run_ydb_sync_readmodel_pipeline(
         operational_repo = OperationalTaskRepo(
             endpoint=ydb_endpoint,
             database=ydb_database,
+            sa_json_credentials=ydb_sa_json_credentials,
+            sa_key_file=ydb_sa_key_file,
             ensure_schema=ydb_migrate_on_start,
         )
         sync_service = YdbSyncService(
@@ -66,6 +70,8 @@ def run_ydb_sync_readmodel_pipeline(
         existing_readmodel = FrontendReadmodelRepo(
             endpoint=ydb_endpoint,
             database=ydb_database,
+            sa_json_credentials=ydb_sa_json_credentials,
+            sa_key_file=ydb_sa_key_file,
             ensure_schema=False,
         ).get_readmodel("frontend_v2:default")
         if existing_readmodel is not None and existing_readmodel.generated_at_utc is not None and not force_refresh:
@@ -131,11 +137,15 @@ def run_ydb_sync_readmodel_pipeline(
             operational_repo = OperationalTaskRepo(
                 endpoint=ydb_endpoint,
                 database=ydb_database,
+                sa_json_credentials=ydb_sa_json_credentials,
+                sa_key_file=ydb_sa_key_file,
                 ensure_schema=False,
             )
             readmodel_repo = FrontendReadmodelRepo(
                 endpoint=ydb_endpoint,
                 database=ydb_database,
+                sa_json_credentials=ydb_sa_json_credentials,
+                sa_key_file=ydb_sa_key_file,
                 ensure_schema=False,
             )
             readmodel_builder = FrontendReadmodelBuilderService(
@@ -165,4 +175,3 @@ def run_ydb_sync_readmodel_pipeline(
         f"sync_deferred={sync_deferred} "
         f"readmodel_deferred={readmodel_deferred}"
     )
-

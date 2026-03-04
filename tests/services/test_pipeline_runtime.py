@@ -53,6 +53,8 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
             force_refresh=False,
             ydb_endpoint="grpcs://example:2135",
             ydb_database="/db",
+            ydb_sa_json_credentials=None,
+            ydb_sa_key_file=None,
             ydb_migrate_on_start=False,
             write_legacy_milestones=False,
             runtime_env="dev",
@@ -85,6 +87,8 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
             force_refresh=False,
             ydb_endpoint="grpcs://example:2135",
             ydb_database="/db",
+            ydb_sa_json_credentials=None,
+            ydb_sa_key_file=None,
             ydb_migrate_on_start=False,
             write_legacy_milestones=False,
             runtime_env="dev",
@@ -102,4 +106,3 @@ class PipelineRuntimeSmokeTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

@@ -8,10 +8,21 @@ from src.adapters.ydb.client import YdbClient
 from src.adapters.ydb.schema import ensure_tables
 
 
-def run_db_migrate(*, endpoint: str, database: str) -> dict[str, Any]:
+def run_db_migrate(
+    *,
+    endpoint: str,
+    database: str,
+    sa_json_credentials: str | None = None,
+    sa_key_file: str | None = None,
+) -> dict[str, Any]:
     """Ensure YDB schema and return migration summary."""
 
-    client = YdbClient(endpoint=endpoint, database=database)
+    client = YdbClient(
+        endpoint=endpoint,
+        database=database,
+        sa_json_credentials=sa_json_credentials,
+        sa_key_file=sa_key_file,
+    )
     ensure_tables(client)
     return {
         "mode": "db_migrate",
@@ -22,4 +33,3 @@ def run_db_migrate(*, endpoint: str, database: str) -> dict[str, Any]:
             "ydb_error_code": client.stats.error_code,
         },
     }
-

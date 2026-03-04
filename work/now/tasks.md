@@ -47,10 +47,30 @@
 - [x] CFG-P02-T019: remove dead API v1 doc builders from `index.py` after v2-only routing enforcement.
 - [x] CFG-P02-T020: rerun extended smoke pack after dead-code removal to confirm no runtime regressions.
 - [x] CFG-P02-T021: sync entrypoint system docs with enforced runtime behavior (`/api/v1/* -> 410 api_v1_discontinued`).
+- [x] CFG-P02-T022: extract API v2 documentation builders from `index.py` into `src/entrypoints/http/frontend_v2_docs.py`.
+- [x] CFG-P02-T023: verify routing and runtime smoke after `index.py` documentation extraction.
+- [x] CFG-P02-T024: extract API v2 request handler logic from `index.py` into `src/entrypoints/http/frontend_v2_handler.py`.
+- [x] CFG-P02-T025: verify full smoke contour after handler extraction (`api/core/services/adapters`).
+- [x] CFG-P02-T026: extract API root and v1-discontinued compatibility handlers from `index.py` into `src/entrypoints/http/frontend_compat_handlers.py`.
+- [x] CFG-P02-T027: verify full smoke contour after compatibility handler extraction (`api/core/services/adapters`).
+- [x] CFG-P02-T028: restore explicit YDB SA credential propagation from entrypoints/services into YDB repos/clients after adapter decoupling from `config.constants`.
+- [x] CFG-P02-T029: verify full smoke contour after YDB credential propagation updates (`api/core/services/adapters`).
+- [x] CFG-P02-T030: extract group-query request handler from `index.py` into `src/entrypoints/http/group_query_handler.py`.
+- [x] CFG-P02-T031: verify full smoke contour after group-query handler extraction (`api/core/services/adapters`).
+- [x] CFG-P02-T032: extract frontend API query parameter parsing helpers from `index.py` into `src/entrypoints/http/frontend_query_params.py`.
+- [x] CFG-P02-T033: verify full smoke contour after frontend query parser extraction (`api/core/services/adapters`).
+- [x] CFG-P02-T034: extract runtime mode/trigger/force-refresh parsing helpers from `index.py` into `src/entrypoints/http/runtime_mode.py`.
+- [x] CFG-P02-T035: verify full smoke contour after runtime mode helper extraction (`api/core/services/adapters`).
+- [x] CFG-P02-T036: extract HTTP response/path helper functions from `index.py` into `src/entrypoints/http/response_utils.py`.
+- [x] CFG-P02-T037: verify full smoke contour after response/path helper extraction (`api/core/services/adapters`).
+- [x] CFG-P02-T038: extract frontend task loading helper from `index.py` into `src/entrypoints/http/frontend_tasks_loader.py`.
+- [x] CFG-P02-T039: verify full smoke contour after frontend task loader extraction (`api/core/services/adapters`).
+- [x] CFG-P02-T040: extract HTTP debug event-shape logger from `index.py` into `src/entrypoints/http/debug_utils.py`.
+- [x] CFG-P02-T041: verify full smoke contour after HTTP debug helper extraction (`api/core/services/adapters`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T021 completed: entrypoint docs aligned with runtime 410 policy for v1 paths)
+- 2026-03-04 (CFG-P02-T040..T041 completed: HTTP debug helper extracted from index; full smoke green)
 

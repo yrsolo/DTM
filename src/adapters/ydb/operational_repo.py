@@ -65,6 +65,8 @@ class OperationalTaskRepo:
         *,
         endpoint: str,
         database: str,
+        sa_json_credentials: str | None = None,
+        sa_key_file: str | None = None,
         tasks_table: str = "dtm_tasks",
         milestones_table: str = "dtm_task_milestones",
         milestones_versions_table: str = "dtm_task_milestones_v",
@@ -73,7 +75,12 @@ class OperationalTaskRepo:
         readmodel_table: str = "dtm_readmodel_frontend_v2",
         ensure_schema: bool = False,
     ) -> None:
-        self.client = YdbClient(endpoint=endpoint, database=database)
+        self.client = YdbClient(
+            endpoint=endpoint,
+            database=database,
+            sa_json_credentials=sa_json_credentials,
+            sa_key_file=sa_key_file,
+        )
         self.tasks_table = tasks_table
         self.milestones_table = milestones_table
         self.milestones_versions_table = milestones_versions_table

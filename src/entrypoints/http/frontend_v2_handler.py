@@ -1,0 +1,161 @@
+"""Frontend API v2 HTTP handler extracted from index entrypoint."""
+
+from __future__ import annotations
+
+import time
+from typing import Any, Callable
+
+from src.services.source_policy import build_source_policy_matrix
+
+
+def handle_frontend_api_v2_if_requested(
+    event: dict[str, Any],
+    is_http_event: bool,
+    *,
+    json_response: Callable[[int, dict[str, Any]], dict[str, Any]],
+    html_response: Callable[[int, str], dict[str, Any]],
+    error_response: Callable[..., dict[str, Any]],
+    normalize_path: Callable[[str], str],
+    http_path: Callable[[dict[str, Any]], str],
+    http_method: Callable[[dict[str, Any]], str],
+    query_params: Callable[[dict[str, Any]], dict[str, Any]],
+    path_matches: Callable[[str, set[str]], bool],
+    parse_statuses: Callable[[str], list[str]],
+    parse_limit: Callable[[str, int], int],
+    parse_bool: Callable[[str, bool], bool],
+    parse_window_query: Callable[[dict[str, Any]], tuple[dict[str, Any], dict[str, Any] | None]],
+    app_readmodel_source: str,
+    ydb_endpoint: str,
+    ydb_database: str,
+    ydb_sa_json_credentials: str | None,
+    ydb_sa_key_file: str | None,
+    app_runtime_env: str,
+    app_source_sheet_name: str,
+    key_json: str,
+    sheet_info: dict[str, str],
+    app_cfg: Any,
+    frontend_api_v2_doc: Callable[[], dict[str, Any]],
+    frontend_api_v2_doc_html: Callable[[], str],
+    frontend_readmodel_repo_cls: Any,
+    build_planner_dependencies: Callable[..., Any],
+    load_frontend_tasks: Callable[[Any, list[str]], list[Any]],
+    build_frontend_api_payload_v2: Callable[..., dict[str, Any]],
+) -> dict[str, Any] | None:
+    if not is_http_event:
+        return None
+    path = normalize_path(http_path(event))
+    method = http_method(event) or "GET"
+    if method == "ANY":
+        method = "GET"
+    if method != "GET":
+        return None
+
+    params = query_params(event)
+    doc_paths = {"/api/v2/frontend/doc"}
+    data_paths = {"/api/v2/frontend"}
+
+    if path_matches(path, doc_paths):
+        if str(params.get("format", "")).strip().lower() == "json":
+            return json_response(200, frontend_api_v2_doc())
+        return html_response(200, frontend_api_v2_doc_html())
+    if not path_matches(path, data_paths):
+        return None
+
+    started = time.perf_counter()
+    statuses = parse_statuses(params.get("statuses", "work,pre_done"))
+    designer = str(params.get("designer", "")).strip()
+    limit = parse_limit(params.get("limit", "200"), 200)
+    include_people = parse_bool(params.get("include_people"), True)
+    window_data, window_error = parse_window_query(params)
+    if window_error is not None:
+        return error_response(
+            400,
+            code=str(window_error.get("code", "invalid_window")),
+            message=str(window_error.get("message", "Invalid time window")),
+            details=window_error.get("details", {}),
+        )
+
+    policy = build_source_policy_matrix(
+        readmodel_source=app_readmodel_source,
+        notify_source="legacy",
+        render_source="legacy",
+    )
+    if policy.api_reads_ydb():
+        repo = frontend_readmodel_repo_cls(
+            endpoint=ydb_endpoint,
+            database=ydb_database,
+            sa_json_credentials=ydb_sa_json_credentials,
+            sa_key_file=ydb_sa_key_file,
+            ensure_schema=False,
+        )
+        row = repo.get_readmodel("frontend_v2:default")
+        if row is None:
+            return error_response(
+                503,
+                code="readmodel_unavailable",
+                message="frontend_v2 readmodel snapshot is not built yet.",
+            )
+        payload = row.payload()
+        if not isinstance(payload, dict):
+            return error_response(
+                500,
+                code="readmodel_payload_invalid",
+                message="Stored readmodel payload is not a valid JSON object.",
+            )
+        payload.setdefault("meta", {})
+        payload["meta"]["readmodelSource"] = "ydb"
+        payload["meta"]["readmodelId"] = row.readmodel_id
+        payload["meta"]["readmodelHash"] = row.payload_hash
+        payload["meta"]["builtFromSourceHash"] = row.built_from_source_hash
+        if any(
+            [
+                designer,
+                limit != 200,
+                include_people is not True,
+                window_data.get("enabled", False),
+                statuses != ["work", "pre_done"],
+            ]
+        ):
+            payload["meta"]["queryFilterApplied"] = False
+            payload["meta"]["queryFilterNote"] = (
+                "YDB readmodel endpoint returns stored snapshot without per-request rebuild."
+            )
+        return json_response(200, payload)
+
+    dependencies = build_planner_dependencies(
+        key_json,
+        sheet_info,
+        dry_run=True,
+        mock_external=True,
+        cfg=app_cfg,
+    )
+    tasks = load_frontend_tasks(dependencies, statuses)
+    people = []
+    if include_people:
+        dependencies.people_manager.get_designers()
+        people = list(dependencies.people_manager.people.values())
+
+    payload = build_frontend_api_payload_v2(
+        tasks=tasks,
+        people=people,
+        env_name=app_runtime_env,
+        source_sheet_name=app_source_sheet_name,
+        statuses=statuses,
+        limit=limit,
+        include_people=include_people,
+        designer_filter=designer,
+        window_start=window_data.get("start"),
+        window_end=window_data.get("end"),
+        window_mode=str(window_data.get("mode", "intersects")),
+    )
+    duration_ms = int((time.perf_counter() - started) * 1000)
+    print(
+        "api_response "
+        f"artifact={payload.get('meta', {}).get('artifact', '')} "
+        f"contractVersion={payload.get('meta', {}).get('contractVersion', '')} "
+        f"generatedAt={payload.get('meta', {}).get('generatedAt', '')} "
+        f"syncedAt={payload.get('meta', {}).get('syncedAt', '')} "
+        f"tasksReturned={payload.get('summary', {}).get('tasksReturned', 0)} "
+        f"duration_ms={duration_ms}"
+    )
+    return json_response(200, payload)

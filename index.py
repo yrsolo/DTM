@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-import json
-import time
 import traceback
-from datetime import datetime
 from typing import Any
 
 from config import (
@@ -14,6 +11,8 @@ from config import (
     SHEET_INFO,
     TG,
     TG_BOT_USERNAME,
+    YC_SA_JSON_CREDENTIALS,
+    YC_SA_KEY_FILE,
     YDB_DATABASE,
     YDB_ENDPOINT,
 )
@@ -32,11 +31,36 @@ from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
 from src.entrypoints.http.event_parser import extract_payload as _extract_payload
 from src.entrypoints.http.event_parser import http_method as _http_method
 from src.entrypoints.http.event_parser import http_path as _http_path
+from src.entrypoints.http.debug_utils import debug_http_shape as _debug_http_shape
+from src.entrypoints.http.group_query_handler import handle_group_query_if_requested
 from src.entrypoints.http.event_parser import normalize_path as _normalize_path
 from src.entrypoints.http.event_parser import query_params as _query_params
+from src.entrypoints.http.frontend_compat_handlers import (
+    handle_frontend_api_root_if_requested,
+    handle_frontend_api_v1_discontinued_if_requested,
+)
+from src.entrypoints.http.frontend_query_params import (
+    parse_bool as _parse_bool,
+    parse_limit as _parse_limit,
+    parse_statuses as _parse_statuses,
+    parse_window_query as _parse_window_query,
+)
+from src.entrypoints.http.frontend_tasks_loader import load_frontend_tasks as _load_frontend_tasks
+from src.entrypoints.http.runtime_mode import (
+    extract_force_refresh as _extract_force_refresh,
+    extract_run_mode as _extract_run_mode,
+    resolve_trigger_mode as _resolve_trigger_mode,
+)
+from src.entrypoints.http.response_utils import (
+    error_response as _error_response,
+    html_response as _html_response,
+    json_response as _json_response,
+    path_matches as _path_matches,
+)
+from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_api_v2_doc_html
+from src.entrypoints.http.frontend_v2_handler import handle_frontend_api_v2_if_requested
 from src.entrypoints.http.router import dispatch_http
 from src.services.errors import AppError, PermanentError, TransientError, UserError
-from src.services.source_policy import build_source_policy_matrix
 
 APP_CONTEXT = build_app_context()
 APP_CFG = APP_CONTEXT.cfg
@@ -64,673 +88,95 @@ def _load_work_tasks_for_group_query() -> list[Any]:
 async def _handle_group_query_if_requested(
     request_payload: dict[str, Any], is_http_event: bool
 ) -> bool:
-    if not is_http_event:
-        return False
-
-    query = parse_group_query_request(request_payload, bot_username=TG_BOT_USERNAME)
-    if query is None:
-        return False
-
-    notifier = TelegramNotifier(bot_token=APP_TG_BOT_TOKEN, default_chat_id=APP_TG_DEFAULT_CHAT_ID)
-    try:
-        tasks = _load_work_tasks_for_group_query()
-        if query.action == "deadlines":
-            reply = build_deadlines_reply(tasks)
-        else:
-            reply = build_tasks_reply(tasks, requester_name=query.requester_name)
-        await notifier.send_message(query.chat_id, reply, parse_mode=None)
-        return True
-    except Exception as error:
-        print(f"group_query_error={error}")
-        await notifier.send_message(
-            query.chat_id,
-            "Не смогла собрать список задач. Попробуйте еще раз через минуту.",
-            parse_mode=None,
-        )
-        return True
-
-
-def _json_response(status_code: int, payload: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "statusCode": status_code,
-        "headers": {"Content-Type": "application/json; charset=utf-8"},
-        "body": json.dumps(payload, ensure_ascii=False),
-    }
-
-
-def _error_response(
-    status_code: int, *, code: str, message: str, details: dict[str, Any] | None = None
-) -> dict[str, Any]:
-    return _json_response(
-        status_code,
-        {
-            "error": {
-                "code": code,
-                "message": message,
-                "details": details or {},
-            }
-        },
+    return await handle_group_query_if_requested(
+        request_payload,
+        is_http_event,
+        bot_username=TG_BOT_USERNAME,
+        parse_group_query_request=parse_group_query_request,
+        notifier_factory=lambda: TelegramNotifier(
+            bot_token=APP_TG_BOT_TOKEN,
+            default_chat_id=APP_TG_DEFAULT_CHAT_ID,
+        ),
+        load_work_tasks_for_group_query=_load_work_tasks_for_group_query,
+        build_deadlines_reply=build_deadlines_reply,
+        build_tasks_reply=build_tasks_reply,
     )
-
-
-def _debug_http_shape(event: dict[str, Any], is_http_event: bool) -> None:
-    if not APP_DEBUG_HTTP_EVENT:
-        return
-    if not isinstance(event, dict):
-        print("api_debug non_dict_event")
-        return
-    request_context = event.get("requestContext")
-    rc_keys = sorted(request_context.keys()) if isinstance(request_context, dict) else []
-    params = event.get("params")
-    params_keys = sorted(params.keys()) if isinstance(params, dict) else []
-    qs = _query_params(event)
-    print(
-        "api_debug "
-        f"is_http={is_http_event} "
-        f"method={_http_method(event)!r} "
-        f"path={_http_path(event)!r} "
-        f"norm_path={_normalize_path(_http_path(event))!r} "
-        f"event_keys={sorted(event.keys())} "
-        f"request_context_keys={rc_keys} "
-        f"params_keys={params_keys} "
-        f"query_keys={sorted(qs.keys()) if isinstance(qs, dict) else []}"
-    )
-
-
-def _html_response(status_code: int, html: str) -> dict[str, Any]:
-    return {
-        "statusCode": status_code,
-        "headers": {"Content-Type": "text/html; charset=utf-8"},
-        "body": html,
-    }
-
-
-def _resolve_trigger_mode(event: Any) -> str:
-    try:
-        messages = event.get("messages")
-        trigger_id = str(messages[0]["details"]["trigger_id"]).strip()
-    except (TypeError, KeyError, IndexError):
-        return ""
-    return str(APP_TRIGGERS.get(trigger_id, "")).strip().lower()
-
-
-def _parse_statuses(raw: str) -> list[str]:
-    items = [part.strip() for part in str(raw or "").split(",") if part.strip()]
-    return items or ["work", "pre_done"]
-
-
-def _parse_limit(raw: str, default: int = 200) -> int:
-    try:
-        value = int(str(raw or default))
-    except ValueError:
-        value = default
-    return max(1, min(value, 1000))
-
-
-def _parse_bool(raw: str, default: bool = True) -> bool:
-    if raw is None:
-        return default
-    return str(raw).strip().lower() in {"1", "true", "yes", "y"}
-
-
-def _parse_window_query(params: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any] | None]:
-    window_start_raw = str(params.get("window_start", "")).strip()
-    window_end_raw = str(params.get("window_end", "")).strip()
-    window_mode = str(params.get("window_mode", "")).strip() or "intersects"
-
-    if not window_start_raw and not window_end_raw:
-        return (
-            {
-                "enabled": False,
-                "start": None,
-                "end": None,
-                "mode": window_mode,
-            },
-            None,
-        )
-
-    if not window_start_raw or not window_end_raw:
-        return {}, {
-            "code": "invalid_window",
-            "message": "Both window_start and window_end are required when window is enabled.",
-            "details": {
-                "window_start": window_start_raw or None,
-                "window_end": window_end_raw or None,
-            },
-        }
-
-    if window_mode != "intersects":
-        return {}, {
-            "code": "invalid_window",
-            "message": "Unsupported window_mode. Allowed value: intersects.",
-            "details": {"window_mode": window_mode},
-        }
-
-    try:
-        window_start = datetime.strptime(window_start_raw, "%Y-%m-%d").date()
-        window_end = datetime.strptime(window_end_raw, "%Y-%m-%d").date()
-    except ValueError:
-        return {}, {
-            "code": "invalid_window",
-            "message": "window_start/window_end must use YYYY-MM-DD format.",
-            "details": {
-                "window_start": window_start_raw,
-                "window_end": window_end_raw,
-            },
-        }
-
-    if window_start > window_end:
-        return {}, {
-            "code": "invalid_window",
-            "message": "window_start must be less than or equal to window_end.",
-            "details": {
-                "window_start": window_start_raw,
-                "window_end": window_end_raw,
-            },
-        }
-
-    return (
-        {
-            "enabled": True,
-            "start": window_start,
-            "end": window_end,
-            "mode": window_mode,
-        },
-        None,
-    )
-
-
-def _load_frontend_tasks(dependencies: Any, statuses: list[str]) -> list[Any]:
-    policy = build_source_policy_matrix(
-        readmodel_source=APP_READMODEL_SOURCE,
-        notify_source="legacy",
-        render_source="legacy",
-    )
-    if not policy.api_reads_ydb():
-        return dependencies.task_repository.get_task_by_color_status(statuses)
-    task_repo = YdbOperationalTaskRepository(endpoint=YDB_ENDPOINT, database=YDB_DATABASE)
-    return task_repo.get_task_by_color_status(statuses)
-
-
-def _extract_run_mode(
-    event: dict[str, Any],
-    request_payload: dict[str, Any],
-    is_http_event: bool,
-) -> str:
-    raw_mode = str(request_payload.get("mode", "")).strip().lower()
-    if not raw_mode and is_http_event:
-        params = _query_params(event)
-        raw_mode = str(params.get("mode", "")).strip().lower()
-    if raw_mode not in ALLOWED_RUN_MODES:
-        return ""
-    return raw_mode
-
-
-def _extract_force_refresh(
-    event: dict[str, Any],
-    request_payload: dict[str, Any],
-    is_http_event: bool,
-) -> bool:
-    payload_value = request_payload.get("force_refresh")
-    if payload_value is not None:
-        return _parse_bool(str(payload_value), default=False)
-    if is_http_event:
-        params = _query_params(event)
-        return _parse_bool(params.get("force_refresh"), default=False)
-    return False
-
-
-def _frontend_api_v2_doc() -> dict[str, Any]:
-    return {
-        "artifact": "dtm_frontend_api_v2_doc",
-        "version": "2.0.1",
-        "default_root_doc_version": "v2",
-        "endpoints": [
-            {
-                "method": "GET",
-                "path": "/api/v2/frontend",
-                "description": "Основной endpoint для фронтенда (payload v2).",
-            },
-            {
-                "method": "GET",
-                "path": "/api/v2/frontend/doc",
-                "description": "HTML-страница с документацией по контракту v2.",
-            },
-            {
-                "method": "GET",
-                "path": "/api/v2/frontend/doc?format=json",
-                "description": "JSON-представление документации по контракту v2.",
-            },
-        ],
-        "query": {
-            "statuses": {
-                "type": "string",
-                "default": "work,pre_done",
-                "description": "Список статусов через запятую.",
-                "example": "work,pre_done,wait",
-            },
-            "designer": {
-                "type": "string",
-                "default": "",
-                "description": "Фильтр по имени дизайнера (без учета регистра).",
-                "example": "Муратов Эдуард",
-            },
-            "limit": {
-                "type": "int",
-                "default": 200,
-                "range": "1..1000",
-                "description": "Максимальное количество задач в ответе.",
-            },
-            "include_people": {
-                "type": "bool",
-                "default": True,
-                "accepted_values": ["1", "0", "true", "false", "yes", "no"],
-                "description": "Добавлять блок entities.people в ответ.",
-            },
-            "window_start": {
-                "type": "string",
-                "format": "YYYY-MM-DD",
-                "default": None,
-                "description": "Начало временного окна (включительно) для фильтра задач.",
-            },
-            "window_end": {
-                "type": "string",
-                "format": "YYYY-MM-DD",
-                "default": None,
-                "description": "Конец временного окна (включительно) для фильтра задач.",
-            },
-            "window_mode": {
-                "type": "string",
-                "default": "intersects",
-                "allowed_values": ["intersects"],
-                "description": "Режим окна: start или end задачи должен попадать в окно.",
-            },
-        },
-        "top_level": ["meta", "filters", "summary", "entities", "tasks"],
-        "field_status": {
-            "meta": "implemented",
-            "filters": "implemented",
-            "summary": "implemented",
-            "entities": "implemented",
-            "tasks": "implemented",
-            "tasks[].milestones": "implemented",
-            "tasks[].hash": "reserved",
-            "tasks[].revision": "reserved",
-            "tasks[].links.sheetRowUrl": "reserved",
-            "entities.tags[]": "reserved",
-        },
-        "response_fields": {
-            "meta": {
-                "artifact": "string (dtm_frontend_api_v2)",
-                "contractVersion": "string (2.x.x)",
-                "generatedAt": "ISO-8601 UTC datetime",
-                "syncedAt": "ISO-8601 UTC datetime",
-                "source": {
-                    "env": "string (dev|test|prod)",
-                    "sourceId": "string",
-                    "sheetName": "string|null",
-                    "sheetUrl": "string|null",
-                },
-                "hash": "sha256 payload hash",
-                "features": {
-                    "taskHash": "bool",
-                    "taskRevision": "bool",
-                    "entities": "bool",
-                },
-                "paging": {"limit": "int", "nextCursor": "string|null"},
-            },
-            "filters": {
-                "statuses": "string[]",
-                "designer": "string",
-                "limit": "int",
-                "include_people": "bool",
-                "window": {
-                    "enabled": "bool",
-                    "start": "YYYY-MM-DD|null",
-                    "end": "YYYY-MM-DD|null",
-                    "mode": "string(intersects)",
-                },
-            },
-            "summary": {
-                "tasksTotal": "int",
-                "tasksReturned": "int",
-                "peopleTotal": "int",
-                "groupsTotal": "int",
-                "milestonesTotal": "int",
-            },
-            "entities": {
-                "people[]": {
-                    "id": "string",
-                    "name": "string",
-                    "position": "string|null",
-                    "links.self": "string",
-                },
-                "groups[]": {
-                    "id": "string",
-                    "name": "string",
-                    "links.self": "string",
-                },
-                "tags[]": "string[]",
-                "enums.status": "map<string,string>",
-                "enums.statusGroups": "map<string,string[]>",
-            },
-            "tasks[]": {
-                "id": "string",
-                "title": "string",
-                "ownerId": "string|null",
-                "groupId": "string|null",
-                "status": "string",
-                "date.start": "YYYY-MM-DD|null",
-                "date.end": "YYYY-MM-DD|null",
-                "date.nextDue": "YYYY-MM-DD|null",
-                "tags": "string[]",
-                "hash": "string|null (reserved)",
-                "revision": "string|int|null (reserved)",
-                "links.sheetRowUrl": "string|null",
-                "links.self": "string",
-                "milestones[]": {
-                    "type": "string",
-                    "planned": "YYYY-MM-DD|null",
-                    "actual": "YYYY-MM-DD|null",
-                    "status": "planned|done|unknown|skipped",
-                },
-            },
-        },
-        "task_fields": [
-            "id",
-            "title",
-            "ownerId",
-            "groupId",
-            "status",
-            "date",
-            "tags",
-            "hash",
-            "revision",
-            "links",
-        ],
-    }
-
-
-def _frontend_api_v2_doc_html() -> str:
-    return """<!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>DTM Frontend API v2</title>
-  <style>
-    body { margin: 0; font-family: Segoe UI, Arial, sans-serif; background: #f6f8fb; color: #17212b; }
-    .wrap { max-width: 1080px; margin: 0 auto; padding: 24px; }
-    .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 16px rgba(0,0,0,.06); margin-bottom: 16px; }
-    h1, h2, h3 { margin: 0 0 10px; }
-    p { margin: 8px 0; line-height: 1.45; }
-    code { background: #eef2f7; padding: 2px 6px; border-radius: 6px; }
-    pre { margin: 0; padding: 12px; background: #0f172a; color: #e2e8f0; border-radius: 10px; overflow: auto; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { text-align: left; border-bottom: 1px solid #e5e7eb; padding: 8px; vertical-align: top; }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <h1>DTM Frontend API v2</h1>
-      <p>Контракт: <code>2.0.1</code></p>
-      <p>Структура ответа: <code>meta + filters + summary + entities + tasks</code>.</p>
-    </div>
-    <div class="card">
-      <h2>Endpoints</h2>
-      <table>
-        <thead><tr><th>Method</th><th>Path</th><th>Описание</th></tr></thead>
-        <tbody>
-          <tr><td>GET</td><td><code>/api/v2/frontend</code></td><td>Основной endpoint для фронтенда (контракт v2).</td></tr>
-          <tr><td>GET</td><td><code>/api/v2/frontend/doc</code></td><td>HTML-страница с документацией.</td></tr>
-          <tr><td>GET</td><td><code>/api/v2/frontend/doc?format=json</code></td><td>JSON-представление документации.</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="card">
-      <h2>Параметры запроса</h2>
-      <table>
-        <thead><tr><th>Параметр</th><th>Тип</th><th>Default</th><th>Описание</th></tr></thead>
-        <tbody>
-          <tr><td><code>statuses</code></td><td>string</td><td><code>work,pre_done</code></td><td>Список статусов через запятую, например <code>work,pre_done,wait</code>.</td></tr>
-          <tr><td><code>designer</code></td><td>string</td><td><code></code></td><td>Фильтр по имени дизайнера (без учета регистра).</td></tr>
-          <tr><td><code>limit</code></td><td>int</td><td><code>200</code></td><td>Лимит задач в ответе, диапазон <code>1..1000</code>.</td></tr>
-          <tr><td><code>include_people</code></td><td>bool</td><td><code>true</code></td><td>Включать/исключать блок <code>entities.people</code>.</td></tr>
-          <tr><td><code>window_start</code></td><td>string</td><td><code>null</code></td><td>Начало окна в формате <code>YYYY-MM-DD</code>.</td></tr>
-          <tr><td><code>window_end</code></td><td>string</td><td><code>null</code></td><td>Конец окна в формате <code>YYYY-MM-DD</code>.</td></tr>
-          <tr><td><code>window_mode</code></td><td>string</td><td><code>intersects</code></td><td>Включает задачу, если <code>start</code> или <code>end</code> попадает в окно.</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="card">
-      <h2>Поля ответа</h2>
-      <table>
-        <thead><tr><th>Поле</th><th>Тип</th><th>Статус</th><th>Описание</th></tr></thead>
-        <tbody>
-          <tr><td><code>meta</code></td><td>object</td><td>implemented</td><td>Метаданные ответа: версия контракта, время генерации, hash, source и paging.</td></tr>
-          <tr><td><code>meta.artifact</code></td><td>string</td><td>implemented</td><td>Идентификатор артефакта: <code>dtm_frontend_api_v2</code>.</td></tr>
-          <tr><td><code>meta.contractVersion</code></td><td>string</td><td>implemented</td><td>Версия контракта API v2.</td></tr>
-          <tr><td><code>meta.generatedAt</code></td><td>datetime</td><td>implemented</td><td>UTC время генерации payload.</td></tr>
-          <tr><td><code>meta.syncedAt</code></td><td>datetime</td><td>implemented</td><td>UTC время последней синхронизации источника.</td></tr>
-          <tr><td><code>meta.source</code></td><td>object</td><td>implemented</td><td>Контур, id источника, имя и ссылка на таблицу (если доступны).</td></tr>
-          <tr><td><code>meta.hash</code></td><td>string</td><td>implemented</td><td>SHA256 от стабильной сериализации payload.</td></tr>
-          <tr><td><code>filters</code></td><td>object</td><td>implemented</td><td>Echo примененных параметров запроса.</td></tr>
-          <tr><td><code>summary</code></td><td>object</td><td>implemented</td><td>Счетчики: задачи, люди, группы.</td></tr>
-          <tr><td><code>entities.people[]</code></td><td>array</td><td>implemented</td><td>Справочник людей: <code>id</code>, <code>name</code>, <code>position</code>, <code>links.self</code>.</td></tr>
-          <tr><td><code>entities.groups[]</code></td><td>array</td><td>implemented</td><td>Справочник групп/проектов: <code>id</code>, <code>name</code>, <code>links.self</code>.</td></tr>
-          <tr><td><code>entities.tags[]</code></td><td>array</td><td>reserved</td><td>Теги в payload (зарезервировано, пока отдается пустым).</td></tr>
-          <tr><td><code>entities.enums</code></td><td>object</td><td>implemented</td><td>Словари статусов и групп статусов для UI.</td></tr>
-          <tr><td><code>tasks[]</code></td><td>array</td><td>implemented</td><td>Основной список задач.</td></tr>
-          <tr><td><code>tasks[].id</code></td><td>string</td><td>implemented</td><td>Стабильный идентификатор задачи.</td></tr>
-          <tr><td><code>tasks[].title</code></td><td>string</td><td>implemented</td><td>Название задачи.</td></tr>
-          <tr><td><code>tasks[].ownerId</code></td><td>string|null</td><td>implemented</td><td>ID владельца из <code>entities.people</code>.</td></tr>
-          <tr><td><code>tasks[].groupId</code></td><td>string|null</td><td>implemented</td><td>ID группы из <code>entities.groups</code>.</td></tr>
-          <tr><td><code>tasks[].status</code></td><td>string</td><td>implemented</td><td>Нормализованный статус задачи.</td></tr>
-          <tr><td><code>tasks[].date.start/end/nextDue</code></td><td>date|null</td><td>implemented</td><td>Ключевые даты задачи в формате <code>YYYY-MM-DD</code>.</td></tr>
-          <tr><td><code>tasks[].tags</code></td><td>array</td><td>implemented</td><td>Теги задачи.</td></tr>
-          <tr><td><code>tasks[].hash</code></td><td>string|null</td><td>reserved</td><td>Резерв под hash задачи для инкрементальных обновлений (сейчас <code>null</code>).</td></tr>
-          <tr><td><code>tasks[].revision</code></td><td>string|int|null</td><td>reserved</td><td>Резерв под версию/ревизию задачи (сейчас <code>null</code>).</td></tr>
-          <tr><td><code>tasks[].links</code></td><td>object</td><td>implemented</td><td>Ссылки на self endpoint и source row (если доступно).</td></tr>
-          <tr><td><code>tasks[].milestones[]</code></td><td>array</td><td>implemented</td><td>Milestones задачи, всегда присутствует (если нет данных — <code>[]</code>).</td></tr>
-          <tr><td><code>tasks[].milestones[].type</code></td><td>string</td><td>implemented</td><td>Тип milestone, например <code>storyboard</code> или <code>animatic</code>.</td></tr>
-          <tr><td><code>tasks[].milestones[].planned</code></td><td>date|null</td><td>implemented</td><td>Плановая дата milestone.</td></tr>
-          <tr><td><code>tasks[].milestones[].actual</code></td><td>date|null</td><td>implemented</td><td>Фактическая дата milestone (если есть).</td></tr>
-          <tr><td><code>tasks[].milestones[].status</code></td><td>string</td><td>implemented</td><td><code>planned|done|unknown|skipped</code>.</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="card">
-      <h2>Пример запроса</h2>
-      <pre>GET /api/v2/frontend?statuses=work,pre_done&limit=100&include_people=true&window_start=2026-03-01&window_end=2026-03-31</pre>
-    </div>
-    <div class="card">
-      <h2>Минимальный пример ответа</h2>
-      <pre>{
-  "meta": {"artifact": "dtm_frontend_api_v2", "contractVersion": "2.0.1"},
-  "filters": {"statuses": ["work", "pre_done"], "designer": null, "limit": 100, "include_people": true, "window": {"enabled": false, "start": null, "end": null, "mode": "intersects"}},
-  "summary": {"tasksTotal": 0, "tasksReturned": 0, "peopleTotal": 0, "groupsTotal": 0, "milestonesTotal": 0},
-  "entities": {"people": [], "groups": [], "tags": [], "enums": {"status": {}, "statusGroups": {}}},
-  "tasks": []
-}</pre>
-    </div>
-  </div>
-</body>
-</html>
-"""
-
-def _path_matches(path: str, candidates: set[str]) -> bool:
-    normalized = _normalize_path(path)
-    if normalized in candidates:
-        return True
-    return any(normalized.endswith(candidate) for candidate in candidates)
 
 
 def _handle_frontend_api_if_requested(
     event: dict[str, Any], is_http_event: bool
 ) -> dict[str, Any] | None:
-    if not is_http_event:
-        return None
-    path = _normalize_path(_http_path(event))
-    method = _http_method(event) or "GET"
-    if method == "ANY":
-        method = "GET"
-    if method != "GET":
-        return None
-
-    v1_paths = {
-        "/api/v1",
-        "/api/v1/frontend",
-        "/api/v1/read-model",
-        "/api/v1/frontend/doc",
-        "/api/v1/read-model/doc",
-    }
-    if not _path_matches(path, v1_paths):
-        return None
-
-    return _error_response(
-        410,
-        code="api_v1_discontinued",
-        message="API v1 is discontinued. Use /api/v2/frontend and /api/v2/frontend/doc.",
+    return handle_frontend_api_v1_discontinued_if_requested(
+        event,
+        is_http_event,
+        error_response=_error_response,
+        normalize_path=_normalize_path,
+        http_path=_http_path,
+        http_method=_http_method,
+        path_matches=lambda path, candidates: _path_matches(path, candidates, _normalize_path),
     )
 
 
 def _handle_frontend_api_v2_if_requested(
     event: dict[str, Any], is_http_event: bool
 ) -> dict[str, Any] | None:
-    if not is_http_event:
-        return None
-    path = _normalize_path(_http_path(event))
-    method = _http_method(event) or "GET"
-    if method == "ANY":
-        method = "GET"
-    if method != "GET":
-        return None
-
-    params = _query_params(event)
-    doc_paths = {"/api/v2/frontend/doc"}
-    data_paths = {"/api/v2/frontend"}
-
-    if _path_matches(path, doc_paths):
-        if str(params.get("format", "")).strip().lower() == "json":
-            return _json_response(200, _frontend_api_v2_doc())
-        return _html_response(200, _frontend_api_v2_doc_html())
-    if not _path_matches(path, data_paths):
-        return None
-
-    started = time.perf_counter()
-    statuses = _parse_statuses(params.get("statuses", "work,pre_done"))
-    designer = str(params.get("designer", "")).strip()
-    limit = _parse_limit(params.get("limit", "200"))
-    include_people = _parse_bool(params.get("include_people"), default=True)
-    window_data, window_error = _parse_window_query(params)
-    if window_error is not None:
-        return _error_response(
-            400,
-            code=str(window_error.get("code", "invalid_window")),
-            message=str(window_error.get("message", "Invalid time window")),
-            details=window_error.get("details", {}),
-        )
-
-    policy = build_source_policy_matrix(readmodel_source=APP_READMODEL_SOURCE, notify_source="legacy", render_source="legacy")
-    if policy.api_reads_ydb():
-        repo = FrontendReadmodelRepo(
-            endpoint=YDB_ENDPOINT,
-            database=YDB_DATABASE,
-            ensure_schema=False,
-        )
-        row = repo.get_readmodel("frontend_v2:default")
-        if row is None:
-            return _error_response(
-                503,
-                code="readmodel_unavailable",
-                message="frontend_v2 readmodel snapshot is not built yet.",
-            )
-        payload = row.payload()
-        if not isinstance(payload, dict):
-            return _error_response(
-                500,
-                code="readmodel_payload_invalid",
-                message="Stored readmodel payload is not a valid JSON object.",
-            )
-        payload.setdefault("meta", {})
-        payload["meta"]["readmodelSource"] = "ydb"
-        payload["meta"]["readmodelId"] = row.readmodel_id
-        payload["meta"]["readmodelHash"] = row.payload_hash
-        payload["meta"]["builtFromSourceHash"] = row.built_from_source_hash
-        if any(
-            [
-                designer,
-                limit != 200,
-                include_people is not True,
-                window_data.get("enabled", False),
-                statuses != ["work", "pre_done"],
-            ]
-        ):
-            payload["meta"]["queryFilterApplied"] = False
-            payload["meta"]["queryFilterNote"] = (
-                "YDB readmodel endpoint returns stored snapshot without per-request rebuild."
-            )
-        return _json_response(200, payload)
-
-    dependencies = build_planner_dependencies(
-        KEY_JSON,
-        SHEET_INFO,
-        dry_run=True,
-        mock_external=True,
-        cfg=APP_CFG,
+    return handle_frontend_api_v2_if_requested(
+        event,
+        is_http_event,
+        json_response=_json_response,
+        html_response=_html_response,
+        error_response=_error_response,
+        normalize_path=_normalize_path,
+        http_path=_http_path,
+        http_method=_http_method,
+        query_params=_query_params,
+        path_matches=lambda path, candidates: _path_matches(path, candidates, _normalize_path),
+        parse_statuses=_parse_statuses,
+        parse_limit=_parse_limit,
+        parse_bool=_parse_bool,
+        parse_window_query=_parse_window_query,
+        app_readmodel_source=APP_READMODEL_SOURCE,
+        ydb_endpoint=YDB_ENDPOINT,
+        ydb_database=YDB_DATABASE,
+        ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+        ydb_sa_key_file=YC_SA_KEY_FILE,
+        app_runtime_env=APP_RUNTIME_ENV,
+        app_source_sheet_name=APP_SOURCE_SHEET_NAME,
+        key_json=KEY_JSON,
+        sheet_info=SHEET_INFO,
+        app_cfg=APP_CFG,
+        frontend_api_v2_doc=frontend_api_v2_doc,
+        frontend_api_v2_doc_html=frontend_api_v2_doc_html,
+        frontend_readmodel_repo_cls=FrontendReadmodelRepo,
+        build_planner_dependencies=build_planner_dependencies,
+        load_frontend_tasks=lambda dependencies, statuses: _load_frontend_tasks(
+            dependencies,
+            statuses,
+            app_readmodel_source=APP_READMODEL_SOURCE,
+            ydb_endpoint=YDB_ENDPOINT,
+            ydb_database=YDB_DATABASE,
+            ydb_sa_json_credentials=YC_SA_JSON_CREDENTIALS,
+            ydb_sa_key_file=YC_SA_KEY_FILE,
+            ydb_operational_task_repo_cls=YdbOperationalTaskRepository,
+        ),
+        build_frontend_api_payload_v2=build_frontend_api_payload_v2,
     )
-    tasks = _load_frontend_tasks(dependencies, statuses)
-    people = []
-    if include_people:
-        dependencies.people_manager.get_designers()
-        people = list(dependencies.people_manager.people.values())
-
-    payload = build_frontend_api_payload_v2(
-        tasks=tasks,
-        people=people,
-        env_name=APP_RUNTIME_ENV,
-        source_sheet_name=APP_SOURCE_SHEET_NAME,
-        statuses=statuses,
-        limit=limit,
-        include_people=include_people,
-        designer_filter=designer,
-        window_start=window_data.get("start"),
-        window_end=window_data.get("end"),
-        window_mode=str(window_data.get("mode", "intersects")),
-    )
-    duration_ms = int((time.perf_counter() - started) * 1000)
-    print(
-        "api_response "
-        f"artifact={payload.get('meta', {}).get('artifact', '')} "
-        f"contractVersion={payload.get('meta', {}).get('contractVersion', '')} "
-        f"generatedAt={payload.get('meta', {}).get('generatedAt', '')} "
-        f"syncedAt={payload.get('meta', {}).get('syncedAt', '')} "
-        f"tasksReturned={payload.get('summary', {}).get('tasksReturned', 0)} "
-        f"duration_ms={duration_ms}"
-    )
-    return _json_response(200, payload)
 
 
 def _handle_api_root_if_requested(
     event: dict[str, Any], is_http_event: bool
 ) -> dict[str, Any] | None:
-    if not is_http_event:
-        return None
-    method = _http_method(event) or "GET"
-    if method == "ANY":
-        method = "GET"
-    if method != "GET":
-        return None
-    path = _normalize_path(_http_path(event))
-    if path not in {"/"}:
-        return None
-    params = _query_params(event)
-    as_json = str(params.get("format", "")).strip().lower() == "json"
-    return (
-        _json_response(200, _frontend_api_v2_doc())
-        if as_json
-        else _html_response(200, _frontend_api_v2_doc_html())
+    return handle_frontend_api_root_if_requested(
+        event,
+        is_http_event,
+        json_response=_json_response,
+        html_response=_html_response,
+        normalize_path=_normalize_path,
+        http_path=_http_path,
+        http_method=_http_method,
+        query_params=_query_params,
+        frontend_api_v2_doc=frontend_api_v2_doc,
+        frontend_api_v2_doc_html=frontend_api_v2_doc_html,
     )
 
 
@@ -762,9 +208,23 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
     if http_response is not None:
         return http_response
 
-    _debug_http_shape(event_dict, is_http_event)
-    run_mode = _extract_run_mode(event_dict, request_payload, is_http_event)
-    trigger_mode = _resolve_trigger_mode(event_dict)
+    _debug_http_shape(
+        event_dict,
+        is_http_event,
+        debug_enabled=APP_DEBUG_HTTP_EVENT,
+        http_method=_http_method,
+        http_path=_http_path,
+        normalize_path=_normalize_path,
+        query_params=_query_params,
+    )
+    run_mode = _extract_run_mode(
+        event_dict,
+        request_payload,
+        is_http_event,
+        allowed_run_modes=ALLOWED_RUN_MODES,
+        query_params=_query_params,
+    )
+    trigger_mode = _resolve_trigger_mode(event_dict, APP_TRIGGERS)
     if not run_mode and trigger_mode:
         run_mode = trigger_mode
     if is_http_event and not run_mode:
@@ -784,7 +244,13 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
 
     dry_run = bool(request_payload.get("dry_run", False))
     mock_external = request_payload.get("mock_external")
-    force_refresh = _extract_force_refresh(event_dict, request_payload, is_http_event)
+    force_refresh = _extract_force_refresh(
+        event_dict,
+        request_payload,
+        is_http_event,
+        query_params=_query_params,
+        parse_bool=_parse_bool,
+    )
     planner_event = request_payload.get("event")
     if planner_event is None and not is_http_event:
         planner_event = event
@@ -841,4 +307,3 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         "statusCode": 200,
         "body": "!GOOD!",
     }
-
