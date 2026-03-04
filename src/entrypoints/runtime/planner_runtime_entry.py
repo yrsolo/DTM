@@ -108,27 +108,29 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
     planner = None
     if use_legacy_planner:
         from src.app.planner_bootstrap import build_planner_dependencies
-        from src.entrypoints.jobs.planner_setup_job import build_planner_runtime
+        from src.entrypoints.jobs.planner_setup_job import PlannerRuntimeBuildRequest, build_planner_runtime
         from src.entrypoints.jobs.source_switch_job import apply_task_source_switches
         from src.services.planner_runtime import GoogleSheetPlanner
 
         planner, _ = build_planner_runtime(
-            key_json=APP_KEY_JSON,
-            sheet_info=APP_SHEET_INFO,
-            dry_run=dry_run,
-            mock_external=mock_external,
-            cfg=APP_CONTEXT.cfg,
-            mode=mode,
-            render_source=APP_RENDER_SOURCE,
-            notify_source=APP_NOTIFY_SOURCE,
-            ydb_endpoint=APP_YDB_ENDPOINT,
-            ydb_database=APP_YDB_DATABASE,
-            ydb_sa_json_credentials=APP_YDB_SA_JSON_CREDENTIALS,
-            ydb_sa_key_file=APP_YDB_SA_KEY_FILE,
-            build_planner_dependencies=build_planner_dependencies,
-            planner_cls=GoogleSheetPlanner,
-            apply_task_source_switches=apply_task_source_switches,
-            log=_safe_print,
+            PlannerRuntimeBuildRequest(
+                key_json=APP_KEY_JSON,
+                sheet_info=APP_SHEET_INFO,
+                dry_run=dry_run,
+                mock_external=mock_external,
+                cfg=APP_CONTEXT.cfg,
+                mode=mode,
+                render_source=APP_RENDER_SOURCE,
+                notify_source=APP_NOTIFY_SOURCE,
+                ydb_endpoint=APP_YDB_ENDPOINT,
+                ydb_database=APP_YDB_DATABASE,
+                ydb_sa_json_credentials=APP_YDB_SA_JSON_CREDENTIALS,
+                ydb_sa_key_file=APP_YDB_SA_KEY_FILE,
+                build_planner_dependencies=build_planner_dependencies,
+                planner_cls=GoogleSheetPlanner,
+                apply_task_source_switches=apply_task_source_switches,
+                log=_safe_print,
+            )
         )
     run_readmodel_freshness_probe(
         ReadmodelProbeRequest(

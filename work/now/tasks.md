@@ -20,6 +20,9 @@
 - [x] CAM-ENTRYPOINT-HYGIENE-V2-P02-T001: introduce/align AppContext usage as single dependency carrier for runtime router/pipeline objects.
 - [x] CAM-ENTRYPOINT-HYGIENE-V2-P04-T001: replace remaining timer pipeline wrapper orchestration with explicit pipeline object (`TimerPipeline`).
 - [x] CAM-ENTRYPOINT-HYGIENE-V2-P06-T001: final evidence grep (`build_http_dispatch_handlers` runtime absence, long signatures audit) and campaign closeout.
+- [x] CAM-ENTRYPOINT-HYGIENE-V2-T901: replace legacy source-switch job hyperfunction args with `SourceSwitchRequest` DTO.
+- [x] CAM-ENTRYPOINT-HYGIENE-V2-T902: replace planner-setup/legacy-store-write helper hyperfunction args with request DTOs and update runtime wiring.
+- [x] CAM-ENTRYPOINT-HYGIENE-V2-T903: refresh affected unit tests (`source_switch_job`, `planner_setup_job`, `legacy_store_write_job`, `planner_pipeline_job`) and rerun pipeline/api smoke.
 
 - [x] Activate `CAM-CORE-CLEANUP-V1` from priorities.
 - [x] P01-T001: inventory `core/*` modules and classify domain vs infra-coupled pieces (`docs/system/core_boundaries.md`).
@@ -190,5 +193,5 @@
 - none
 
 ## Last Update
-- 2026-03-04 (HYGIENE-V2 completed: runtime path uses router/pipeline/context objects; only legacy-mode long signatures remain)
+- 2026-03-04 (HYGIENE-V2 follow-up: legacy job helpers switched to DTO requests; targeted + smoke tests green)
 

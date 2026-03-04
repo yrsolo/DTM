@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Awaitable, Callable
 
+from src.entrypoints.jobs.legacy_store_write_job import LegacyStoreWriteRequest
+
 
 @dataclass(frozen=True)
 class PlannerPipelineContext:
@@ -22,7 +24,7 @@ class PlannerPipelineContext:
     pipeline_cfg: Any
     safe_print: Callable[[str], None]
     run_planner_use_case: Callable[..., Awaitable[dict[str, Any]]] | None
-    run_legacy_store_write: Callable[..., None]
+    run_legacy_store_write: Callable[[LegacyStoreWriteRequest], None]
     timer_pipeline_factory: Callable[[Any], Any]
     pipeline_sync_context_factory: Callable[..., Any]
     pipeline_sync_request_factory: Callable[..., Any]
@@ -55,20 +57,22 @@ async def run_planner_pipeline(
 
     if tasks_for_legacy_store:
         ctx.run_legacy_store_write(
-            legacy_blob_write=ctx.legacy_blob_write,
-            store_mode=ctx.app_store_mode,
-            mode=request.mode,
-            allow_sync=allow_sync,
-            tasks=tasks_for_legacy_store,
-            task_to_store_record=ctx.task_to_store_record,
-            runtime_env=ctx.app_runtime_env,
-            ydb_endpoint=ctx.ydb_endpoint,
-            ydb_database=ctx.ydb_database,
-            migration_store_file=ctx.migration_store_file,
-            sa_json_credentials=ctx.ydb_sa_json_credentials,
-            sa_key_file=ctx.ydb_sa_key_file,
-            build_store=ctx.build_store,
-            safe_print=ctx.safe_print,
+            LegacyStoreWriteRequest(
+                legacy_blob_write=ctx.legacy_blob_write,
+                store_mode=ctx.app_store_mode,
+                mode=request.mode,
+                allow_sync=allow_sync,
+                tasks=tasks_for_legacy_store,
+                task_to_store_record=ctx.task_to_store_record,
+                runtime_env=ctx.app_runtime_env,
+                ydb_endpoint=ctx.ydb_endpoint,
+                ydb_database=ctx.ydb_database,
+                migration_store_file=ctx.migration_store_file,
+                sa_json_credentials=ctx.ydb_sa_json_credentials,
+                sa_key_file=ctx.ydb_sa_key_file,
+                build_store=ctx.build_store,
+                safe_print=ctx.safe_print,
+            )
         )
 
     sync_ctx = ctx.pipeline_sync_context_factory(

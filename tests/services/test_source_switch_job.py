@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 from unittest.mock import patch
 
-from src.entrypoints.jobs.source_switch_job import apply_task_source_switches
+from src.entrypoints.jobs.source_switch_job import SourceSwitchRequest, apply_task_source_switches
 
 
 class _PlannerStub:
@@ -24,15 +24,18 @@ class SourceSwitchJobTestCase(unittest.TestCase):
         logs = []
 
         render_switched, notify_switched = apply_task_source_switches(
-            planner=planner,
-            mode="test",
-            render_source="ydb",
-            notify_source="ydb",
-            ydb_endpoint="endpoint",
-            ydb_database="database",
-            ydb_sa_json_credentials=None,
-            ydb_sa_key_file=None,
-            log=logs.append,
+            SourceSwitchRequest(
+                planner=planner,
+                mode="test",
+                render_source="ydb",
+                notify_source="ydb",
+                ydb_endpoint="endpoint",
+                ydb_database="database",
+                ydb_sa_json_credentials=None,
+                ydb_sa_key_file=None,
+                log=logs.append,
+                repository_cls=repo_cls,
+            )
         )
 
         self.assertTrue(render_switched)
@@ -49,15 +52,18 @@ class SourceSwitchJobTestCase(unittest.TestCase):
     def test_no_switch_when_policy_does_not_require_ydb(self, repo_cls) -> None:  # noqa: ANN001
         planner = _PlannerStub()
         render_switched, notify_switched = apply_task_source_switches(
-            planner=planner,
-            mode="timer",
-            render_source="legacy",
-            notify_source="legacy",
-            ydb_endpoint="endpoint",
-            ydb_database="database",
-            ydb_sa_json_credentials=None,
-            ydb_sa_key_file=None,
-            log=lambda _: None,
+            SourceSwitchRequest(
+                planner=planner,
+                mode="timer",
+                render_source="legacy",
+                notify_source="legacy",
+                ydb_endpoint="endpoint",
+                ydb_database="database",
+                ydb_sa_json_credentials=None,
+                ydb_sa_key_file=None,
+                log=lambda _: None,
+                repository_cls=repo_cls,
+            )
         )
         self.assertFalse(render_switched)
         self.assertFalse(notify_switched)
