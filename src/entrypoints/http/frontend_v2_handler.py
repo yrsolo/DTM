@@ -59,6 +59,10 @@ def handle_frontend_api_v2_if_requested(
             for item in entities.get("people", [])
             if isinstance(item, dict) and str(item.get("id", "")).strip()
         } if isinstance(entities.get("people", []), list) else set()
+        people_ids_not_hashed = any(
+            (len(pid) != 16) or any(ch not in "0123456789abcdef" for ch in pid)
+            for pid in people_ids
+        )
         owner_ids = [
             str(item.get("ownerId", "")).strip()
             for item in tasks
@@ -69,7 +73,7 @@ def handle_frontend_api_v2_if_requested(
         missing_business_fields = any(
             field not in first_task for field in ("brand", "format_", "customer")
         ) if isinstance(first_task, dict) else True
-        return (not include_people and people_empty) or missing_business_fields or owner_people_mismatch
+        return (not include_people and people_empty) or missing_business_fields or owner_people_mismatch or people_ids_not_hashed
 
     def _enrich_payload_from_operational(payload: dict[str, Any]) -> dict[str, Any]:
         try:
@@ -114,7 +118,13 @@ def handle_frontend_api_v2_if_requested(
             include_people = bool(filters.get("include_people", False))
             if not isinstance(people, list):
                 people = []
-            if (not include_people) or (len(people) == 0):
+            ids_need_migration = any(
+                (len(str(item.get("id", "")).strip()) != 16)
+                or any(ch not in "0123456789abcdef" for ch in str(item.get("id", "")).strip())
+                for item in people
+                if isinstance(item, dict)
+            )
+            if (not include_people) or (len(people) == 0) or ids_need_migration:
                 people_index: dict[str, dict[str, Any]] = {}
                 for task in tasks if isinstance(tasks, list) else []:
                     if not isinstance(task, dict):
