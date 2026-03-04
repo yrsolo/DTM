@@ -33,6 +33,10 @@ from src.entrypoints.http.event_parser import http_method as _http_method
 from src.entrypoints.http.event_parser import http_path as _http_path
 from src.entrypoints.http.event_parser import normalize_path as _normalize_path
 from src.entrypoints.http.event_parser import query_params as _query_params
+from src.entrypoints.http.frontend_compat_handlers import (
+    handle_frontend_api_root_if_requested,
+    handle_frontend_api_v1_discontinued_if_requested,
+)
 from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_api_v2_doc_html
 from src.entrypoints.http.frontend_v2_handler import handle_frontend_api_v2_if_requested
 from src.entrypoints.http.router import dispatch_http
@@ -291,29 +295,14 @@ def _path_matches(path: str, candidates: set[str]) -> bool:
 def _handle_frontend_api_if_requested(
     event: dict[str, Any], is_http_event: bool
 ) -> dict[str, Any] | None:
-    if not is_http_event:
-        return None
-    path = _normalize_path(_http_path(event))
-    method = _http_method(event) or "GET"
-    if method == "ANY":
-        method = "GET"
-    if method != "GET":
-        return None
-
-    v1_paths = {
-        "/api/v1",
-        "/api/v1/frontend",
-        "/api/v1/read-model",
-        "/api/v1/frontend/doc",
-        "/api/v1/read-model/doc",
-    }
-    if not _path_matches(path, v1_paths):
-        return None
-
-    return _error_response(
-        410,
-        code="api_v1_discontinued",
-        message="API v1 is discontinued. Use /api/v2/frontend and /api/v2/frontend/doc.",
+    return handle_frontend_api_v1_discontinued_if_requested(
+        event,
+        is_http_event,
+        error_response=_error_response,
+        normalize_path=_normalize_path,
+        http_path=_http_path,
+        http_method=_http_method,
+        path_matches=_path_matches,
     )
 
 
@@ -355,22 +344,17 @@ def _handle_frontend_api_v2_if_requested(
 def _handle_api_root_if_requested(
     event: dict[str, Any], is_http_event: bool
 ) -> dict[str, Any] | None:
-    if not is_http_event:
-        return None
-    method = _http_method(event) or "GET"
-    if method == "ANY":
-        method = "GET"
-    if method != "GET":
-        return None
-    path = _normalize_path(_http_path(event))
-    if path not in {"/"}:
-        return None
-    params = _query_params(event)
-    as_json = str(params.get("format", "")).strip().lower() == "json"
-    return (
-        _json_response(200, frontend_api_v2_doc())
-        if as_json
-        else _html_response(200, frontend_api_v2_doc_html())
+    return handle_frontend_api_root_if_requested(
+        event,
+        is_http_event,
+        json_response=_json_response,
+        html_response=_html_response,
+        normalize_path=_normalize_path,
+        http_path=_http_path,
+        http_method=_http_method,
+        query_params=_query_params,
+        frontend_api_v2_doc=frontend_api_v2_doc,
+        frontend_api_v2_doc_html=frontend_api_v2_doc_html,
     )
 
 
