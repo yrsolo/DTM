@@ -15,6 +15,7 @@ This document tracks active duplicate/parallel implementations and defines `keep
 | Sync/build handlers | entrypoints/jobs + `src/services/pipeline_runtime.py` | `src/handlers/sync.py`, `src/handlers/build_readmodels.py` in runtime contour | no imports from `main.py`/`index.py`; only handler tests used them | low (removed 2026-03-04) |
 | API handler skeleton | `src/entrypoints/http/*` dispatch chain | `src/handlers/api.py` placeholder | no runtime imports; only static leftover | low (removed 2026-03-04) |
 | Render/notify handler skeletons | `src/entrypoints/jobs/*` + service use-cases | `src/handlers/render_sheets.py`, `src/handlers/notify_morning.py` placeholders | no runtime imports; static leftovers only | low (removed 2026-03-04) |
+| Handlers package placeholder | `src/entrypoints/http/*`, `src/entrypoints/jobs/*` | `src/handlers/__init__.py` marker-only package | no runtime imports of `src.handlers` namespace | low (removed 2026-03-04) |
 
 ## Proposed removal sequence
 1. Add explicit `legacy-only` marking in docs for handler/readmodels old path.

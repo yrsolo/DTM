@@ -44,6 +44,8 @@ This document is a **navigation map** of the codebase as it exists today. It is 
 
 ## Handlers (new)
 
+Legacy `src/handlers/*` placeholder package is fully removed from active tree in dedup wave; runtime entrypoint boundaries are `src/entrypoints/http/*` and `src/entrypoints/jobs/*`.
+
 | Path | Role | Responsibility | State | Notes |
 |---|---|---|---|---|
 | `src/handlers/api.py` | Legacy | Placeholder API handler skeleton | Removed | Removed from active tree in dedup wave; runtime uses `src/entrypoints/http/*`. |

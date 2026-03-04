@@ -122,10 +122,11 @@
 - [x] DEDUP-P02-T003: remove legacy build-readmodels path (`src/handlers/build_readmodels.py`, `src/services/readmodels/*`) and related tests from active tree.
 - [x] DEDUP-P02-T004: remove legacy placeholder `src/handlers/api.py` and align system docs to `src/entrypoints/http/*` runtime boundary.
 - [x] DEDUP-P02-T005: remove legacy placeholder handler stubs `src/handlers/render_sheets.py` and `src/handlers/notify_morning.py`; align dedup/module docs.
+- [x] DEDUP-P02-T006: remove empty legacy `src/handlers/__init__.py` package marker; confirm no active imports of `src.handlers` namespace.
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (DEDUP-P02-T005 completed: legacy render/notify handler stubs removed; docs aligned and smoke tests green)
+- 2026-03-04 (DEDUP-P02-T006 completed: empty `src/handlers` package marker removed; active runtime uses `src/entrypoints/*`)
 
