@@ -5,8 +5,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
-from src.entrypoints.http.frontend_compat_handlers import handle_frontend_api_root_if_requested
-from src.entrypoints.http.frontend_v2_handler import handle_frontend_api_v2_if_requested
+from src.entrypoints.http.frontend_compat_handlers import (
+    FrontendRootHandler,
+    FrontendRootHandlerContext,
+)
+from src.entrypoints.http.frontend_v2_handler import (
+    FrontendV2Handler,
+    FrontendV2HandlerContext,
+)
 
 HttpHandler = Callable[[dict[str, Any], bool], dict[str, Any] | None]
 
@@ -55,6 +61,43 @@ class HttpRouter:
 
     def __init__(self, ctx: HttpRouterContext) -> None:
         self._ctx = ctx
+        self._frontend_root_handler = FrontendRootHandler(
+            FrontendRootHandlerContext(
+                json_response=ctx.json_response,
+                html_response=ctx.html_response,
+                normalize_path=ctx.normalize_path,
+                http_path=ctx.http_path,
+                http_method=ctx.http_method,
+                query_params=ctx.query_params,
+                frontend_api_v2_doc=ctx.frontend_api_v2_doc,
+                frontend_api_v2_doc_html=ctx.frontend_api_v2_doc_html,
+            )
+        )
+        self._frontend_v2_handler = FrontendV2Handler(
+            FrontendV2HandlerContext(
+                json_response=ctx.json_response,
+                html_response=ctx.html_response,
+                error_response=ctx.error_response,
+                normalize_path=ctx.normalize_path,
+                http_path=ctx.http_path,
+                http_method=ctx.http_method,
+                query_params=ctx.query_params,
+                path_matches=lambda path, candidates: ctx.path_matches(path, candidates, ctx.normalize_path),
+                parse_statuses=ctx.parse_statuses,
+                parse_limit=ctx.parse_limit,
+                parse_bool=ctx.parse_bool,
+                parse_window_query=ctx.parse_window_query,
+                ydb_endpoint=ctx.ydb_endpoint,
+                ydb_database=ctx.ydb_database,
+                ydb_sa_json_credentials=ctx.ydb_sa_json_credentials,
+                ydb_sa_key_file=ctx.ydb_sa_key_file,
+                app_runtime_env=ctx.app_runtime_env,
+                app_source_sheet_name=ctx.app_source_sheet_name,
+                frontend_api_v2_doc=ctx.frontend_api_v2_doc,
+                frontend_api_v2_doc_html=ctx.frontend_api_v2_doc_html,
+                frontend_readmodel_repo_cls=ctx.frontend_readmodel_repo_cls,
+            )
+        )
 
     def dispatch(self, event: dict[str, Any], is_http_event: bool) -> dict[str, Any] | None:
         for handler in (self._handle_api_root, self._handle_api_v2):
@@ -64,44 +107,7 @@ class HttpRouter:
         return None
 
     def _handle_api_root(self, event: dict[str, Any], is_http_event: bool) -> dict[str, Any] | None:
-        ctx = self._ctx
-        return handle_frontend_api_root_if_requested(
-            event,
-            is_http_event,
-            json_response=ctx.json_response,
-            html_response=ctx.html_response,
-            normalize_path=ctx.normalize_path,
-            http_path=ctx.http_path,
-            http_method=ctx.http_method,
-            query_params=ctx.query_params,
-            frontend_api_v2_doc=ctx.frontend_api_v2_doc,
-            frontend_api_v2_doc_html=ctx.frontend_api_v2_doc_html,
-        )
+        return self._frontend_root_handler.handle(event, is_http_event)
 
     def _handle_api_v2(self, event: dict[str, Any], is_http_event: bool) -> dict[str, Any] | None:
-        ctx = self._ctx
-        return handle_frontend_api_v2_if_requested(
-            event,
-            is_http_event,
-            json_response=ctx.json_response,
-            html_response=ctx.html_response,
-            error_response=ctx.error_response,
-            normalize_path=ctx.normalize_path,
-            http_path=ctx.http_path,
-            http_method=ctx.http_method,
-            query_params=ctx.query_params,
-            path_matches=lambda path, candidates: ctx.path_matches(path, candidates, ctx.normalize_path),
-            parse_statuses=ctx.parse_statuses,
-            parse_limit=ctx.parse_limit,
-            parse_bool=ctx.parse_bool,
-            parse_window_query=ctx.parse_window_query,
-            ydb_endpoint=ctx.ydb_endpoint,
-            ydb_database=ctx.ydb_database,
-            ydb_sa_json_credentials=ctx.ydb_sa_json_credentials,
-            ydb_sa_key_file=ctx.ydb_sa_key_file,
-            app_runtime_env=ctx.app_runtime_env,
-            app_source_sheet_name=ctx.app_source_sheet_name,
-            frontend_api_v2_doc=ctx.frontend_api_v2_doc,
-            frontend_api_v2_doc_html=ctx.frontend_api_v2_doc_html,
-            frontend_readmodel_repo_cls=ctx.frontend_readmodel_repo_cls,
-        )
+        return self._frontend_v2_handler.handle(event, is_http_event)

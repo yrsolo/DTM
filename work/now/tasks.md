@@ -17,8 +17,9 @@
 - [x] CAM-ENTRYPOINT-DEHYBRID-V2-P03-T002: implement explicit legacy-planner mode boundary so standard timer path does not build planner world by default.
 - [x] CAM-ENTRYPOINT-HYGIENE-V2-P01-T001: trust-gate check for remaining hyperfunctions/long signatures in entrypoints and pipeline runtime.
 - [x] CAM-ENTRYPOINT-HYGIENE-V2-P03-T001: replace `build_http_dispatch_handlers(...)` runtime usage with object router `HttpRouter(ctx).dispatch(req)`.
-- [ ] CAM-ENTRYPOINT-HYGIENE-V2-P02-T001: introduce/align AppContext usage as single dependency carrier for runtime router/pipeline objects.
+- [x] CAM-ENTRYPOINT-HYGIENE-V2-P02-T001: introduce/align AppContext usage as single dependency carrier for runtime router/pipeline objects.
 - [x] CAM-ENTRYPOINT-HYGIENE-V2-P04-T001: replace remaining timer pipeline wrapper orchestration with explicit pipeline object (`TimerPipeline`).
+- [x] CAM-ENTRYPOINT-HYGIENE-V2-P06-T001: final evidence grep (`build_http_dispatch_handlers` runtime absence, long signatures audit) and campaign closeout.
 
 - [x] Activate `CAM-CORE-CLEANUP-V1` from priorities.
 - [x] P01-T001: inventory `core/*` modules and classify domain vs infra-coupled pieces (`docs/system/core_boundaries.md`).
@@ -189,5 +190,5 @@
 - none
 
 ## Last Update
-- 2026-03-04 (HYGIENE-V2 in progress: runtime uses object `HttpRouter` and `TimerPipeline`; tests green)
+- 2026-03-04 (HYGIENE-V2 completed: runtime path uses router/pipeline/context objects; only legacy-mode long signatures remain)
 
