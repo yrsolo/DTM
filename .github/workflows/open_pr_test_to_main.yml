@@ -1,0 +1,56 @@
+name: Open PR test -> main
+
+on:
+  push:
+    branches:
+      - test
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  open-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure pull request from test to main exists
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const base = "main";
+            const head = "test";
+
+            const existing = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: "open",
+              base,
+              head: `${owner}:${head}`,
+              per_page: 1,
+            });
+
+            if (existing.data.length > 0) {
+              core.info(`Open PR already exists: #${existing.data[0].number}`);
+              return;
+            }
+
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+            const pr = await github.rest.pulls.create({
+              owner,
+              repo,
+              base,
+              head,
+              title: "Promote test to main",
+              body: [
+                "Automated PR created after update of branch `test`.",
+                "",
+                "Source flow: `dev` -> `test` -> `main`.",
+                "",
+                `Workflow run: ${runUrl}`,
+              ].join("\n"),
+            });
+
+            core.info(`Created PR #${pr.data.number}`);

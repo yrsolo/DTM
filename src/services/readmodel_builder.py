@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
 from core.api_payload_v2 import build_frontend_api_payload_v2
@@ -125,10 +125,10 @@ class FrontendReadmodelBuilderService:
                 continue
             timing: dict[Any, list[str]] = {}
             for milestone in milestones_by_task.get(task_id, []):
-                planned = milestone.get("planned_date")
-                if not planned:
+                planned_iso = self._coerce_date_iso(milestone.get("planned_date"))
+                if not planned_iso:
                     continue
-                timing.setdefault(planned, []).append(str(milestone.get("type", "unknown")))
+                timing.setdefault(planned_iso, []).append(str(milestone.get("type", "unknown")))
             if not timing:
                 synthetic_start_count += 1
                 if len(synthetic_examples) < 10:
@@ -192,16 +192,32 @@ class FrontendReadmodelBuilderService:
     def _resolve_synthetic_start_date(row: dict[str, Any]) -> str:
         for key in ("created_at_utc", "first_seen_at_utc", "updated_at_utc", "next_due_date", "start_date", "end_date"):
             value = row.get(key)
-            if isinstance(value, datetime):
-                return value.date().isoformat()
-            if isinstance(value, date):
-                return value.isoformat()
-            text = str(value or "").strip()
-            if len(text) >= 10:
-                candidate = text[:10]
-                try:
-                    date.fromisoformat(candidate)
-                    return candidate
-                except ValueError:
-                    continue
+            normalized = FrontendReadmodelBuilderService._coerce_date_iso(value)
+            if normalized:
+                return normalized
         return datetime.now(timezone.utc).date().isoformat()
+
+    @staticmethod
+    def _coerce_date_iso(value: Any) -> str | None:
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            return value.date().isoformat()
+        if isinstance(value, date):
+            return value.isoformat()
+        if isinstance(value, (int, float)):
+            # YDB Date is often represented as days since Unix epoch.
+            return (date(1970, 1, 1) + timedelta(days=int(value))).isoformat()
+        text = str(value).strip()
+        if not text:
+            return None
+        if text.isdigit():
+            return (date(1970, 1, 1) + timedelta(days=int(text))).isoformat()
+        if len(text) >= 10:
+            candidate = text[:10]
+            try:
+                date.fromisoformat(candidate)
+                return candidate
+            except ValueError:
+                return None
+        return None

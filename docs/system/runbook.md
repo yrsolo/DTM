@@ -54,3 +54,11 @@ Milestones must never be empty:
 If logs show `synthetic_start_used` warnings:
 - likely milestones_v was not written/backfilled for some tasks.
 - run backfill/migration script or investigate sync errors.
+
+## 7) Branching and test deploy
+1) Development goes to `dev` (small commits, push to origin).
+2) When test contour validation is needed, merge `dev` into `test`.
+3) Push `test` to origin:
+   - test deploy workflow starts automatically,
+   - automation creates/updates PR flow `test -> main`.
+4) Production promotion stays owner-controlled: owner reviews and merges PR into `main`, then run manual production release workflow.

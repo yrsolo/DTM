@@ -77,3 +77,13 @@ Secrets stay in ENV/secret storage:
 ## Deploy workflows
 GitHub Actions now read non-secret deploy defaults from `config/deploy.yaml`.
 Critical secrets remain in GitHub/Lockbox.
+
+Branch and deploy flow:
+- `dev`: active development branch (regular commits/pushes).
+- `test`: integration branch for test contour deployment.
+- `main`: production promotion branch (owner-approved merge only).
+
+Automation:
+- `.github/workflows/deploy_yc_function_main.yml` runs on push to `test` (test contour deploy).
+- `.github/workflows/open_pr_test_to_main.yml` ensures an open PR `test -> main` exists after updates in `test`.
+- `.github/workflows/release_yc_function_prod.yml` remains manual production release flow.

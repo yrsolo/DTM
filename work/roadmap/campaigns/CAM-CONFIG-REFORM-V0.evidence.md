@@ -41,6 +41,9 @@
 | `index.py`, `src/entrypoints/http/frontend_v2_handler.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | HTTP error-boundary hardening + full smoke pack | high | unhandled HTTP runtime exceptions now produce structured API `503` responses (`http_dispatch_failed` / `frontend_source_unavailable`) instead of gateway-level `502` |
 | `src/entrypoints/http/frontend_v2_handler.py`, `tests/api/test_frontend_api_routing.py`, `index.py`, `docs/system/entrypoints_index_main.md` | 2026-03-04 | TeamLead agent | emergency YDB fallback rollout + full smoke pack | high | when legacy frontend source fails, API now attempts YDB snapshot emergency fallback and serves payload when available (`readmodelSource=ydb_emergency_fallback`) |
 | `src/entrypoints/http/frontend_v2_docs.py`, `core/api_payload_v2.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | docs restoration + payload null-noise cleanup + full smoke pack | high | restored expanded HTML docs sections and reduced noisy null fields/defaults in v2 payload while keeping contract compatibility |
+| `src/services/readmodel_builder.py`, `tests/services/test_readmodel_uses_milestones_table.py`, live test DB (`dtm_sync_state`, operational rows) | 2026-03-04 | TeamLead agent | local root-cause diagnosis + fix + real-data dry-run | high | root cause confirmed in readmodel build path: YDB Date-encoded milestone values (`20504`) were not normalized to ISO dates; fix verified on live test DB data without deploy |
+
+| `.github/workflows/deploy_yc_function_main.yml`, `.github/workflows/open_pr_test_to_main.yml`, `docs/system/config.md`, `docs/system/runbook.md` | 2026-03-04 | TeamLead agent | branch-flow automation update + docs sync | high | test deploy is now triggered by `test` branch push; auto-PR flow ensures `test -> main` promotion PR exists |
 
 ## Execution Log
 - CAM-CONFIG-REFORM-V0 activated in `work/now/campaign.md`.
@@ -115,6 +118,9 @@
 - CFG-P02-T067 completed: restored expanded HTML docs output for `/api/v2/frontend/doc` (field status/query params/response fields sections).
 - CFG-P02-T068 completed: reduced null-heavy noise in API payload builder (`core/api_payload_v2.py`) by omitting reserved null task fields and using non-null defaults for optional top-level metadata fields.
 - CFG-P02-T069 completed: executed full smoke contour after docs/payload cleanup (API routing + core/services/adapters unit smoke).
+- CFG-P02-T070 completed: fixed readmodel builder date normalization for YDB Date-encoded milestone values (days-since-epoch integer/string to ISO date conversion).
+- CFG-P02-T071 completed: added regression coverage in `tests/services/test_readmodel_uses_milestones_table.py` for numeric YDB milestone date encoding and validated full smoke contour.
+- CFG-P02-T072 completed: validated on live test DB data locally (no deploy): direct builder dry-run with operational rows now produces payload with non-null task dates.
 - P01 scaffold implemented (uncommitted):
   - YAML config files added: `config/runtime.yaml`, `config/tables.yaml`, `config/db.yaml`, `config/llm.yaml`, `config/mapping.yaml`
   - typed schema scaffold: `src/config/schema.py`
@@ -181,6 +187,10 @@
   - `python -m py_compile core/api_payload_v2.py src/entrypoints/http/frontend_v2_docs.py index.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing -v`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - `python -m py_compile src/services/readmodel_builder.py tests/services/test_readmodel_uses_milestones_table.py`
+  - `python -m unittest tests.services.test_readmodel_uses_milestones_table -v`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.services.test_readmodel_uses_milestones_table tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+  - local real-data dry-run (`ENV=test`) with `FrontendReadmodelBuilderService` + real `OperationalTaskRepo` + stubbed `ReadmodelRepo`: `tasks=11`, `tasks_with_any_date=11`, `tasks_without_dates=0`.
   - `python -m py_compile index.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
   - `python -m py_compile src/entrypoints/http/frontend_v2_docs.py index.py tests/api/test_frontend_api_routing.py`
@@ -214,3 +224,5 @@
   - `python -m py_compile src/entrypoints/http/frontend_v2_handler.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing -v`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
+
+- CFG-P02-T073 completed: branch/deploy automation switched to `dev -> test -> main`; test deploy workflow now triggers on `test` push and auto-PR workflow ensures open promotion PR `test -> main`.

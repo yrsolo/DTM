@@ -1,15 +1,15 @@
-﻿name: Deploy Yandex Cloud Function (test contour)
+name: Deploy Yandex Cloud Function (test contour)
 
 on:
   push:
     branches:
-      - main
+      - test
   workflow_dispatch:
     inputs:
       git_ref:
         description: "Git ref to deploy to test contour"
         required: false
-        default: "main"
+        default: "test"
 
 permissions:
   id-token: write
@@ -131,3 +131,4 @@ jobs:
           echo "Function deploy action finished."
           echo "Function: ${{ vars.YC_CLOUD_FUNCTION_NAME || env.YC_CLOUD_FUNCTION_NAME }}"
           echo "Entrypoint: ${{ vars.YC_FUNCTION_ENTRYPOINT || env.YC_FUNCTION_ENTRYPOINT }}"
+
