@@ -53,6 +53,73 @@ def handle_frontend_api_v2_if_requested(
         ) if isinstance(first_task, dict) else True
         return (not include_people and people_empty) or missing_business_fields
 
+    def _enrich_payload_from_operational(payload: dict[str, Any]) -> dict[str, Any]:
+        try:
+            from src.adapters.ydb.operational_repo import OperationalTaskRepo
+
+            filters = payload.get("filters", {}) if isinstance(payload, dict) else {}
+            statuses = filters.get("statuses", ["work", "pre_done"])
+            if not isinstance(statuses, list) or not statuses:
+                statuses = ["work", "pre_done"]
+            operational_repo = OperationalTaskRepo(
+                endpoint=ydb_endpoint,
+                database=ydb_database,
+                sa_json_credentials=ydb_sa_json_credentials,
+                sa_key_file=ydb_sa_key_file,
+                ensure_schema=False,
+            )
+            operational_rows = operational_repo.list_tasks(statuses=[str(item).strip() for item in statuses])
+            rows_by_task_id = {
+                str(row.get("task_id", "")).strip(): row
+                for row in operational_rows
+                if str(row.get("task_id", "")).strip()
+            }
+
+            tasks = payload.get("tasks", [])
+            if isinstance(tasks, list):
+                for task in tasks:
+                    if not isinstance(task, dict):
+                        continue
+                    task_id = str(task.get("id", "")).strip()
+                    row = rows_by_task_id.get(task_id)
+                    if row is None:
+                        continue
+                    for field in ("brand", "format_", "customer"):
+                        if field not in task or task.get(field) in (None, ""):
+                            task[field] = str(row.get(field, "")).strip()
+                    if not task.get("ownerId"):
+                        task["ownerId"] = str(row.get("owner_id", "")).strip()
+
+            entities = payload.setdefault("entities", {})
+            people = entities.get("people")
+            include_people = bool(filters.get("include_people", False))
+            if not isinstance(people, list):
+                people = []
+            if (not include_people) or (len(people) == 0):
+                people_index: dict[str, dict[str, Any]] = {}
+                for task in tasks if isinstance(tasks, list) else []:
+                    if not isinstance(task, dict):
+                        continue
+                    owner_id = str(task.get("ownerId", "")).strip()
+                    if not owner_id:
+                        continue
+                    people_index[owner_id] = {
+                        "id": owner_id,
+                        "name": owner_id,
+                        "position": "designer",
+                        "links": {
+                            "self": f"/api/v2/frontend/entities/people/{owner_id}",
+                        },
+                    }
+                entities["people"] = sorted(people_index.values(), key=lambda item: item["id"])
+                payload.setdefault("filters", {})["include_people"] = True
+                payload.setdefault("summary", {})["peopleTotal"] = len(entities["people"])
+            payload.setdefault("meta", {})["readmodelSelfHeal"] = "enriched_from_operational"
+            return payload
+        except Exception as error:
+            print(f"api_v2_readmodel_enrich_failed error={error}")
+            return payload
+
     def _self_heal_readmodel_snapshot(repo: Any, payload: dict[str, Any]) -> bool:
         try:
             from src.adapters.ydb.operational_repo import OperationalTaskRepo
@@ -109,6 +176,8 @@ def handle_frontend_api_v2_if_requested(
                             row = refreshed_row
                             payload.setdefault("meta", {})
                             payload["meta"]["readmodelSelfHeal"] = "rebuilt_from_operational"
+                else:
+                    payload = _enrich_payload_from_operational(payload)
             payload.setdefault("meta", {})
             payload["meta"]["readmodelSource"] = "ydb"
             payload["meta"]["readmodelId"] = row.readmodel_id
