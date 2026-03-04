@@ -38,10 +38,7 @@ from src.entrypoints.http.group_query_tasks_loader import (
 )
 from src.entrypoints.http.event_parser import normalize_path as _normalize_path
 from src.entrypoints.http.event_parser import query_params as _query_params
-from src.entrypoints.http.frontend_compat_handlers import (
-    handle_frontend_api_root_if_requested,
-    handle_frontend_api_v1_discontinued_if_requested,
-)
+from src.entrypoints.http.frontend_compat_handlers import handle_frontend_api_root_if_requested
 from src.entrypoints.http.frontend_query_params import (
     parse_bool as _parse_bool,
     parse_limit as _parse_limit,
@@ -76,20 +73,6 @@ APP_TG_BOT_TOKEN = TG
 APP_TG_DEFAULT_CHAT_ID = DEFAULT_CHAT_ID
 
 ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only"})
-
-
-def _handle_frontend_api_if_requested(
-    event: dict[str, Any], is_http_event: bool
-) -> dict[str, Any] | None:
-    return handle_frontend_api_v1_discontinued_if_requested(
-        event,
-        is_http_event,
-        error_response=_error_response,
-        normalize_path=_normalize_path,
-        http_path=_http_path,
-        http_method=_http_method,
-        path_matches=lambda path, candidates: _path_matches(path, candidates, _normalize_path),
-    )
 
 
 def _handle_frontend_api_v2_if_requested(
@@ -194,7 +177,6 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         (
             _handle_api_root_if_requested,
             _handle_frontend_api_v2_if_requested,
-            _handle_frontend_api_if_requested,
         ),
     )
     if http_response is not None:

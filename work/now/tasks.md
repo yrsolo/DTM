@@ -75,10 +75,12 @@
 - [x] CFG-P02-T047: verify full smoke contour after group-query task loader extraction (`api/core/services/adapters`).
 - [x] CFG-P02-T048: simplify `index.py` by inlining group-query wrapper and delegating directly to extracted HTTP handler.
 - [x] CFG-P02-T049: verify full smoke contour after group-query wrapper removal (`api/core/services/adapters`).
+- [x] CFG-P02-T050: remove redundant legacy `v1_discontinued` handler from HTTP dispatch chain after v1->v2 alias restoration.
+- [x] CFG-P02-T051: verify full smoke contour after HTTP dispatch chain simplification (`api/core/services/adapters`).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (CFG-P02-T048..T049 completed: group-query wrapper removed from index; smoke green)
+- 2026-03-04 (CFG-P02-T050..T051 completed: redundant legacy dispatch handler removed; smoke green)
 

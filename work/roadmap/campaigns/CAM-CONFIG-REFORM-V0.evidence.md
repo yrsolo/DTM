@@ -32,6 +32,7 @@
 | `src/entrypoints/http/frontend_v2_handler.py`, `tests/api/test_frontend_api_routing.py` | 2026-03-04 | TeamLead agent | v2 availability hotfix + regression smoke | high | API v2 no longer hard-fails when YDB readmodel path is unavailable; runtime falls back to legacy data source and returns payload |
 | `src/entrypoints/http/group_query_tasks_loader.py`, `index.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | group-query task loader extraction + full smoke pack | high | group-query task loading moved out of index into dedicated HTTP helper module; behavior retained |
 | `index.py`, `src/entrypoints/http/group_query_handler.py`, `src/entrypoints/http/group_query_tasks_loader.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | group-query wrapper removal + full smoke pack | high | index group-query wrapper removed; handler now delegates directly with injected boundaries in-place; behavior retained |
+| `index.py`, `src/entrypoints/http/router.py`, `src/entrypoints/http/frontend_v2_handler.py`, `tests/api/test_frontend_api_routing.py`, `tests.services/*`, `tests.adapters/*` | 2026-03-04 | TeamLead agent | HTTP dispatch chain simplification + full smoke pack | high | removed redundant legacy `v1_discontinued` handler from HTTP dispatch chain; v1 compatibility remains via v2 alias routes |
 
 ## Execution Log
 - CAM-CONFIG-REFORM-V0 activated in `work/now/campaign.md`.
@@ -86,6 +87,8 @@
 - CFG-P02-T047 completed: executed full smoke contour after group-query task loader extraction (API routing + core/services/adapters unit smoke).
 - CFG-P02-T048 completed: removed intermediate group-query wrapper function from `index.py`; switched handler flow to direct delegation call using extracted HTTP modules.
 - CFG-P02-T049 completed: executed full smoke contour after group-query wrapper removal (API routing + core/services/adapters unit smoke).
+- CFG-P02-T050 completed: removed redundant `v1_discontinued` handler from dispatch chain since supported API v1 paths are already handled as v2 aliases.
+- CFG-P02-T051 completed: executed full smoke contour after HTTP dispatch chain simplification (API routing + core/services/adapters unit smoke).
 - P01 scaffold implemented (uncommitted):
   - YAML config files added: `config/runtime.yaml`, `config/tables.yaml`, `config/db.yaml`, `config/llm.yaml`, `config/mapping.yaml`
   - typed schema scaffold: `src/config/schema.py`
@@ -133,6 +136,8 @@
   - `python -m py_compile config/constants.py src/config/loader.py index.py main.py`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
   - `rg -n "^def _frontend_api_doc\\(|^def _frontend_api_doc_html\\(" index.py`
+  - `python -m py_compile index.py tests/api/test_frontend_api_routing.py`
+  - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
   - `python -m py_compile index.py tests/api/test_frontend_api_routing.py`
   - `python -m unittest tests.api.test_frontend_api_routing tests.services.test_pipeline_runtime tests.core.test_timing_year_modes tests.core.test_manager_calendar_empty tests.services.test_ydb_backoff tests.adapters.test_json_store_adapter -v`
   - `python -m py_compile src/entrypoints/http/frontend_v2_docs.py index.py tests/api/test_frontend_api_routing.py`
