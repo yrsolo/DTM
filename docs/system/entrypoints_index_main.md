@@ -1,129 +1,48 @@
-# Entrypoints behavior (Current): `index.py` and `main.py`
+# Entrypoints Behavior (Current): `index.py` and `main.py`
 
-This document describes **what actually happens today** when the two entrypoints run.
-It is meant to prevent “tribal knowledge” from living only in chat memory.
+This file reflects current runtime behavior after dehybrid and pipeline-straighten changes.
 
-## `main.py` — job runner (async main)
+## `main.py`
 
-### Run modes
-`mode` is resolved via `resolve_run_mode(mode=..., event=..., triggers=TRIGGERS)`.
-Observed modes used in code:
-- `db_migrate`
-- `timer`
-- `test`
-- `morning`
-- `reminders-only`
-- `sync-only`
+`main.py` is a thin async wrapper:
+- imports `run_planner_runtime` from `src/entrypoints/runtime/planner_runtime_entry.py`
+- exposes `main(**kwargs)` that directly delegates to `run_planner_runtime(**kwargs)`
+- has no orchestration logic of its own
 
-### Timer orchestration shell (new)
-In `timer` mode `main.py` now invokes `TimerJob.run(APP_CONTEXT)` from `src/entrypoints/jobs/timer_job.py`.
-Current shell is intentionally no-op by default (no connected steps) and does not change business behavior yet.
+## Shared runtime entry: `src/entrypoints/runtime/planner_runtime_entry.py`
 
-### db_migrate
-If `mode == "db_migrate"`:
-1) create `YdbClient(endpoint=YDB_ENDPOINT, database=YDB_DATABASE)`
-2) call `ensure_tables(client)`
-3) return summary with YDB stats
+This is the canonical runtime path used by both jobs and HTTP-triggered planner modes.
 
-### Planner bootstrap
-For non-migrate modes:
-1) resolve runtime context via `src/entrypoints/jobs/runtime_context_job.py` (`mode/mock_external/force_refresh` + timer shell marker)
-2) handle migrate branch via `src/entrypoints/jobs/db_migrate_branch.py` (early return)
-3) build dependencies + planner via `src/entrypoints/jobs/planner_setup_job.py`
-4) apply source switches via `src/entrypoints/jobs/source_switch_job.py` based on `NOTIFY_SOURCE`, `RENDER_SOURCE` and `source_policy`
+Flow:
+1. Resolve mode/context with `resolve_runtime_context(...)`.
+2. Handle `db_migrate` via `run_db_migrate_if_requested(...)`.
+3. Build planner runtime via `build_planner_runtime(...)`.
+4. Probe readmodel freshness marker via `run_readmodel_freshness_probe(...)`.
+5. Run planner pipeline via `run_planner_pipeline(...)`.
 
-### Optional readmodel freshness marker
-If `mode in {timer,test,morning,reminders-only,sync-only}` and `(RENDER_SOURCE=="ydb" or NOTIFY_SOURCE=="ydb")`:
-- `src/entrypoints/jobs/readmodel_probe_job.py` reads `frontend_v2:default` and prints `readmodel_freshness=` marker.
+Important behavior:
+- There is no legacy file-state hash gate in runtime.
+- Sync allow/skip decisions are made only inside canonical sync path (`YdbSyncService`).
+- Preflight-first pipeline can skip full snapshot fetch when unchanged.
 
-### Legacy file-based hash gate (optional)
-If `MIGRATION_ENABLE_SOURCE_HASH_GATE` and `mode in {timer,test,sync-only}`:
-- `src/entrypoints/jobs/hash_gate_job.py` builds hash basis from tasks loaded from the **Sheets repository** (not from snapshot ranges)
-- evaluates `evaluate_hash_gate(...)` using state file `MIGRATION_HASH_GATE_STATE_FILE`
-- returns `allow_sync`
+## `index.py`
 
-> Note: This is separate from the YDB-based source snapshot hash gate.
+`index.py` is an HTTP/runtime shell:
+- parses incoming event
+- dispatches HTTP routes via `src/entrypoints/http/*`
+- runs group-query flow via HTTP handlers and explicit legacy bindings namespace (`src/legacy/http_core_bindings.py`)
+- for planner modes delegates to `execute_runtime(main_func=run_planner_runtime, ...)`
 
-### Core use-case execution
-`src/entrypoints/jobs/planner_pipeline_job.py` calls `run_planner_use_case(planner, mode, allow_sync=allow_sync)` and then reads `tasks = source_task_repository.get_all_tasks()`.
+Key constraints now satisfied:
+- `index.py` does not import or call `main.main`
+- `index.py` has no direct `core.*` imports
 
-### Legacy blob write (disabled by default)
-If `LEGACY_BLOB_WRITE` and `STORE_MODE in {dual_write,ydb_primary,ydb_only}` and mode in {timer,test,sync-only}:
-- `src/entrypoints/jobs/legacy_store_write_job.py` writes legacy `dtm_operational_tasks` via `build_operational_store(...).upsert_tasks(records)`.
-Else prints: `migration_store_write=skipped write_path=normalized_only`.
+## API behavior
 
-### YDB normalized pipeline (sync + readmodel)
-This block runs if:
-- `STORE_MODE in {dual_write,ydb_primary,ydb_only}`
-- `mode in {timer,test,sync-only}`
-- `allow_sync == True`
-
-Steps:
-1) build `source_id` string based on sheet name and range `A1:Z2000`
-2) create `OperationalTaskRepo(endpoint, database, ensure_schema=YDB_MIGRATE_ON_START)`
-3) create `YdbSyncService(operational_repo, write_legacy_milestones=WRITE_LEGACY_MILESTONES)`
-4) read snapshots from Sheets repository:
-   - preflight range: `A1:Z{PREFLIGHT_TOP_ROWS}`
-   - full range: `A1:Z2000`
-   Each snapshot includes `values + colors`.
-5) transform planner tasks to operational payload: `src/entrypoints/jobs/task_payloads.py`
-6) read existing readmodel row `frontend_v2:default` and apply TTL skip:
-   - `ttl_skip = age_seconds < READMODEL_TTL_MINUTES * 60` (unless `force_refresh`)
-7) if ttl_skip: skip sync (`migration_operational_sync=skipped reason=readmodel_ttl_fresh`)
-8) else run sync:
-   - `sync_service.run(source_id, preflight_snapshot, full_snapshot, normalized_tasks, force_refresh, FULL_SYNC_INTERVAL_HOURS)`
-   - prints marker `migration_operational_sync=...`
-9) if sync succeeded and not ttl_skip:
-   - build readmodel via `FrontendReadmodelBuilderService(...).run(readmodel_id="frontend_v2:default")`
-   - prints marker `migration_readmodel_build=...`
-10) always prints `migration_defer_status sync_deferred=... readmodel_deferred=...`
-11) quality summary output is delegated to `src/entrypoints/jobs/quality_report_job.py`
-
-### Error handling
-- sync exceptions set `sync_deferred=True` and attempt to write last_error into `dtm_sync_state`.
-- readmodel exceptions set `readmodel_deferred=True`.
-
-### Key switches influencing behavior
-- `STORE_MODE`: {json_only, dual_write, ydb_primary, ydb_only}
-- `LEGACY_BLOB_WRITE`: enables legacy `dtm_operational_tasks` writes
-- `MIGRATION_ENABLE_SOURCE_HASH_GATE`: enables separate file-based hash gate
-- `PREFLIGHT_TOP_ROWS`: rows used for preflight snapshot hash
-- `FULL_SYNC_INTERVAL_HOURS`: force full sync at least every N hours
-- `READMODEL_TTL_MINUTES`: TTL to skip sync if readmodel is fresh
-- `FORCE_REFRESH`: bypass TTL and hash gates, but must not bump versions
-- `WRITE_LEGACY_MILESTONES`: whether to maintain legacy milestones table (compat)
-
-## `index.py` — HTTP entrypoint
-
-### What it currently does
-`index.py` is now mostly an orchestration shell:
-- parse raw serverless event → method/path/query/body
-- route to API v2 endpoints (with API v1 compatibility aliases)
-- supports “group query” flows (Telegram chat commands)
-- delegates heavy logic to `src/entrypoints/http/*` modules
-
-### API version policy
-- Active public contract: API v2.
-- API v1 routes are treated as legacy compatibility aliases and mapped to v2 handlers.
-- Runtime behavior for supported API v1 paths (`/api/v1`, `/api/v1/frontend`, `/api/v1/read-model`, `/api/v1/frontend/doc`, `/api/v1/read-model/doc`): same payload/documentation as v2 endpoints.
-- Runtime resilience for API v2 data endpoint: if `READMODEL_SOURCE=ydb` and YDB readmodel is temporarily unavailable (driver/runtime/init error), handler falls back to legacy source path to avoid hard HTTP failure.
-- Runtime resilience for API v2 with `READMODEL_SOURCE=legacy`: if legacy source fails at runtime, handler attempts emergency YDB snapshot fallback and serves payload with `meta.readmodelSource=ydb_emergency_fallback` when available.
-- Runtime error boundary: unexpected exceptions in HTTP dispatch/runtime paths are converted to structured API `503` responses (`http_dispatch_failed` / `frontend_source_unavailable`) instead of uncaught gateway `502`.
-
-### Extraction progress (CAM-ENTRYPOINT-REFORM-V1)
-- event payload/path/method/query parsing moved to `src/entrypoints/http/event_parser.py`
-- HTTP dispatch chain moved to `src/entrypoints/http/router.py` (`dispatch_http`)
-- API docs/handlers moved to dedicated modules:
-  - `src/entrypoints/http/frontend_v2_docs.py`
-  - `src/entrypoints/http/frontend_v2_handler.py`
-  - `src/entrypoints/http/group_query_handler.py`
-  - `src/entrypoints/http/http_dispatch_chain.py`
-  - `src/entrypoints/http/runtime_execution.py`
-- `index.py` keeps runtime orchestration and boundary wiring only
-
-### Intended direction (not implemented in this document)
-- `index.py` should remain thin by keeping HTTP behavior inside `src/entrypoints/http/*` modules.
-- group-query should continue to be routed via dedicated HTTP modules (no re-introduction of legacy `src/handlers/*` skeletons).
+- Primary contract: API v2 (`/api/v2/frontend` and docs endpoints).
+- Legacy-source failure on v2 path returns structured `503 frontend_source_unavailable`, with emergency YDB fallback path when available.
+- HTTP runtime has dispatch error boundary returning structured `503 http_dispatch_failed` instead of raw gateway failure.
 
 ## Why this doc exists
-`index.py` and `main.py` are known hotspots; this doc captures current behavior so refactors can be validated against reality.
+
+`index.py` and runtime entry modules are high-churn boundaries. This file is the current behavior reference used for trust checks in campaign work.

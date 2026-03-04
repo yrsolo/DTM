@@ -28,7 +28,10 @@ from src.entrypoints.http.group_query_handler import handle_group_query_if_reque
 from src.entrypoints.http.group_query_tasks_loader import (
     load_work_tasks_for_group_query as _load_work_tasks_for_group_query,
 )
-from src.entrypoints.http.http_dispatch_chain import build_http_dispatch_handlers
+from src.entrypoints.http.http_dispatch_chain import (
+    HttpDispatchHandlersContext,
+    build_http_dispatch_handlers,
+)
 from src.entrypoints.http.event_parser import normalize_path as _normalize_path
 from src.entrypoints.http.event_parser import query_params as _query_params
 from src.entrypoints.http.frontend_query_params import (
@@ -107,7 +110,7 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         }
 
     event_dict = event if isinstance(event, dict) else {}
-    root_handler, v2_handler = build_http_dispatch_handlers(
+    dispatch_ctx = HttpDispatchHandlersContext(
         json_response=_json_response,
         html_response=_html_response,
         error_response=_error_response,
@@ -146,6 +149,7 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         ),
         build_frontend_api_payload_v2=build_frontend_api_payload_v2,
     )
+    root_handler, v2_handler = build_http_dispatch_handlers(dispatch_ctx)
     try:
         http_response = dispatch_http(
             event_dict,

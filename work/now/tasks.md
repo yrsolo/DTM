@@ -137,15 +137,19 @@
 - [x] STRAIGHTEN-P04-T001: update `docs/system/dataflow.md` and campaign evidence with skipped/performed full-snapshot logs.
 - [x] STRAIGHTEN-P02-T002: remove dead old-gate artifacts (`hash_gate_job`, `src/services/sync/hash_*`, hash-gate constants/tests) from active contour.
 - [x] OPS-CAMP-P01-T004: archive completed `CAM-PIPELINE-STRAIGHTEN-V1` and switch active execution to `CAM-ENTRYPOINT-DEHYBRID-V1`.
+- [x] OPS-CAMP-P01-T005: archive completed `CAM-ENTRYPOINT-DEHYBRID-V1` and switch active execution to `CAM-ENTRYPOINT-HYGIENE-V1`.
 - [x] DEHYBRID-P01-T001: trust-gate verification for `CAM-ENTRYPOINT-DEHYBRID-V1` against current entrypoint/runtime imports (`index.py`, `main.py`, `src/entrypoints/http/*`, `src/entrypoints/jobs/*`).
 - [x] DEHYBRID-P01-T002: remove direct `index -> main` coupling via shared runtime entry (`src/entrypoints/runtime/planner_runtime_entry.py`).
 - [x] DEHYBRID-P03-T001: remove direct `core.*` imports from `index.py` by moving API/group-query composition behind `src/entrypoints/http/*` boundary.
 - [x] DEHYBRID-P03-T002: isolate remaining legacy composition roots (group_query/API payload bindings) behind explicit `src/legacy/*` namespace and default-modern wiring.
-- [ ] DEHYBRID-P04-T001: sync entrypoint docs and campaign evidence for dehybrid state (`index` no `core.*`, no `index -> main` coupling).
+- [x] DEHYBRID-P04-T001: sync entrypoint docs and campaign evidence for dehybrid state (`index` no `core.*`, no `index -> main` coupling).
+- [x] HYGIENE-P01-T001: trust-gate verification for hyperfunction signatures in current entrypoint/runtime pipeline (`index.py`, `http_dispatch_chain.py`, `runtime_execution.py`, `planner_pipeline_job.py`, `pipeline_runtime.py`).
+- [x] HYGIENE-P02-T001: replace HTTP dispatch hyperfunction args with typed context object (`build_http_dispatch_handlers` + `index.py` wiring).
+- [ ] HYGIENE-P02-T002: replace runtime execution hyperfunction args with typed context object (`execute_runtime` + `index.py` wiring).
 
 ## Blockers
 - none
 
 ## Last Update
-- 2026-03-04 (DEHYBRID-P03-T002 completed: legacy core bindings isolated under `src/legacy/*`)
+- 2026-03-04 (HYGIENE-P02-T001 completed: HTTP dispatch wiring moved to typed context object)
 
