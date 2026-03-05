@@ -100,7 +100,6 @@ class GoogleSheetsTaskRepository(TaskRepository):
         df["color_status"] = df["color"].apply(
             lambda color: _determine_status_from_color(color, self.color_status_map)
         )
-        df["id"] = df.index + 2
         df["name"] = df.apply(self._generate_task_name, axis=1)
 
         self.dop = {

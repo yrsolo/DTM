@@ -23,3 +23,15 @@
   - `python -m unittest tests.services.test_pipeline_runtime -v` (4/4 OK)
   - `python -m unittest tests.services.test_sync_source_hash_gate -v` (8/8 OK)
   - `python -m unittest tests.api.test_frontend_api_routing tests.api.test_frontend_api_v2_payload -v` (19/19 OK)
+- 2026-03-05: legacy-safe API snapshot recovery path stabilized without touching working legacy timer.
+  - `src/services/timer_pipeline.py`: `mode=sync-only` now executes canonical YDB sync/readmodel rebuild even when `store_mode=legacy`.
+  - `agent/invoke_function_smoke.py`: added `--force-refresh` payload flag.
+  - `scripts/invoke_cloud_timer.cmd`: added `--sync-only` and `--force-refresh` flags (`timer dry-run mock` remains default).
+  - docs aligned: `docs/system/entrypoints_index_main.md`, `docs/system/runbook.md`.
+- 2026-03-05: fixed runtime crashes caused by legacy integer timestamps in YDB state/readmodel rows.
+  - `src/services/sync_service.py`: normalize `last_full_sync_at_utc` (`int|float|str|datetime -> datetime`) before preflight stale-check and state writes.
+  - `src/services/timer_pipeline.py`: normalize readmodel `generated_at_utc` before TTL check.
+  - Added regressions:
+    - `tests/services/test_sync_source_hash_gate.py::test_sync_preflight_handles_legacy_int_last_full_timestamp`
+    - `tests/services/test_pipeline_runtime.py::test_pipeline_handles_legacy_int_generated_at_without_crash`
+  - Local verification run: `main(mode='sync-only', force_refresh=True)` completed, `migration_readmodel_build ... tasks_count=12`.

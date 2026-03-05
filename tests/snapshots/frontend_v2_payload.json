@@ -10,7 +10,7 @@
       "sheetName": "SourceSheet",
       "sheetUrl": ""
     },
-    "hash": "c9dd2e0b67ed80ef84f23e75afffde2c3c8507d234a28fbfbae5585f3242a002",
+    "hash": "e0f42d8d183a51c69d16460bb955023010c537fddbb96052d125de138ee9b811",
     "features": {
       "taskHash": true,
       "taskRevision": true,
@@ -117,6 +117,7 @@
       "brand": "BrandA",
       "format_": "Banner",
       "customer": "Cust",
+      "history": "work",
       "ownerId": "ae078c0616e907b1",
       "groupId": "9f33f1e54cc26a14",
       "status": "work",
@@ -150,6 +151,7 @@
       "brand": "BrandB",
       "format_": "Video",
       "customer": "Cust",
+      "history": "pre_done",
       "ownerId": "4194979ffab99f87",
       "groupId": "3f41549ff6592954",
       "status": "pre_done",

@@ -19,6 +19,7 @@ from config import (
 )
 from src.app.context import AppContext
 from src.config.loader import load_config
+from src.services.mappers.task_payload_mapper import TaskPayloadMapper
 
 
 def build_app_context() -> AppContext:
@@ -43,5 +44,6 @@ def build_app_context() -> AppContext:
         "migration_store_file": MIGRATION_STORE_FILE,
         "write_legacy_milestones": WRITE_LEGACY_MILESTONES,
         "ydb_migrate_on_start": YDB_MIGRATE_ON_START,
+        "task_payload_mapper": TaskPayloadMapper(),
     }
     return AppContext(cfg=cfg, deps=deps)

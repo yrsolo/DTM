@@ -34,6 +34,7 @@ def frontend_api_v2_doc() -> dict[str, Any]:
                 "type": "string",
                 "default": "work,pre_done",
                 "description": "Comma-separated statuses list.",
+                "allowed_values": ["work", "pre_done", "wait", "done"],
                 "example": "work,pre_done,wait",
             },
             "designer": {
@@ -169,6 +170,7 @@ def frontend_api_v2_doc() -> dict[str, Any]:
                 "brand": "string",
                 "format_": "string",
                 "customer": "string",
+                "history": "string (raw textual status from source)",
                 "ownerId": "string|null",
                 "groupId": "string|null",
                 "status": "string",
@@ -194,6 +196,7 @@ def frontend_api_v2_doc() -> dict[str, Any]:
             "brand",
             "format_",
             "customer",
+            "history",
             "ownerId",
             "groupId",
             "status",

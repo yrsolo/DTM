@@ -1,5 +1,48 @@
 # Active Tasks
 
+- [x] CAM-SYNC-BULK-PIPELINE-V1-P01-T001: add YDB bulk primitives for task versions (`upsert_task_versions_bulk`, `archive_task_versions_bulk`) with chunking.
+- [x] CAM-SYNC-BULK-PIPELINE-V1-P02-T001: refactor sync runtime to compute version/archive rows in memory and flush in bulk (no per-task version writes).
+- [x] CAM-SYNC-BULK-PIPELINE-V1-P03-T001: extend sync/timer observability with bulk counters and keep test stubs backward-safe.
+- [x] CAM-SYNC-BULK-PIPELINE-V1-P04-T001: add/refresh targeted tests (`sync_source_hash_gate`, `pipeline_runtime`, adapter bulk versions tests).
+
+- [x] API-TASKID-T001: preserve source sheet `id` column as canonical `task_id` (stop overwriting with row index in Sheets loaders).
+- [x] API-LIMIT-SORT-T001: apply `limit` after descending sort by task end date so API returns latest N tasks.
+- [x] API-READMODEL-DATE-T001: harden numeric date coercion in readmodel builder to handle epoch-like large ints without overflow.
+- [x] API-FORCE-REFRESH-MILESTONES-T001: keep writing task versions and `milestones_v` for new tasks even under `force_refresh` to avoid synthetic-only readmodel dates.
+
+- [x] API-READMODEL-STATUS-T001: include final/idle statuses (`done`, `wait`) into readmodel snapshot build so `/api/v2/frontend?statuses=done` returns data.
+
+- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P01-T001: add first-class `history` column into YDB schema (`_ddl_tasks` + `ensure_tasks_history_column` migration hook in `ensure_tables`).
+- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P02-T001: hard-cutover operational write path to persist `history` in `dtm_tasks` upserts (main + fallback queries).
+- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P03-T001: hard-cutover read paths (`readmodel_builder`, `frontend_v2_handler`) to read `history` only from row column (no JSON parse from `raw_payload`).
+- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P04-T001: align task mappers/contracts/docs to first-class `history` column semantics.
+- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P05-T001: execute TEST reset + rebuild (`sync-only --force-refresh`) and verify API active tasks and `history` values.
+- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P06-T001: run regression tests and record evidence/trust-gate in campaign artifacts.
+
+- [x] API-HISTORY-T001: restore raw textual task status as `tasks[].history` in API v2 payload while keeping normalized `status` semantics.
+- [x] API-HISTORY-T002: include `history` in sync content-hash basis and keep backward-safe readmodel fallback (`raw_payload.history|status|""`).
+- [x] API-HISTORY-T003: align docs/tests/snapshots with new `history` field and verify full smoke suite + `check_no_monsters`.
+- [x] BRANCH-SYNC-T001: synchronize `test` branch to `dev` using reset + force-with-lease to restore linear promotion policy.
+- [x] API-STATUS-COLOR-T001: fix inflated `work` statuses by mapping from canonical column-A colors (`A2:A...`) instead of lossy wide-range snapshot colors.
+- [x] OPS-TOOLS-TIMER-T001: add Windows CMD wrapper `scripts/invoke_cloud_timer.cmd` for HTTP timer invoke (dry-run default, `--live` optional).
+- [x] RUNTIME-TIMER-T001: restore legacy planner execution for standard timer/test modes when `store_mode=legacy` to avoid no-op local/cloud timer runs.
+- [x] API-REBUILD-T001: allow canonical YDB/readmodel rebuild via `mode=sync-only` even when `store_mode=legacy`.
+- [x] API-REBUILD-T002: add cloud invoke flags `--sync-only` and `--force-refresh` (cmd + smoke utility) for deterministic API snapshot recovery.
+- [x] API-REBUILD-T003: fix legacy YDB timestamp coercion (`sync_state` and readmodel generated_at) to prevent `datetime - int` crashes before rebuild write.
+
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P01-T001: inventory functional context dataclasses/lambda wiring and record replacements in `docs/system/demonster_inventory.md`.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P02-T001: normalize `AppContext` runtime deps (no callback/factory fields) and bootstrap wiring.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P03-T001: stabilize HTTP DTO contour (`HttpRequest`/`HttpResponse`) for router dispatch.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P03-T002: replace `HttpRouterContext` with `HttpRouter(AppContext)` and class handlers.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P03-T003: remove lambda notifier/loader wiring from `index.py` and group-query flow.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P04-T001: introduce canonical `TimerPipeline(AppContext)` in `src/services/timer_pipeline.py`.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P04-T002: extract task payload mapping to `src/services/mappers/task_payload_mapper.py`.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P04-T003: remove `SyncReadmodelPipelineContext` from runtime path and switch entry runtime to direct timer pipeline call.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P05-T001: remove runtime repo-mutation injection in standard path (`_apply_task_source_switches` contour).
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P06-T001: run targeted API/pipeline tests after demonster refactor.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P06-T002: add anti-recidive check script `scripts/check_no_monsters.py`.
+- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P06-T003: update docs/evidence (`entrypoints_index_main`, `dataflow`, campaign evidence).
+
 - [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T001: map runtime usage of `src/services/sync_service.py` vs `src/services/sync/sync_service.py`.
 - [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T002: confirm canonical sync module and add explicit `CANONICAL` header note.
 - [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T003: quarantine/remove duplicate sync module path from runtime imports.
@@ -197,5 +240,5 @@
 - none
 
 ## Last Update
-- 2026-03-05 (YC deploy incident response: runtime rolled back to python311 for test contour stability; timeout remains 240s)
+- 2026-03-05 (restored API v2 `tasks[].history`, aligned tests/snapshots/docs, and synced `test` branch to `dev`)
 

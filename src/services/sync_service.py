@@ -35,12 +35,38 @@ def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _to_utc_datetime(value: Any) -> datetime | None:
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value if value.tzinfo is not None else value.replace(tzinfo=timezone.utc)
+    if isinstance(value, (int, float)):
+        raw = float(value)
+        if raw <= 0:
+            return None
+        if raw > 1e18:
+            raw /= 1_000_000_000.0
+        elif raw > 1e15:
+            raw /= 1_000_000.0
+        elif raw > 1e12:
+            raw /= 1_000.0
+        return datetime.fromtimestamp(raw, tz=timezone.utc)
+    text = str(value).strip()
+    if not text:
+        return None
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
 def _content_hash_for_task(task: dict[str, Any], milestones: list[dict[str, Any]]) -> str:
     basis = {
         "title": str(task.get("title", task.get("name", ""))).strip(),
         "brand": str(task.get("brand", "")).strip(),
         "format_": str(task.get("format_", "")).strip(),
         "customer": str(task.get("customer", "")).strip(),
+        "history": str(task.get("history", "")).strip(),
         "owner_id": str(task.get("owner_id", task.get("designer", ""))).strip(),
         "group_id": str(task.get("group_id", task.get("project_name", ""))).strip(),
         "raw_timing": str(task.get("raw_timing", "")).strip(),
@@ -108,6 +134,9 @@ class SyncRunResult:
     forced_refresh: bool
     tasks_upserted: int
     milestones_upserted: int
+    version_rows_upserted: int
+    version_rows_archived: int
+    milestones_v_rows_upserted: int
     ydb_queries_count: int
     ydb_error_code: str
 
@@ -169,7 +198,7 @@ class YdbSyncService:
                 now_utc=now_utc,
                 reason="preflight_changed",
             )
-        last_full = state.last_full_sync_at_utc
+        last_full = _to_utc_datetime(state.last_full_sync_at_utc)
         if last_full is None:
             return PreflightDecision(
                 preflight_hash_50=preflight_hash_50,
@@ -205,12 +234,16 @@ class YdbSyncService:
         )
         if decision.full_sync_required:
             return None
+        current_state = self.repo.get_sync_state(source_id)
+        last_full_sync_at_utc = _to_utc_datetime(
+            current_state.last_full_sync_at_utc if current_state is not None else None
+        )
         self.repo.set_sync_state(
             source_id=source_id,
             preflight_hash_50=decision.preflight_hash_50,
             source_hash_full=decision.previous_source_hash_full or "",
             synced_at_utc=decision.now_utc,
-            last_full_sync_at_utc=self.repo.get_sync_state(source_id).last_full_sync_at_utc,
+            last_full_sync_at_utc=last_full_sync_at_utc,
             last_success_at_utc=decision.now_utc,
         )
         return SyncRunResult(
@@ -224,6 +257,9 @@ class YdbSyncService:
             forced_refresh=force_refresh,
             tasks_upserted=0,
             milestones_upserted=0,
+            version_rows_upserted=0,
+            version_rows_archived=0,
+            milestones_v_rows_upserted=0,
             ydb_queries_count=self.repo.client.stats.ydb_queries_count,
             ydb_error_code=self.repo.client.stats.error_code,
         )
@@ -251,12 +287,16 @@ class YdbSyncService:
         source_hash_full = stable_json_hash(source_range_values)
 
         if not decision.full_sync_required:
+            current_state = self.repo.get_sync_state(source_id)
+            last_full_sync_at_utc = _to_utc_datetime(
+                current_state.last_full_sync_at_utc if current_state is not None else None
+            )
             self.repo.set_sync_state(
                 source_id=source_id,
                 preflight_hash_50=preflight_hash_50,
                 source_hash_full=previous_full or source_hash_full,
                 synced_at_utc=now_utc,
-                last_full_sync_at_utc=self.repo.get_sync_state(source_id).last_full_sync_at_utc,
+                last_full_sync_at_utc=last_full_sync_at_utc,
                 last_success_at_utc=now_utc,
             )
             return SyncRunResult(
@@ -270,6 +310,9 @@ class YdbSyncService:
                 forced_refresh=force_refresh,
                 tasks_upserted=0,
                 milestones_upserted=0,
+                version_rows_upserted=0,
+                version_rows_archived=0,
+                milestones_v_rows_upserted=0,
                 ydb_queries_count=self.repo.client.stats.ydb_queries_count,
                 ydb_error_code=self.repo.client.stats.error_code,
             )
@@ -294,6 +337,9 @@ class YdbSyncService:
                 forced_refresh=force_refresh,
                 tasks_upserted=0,
                 milestones_upserted=0,
+                version_rows_upserted=0,
+                version_rows_archived=0,
+                milestones_v_rows_upserted=0,
                 ydb_queries_count=self.repo.client.stats.ydb_queries_count,
                 ydb_error_code=self.repo.client.stats.error_code,
             )
@@ -302,8 +348,18 @@ class YdbSyncService:
         milestones_by_task: dict[str, list[dict[str, Any]]] = {}
         milestones_versions_by_task: dict[tuple[str, int], list[dict[str, Any]]] = {}
         changed_version_tasks: dict[str, int] = {}
-        pending_archives: list[tuple[str, int]] = []
-        existing_rows = {str(row.get("task_id", "")).strip(): row for row in self.repo.list_tasks() if str(row.get("task_id", "")).strip()}
+        versions_rows_bulk: list[dict[str, Any]] = []
+        archives_rows_bulk: list[dict[str, Any]] = []
+        normalized_task_ids = [
+            str(task.get("task_id", task.get("id", ""))).strip()
+            for task in normalized_tasks
+            if str(task.get("task_id", task.get("id", ""))).strip()
+        ]
+        existing_rows = {
+            str(row.get("task_id", "")).strip(): row
+            for row in self.repo.list_task_head_versions_by_ids(normalized_task_ids)
+            if str(row.get("task_id", "")).strip()
+        }
 
         for task in normalized_tasks:
             task_id = str(task.get("task_id", task.get("id", ""))).strip()
@@ -351,18 +407,20 @@ class YdbSyncService:
                 task_revision = max(previous_version, 1)
                 create_new_version = False
 
-            if create_new_version and not force_refresh:
-                self.repo.upsert_task_version(
-                    task_id=task_id,
-                    version=task_revision,
-                    status="active",
-                    content_hash=content_hash,
-                    payload_json=json.dumps(task, ensure_ascii=False, sort_keys=True),
-                    created_at_utc=now_utc,
+            if create_new_version:
+                versions_rows_bulk.append(
+                    {
+                        "task_id": task_id,
+                        "version": task_revision,
+                        "status": "active",
+                        "content_hash": content_hash,
+                        "payload_json": json.dumps(task, ensure_ascii=False, sort_keys=True),
+                        "created_at_utc": now_utc,
+                    }
                 )
                 changed_version_tasks[task_id] = task_revision
-                if previous_version > 0:
-                    pending_archives.append((task_id, previous_version))
+                if previous_version > 0 and not force_refresh:
+                    archives_rows_bulk.append({"task_id": task_id, "version": previous_version})
 
             task_rows.append(
                 {
@@ -372,6 +430,7 @@ class YdbSyncService:
                     "format_": str(task.get("format_", "")).strip(),
                     "customer": str(task.get("customer", "")).strip(),
                     "raw_timing": str(task.get("raw_timing", "")).strip(),
+                    "history": str(task.get("history", task.get("raw_status", ""))).strip(),
                     "owner_id": str(task.get("owner_id", task.get("designer", ""))).strip(),
                     "group_id": str(task.get("group_id", task.get("project_name", ""))).strip(),
                     "status": str(task.get("status", task.get("color_status", "unknown"))).strip().lower() or "unknown",
@@ -386,7 +445,7 @@ class YdbSyncService:
                 }
             )
             milestones_by_task[task_id] = milestones if isinstance(milestones, list) else []
-            if create_new_version and not force_refresh:
+            if create_new_version:
                 version_rows = milestones if isinstance(milestones, list) else []
                 if not version_rows:
                     raise RuntimeError("milestones_write_empty")
@@ -398,16 +457,19 @@ class YdbSyncService:
             milestones_total = 0
             print("legacy_milestones_write=skipped reason=disabled")
 
+        version_rows_upserted = self.repo.upsert_task_versions_bulk(versions_rows_bulk)
+        version_rows_archived = self.repo.archive_task_versions_bulk(archives_rows_bulk)
+        milestones_v_rows_upserted = 0
         if milestones_versions_by_task:
-            milestones_written = self.repo.upsert_task_milestones_versions_bulk(milestones_versions_by_task)
-            if milestones_written <= 0:
+            milestones_v_rows_upserted = self.repo.upsert_task_milestones_versions_bulk(milestones_versions_by_task)
+            if milestones_v_rows_upserted <= 0:
                 raise RuntimeError("milestones_write_empty")
         tasks_upserted = self.repo.upsert_tasks_batch(task_rows)
 
         if changed_version_tasks:
             current_rows = {
                 str(row.get("task_id", "")).strip(): int(row.get("current_version", row.get("task_revision", 0)) or 0)
-                for row in self.repo.list_tasks()
+                for row in self.repo.list_task_head_versions_by_ids(list(changed_version_tasks.keys()))
                 if str(row.get("task_id", "")).strip()
             }
             missing_version_head = [
@@ -430,9 +492,6 @@ class YdbSyncService:
             if missing_milestones:
                 raise RuntimeError("milestones_current_version_missing")
 
-        for task_id, previous_version in pending_archives:
-            self.repo.archive_task_version(task_id=task_id, version=previous_version)
-
         self.repo.set_sync_state(
             source_id=source_id,
             preflight_hash_50=preflight_hash_50,
@@ -452,6 +511,9 @@ class YdbSyncService:
             forced_refresh=force_refresh,
             tasks_upserted=tasks_upserted,
             milestones_upserted=milestones_total,
+            version_rows_upserted=version_rows_upserted,
+            version_rows_archived=version_rows_archived,
+            milestones_v_rows_upserted=milestones_v_rows_upserted,
             ydb_queries_count=self.repo.client.stats.ydb_queries_count,
             ydb_error_code=self.repo.client.stats.error_code,
         )

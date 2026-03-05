@@ -1,12 +1,14 @@
 # Backlog
 
 ## In Progress
-- none
+- CAM-SYNC-BULK-PIPELINE-V1
 
 ## Planned
 - none
 
 ## Done
+- CAM-HISTORY-FIELD-NORMALIZATION-V1 (archived)
+- CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1 (archived)
 - CAM-ENTRYPOINT-HYGIENE-V2 (archived)
 - CAM-ENTRYPOINT-DEHYBRID-V2 (archived)
 - CAM-PIPELINE-STRAIGHTEN-V2 (archived)

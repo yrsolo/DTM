@@ -37,6 +37,7 @@ class _TaskView:
     designer: str
     status: str
     color_status: str
+    history: str
     brand: str
     format_: str
     project_name: str
@@ -56,6 +57,8 @@ class ReadmodelBuildResult:
 
 class FrontendReadmodelBuilderService:
     """Build `frontend_v2:default` payload and persist it in YDB."""
+
+    _READMODEL_SNAPSHOT_STATUSES = ["work", "pre_done", "wait", "done"]
 
     def __init__(
         self,
@@ -100,7 +103,10 @@ class FrontendReadmodelBuilderService:
                 ydb_queries_count=self.operational_repo.client.stats.ydb_queries_count + self.readmodel_repo.client.stats.ydb_queries_count,
             )
 
-        task_rows = self.operational_repo.list_tasks(statuses=["work", "pre_done"])
+        task_rows = self.operational_repo.list_tasks(
+            statuses=list(self._READMODEL_SNAPSHOT_STATUSES),
+            include_raw_payload=False,
+        )
         people_views = self._build_people_from_task_rows(task_rows)
         task_versions: dict[str, int] = {}
         for row in task_rows:
@@ -109,7 +115,10 @@ class FrontendReadmodelBuilderService:
             if task_id and current_version > 0:
                 task_versions[task_id] = current_version
 
-        milestone_rows = self.operational_repo.list_milestones_for_versions(task_versions=task_versions)
+        milestone_rows = self.operational_repo.list_milestones_for_versions(
+            task_versions=task_versions,
+            include_details=False,
+        )
         milestones_by_task: dict[str, list[dict[str, Any]]] = {}
         for item in milestone_rows:
             task_id = str(item.get("task_id", "")).strip()
@@ -149,6 +158,7 @@ class FrontendReadmodelBuilderService:
                     designer=str(row.get("owner_id", "")).strip(),
                     status=str(row.get("status", "")).strip(),
                     color_status=str(row.get("status", "")).strip(),
+                    history=self._extract_history(row),
                     brand=str(row.get("brand", "")).strip(),
                     format_=str(row.get("format_", "")).strip(),
                     project_name=str(row.get("group_id", "")).strip(),
@@ -163,8 +173,8 @@ class FrontendReadmodelBuilderService:
             people=people_views,
             env_name=self.env_name,
             source_sheet_name=self.source_sheet_name,
-            statuses=["work", "pre_done"],
-            limit=500,
+            statuses=list(self._READMODEL_SNAPSHOT_STATUSES),
+            limit=max(len(task_views), 500),
             include_people=True,
             designer_filter="",
         )
@@ -196,6 +206,10 @@ class FrontendReadmodelBuilderService:
         )
 
     @staticmethod
+    def _extract_history(row: dict[str, Any]) -> str:
+        return str(row.get("history", "")).strip()
+
+    @staticmethod
     def _resolve_synthetic_start_date(row: dict[str, Any]) -> str:
         for key in ("created_at_utc", "first_seen_at_utc", "updated_at_utc", "next_due_date", "start_date", "end_date"):
             value = row.get(key)
@@ -213,13 +227,29 @@ class FrontendReadmodelBuilderService:
         if isinstance(value, date):
             return value.isoformat()
         if isinstance(value, (int, float)):
-            # YDB Date is often represented as days since Unix epoch.
-            return (date(1970, 1, 1) + timedelta(days=int(value))).isoformat()
+            raw = int(value)
+            if raw <= 0:
+                return None
+            try:
+                # YDB Date is often represented as days since Unix epoch.
+                if raw < 100_000:
+                    return (date(1970, 1, 1) + timedelta(days=raw)).isoformat()
+                # Fallback for epoch-like values (s/ms/us/ns).
+                ts = float(raw)
+                if ts > 1e18:
+                    ts /= 1_000_000_000.0
+                elif ts > 1e15:
+                    ts /= 1_000_000.0
+                elif ts > 1e12:
+                    ts /= 1_000.0
+                return datetime.fromtimestamp(ts, tz=timezone.utc).date().isoformat()
+            except (OverflowError, OSError, ValueError):
+                return None
         text = str(value).strip()
         if not text:
             return None
         if text.isdigit():
-            return (date(1970, 1, 1) + timedelta(days=int(text))).isoformat()
+            return FrontendReadmodelBuilderService._coerce_date_iso(int(text))
         if len(text) >= 10:
             candidate = text[:10]
             try:
@@ -238,8 +268,20 @@ class FrontendReadmodelBuilderService:
                 continue
             raw_payload = row.get("raw_payload")
             designer_name = ""
+            payload_obj: dict[str, Any] = {}
             if isinstance(raw_payload, dict):
-                designer_name = str(raw_payload.get("designer", "")).strip()
+                payload_obj = raw_payload
+            elif isinstance(raw_payload, str):
+                text = raw_payload.strip()
+                if text:
+                    try:
+                        parsed = json.loads(text)
+                        if isinstance(parsed, dict):
+                            payload_obj = parsed
+                    except json.JSONDecodeError:
+                        payload_obj = {}
+            if payload_obj:
+                designer_name = str(payload_obj.get("designer", "")).strip()
             person = Person(
                 person_id=owner_id,
                 name=designer_name or owner_id,

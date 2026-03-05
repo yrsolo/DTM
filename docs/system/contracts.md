@@ -13,13 +13,15 @@ Fields (minimum set observed in current code):
 - owner_id: str
 - group_id: str
 - raw_timing: str
-- status: str (derived from color mapping)
+- status: str (derived from color mapping; normalized workflow status)
+- history: str (raw textual status from source column)
 - min_date: YYYY-MM-DD? (derived from milestones planned dates)
 - max_date: YYYY-MM-DD? (derived from milestones planned dates)
 - milestones: list[Milestone]
 
 Notes:
 - Some fields may be empty in sheet; still included in hashing basis after normalization.
+- `history` is stored as first-class column `dtm_tasks.history`; `raw_payload` is diagnostic only and not a source of truth for `history`.
 
 ## 2) Milestone
 - idx: int (ordering within task)

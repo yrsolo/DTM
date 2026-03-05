@@ -66,6 +66,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         payload = json.loads(response["body"])
         self.assertEqual(response["statusCode"], 200)
         self.assertEqual(payload.get("meta", {}).get("artifact"), "dtm_frontend_api_v2")
+        self.assertIn("history", payload.get("tasks", [{}])[0])
 
     def test_v2_endpoint_returns_v2_payload(self) -> None:
         event = _fixture_event()
@@ -101,6 +102,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertIn("brand", body)
         self.assertIn("format_", body)
         self.assertIn("customer", body)
+        self.assertIn("history", body)
         self.assertIn("reserved", body)
         self.assertIn("implemented", body)
 
@@ -113,9 +115,14 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         response = asyncio.run(index.handler(event, None))
         payload = json.loads(response.get("body", "{}"))
         field_status = payload.get("field_status", {})
+        statuses_query = payload.get("query", {}).get("statuses", {})
         self.assertEqual(response["statusCode"], 200)
         self.assertEqual(field_status.get("tasks[].hash"), "reserved")
         self.assertEqual(field_status.get("summary"), "implemented")
+        self.assertEqual(
+            statuses_query.get("allowed_values"),
+            ["work", "pre_done", "wait", "done"],
+        )
 
     def test_v2_window_validation_requires_both_bounds(self) -> None:
         event = _fixture_event()
@@ -170,6 +177,63 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 200)
         self.assertEqual(payload.get("meta", {}).get("readmodelSource"), "ydb")
         self.assertEqual(payload.get("summary", {}).get("tasksReturned"), 1)
+
+    def test_v2_limit_returns_latest_tasks_by_end_date(self) -> None:
+        index.FrontendReadmodelRepo = lambda *args, **kwargs: SimpleNamespace(  # type: ignore[assignment]
+            get_readmodel=lambda readmodel_id: SimpleNamespace(  # noqa: ARG005
+                readmodel_id="frontend_v2:default",
+                payload_hash="sha256:test",
+                built_from_source_hash="source_hash",
+                payload=lambda: {
+                    "meta": {"artifact": "dtm_frontend_api_v2"},
+                    "summary": {"tasksReturned": 3},
+                    "filters": {"statuses": ["work"]},
+                    "entities": {"people": [], "groups": [], "tags": [], "enums": {}},
+                    "tasks": [
+                        {"id": "old", "status": "work", "ownerId": "x", "groupId": "g", "date": {"end": "2026-03-01"}},
+                        {"id": "new", "status": "work", "ownerId": "x", "groupId": "g", "date": {"end": "2026-03-20"}},
+                        {"id": "mid", "status": "work", "ownerId": "x", "groupId": "g", "date": {"end": "2026-03-10"}},
+                    ],
+                },
+            )
+        )
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend?statuses=work&limit=1"
+        event["queryStringParameters"] = {"statuses": "work", "limit": "1"}
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response.get("body", "{}"))
+
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(payload.get("summary", {}).get("tasksReturned"), 1)
+        self.assertEqual(payload.get("tasks", [{}])[0].get("id"), "new")
+
+    def test_runtime_mode_parses_sync_only_and_force_refresh(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["queryStringParameters"] = {
+            "mode": "sync-only",
+            "force_refresh": "1",
+        }
+        request_payload, is_http_event = index._extract_payload(event)
+        run_mode = index._extract_run_mode(
+            event,
+            request_payload,
+            is_http_event,
+            allowed_run_modes=index.ALLOWED_RUN_MODES,
+            query_params=index._query_params,
+        )
+        force_refresh = index._extract_force_refresh(
+            event,
+            request_payload,
+            is_http_event,
+            query_params=index._query_params,
+            parse_bool=index._parse_bool,
+        )
+        self.assertEqual(run_mode, "sync-only")
+        self.assertTrue(force_refresh)
 
     def test_v2_returns_503_when_readmodel_transport_unavailable(self) -> None:
         class _BrokenReadmodelRepo:

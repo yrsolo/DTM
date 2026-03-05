@@ -122,6 +122,7 @@ class OperationalTaskRepo:
                     "links_json": json.dumps(task.get("links", {}), ensure_ascii=False),
                     "task_hash": str(task.get("task_hash", "")).strip() or None,
                     "task_revision": int(task.get("task_revision", 0) or 0),
+                    "history": str(task.get("history", task.get("raw_status", ""))).strip(),
                     "raw_payload": json.dumps(task.get("raw_payload", task), ensure_ascii=False),
                     "updated_at_utc": now,
                 }
@@ -147,17 +148,18 @@ class OperationalTaskRepo:
                 links_json:Utf8,
                 task_hash:Utf8?,
                 task_revision:Uint64,
+                history:Utf8,
                 raw_payload:Utf8,
                 updated_at_utc:Timestamp
             >
         >;
         UPSERT INTO `{self.tasks_table}` (
             task_id, title, brand, format_, customer, raw_timing, owner_id, group_id, status, start_date, end_date, next_due_date,
-            tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
+            tags_json, links_json, task_hash, task_revision, history, raw_payload, updated_at_utc
         )
         SELECT
             task_id, title, brand, format_, customer, raw_timing, owner_id, group_id, status, start_date, end_date, next_due_date,
-            tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
+            tags_json, links_json, task_hash, task_revision, history, raw_payload, updated_at_utc
         FROM AS_TABLE($rows);
         """
         try:
@@ -165,7 +167,7 @@ class OperationalTaskRepo:
         except Exception as exc:
             if not self._is_missing_task_columns_error(exc):
                 raise
-            legacy_rows = [
+            fallback_rows = [
                 {
                     "task_id": item["task_id"],
                     "title": item["title"],
@@ -179,12 +181,13 @@ class OperationalTaskRepo:
                     "links_json": item["links_json"],
                     "task_hash": item["task_hash"],
                     "task_revision": item["task_revision"],
+                    "history": item["history"],
                     "raw_payload": item["raw_payload"],
                     "updated_at_utc": item["updated_at_utc"],
                 }
                 for item in rows
             ]
-            legacy_query = f"""
+            fallback_query = f"""
             DECLARE $rows AS List<
                 Struct<
                     task_id:Utf8,
@@ -199,20 +202,73 @@ class OperationalTaskRepo:
                     links_json:Utf8,
                     task_hash:Utf8?,
                     task_revision:Uint64,
+                    history:Utf8,
                     raw_payload:Utf8,
                     updated_at_utc:Timestamp
                 >
             >;
             UPSERT INTO `{self.tasks_table}` (
                 task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
-                tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
+                tags_json, links_json, task_hash, task_revision, history, raw_payload, updated_at_utc
             )
             SELECT
                 task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
-                tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
+                tags_json, links_json, task_hash, task_revision, history, raw_payload, updated_at_utc
             FROM AS_TABLE($rows);
             """
-            self.client.execute(legacy_query, {"$rows": legacy_rows})
+            try:
+                self.client.execute(fallback_query, {"$rows": fallback_rows})
+            except Exception as fallback_exc:
+                if not self._is_missing_task_columns_error(fallback_exc):
+                    raise
+                oldest_rows = [
+                    {
+                        "task_id": item["task_id"],
+                        "title": item["title"],
+                        "owner_id": item["owner_id"],
+                        "group_id": item["group_id"],
+                        "status": item["status"],
+                        "start_date": item["start_date"],
+                        "end_date": item["end_date"],
+                        "next_due_date": item["next_due_date"],
+                        "tags_json": item["tags_json"],
+                        "links_json": item["links_json"],
+                        "task_hash": item["task_hash"],
+                        "task_revision": item["task_revision"],
+                        "raw_payload": item["raw_payload"],
+                        "updated_at_utc": item["updated_at_utc"],
+                    }
+                    for item in rows
+                ]
+                oldest_query = f"""
+                DECLARE $rows AS List<
+                    Struct<
+                        task_id:Utf8,
+                        title:Utf8,
+                        owner_id:Utf8,
+                        group_id:Utf8,
+                        status:Utf8,
+                        start_date:Date?,
+                        end_date:Date?,
+                        next_due_date:Date?,
+                        tags_json:Utf8,
+                        links_json:Utf8,
+                        task_hash:Utf8?,
+                        task_revision:Uint64,
+                        raw_payload:Utf8,
+                        updated_at_utc:Timestamp
+                    >
+                >;
+                UPSERT INTO `{self.tasks_table}` (
+                    task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
+                    tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
+                )
+                SELECT
+                    task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
+                    tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
+                FROM AS_TABLE($rows);
+                """
+                self.client.execute(oldest_query, {"$rows": oldest_rows})
         return len(rows)
 
     def replace_task_milestones(self, task_id: str, milestones: list[dict[str, Any]]) -> int:
@@ -524,74 +580,132 @@ class OperationalTaskRepo:
         payload_json: str,
         created_at_utc: datetime | None = None,
     ) -> None:
-        query = f"""
-        DECLARE $task_id AS Utf8;
-        DECLARE $version AS Uint64;
-        DECLARE $status AS Utf8;
-        DECLARE $content_hash AS Utf8;
-        DECLARE $payload_json AS Utf8;
-        DECLARE $created_at_utc AS Timestamp;
-        UPSERT INTO `{self.versions_table}` (
+        self.upsert_task_versions_bulk(
+            [
+                {
+                    "task_id": task_id,
+                    "version": version,
+                    "status": status,
+                    "content_hash": content_hash,
+                    "payload_json": payload_json,
+                    "created_at_utc": created_at_utc or _utc_now(),
+                }
+            ]
+        )
+
+    def upsert_task_versions_bulk(self, rows: list[dict[str, Any]]) -> int:
+        normalized_rows: list[dict[str, Any]] = []
+        for row in rows:
+            task_id = str(row.get("task_id", "")).strip()
+            version = int(row.get("version", 0) or 0)
+            if not task_id or version <= 0:
+                continue
+            normalized_rows.append(
+                {
+                    "task_id": task_id,
+                    "version": version,
+                    "status": str(row.get("status", "active")).strip() or "active",
+                    "content_hash": str(row.get("content_hash", "")).strip(),
+                    "payload_json": str(row.get("payload_json", "")),
+                    "created_at_utc": row.get("created_at_utc") or _utc_now(),
+                }
+            )
+        if not normalized_rows:
+            return 0
+        chunk_size = 200
+        query = """
+        DECLARE $rows AS List<
+            Struct<
+                task_id:Utf8,
+                version:Uint64,
+                status:Utf8,
+                content_hash:Utf8,
+                payload_json:Utf8,
+                created_at_utc:Timestamp
+            >
+        >;
+        UPSERT INTO `%s` (
             task_id, version, status, content_hash, payload_json, created_at_utc
         )
-        VALUES (
-            $task_id, $version, $status, $content_hash, $payload_json, $created_at_utc
-        );
-        """
-        try:
-            self.client.execute(
-                query,
-                {
-                    "$task_id": str(task_id).strip(),
-                    "$version": int(version),
-                    "$status": str(status).strip() or "active",
-                    "$content_hash": str(content_hash).strip(),
-                    "$payload_json": payload_json,
-                    "$created_at_utc": created_at_utc or _utc_now(),
-                },
-            )
-        except Exception as exc:
-            text = str(exc).lower()
-            if "path not found" in text or "table not found" in text:
-                return
-            raise
+        SELECT
+            task_id, version, status, content_hash, payload_json, created_at_utc
+        FROM AS_TABLE($rows);
+        """ % self.versions_table
+        written = 0
+        for offset in range(0, len(normalized_rows), chunk_size):
+            chunk = normalized_rows[offset : offset + chunk_size]
+            try:
+                self.client.execute(query, {"$rows": chunk})
+                written += len(chunk)
+            except Exception as exc:
+                text = str(exc).lower()
+                if "path not found" in text or "table not found" in text:
+                    return written
+                raise
+        return written
 
     def archive_task_version(self, *, task_id: str, version: int) -> None:
-        query = f"""
-        DECLARE $task_id AS Utf8;
-        DECLARE $version AS Uint64;
-        UPDATE `{self.versions_table}`
-        SET status = "archive"
-        WHERE task_id = $task_id AND version = $version;
-        """
-        try:
-            self.client.execute(
-                query,
-                {
-                    "$task_id": str(task_id).strip(),
-                    "$version": int(version),
-                },
-            )
-        except Exception as exc:
-            text = str(exc).lower()
-            if "path not found" in text or "table not found" in text:
-                return
-            raise
+        self.archive_task_versions_bulk([{"task_id": task_id, "version": version}])
 
-    def list_tasks(self, *, statuses: list[str] | None = None) -> list[dict[str, Any]]:
+    def archive_task_versions_bulk(self, rows: list[dict[str, Any]]) -> int:
+        normalized_rows: list[dict[str, Any]] = []
+        for row in rows:
+            task_id = str(row.get("task_id", "")).strip()
+            version = int(row.get("version", 0) or 0)
+            if not task_id or version <= 0:
+                continue
+            normalized_rows.append({"task_id": task_id, "version": version})
+        if not normalized_rows:
+            return 0
+        chunk_size = 200
+        archived = 0
+        query = """
+        DECLARE $rows AS List<Struct<task_id:Utf8, version:Uint64>>;
+        UPSERT INTO `%s` (task_id, version, status)
+        SELECT task_id, version, "archive"
+        FROM AS_TABLE($rows);
+        """ % self.versions_table
+        for offset in range(0, len(normalized_rows), chunk_size):
+            chunk = normalized_rows[offset : offset + chunk_size]
+            try:
+                self.client.execute(query, {"$rows": chunk})
+                archived += len(chunk)
+            except Exception as exc:
+                text = str(exc).lower()
+                if "path not found" in text or "table not found" in text:
+                    return archived
+                raise
+        return archived
+
+    def list_tasks(
+        self,
+        *,
+        statuses: list[str] | None = None,
+        include_raw_payload: bool = True,
+    ) -> list[dict[str, Any]]:
         status_filter = [str(item).strip().lower() for item in (statuses or []) if str(item).strip()]
+        raw_payload_column = ", raw_payload" if include_raw_payload else ""
         query = f"""
         DECLARE $statuses AS List<Utf8>;
+        DECLARE $after_task_id AS Utf8;
+        DECLARE $chunk_size AS Uint64;
         SELECT
-            task_id, title, brand, format_, customer, raw_timing, owner_id, group_id, status, start_date, end_date, next_due_date,
-            tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
+            task_id, title, brand, format_, customer, raw_timing, owner_id, group_id, status, start_date, end_date, next_due_date, history,
+            tags_json, links_json, task_hash, task_revision{raw_payload_column}, updated_at_utc
         FROM `{self.tasks_table}`
         WHERE
-            ListLength($statuses) = 0
-            OR status IN $statuses;
+            task_id > $after_task_id
+            AND (
+                ListLength($statuses) = 0
+                OR status IN $statuses
+            )
+        ORDER BY task_id
+        LIMIT $chunk_size;
         """
+        chunk_size = 200
+        legacy_query = ""
         try:
-            result_sets = self.client.execute(query, {"$statuses": status_filter})
+            self.client.execute(query, {"$statuses": status_filter, "$after_task_id": "", "$chunk_size": chunk_size})
             missing_extended_columns = False
         except Exception as exc:
             if not self._is_missing_task_columns_error(exc):
@@ -599,15 +713,80 @@ class OperationalTaskRepo:
             missing_extended_columns = True
             legacy_query = f"""
             DECLARE $statuses AS List<Utf8>;
+            DECLARE $after_task_id AS Utf8;
+            DECLARE $chunk_size AS Uint64;
             SELECT
                 task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
                 tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
             FROM `{self.tasks_table}`
             WHERE
-                ListLength($statuses) = 0
-                OR status IN $statuses;
+                task_id > $after_task_id
+                AND (
+                    ListLength($statuses) = 0
+                    OR status IN $statuses
+                )
+            ORDER BY task_id
+            LIMIT $chunk_size;
             """
-            result_sets = self.client.execute(legacy_query, {"$statuses": status_filter})
+            self.client.execute(
+                legacy_query,
+                {"$statuses": status_filter, "$after_task_id": "", "$chunk_size": chunk_size},
+            )
+        rows: list[dict[str, Any]] = []
+        after_task_id = ""
+        while True:
+            if missing_extended_columns:
+                query_to_use = legacy_query
+                params = {"$statuses": status_filter, "$after_task_id": after_task_id, "$chunk_size": chunk_size}
+            else:
+                query_to_use = query
+                params = {"$statuses": status_filter, "$after_task_id": after_task_id, "$chunk_size": chunk_size}
+            result_sets = self.client.execute(query_to_use, params)
+            if not result_sets or not result_sets[0].rows:
+                break
+            batch_rows = result_sets[0].rows
+            for row in batch_rows:
+                rows.append(
+                    {
+                        "task_id": str(getattr(row, "task_id", "")),
+                        "title": str(getattr(row, "title", "")),
+                        "brand": "" if missing_extended_columns else str(getattr(row, "brand", "")),
+                        "format_": "" if missing_extended_columns else str(getattr(row, "format_", "")),
+                        "customer": "" if missing_extended_columns else str(getattr(row, "customer", "")),
+                        "raw_timing": "" if missing_extended_columns else str(getattr(row, "raw_timing", "")),
+                        "owner_id": str(getattr(row, "owner_id", "")),
+                        "group_id": str(getattr(row, "group_id", "")),
+                        "status": str(getattr(row, "status", "")),
+                        "start_date": getattr(row, "start_date", None),
+                        "end_date": getattr(row, "end_date", None),
+                        "next_due_date": getattr(row, "next_due_date", None),
+                        "history": "" if missing_extended_columns else str(getattr(row, "history", "")),
+                        "tags_json": str(getattr(row, "tags_json", "[]")),
+                        "links_json": str(getattr(row, "links_json", "{}")),
+                        "task_hash": str(getattr(row, "task_hash", "")) or None,
+                        "task_revision": int(getattr(row, "task_revision", 0) or 0),
+                        "current_version": int(getattr(row, "task_revision", 0) or 0),
+                        "updated_at_utc": getattr(row, "updated_at_utc", None),
+                        "raw_payload": str(getattr(row, "raw_payload", "{}")) if include_raw_payload else "{}",
+                    }
+                )
+            after_task_id = str(getattr(batch_rows[-1], "task_id", "")).strip()
+            if len(batch_rows) < chunk_size or not after_task_id:
+                break
+        return rows
+
+    def list_task_version_index(self, *, statuses: list[str] | None = None) -> list[dict[str, Any]]:
+        """Return lightweight task rows for sync diff/version checks."""
+        status_filter = [str(item).strip().lower() for item in (statuses or []) if str(item).strip()]
+        query = f"""
+        DECLARE $statuses AS List<Utf8>;
+        SELECT task_id, status, task_hash, task_revision
+        FROM `{self.tasks_table}`
+        WHERE
+            ListLength($statuses) = 0
+            OR status IN $statuses;
+        """
+        result_sets = self.client.execute(query, {"$statuses": status_filter})
         if not result_sets:
             return []
         rows: list[dict[str, Any]] = []
@@ -615,26 +794,87 @@ class OperationalTaskRepo:
             rows.append(
                 {
                     "task_id": str(getattr(row, "task_id", "")),
-                    "title": str(getattr(row, "title", "")),
-                    "brand": "" if missing_extended_columns else str(getattr(row, "brand", "")),
-                    "format_": "" if missing_extended_columns else str(getattr(row, "format_", "")),
-                    "customer": "" if missing_extended_columns else str(getattr(row, "customer", "")),
-                    "raw_timing": "" if missing_extended_columns else str(getattr(row, "raw_timing", "")),
-                    "owner_id": str(getattr(row, "owner_id", "")),
-                    "group_id": str(getattr(row, "group_id", "")),
                     "status": str(getattr(row, "status", "")),
-                    "start_date": getattr(row, "start_date", None),
-                    "end_date": getattr(row, "end_date", None),
-                    "next_due_date": getattr(row, "next_due_date", None),
-                    "tags_json": str(getattr(row, "tags_json", "[]")),
-                    "links_json": str(getattr(row, "links_json", "{}")),
                     "task_hash": str(getattr(row, "task_hash", "")) or None,
                     "task_revision": int(getattr(row, "task_revision", 0) or 0),
                     "current_version": int(getattr(row, "task_revision", 0) or 0),
-                    "updated_at_utc": getattr(row, "updated_at_utc", None),
-                    "raw_payload": str(getattr(row, "raw_payload", "{}")),
                 }
             )
+        return rows
+
+    def list_task_version_index_by_ids(self, task_ids: list[str]) -> list[dict[str, Any]]:
+        """Return lightweight task rows for provided ids only."""
+        keys = [str(task_id).strip() for task_id in (task_ids or []) if str(task_id).strip()]
+        if not keys:
+            return []
+        query = f"""
+        DECLARE $task_ids AS List<Utf8>;
+        SELECT task_id, status, task_hash, task_revision
+        FROM `{self.tasks_table}`
+        WHERE task_id IN $task_ids;
+        """
+        rows: list[dict[str, Any]] = []
+        chunk_size = 200
+        for offset in range(0, len(keys), chunk_size):
+            chunk = keys[offset : offset + chunk_size]
+            result_sets = self.client.execute(query, {"$task_ids": chunk})
+            if not result_sets:
+                continue
+            for row in result_sets[0].rows:
+                rows.append(
+                    {
+                        "task_id": str(getattr(row, "task_id", "")),
+                        "status": str(getattr(row, "status", "")),
+                        "task_hash": str(getattr(row, "task_hash", "")) or None,
+                        "task_revision": int(getattr(row, "task_revision", 0) or 0),
+                        "current_version": int(getattr(row, "task_revision", 0) or 0),
+                    }
+                )
+        return rows
+
+    def list_task_head_versions_by_ids(self, task_ids: list[str]) -> list[dict[str, Any]]:
+        """Return latest active version hash/revision per task id."""
+        keys = [str(task_id).strip() for task_id in (task_ids or []) if str(task_id).strip()]
+        if not keys:
+            return []
+        query = f"""
+        DECLARE $task_ids AS List<Utf8>;
+        $heads = (
+            SELECT task_id, MAX(version) AS version
+            FROM `{self.versions_table}`
+            WHERE task_id IN $task_ids
+            GROUP BY task_id
+        );
+        SELECT
+            v.task_id AS task_id,
+            v.content_hash AS task_hash,
+            v.version AS task_revision
+        FROM `{self.versions_table}` AS v
+        INNER JOIN $heads AS h
+        ON v.task_id = h.task_id AND v.version = h.version;
+        """
+        rows: list[dict[str, Any]] = []
+        chunk_size = 200
+        for offset in range(0, len(keys), chunk_size):
+            chunk = keys[offset : offset + chunk_size]
+            try:
+                result_sets = self.client.execute(query, {"$task_ids": chunk})
+            except Exception as exc:
+                text = str(exc).lower()
+                if "path not found" in text or "table not found" in text or "member not found" in text:
+                    return self.list_task_version_index_by_ids(keys)
+                raise
+            if not result_sets:
+                continue
+            for row in result_sets[0].rows:
+                rows.append(
+                    {
+                        "task_id": str(getattr(row, "task_id", "")),
+                        "task_hash": str(getattr(row, "task_hash", "")) or None,
+                        "task_revision": int(getattr(row, "task_revision", 0) or 0),
+                        "current_version": int(getattr(row, "task_revision", 0) or 0),
+                    }
+                )
         return rows
 
     @staticmethod
@@ -644,7 +884,7 @@ class OperationalTaskRepo:
             return False
         return any(
             marker in text
-            for marker in ("brand", "format_", "customer", "raw_timing", "raw_payload")
+            for marker in ("brand", "format_", "customer", "raw_timing", "history", "raw_payload")
         )
 
     def list_milestones(
@@ -737,30 +977,32 @@ class OperationalTaskRepo:
             INNER JOIN AS_TABLE($keys) AS k
             ON m.task_id = k.task_id AND m.version = k.version;
             """
-        try:
-            result_sets = self.client.execute(query, {"$keys": keys})
-        except Exception as exc:
-            text = str(exc).lower()
-            if "path not found" in text or "table not found" in text:
-                return []
-            raise
-        if not result_sets:
-            return []
-
         rows: list[dict[str, Any]] = []
-        for row in result_sets[0].rows:
-            rows.append(
-                {
-                    "task_id": str(getattr(row, "task_id", "")),
-                    "version": int(getattr(row, "version", 0) or 0),
-                    "idx": int(getattr(row, "idx", 0) or 0),
-                    "type": str(getattr(row, "type", "")),
-                    "planned_date": getattr(row, "planned_date", None),
-                    "actual_date": getattr(row, "actual_date", None) if include_details else None,
-                    "status": (str(getattr(row, "status", "")) or "unknown") if include_details else "unknown",
-                    "raw_text": (str(getattr(row, "raw_text", "")) or None) if include_details else None,
-                    "confidence": float(getattr(row, "confidence", 0.0) or 0.0) if include_details else 0.0,
-                    "inference_rule": (str(getattr(row, "inference_rule", "")) or None) if include_details else None,
-                }
-            )
+        batch_size = 25
+        for offset in range(0, len(keys), batch_size):
+            batch = keys[offset: offset + batch_size]
+            try:
+                result_sets = self.client.execute(query, {"$keys": batch})
+            except Exception as exc:
+                text = str(exc).lower()
+                if "path not found" in text or "table not found" in text:
+                    return []
+                raise
+            if not result_sets:
+                continue
+            for row in result_sets[0].rows:
+                rows.append(
+                    {
+                        "task_id": str(getattr(row, "task_id", "")),
+                        "version": int(getattr(row, "version", 0) or 0),
+                        "idx": int(getattr(row, "idx", 0) or 0),
+                        "type": str(getattr(row, "type", "")),
+                        "planned_date": getattr(row, "planned_date", None),
+                        "actual_date": getattr(row, "actual_date", None) if include_details else None,
+                        "status": (str(getattr(row, "status", "")) or "unknown") if include_details else "unknown",
+                        "raw_text": (str(getattr(row, "raw_text", "")) or None) if include_details else None,
+                        "confidence": float(getattr(row, "confidence", 0.0) or 0.0) if include_details else 0.0,
+                        "inference_rule": (str(getattr(row, "inference_rule", "")) or None) if include_details else None,
+                    }
+                )
         return rows

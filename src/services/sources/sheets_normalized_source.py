@@ -117,11 +117,27 @@ class SheetsNormalizedTaskSource:
         elif len(normalized_colors) > len(df):
             normalized_colors = normalized_colors[: len(df)]
 
+        # Always fetch canonical row colors from column A. Wide-range snapshot
+        # color payloads (A1:Z*) are lossy for status mapping in Google API.
+        info = self.task_repository.source_sheet_info
+        sheet_name = str(info.get_sheet_name("tasks") or "")
+        color_range = f"A2:A{len(df) + 1}"
+        canonical_colors = self.task_repository.service.get_cell_colors(
+            spreadsheet_name=info.spreadsheet_name,
+            worksheet_name=sheet_name,
+            worksheet_range=color_range,
+        )
+        if isinstance(canonical_colors, list) and canonical_colors:
+            normalized_colors = list(canonical_colors)
+            if len(normalized_colors) < len(df):
+                normalized_colors = normalized_colors + [""] * (len(df) - len(normalized_colors))
+            elif len(normalized_colors) > len(df):
+                normalized_colors = normalized_colors[: len(df)]
+
         df["color"] = normalized_colors
         df["color_status"] = df["color"].apply(
             lambda color: self.task_repository.color_status_map.get(color, "work")
         )
-        df["id"] = df.index + 2
         df["name"] = df.apply(self.task_repository._generate_task_name, axis=1)
 
         self.task_repository.df = df

@@ -24,7 +24,8 @@ class _OperationalRepoStub:
     def get_sync_state(self, source_id: str):  # noqa: ARG002
         return _SyncState(source_hash="hash-1", last_success_at_utc=datetime.now(timezone.utc))
 
-    def list_tasks(self, *, statuses=None):  # noqa: ANN001, ARG002
+    def list_tasks(self, *, statuses=None, include_raw_payload=True):  # noqa: ANN001, ARG002
+        _ = include_raw_payload
         return [
             {
                 "task_id": "42",
@@ -36,12 +37,13 @@ class _OperationalRepoStub:
                 "owner_id": "Designer",
                 "group_id": "Project",
                 "status": "work",
+                "history": "19.02 - отправили раскадровку",
                 "current_version": 3,
                 "created_at_utc": "2026-03-01T00:00:00Z",
             }
         ]
 
-    def list_milestones_for_versions(self, *, task_versions=None):  # noqa: ANN001
+    def list_milestones_for_versions(self, *, task_versions=None, include_details=True):  # noqa: ANN001, ARG002
         self.task_versions = task_versions
         return [
             {
@@ -153,16 +155,21 @@ class ReadmodelUsesMilestonesTableTestCase(unittest.TestCase):
         self.assertEqual(tasks[0]["brand"], "Brand")
         self.assertEqual(tasks[0]["format_"], "Format")
         self.assertEqual(tasks[0]["customer"], "Customer")
+        self.assertEqual(tasks[0]["history"], "19.02 - отправили раскадровку")
         self.assertEqual(tasks[0]["milestones"][0]["type"], "storyboard")
         self.assertEqual(tasks[0]["milestones"][1]["type"], "animatic")
         self.assertEqual(tasks[0]["date"]["start"], "2026-03-04")
         self.assertEqual(tasks[0]["date"]["end"], "2026-03-11")
+        self.assertEqual(
+            readmodel_repo.saved_payload["filters"]["statuses"],
+            ["work", "pre_done", "wait", "done"],
+        )
         self.assertTrue(readmodel_repo.saved_payload["filters"]["include_people"])
         self.assertEqual(len(readmodel_repo.saved_payload["entities"]["people"]), 1)
 
     def test_builder_adds_synthetic_start_when_versioned_rows_missing(self) -> None:
         class _NoMilestonesRepo(_OperationalRepoStub):
-            def list_milestones_for_versions(self, *, task_versions=None):  # noqa: ANN001
+            def list_milestones_for_versions(self, *, task_versions=None, include_details=True):  # noqa: ANN001, ARG002
                 self.task_versions = task_versions
                 return []
 
@@ -186,7 +193,7 @@ class ReadmodelUsesMilestonesTableTestCase(unittest.TestCase):
 
     def test_builder_handles_ydb_numeric_date_encoding(self) -> None:
         class _NumericDateRepo(_OperationalRepoStub):
-            def list_milestones_for_versions(self, *, task_versions=None):  # noqa: ANN001
+            def list_milestones_for_versions(self, *, task_versions=None, include_details=True):  # noqa: ANN001, ARG002
                 self.task_versions = task_versions
                 return [
                     {
@@ -222,6 +229,45 @@ class ReadmodelUsesMilestonesTableTestCase(unittest.TestCase):
         task = payload["tasks"][0]
         self.assertEqual(task["date"]["start"], "2026-03-04")
         self.assertEqual(task["date"]["end"], "2026-03-11")
+
+    def test_builder_handles_large_numeric_timestamp_in_synthetic_start(self) -> None:
+        class _LargeTimestampRepo(_OperationalRepoStub):
+            def list_tasks(self, *, statuses=None, include_raw_payload=True):  # noqa: ANN001, ARG002
+                return [
+                    {
+                        "task_id": "42",
+                        "title": "Task 42",
+                        "brand": "Brand",
+                        "format_": "Format",
+                        "customer": "Customer",
+                        "raw_timing": "raw",
+                        "owner_id": "Designer",
+                        "group_id": "Project",
+                        "status": "work",
+                        "history": "raw history",
+                        "current_version": 3,
+                        "created_at_utc": 1741169941549271231,  # ns epoch-like
+                    }
+                ]
+
+            def list_milestones_for_versions(self, *, task_versions=None, include_details=True):  # noqa: ANN001, ARG002
+                self.task_versions = task_versions
+                return []
+
+        operational_repo = _LargeTimestampRepo()
+        readmodel_repo = _ReadmodelRepoStub()
+        service = FrontendReadmodelBuilderService(
+            operational_repo=operational_repo,  # type: ignore[arg-type]
+            readmodel_repo=readmodel_repo,  # type: ignore[arg-type]
+            source_id="sheet:test",
+            env_name="test",
+            source_sheet_name="Sheet",
+        )
+
+        service.run(readmodel_id="frontend_v2:default")
+        payload = readmodel_repo.saved_payload
+        task = payload["tasks"][0]
+        self.assertEqual(task["date"]["start"], "2025-03-05")
 
     def test_builder_force_rebuild_ignores_same_source_hash_short_circuit(self) -> None:
         operational_repo = _OperationalRepoStub()

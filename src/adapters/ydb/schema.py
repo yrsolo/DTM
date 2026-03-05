@@ -24,6 +24,7 @@ def _ddl_tasks(table_name: str) -> str:
         links_json Utf8,
         task_hash Utf8,
         task_revision Uint64,
+        history Utf8,
         raw_payload Utf8,
         updated_at_utc Timestamp,
         PRIMARY KEY (task_id)
@@ -138,3 +139,22 @@ def ensure_tables(
             if "exists" in text or "already" in text:
                 continue
             raise
+
+    ensure_tasks_history_column(client, tasks_table=tasks_table)
+
+
+def ensure_tasks_history_column(client: YdbClient, *, tasks_table: str = "dtm_tasks") -> None:
+    """Ensure dtm_tasks has first-class `history` column for task raw status text."""
+    alter = f"ALTER TABLE `{tasks_table}` ADD COLUMN history Utf8;"
+    try:
+        client.execute_scheme(alter)
+    except Exception as exc:
+        text = str(exc).lower()
+        if (
+            "exists" in text
+            or "already" in text
+            or "duplicate" in text
+            or "cannot add column" in text
+        ):
+            return
+        raise
