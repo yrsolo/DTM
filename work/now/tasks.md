@@ -4,6 +4,7 @@
 - [x] API-HISTORY-T002: include `history` in sync content-hash basis and keep backward-safe readmodel fallback (`raw_payload.history|status|""`).
 - [x] API-HISTORY-T003: align docs/tests/snapshots with new `history` field and verify full smoke suite + `check_no_monsters`.
 - [x] BRANCH-SYNC-T001: synchronize `test` branch to `dev` using reset + force-with-lease to restore linear promotion policy.
+- [x] API-STATUS-COLOR-T001: fix inflated `work` statuses by mapping from canonical column-A colors (`A2:A...`) instead of lossy wide-range snapshot colors.
 
 - [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P01-T001: inventory functional context dataclasses/lambda wiring and record replacements in `docs/system/demonster_inventory.md`.
 - [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P02-T001: normalize `AppContext` runtime deps (no callback/factory fields) and bootstrap wiring.
