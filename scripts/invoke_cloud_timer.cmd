@@ -9,6 +9,7 @@ REM   scripts\invoke_cloud_timer.cmd
 REM   scripts\invoke_cloud_timer.cmd https://dtm-api-test.solofarm.ru --live
 
 cd /d "%~dp0\.."
+set "PYTHONIOENCODING=utf-8"
 
 if not exist ".venv\Scripts\python.exe" (
   if not exist "venv\Scripts\python.exe" (
@@ -21,6 +22,7 @@ if not exist ".venv\Scripts\python.exe" (
 )
 
 set "FUNCTION_URL=%~1"
+set "DEFAULT_FUNCTION_URL=https://dtm-api-test.solofarm.ru"
 set "RUN_MODE_FLAG=--dry-run"
 set "MOCK_FLAG=--mock-external"
 
@@ -29,10 +31,12 @@ if /I "%~2"=="--live" (
   set "MOCK_FLAG="
 )
 if /I "%~1"=="--live" (
-  set "FUNCTION_URL="
+  set "FUNCTION_URL=%DEFAULT_FUNCTION_URL%"
   set "RUN_MODE_FLAG="
   set "MOCK_FLAG="
 )
+
+if not defined FUNCTION_URL set "FUNCTION_URL=%DEFAULT_FUNCTION_URL%"
 
 if defined FUNCTION_URL (
   "%PYTHON_BIN%" agent\invoke_function_smoke.py --url "%FUNCTION_URL%" --mode timer %RUN_MODE_FLAG% %MOCK_FLAG%
