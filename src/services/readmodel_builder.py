@@ -227,13 +227,29 @@ class FrontendReadmodelBuilderService:
         if isinstance(value, date):
             return value.isoformat()
         if isinstance(value, (int, float)):
-            # YDB Date is often represented as days since Unix epoch.
-            return (date(1970, 1, 1) + timedelta(days=int(value))).isoformat()
+            raw = int(value)
+            if raw <= 0:
+                return None
+            try:
+                # YDB Date is often represented as days since Unix epoch.
+                if raw < 100_000:
+                    return (date(1970, 1, 1) + timedelta(days=raw)).isoformat()
+                # Fallback for epoch-like values (s/ms/us/ns).
+                ts = float(raw)
+                if ts > 1e18:
+                    ts /= 1_000_000_000.0
+                elif ts > 1e15:
+                    ts /= 1_000_000.0
+                elif ts > 1e12:
+                    ts /= 1_000.0
+                return datetime.fromtimestamp(ts, tz=timezone.utc).date().isoformat()
+            except (OverflowError, OSError, ValueError):
+                return None
         text = str(value).strip()
         if not text:
             return None
         if text.isdigit():
-            return (date(1970, 1, 1) + timedelta(days=int(text))).isoformat()
+            return FrontendReadmodelBuilderService._coerce_date_iso(int(text))
         if len(text) >= 10:
             candidate = text[:10]
             try:

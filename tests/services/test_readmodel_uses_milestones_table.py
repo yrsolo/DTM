@@ -230,6 +230,45 @@ class ReadmodelUsesMilestonesTableTestCase(unittest.TestCase):
         self.assertEqual(task["date"]["start"], "2026-03-04")
         self.assertEqual(task["date"]["end"], "2026-03-11")
 
+    def test_builder_handles_large_numeric_timestamp_in_synthetic_start(self) -> None:
+        class _LargeTimestampRepo(_OperationalRepoStub):
+            def list_tasks(self, *, statuses=None, include_raw_payload=True):  # noqa: ANN001, ARG002
+                return [
+                    {
+                        "task_id": "42",
+                        "title": "Task 42",
+                        "brand": "Brand",
+                        "format_": "Format",
+                        "customer": "Customer",
+                        "raw_timing": "raw",
+                        "owner_id": "Designer",
+                        "group_id": "Project",
+                        "status": "work",
+                        "history": "raw history",
+                        "current_version": 3,
+                        "created_at_utc": 1741169941549271231,  # ns epoch-like
+                    }
+                ]
+
+            def list_milestones_for_versions(self, *, task_versions=None, include_details=True):  # noqa: ANN001, ARG002
+                self.task_versions = task_versions
+                return []
+
+        operational_repo = _LargeTimestampRepo()
+        readmodel_repo = _ReadmodelRepoStub()
+        service = FrontendReadmodelBuilderService(
+            operational_repo=operational_repo,  # type: ignore[arg-type]
+            readmodel_repo=readmodel_repo,  # type: ignore[arg-type]
+            source_id="sheet:test",
+            env_name="test",
+            source_sheet_name="Sheet",
+        )
+
+        service.run(readmodel_id="frontend_v2:default")
+        payload = readmodel_repo.saved_payload
+        task = payload["tasks"][0]
+        self.assertEqual(task["date"]["start"], "2025-03-05")
+
     def test_builder_force_rebuild_ignores_same_source_hash_short_circuit(self) -> None:
         operational_repo = _OperationalRepoStub()
         readmodel_repo = _ReadmodelRepoWithExistingStub()
