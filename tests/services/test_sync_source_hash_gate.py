@@ -259,6 +259,23 @@ class SyncSourceHashGateTestCase(unittest.TestCase):
         self.assertEqual(repo.version_archives, 0)
         self.assertEqual(repo.milestone_version_upserts, 1)
 
+    def test_forced_refresh_still_writes_version_rows_for_new_tasks(self) -> None:
+        repo = _RepoStub()
+        service = YdbSyncService(repo)  # type: ignore[arg-type]
+        snapshot = {"values": [["id"], ["new-task"]], "colors": ["#fff"]}
+
+        service.run(
+            source_id="sheet:test",
+            preflight_range_values=snapshot,
+            source_range_values=snapshot,
+            normalized_tasks=[{"task_id": "new-task", "title": "Task", "status": "work", "milestones": []}],
+            force_refresh=True,
+        )
+
+        self.assertEqual(repo._tasks["new-task"]["task_revision"], 1)
+        self.assertEqual(repo.version_upserts, 1)
+        self.assertEqual(repo.milestone_version_upserts, 1)
+
     def test_start_milestone_is_added_when_missing(self) -> None:
         repo = _RepoStub()
         service = YdbSyncService(repo, write_legacy_milestones=True)  # type: ignore[arg-type]

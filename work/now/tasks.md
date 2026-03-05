@@ -3,6 +3,7 @@
 - [x] API-TASKID-T001: preserve source sheet `id` column as canonical `task_id` (stop overwriting with row index in Sheets loaders).
 - [x] API-LIMIT-SORT-T001: apply `limit` after descending sort by task end date so API returns latest N tasks.
 - [x] API-READMODEL-DATE-T001: harden numeric date coercion in readmodel builder to handle epoch-like large ints without overflow.
+- [x] API-FORCE-REFRESH-MILESTONES-T001: keep writing task versions and `milestones_v` for new tasks even under `force_refresh` to avoid synthetic-only readmodel dates.
 
 - [x] API-READMODEL-STATUS-T001: include final/idle statuses (`done`, `wait`) into readmodel snapshot build so `/api/v2/frontend?statuses=done` returns data.
 

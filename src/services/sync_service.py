@@ -394,7 +394,7 @@ class YdbSyncService:
                 task_revision = max(previous_version, 1)
                 create_new_version = False
 
-            if create_new_version and not force_refresh:
+            if create_new_version:
                 self.repo.upsert_task_version(
                     task_id=task_id,
                     version=task_revision,
@@ -404,7 +404,7 @@ class YdbSyncService:
                     created_at_utc=now_utc,
                 )
                 changed_version_tasks[task_id] = task_revision
-                if previous_version > 0:
+                if previous_version > 0 and not force_refresh:
                     pending_archives.append((task_id, previous_version))
 
             task_rows.append(
@@ -430,7 +430,7 @@ class YdbSyncService:
                 }
             )
             milestones_by_task[task_id] = milestones if isinstance(milestones, list) else []
-            if create_new_version and not force_refresh:
+            if create_new_version:
                 version_rows = milestones if isinstance(milestones, list) else []
                 if not version_rows:
                     raise RuntimeError("milestones_write_empty")
