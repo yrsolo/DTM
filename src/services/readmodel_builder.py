@@ -110,7 +110,10 @@ class FrontendReadmodelBuilderService:
             if task_id and current_version > 0:
                 task_versions[task_id] = current_version
 
-        milestone_rows = self.operational_repo.list_milestones_for_versions(task_versions=task_versions)
+        milestone_rows = self.operational_repo.list_milestones_for_versions(
+            task_versions=task_versions,
+            include_details=False,
+        )
         milestones_by_task: dict[str, list[dict[str, Any]]] = {}
         for item in milestone_rows:
             task_id = str(item.get("task_id", "")).strip()
@@ -215,10 +218,10 @@ class FrontendReadmodelBuilderService:
         history = str(payload_obj.get("history", "")).strip()
         if history:
             return history
-        legacy_status = str(payload_obj.get("status", "")).strip()
-        if legacy_status:
-            return legacy_status
-        return str(row.get("status", "")).strip()
+        raw_status = str(payload_obj.get("raw_status", "")).strip()
+        if raw_status:
+            return raw_status
+        return ""
 
     @staticmethod
     def _resolve_synthetic_start_date(row: dict[str, Any]) -> str:

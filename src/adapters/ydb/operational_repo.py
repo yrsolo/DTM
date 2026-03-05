@@ -637,6 +637,102 @@ class OperationalTaskRepo:
             )
         return rows
 
+    def list_task_version_index(self, *, statuses: list[str] | None = None) -> list[dict[str, Any]]:
+        """Return lightweight task rows for sync diff/version checks."""
+        status_filter = [str(item).strip().lower() for item in (statuses or []) if str(item).strip()]
+        query = f"""
+        DECLARE $statuses AS List<Utf8>;
+        SELECT task_id, status, task_hash, task_revision
+        FROM `{self.tasks_table}`
+        WHERE
+            ListLength($statuses) = 0
+            OR status IN $statuses;
+        """
+        result_sets = self.client.execute(query, {"$statuses": status_filter})
+        if not result_sets:
+            return []
+        rows: list[dict[str, Any]] = []
+        for row in result_sets[0].rows:
+            rows.append(
+                {
+                    "task_id": str(getattr(row, "task_id", "")),
+                    "status": str(getattr(row, "status", "")),
+                    "task_hash": str(getattr(row, "task_hash", "")) or None,
+                    "task_revision": int(getattr(row, "task_revision", 0) or 0),
+                    "current_version": int(getattr(row, "task_revision", 0) or 0),
+                }
+            )
+        return rows
+
+    def list_task_version_index_by_ids(self, task_ids: list[str]) -> list[dict[str, Any]]:
+        """Return lightweight task rows for provided ids only."""
+        keys = [str(task_id).strip() for task_id in (task_ids or []) if str(task_id).strip()]
+        if not keys:
+            return []
+        query = f"""
+        DECLARE $task_ids AS List<Utf8>;
+        SELECT task_id, status, task_hash, task_revision
+        FROM `{self.tasks_table}`
+        WHERE task_id IN $task_ids;
+        """
+        result_sets = self.client.execute(query, {"$task_ids": keys})
+        if not result_sets:
+            return []
+        rows: list[dict[str, Any]] = []
+        for row in result_sets[0].rows:
+            rows.append(
+                {
+                    "task_id": str(getattr(row, "task_id", "")),
+                    "status": str(getattr(row, "status", "")),
+                    "task_hash": str(getattr(row, "task_hash", "")) or None,
+                    "task_revision": int(getattr(row, "task_revision", 0) or 0),
+                    "current_version": int(getattr(row, "task_revision", 0) or 0),
+                }
+            )
+        return rows
+
+    def list_task_head_versions_by_ids(self, task_ids: list[str]) -> list[dict[str, Any]]:
+        """Return latest active version hash/revision per task id."""
+        keys = [str(task_id).strip() for task_id in (task_ids or []) if str(task_id).strip()]
+        if not keys:
+            return []
+        query = f"""
+        DECLARE $task_ids AS List<Utf8>;
+        $heads = (
+            SELECT task_id, MAX(version) AS version
+            FROM `{self.versions_table}`
+            WHERE task_id IN $task_ids
+            GROUP BY task_id
+        );
+        SELECT
+            v.task_id AS task_id,
+            v.content_hash AS task_hash,
+            v.version AS task_revision
+        FROM `{self.versions_table}` AS v
+        INNER JOIN $heads AS h
+        ON v.task_id = h.task_id AND v.version = h.version;
+        """
+        try:
+            result_sets = self.client.execute(query, {"$task_ids": keys})
+        except Exception as exc:
+            text = str(exc).lower()
+            if "path not found" in text or "table not found" in text or "member not found" in text:
+                return self.list_task_version_index_by_ids(keys)
+            raise
+        if not result_sets:
+            return []
+        rows: list[dict[str, Any]] = []
+        for row in result_sets[0].rows:
+            rows.append(
+                {
+                    "task_id": str(getattr(row, "task_id", "")),
+                    "task_hash": str(getattr(row, "task_hash", "")) or None,
+                    "task_revision": int(getattr(row, "task_revision", 0) or 0),
+                    "current_version": int(getattr(row, "task_revision", 0) or 0),
+                }
+            )
+        return rows
+
     @staticmethod
     def _is_missing_task_columns_error(exc: Exception) -> bool:
         text = str(exc).lower()
@@ -737,30 +833,32 @@ class OperationalTaskRepo:
             INNER JOIN AS_TABLE($keys) AS k
             ON m.task_id = k.task_id AND m.version = k.version;
             """
-        try:
-            result_sets = self.client.execute(query, {"$keys": keys})
-        except Exception as exc:
-            text = str(exc).lower()
-            if "path not found" in text or "table not found" in text:
-                return []
-            raise
-        if not result_sets:
-            return []
-
         rows: list[dict[str, Any]] = []
-        for row in result_sets[0].rows:
-            rows.append(
-                {
-                    "task_id": str(getattr(row, "task_id", "")),
-                    "version": int(getattr(row, "version", 0) or 0),
-                    "idx": int(getattr(row, "idx", 0) or 0),
-                    "type": str(getattr(row, "type", "")),
-                    "planned_date": getattr(row, "planned_date", None),
-                    "actual_date": getattr(row, "actual_date", None) if include_details else None,
-                    "status": (str(getattr(row, "status", "")) or "unknown") if include_details else "unknown",
-                    "raw_text": (str(getattr(row, "raw_text", "")) or None) if include_details else None,
-                    "confidence": float(getattr(row, "confidence", 0.0) or 0.0) if include_details else 0.0,
-                    "inference_rule": (str(getattr(row, "inference_rule", "")) or None) if include_details else None,
-                }
-            )
+        batch_size = 25
+        for offset in range(0, len(keys), batch_size):
+            batch = keys[offset: offset + batch_size]
+            try:
+                result_sets = self.client.execute(query, {"$keys": batch})
+            except Exception as exc:
+                text = str(exc).lower()
+                if "path not found" in text or "table not found" in text:
+                    return []
+                raise
+            if not result_sets:
+                continue
+            for row in result_sets[0].rows:
+                rows.append(
+                    {
+                        "task_id": str(getattr(row, "task_id", "")),
+                        "version": int(getattr(row, "version", 0) or 0),
+                        "idx": int(getattr(row, "idx", 0) or 0),
+                        "type": str(getattr(row, "type", "")),
+                        "planned_date": getattr(row, "planned_date", None),
+                        "actual_date": getattr(row, "actual_date", None) if include_details else None,
+                        "status": (str(getattr(row, "status", "")) or "unknown") if include_details else "unknown",
+                        "raw_text": (str(getattr(row, "raw_text", "")) or None) if include_details else None,
+                        "confidence": float(getattr(row, "confidence", 0.0) or 0.0) if include_details else 0.0,
+                        "inference_rule": (str(getattr(row, "inference_rule", "")) or None) if include_details else None,
+                    }
+                )
         return rows

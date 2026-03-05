@@ -41,7 +41,7 @@ class _OperationalRepoStub:
             }
         ]
 
-    def list_milestones_for_versions(self, *, task_versions=None):  # noqa: ANN001
+    def list_milestones_for_versions(self, *, task_versions=None, include_details=True):  # noqa: ANN001, ARG002
         self.task_versions = task_versions
         return [
             {
@@ -162,7 +162,7 @@ class ReadmodelUsesMilestonesTableTestCase(unittest.TestCase):
 
     def test_builder_adds_synthetic_start_when_versioned_rows_missing(self) -> None:
         class _NoMilestonesRepo(_OperationalRepoStub):
-            def list_milestones_for_versions(self, *, task_versions=None):  # noqa: ANN001
+            def list_milestones_for_versions(self, *, task_versions=None, include_details=True):  # noqa: ANN001, ARG002
                 self.task_versions = task_versions
                 return []
 
@@ -186,7 +186,7 @@ class ReadmodelUsesMilestonesTableTestCase(unittest.TestCase):
 
     def test_builder_handles_ydb_numeric_date_encoding(self) -> None:
         class _NumericDateRepo(_OperationalRepoStub):
-            def list_milestones_for_versions(self, *, task_versions=None):  # noqa: ANN001
+            def list_milestones_for_versions(self, *, task_versions=None, include_details=True):  # noqa: ANN001, ARG002
                 self.task_versions = task_versions
                 return [
                     {

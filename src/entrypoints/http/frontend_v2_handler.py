@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import time
+from datetime import date
 from typing import Any
 
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
@@ -262,27 +263,126 @@ class FrontendV2Handler:
                     for task in tasks:
                         if not isinstance(task, dict):
                             continue
-                        history_value = task.get("history", "")
-                        if not str(history_value or "").strip():
-                            history_value = task.get("status", "")
-                        task["history"] = str(history_value or "").strip()
-                if any(
-                    [
-                        designer,
-                        limit != 200,
-                        include_people is not True,
-                        window_data.get("enabled", False),
-                        statuses != ["work", "pre_done"],
-                    ]
-                ):
-                    payload["meta"]["queryFilterApplied"] = False
-                    payload["meta"]["queryFilterNote"] = (
-                        "YDB readmodel endpoint returns stored snapshot without per-request rebuild."
-                    )
+                        task["history"] = str(task.get("history", "") or "").strip()
                 return payload, None
             except Exception as error:
                 print(f"api_v2_readmodel_fallback=ydb_unavailable error={error}")
                 return None, type(error).__name__
+
+        def _coerce_iso_date(value: Any) -> date | None:
+            text = str(value or "").strip()
+            if not text:
+                return None
+            try:
+                return date.fromisoformat(text[:10])
+            except ValueError:
+                return None
+
+        def _window_intersects(task: dict[str, Any], *, start: date, end: date) -> bool:
+            date_payload = task.get("date", {}) if isinstance(task.get("date", {}), dict) else {}
+            task_start = _coerce_iso_date(date_payload.get("start"))
+            task_end = _coerce_iso_date(date_payload.get("end"))
+            if task_start is None and task_end is None:
+                return False
+            if task_start is None:
+                task_start = task_end
+            if task_end is None:
+                task_end = task_start
+            if task_start is None or task_end is None:
+                return False
+            return not (task_end < start or task_start > end)
+
+        def _apply_query_filters(payload: dict[str, Any]) -> dict[str, Any]:
+            tasks = payload.get("tasks", [])
+            if not isinstance(tasks, list):
+                return payload
+            filtered_tasks = [task for task in tasks if isinstance(task, dict)]
+
+            statuses_set = {str(item).strip().lower() for item in statuses if str(item).strip()}
+            if statuses_set:
+                filtered_tasks = [
+                    task for task in filtered_tasks
+                    if str(task.get("status", "work")).strip().lower() in statuses_set
+                ]
+
+            people = payload.get("entities", {}).get("people", [])
+            if not isinstance(people, list):
+                people = []
+            designer_to_owner: dict[str, str] = {}
+            for person in people:
+                if not isinstance(person, dict):
+                    continue
+                person_name = str(person.get("name", "")).strip()
+                person_id = str(person.get("id", "")).strip()
+                if person_name and person_id:
+                    designer_to_owner[person_name.casefold()] = person_id
+
+            if designer:
+                target_owner = designer_to_owner.get(designer.casefold(), designer)
+                target_owner_fold = str(target_owner).strip().casefold()
+                filtered_tasks = [
+                    task for task in filtered_tasks
+                    if str(task.get("ownerId", "")).strip().casefold() == target_owner_fold
+                ]
+
+            window_enabled = bool(window_data.get("enabled", False))
+            window_start = _coerce_iso_date(window_data.get("start"))
+            window_end = _coerce_iso_date(window_data.get("end"))
+            if window_enabled and window_start is not None and window_end is not None:
+                filtered_tasks = [
+                    task for task in filtered_tasks
+                    if _window_intersects(task, start=window_start, end=window_end)
+                ]
+
+            tasks_total = len(filtered_tasks)
+            limited_tasks = filtered_tasks[: max(limit, 0)]
+            payload["tasks"] = limited_tasks
+
+            entities = payload.setdefault("entities", {})
+            if include_people:
+                owner_ids = {str(task.get("ownerId", "")).strip() for task in limited_tasks}
+                entities["people"] = [
+                    person for person in people
+                    if isinstance(person, dict) and str(person.get("id", "")).strip() in owner_ids
+                ]
+            else:
+                entities["people"] = []
+
+            groups = entities.get("groups", [])
+            if isinstance(groups, list):
+                group_ids = {str(task.get("groupId", "")).strip() for task in limited_tasks}
+                entities["groups"] = [
+                    group for group in groups
+                    if isinstance(group, dict) and str(group.get("id", "")).strip() in group_ids
+                ]
+
+            filters_payload = payload.setdefault("filters", {})
+            filters_payload["statuses"] = [str(item).strip().lower() for item in statuses if str(item).strip()]
+            filters_payload["designer"] = designer or None
+            filters_payload["include_people"] = bool(include_people)
+            filters_payload["limit"] = int(limit)
+            filters_payload["window"] = {
+                "enabled": bool(window_data.get("enabled", False)),
+                "start": window_start.isoformat() if window_start is not None else None,
+                "end": window_end.isoformat() if window_end is not None else None,
+                "mode": str(window_data.get("mode", "intersects") or "intersects"),
+            }
+
+            summary = payload.setdefault("summary", {})
+            summary["tasksTotal"] = tasks_total
+            summary["tasksReturned"] = len(limited_tasks)
+            summary["peopleTotal"] = len(entities.get("people", [])) if isinstance(entities.get("people", []), list) else 0
+            summary["groupsTotal"] = len(entities.get("groups", [])) if isinstance(entities.get("groups", []), list) else 0
+            summary["milestonesTotal"] = sum(
+                len(task.get("milestones", []))
+                for task in limited_tasks
+                if isinstance(task.get("milestones", []), list)
+            )
+
+            payload.setdefault("meta", {})
+            payload["meta"]["queryFilterApplied"] = True
+            payload["meta"]["queryFilterNote"] = ""
+            return payload
 
         doc_paths = {
             "/api/v2/frontend/doc",
@@ -340,6 +440,7 @@ class FrontendV2Handler:
                     "errorType": ydb_error,
                 },
             )
+        payload = _apply_query_filters(payload)
 
         duration_ms = int((time.perf_counter() - started) * 1000)
         print(

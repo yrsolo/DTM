@@ -50,6 +50,16 @@ class _RepoStub:
     def list_tasks(self, *, statuses=None):  # noqa: ANN001, ARG002
         return list(self._tasks.values())
 
+    def list_task_version_index(self, *, statuses=None):  # noqa: ANN001, ARG002
+        return list(self._tasks.values())
+
+    def list_task_version_index_by_ids(self, task_ids):  # noqa: ANN001
+        keys = {str(item).strip() for item in task_ids if str(item).strip()}
+        return [row for key, row in self._tasks.items() if key in keys]
+
+    def list_task_head_versions_by_ids(self, task_ids):  # noqa: ANN001
+        return self.list_task_version_index_by_ids(task_ids)
+
     def upsert_tasks_batch(self, tasks):  # noqa: ANN001
         self.upsert_calls += 1
         for task in tasks:

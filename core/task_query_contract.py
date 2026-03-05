@@ -40,6 +40,7 @@ class TaskProjection:
     task_id: str
     title: str
     designer: str
+    history: str
     status: str
     color_status: str
     brand: str
@@ -146,6 +147,7 @@ def project_task(task: Any) -> TaskProjection:
         task_id=_to_str(getattr(task, "id", "")),
         title=_to_str(getattr(task, "name", "")),
         designer=_to_str(getattr(task, "designer", "")),
+        history=_to_str(getattr(task, "history", "")) or _to_str(getattr(task, "status", "")),
         status=_to_str(getattr(task, "status", "")),
         color_status=_to_str(getattr(task, "color_status", getattr(task, "status", ""))),
         brand=_to_str(getattr(task, "brand", "")),

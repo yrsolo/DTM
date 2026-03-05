@@ -304,7 +304,16 @@ class YdbSyncService:
         milestones_versions_by_task: dict[tuple[str, int], list[dict[str, Any]]] = {}
         changed_version_tasks: dict[str, int] = {}
         pending_archives: list[tuple[str, int]] = []
-        existing_rows = {str(row.get("task_id", "")).strip(): row for row in self.repo.list_tasks() if str(row.get("task_id", "")).strip()}
+        normalized_task_ids = [
+            str(task.get("task_id", task.get("id", ""))).strip()
+            for task in normalized_tasks
+            if str(task.get("task_id", task.get("id", ""))).strip()
+        ]
+        existing_rows = {
+            str(row.get("task_id", "")).strip(): row
+            for row in self.repo.list_task_head_versions_by_ids(normalized_task_ids)
+            if str(row.get("task_id", "")).strip()
+        }
 
         for task in normalized_tasks:
             task_id = str(task.get("task_id", task.get("id", ""))).strip()
@@ -408,7 +417,7 @@ class YdbSyncService:
         if changed_version_tasks:
             current_rows = {
                 str(row.get("task_id", "")).strip(): int(row.get("current_version", row.get("task_revision", 0)) or 0)
-                for row in self.repo.list_tasks()
+                for row in self.repo.list_task_head_versions_by_ids(list(changed_version_tasks.keys()))
                 if str(row.get("task_id", "")).strip()
             }
             missing_version_head = [
