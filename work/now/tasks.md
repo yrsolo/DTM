@@ -1,5 +1,12 @@
 # Active Tasks
 
+- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P01-T001: add first-class `history` column into YDB schema (`_ddl_tasks` + `ensure_tasks_history_column` migration hook in `ensure_tables`).
+- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P02-T001: hard-cutover operational write path to persist `history` in `dtm_tasks` upserts (main + fallback queries).
+- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P03-T001: hard-cutover read paths (`readmodel_builder`, `frontend_v2_handler`) to read `history` only from row column (no JSON parse from `raw_payload`).
+- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P04-T001: align task mappers/contracts/docs to first-class `history` column semantics.
+- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P05-T001: execute TEST reset + rebuild (`sync-only --force-refresh`) and verify API active tasks and `history` values.
+- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P06-T001: run regression tests and record evidence/trust-gate in campaign artifacts.
+
 - [x] API-HISTORY-T001: restore raw textual task status as `tasks[].history` in API v2 payload while keeping normalized `status` semantics.
 - [x] API-HISTORY-T002: include `history` in sync content-hash basis and keep backward-safe readmodel fallback (`raw_payload.history|status|""`).
 - [x] API-HISTORY-T003: align docs/tests/snapshots with new `history` field and verify full smoke suite + `check_no_monsters`.

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import time
 from datetime import date
 from typing import Any
@@ -131,25 +130,7 @@ class FrontendV2Handler:
                             if field not in task or task.get(field) in (None, ""):
                                 task[field] = str(row.get(field, "")).strip()
                         if ("history" not in task) or (task.get("history") is None):
-                            raw_payload = row.get("raw_payload")
-                            payload_obj: dict[str, Any] = {}
-                            if isinstance(raw_payload, dict):
-                                payload_obj = raw_payload
-                            elif isinstance(raw_payload, str):
-                                text = raw_payload.strip()
-                                if text:
-                                    try:
-                                        parsed = json.loads(text)
-                                        if isinstance(parsed, dict):
-                                            payload_obj = parsed
-                                    except json.JSONDecodeError:
-                                        payload_obj = {}
-                            history = str(payload_obj.get("history", "")).strip()
-                            if not history:
-                                history = str(payload_obj.get("status", "")).strip()
-                            if not history:
-                                history = str(row.get("status", "")).strip()
-                            task["history"] = history
+                            task["history"] = str(row.get("history", "")).strip()
                         owner_id = str(row.get("owner_id", "")).strip()
                         if owner_id:
                             task["ownerId"] = owner_id

@@ -36,6 +36,7 @@ class _OperationalRepoStub:
                 "owner_id": "Designer",
                 "group_id": "Project",
                 "status": "work",
+                "history": "19.02 - отправили раскадровку",
                 "current_version": 3,
                 "created_at_utc": "2026-03-01T00:00:00Z",
             }
@@ -153,6 +154,7 @@ class ReadmodelUsesMilestonesTableTestCase(unittest.TestCase):
         self.assertEqual(tasks[0]["brand"], "Brand")
         self.assertEqual(tasks[0]["format_"], "Format")
         self.assertEqual(tasks[0]["customer"], "Customer")
+        self.assertEqual(tasks[0]["history"], "19.02 - отправили раскадровку")
         self.assertEqual(tasks[0]["milestones"][0]["type"], "storyboard")
         self.assertEqual(tasks[0]["milestones"][1]["type"], "animatic")
         self.assertEqual(tasks[0]["date"]["start"], "2026-03-04")

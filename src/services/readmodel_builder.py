@@ -202,26 +202,7 @@ class FrontendReadmodelBuilderService:
 
     @staticmethod
     def _extract_history(row: dict[str, Any]) -> str:
-        raw_payload = row.get("raw_payload")
-        payload_obj: dict[str, Any] = {}
-        if isinstance(raw_payload, dict):
-            payload_obj = raw_payload
-        elif isinstance(raw_payload, str):
-            text = raw_payload.strip()
-            if text:
-                try:
-                    parsed = json.loads(text)
-                    if isinstance(parsed, dict):
-                        payload_obj = parsed
-                except json.JSONDecodeError:
-                    payload_obj = {}
-        history = str(payload_obj.get("history", "")).strip()
-        if history:
-            return history
-        raw_status = str(payload_obj.get("raw_status", "")).strip()
-        if raw_status:
-            return raw_status
-        return ""
+        return str(row.get("history", "")).strip()
 
     @staticmethod
     def _resolve_synthetic_start_date(row: dict[str, Any]) -> str:

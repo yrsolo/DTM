@@ -21,6 +21,7 @@ Fields (minimum set observed in current code):
 
 Notes:
 - Some fields may be empty in sheet; still included in hashing basis after normalization.
+- `history` is stored as first-class column `dtm_tasks.history`; `raw_payload` is diagnostic only and not a source of truth for `history`.
 
 ## 2) Milestone
 - idx: int (ordering within task)

@@ -30,10 +30,12 @@ Columns:
 - links_json Utf8
 - task_hash Utf8
 - task_revision Uint64
+- history Utf8
 - raw_payload Utf8
 - updated_at_utc Timestamp
 
 Meaning: head row (latest canonical state + current revision).
+`history` is the raw textual status trail from source column `Статус` and is the canonical source for API `tasks[].history`.
 
 ## dtm_task_versions
 Primary key: `(task_id, version)`

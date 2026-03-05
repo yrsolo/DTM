@@ -122,6 +122,7 @@ class OperationalTaskRepo:
                     "links_json": json.dumps(task.get("links", {}), ensure_ascii=False),
                     "task_hash": str(task.get("task_hash", "")).strip() or None,
                     "task_revision": int(task.get("task_revision", 0) or 0),
+                    "history": str(task.get("history", task.get("raw_status", ""))).strip(),
                     "raw_payload": json.dumps(task.get("raw_payload", task), ensure_ascii=False),
                     "updated_at_utc": now,
                 }
@@ -147,17 +148,18 @@ class OperationalTaskRepo:
                 links_json:Utf8,
                 task_hash:Utf8?,
                 task_revision:Uint64,
+                history:Utf8,
                 raw_payload:Utf8,
                 updated_at_utc:Timestamp
             >
         >;
         UPSERT INTO `{self.tasks_table}` (
             task_id, title, brand, format_, customer, raw_timing, owner_id, group_id, status, start_date, end_date, next_due_date,
-            tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
+            tags_json, links_json, task_hash, task_revision, history, raw_payload, updated_at_utc
         )
         SELECT
             task_id, title, brand, format_, customer, raw_timing, owner_id, group_id, status, start_date, end_date, next_due_date,
-            tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
+            tags_json, links_json, task_hash, task_revision, history, raw_payload, updated_at_utc
         FROM AS_TABLE($rows);
         """
         try:
@@ -165,7 +167,7 @@ class OperationalTaskRepo:
         except Exception as exc:
             if not self._is_missing_task_columns_error(exc):
                 raise
-            legacy_rows = [
+            fallback_rows = [
                 {
                     "task_id": item["task_id"],
                     "title": item["title"],
@@ -179,12 +181,13 @@ class OperationalTaskRepo:
                     "links_json": item["links_json"],
                     "task_hash": item["task_hash"],
                     "task_revision": item["task_revision"],
+                    "history": item["history"],
                     "raw_payload": item["raw_payload"],
                     "updated_at_utc": item["updated_at_utc"],
                 }
                 for item in rows
             ]
-            legacy_query = f"""
+            fallback_query = f"""
             DECLARE $rows AS List<
                 Struct<
                     task_id:Utf8,
@@ -199,20 +202,73 @@ class OperationalTaskRepo:
                     links_json:Utf8,
                     task_hash:Utf8?,
                     task_revision:Uint64,
+                    history:Utf8,
                     raw_payload:Utf8,
                     updated_at_utc:Timestamp
                 >
             >;
             UPSERT INTO `{self.tasks_table}` (
                 task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
-                tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
+                tags_json, links_json, task_hash, task_revision, history, raw_payload, updated_at_utc
             )
             SELECT
                 task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
-                tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
+                tags_json, links_json, task_hash, task_revision, history, raw_payload, updated_at_utc
             FROM AS_TABLE($rows);
             """
-            self.client.execute(legacy_query, {"$rows": legacy_rows})
+            try:
+                self.client.execute(fallback_query, {"$rows": fallback_rows})
+            except Exception as fallback_exc:
+                if not self._is_missing_task_columns_error(fallback_exc):
+                    raise
+                oldest_rows = [
+                    {
+                        "task_id": item["task_id"],
+                        "title": item["title"],
+                        "owner_id": item["owner_id"],
+                        "group_id": item["group_id"],
+                        "status": item["status"],
+                        "start_date": item["start_date"],
+                        "end_date": item["end_date"],
+                        "next_due_date": item["next_due_date"],
+                        "tags_json": item["tags_json"],
+                        "links_json": item["links_json"],
+                        "task_hash": item["task_hash"],
+                        "task_revision": item["task_revision"],
+                        "raw_payload": item["raw_payload"],
+                        "updated_at_utc": item["updated_at_utc"],
+                    }
+                    for item in rows
+                ]
+                oldest_query = f"""
+                DECLARE $rows AS List<
+                    Struct<
+                        task_id:Utf8,
+                        title:Utf8,
+                        owner_id:Utf8,
+                        group_id:Utf8,
+                        status:Utf8,
+                        start_date:Date?,
+                        end_date:Date?,
+                        next_due_date:Date?,
+                        tags_json:Utf8,
+                        links_json:Utf8,
+                        task_hash:Utf8?,
+                        task_revision:Uint64,
+                        raw_payload:Utf8,
+                        updated_at_utc:Timestamp
+                    >
+                >;
+                UPSERT INTO `{self.tasks_table}` (
+                    task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
+                    tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
+                )
+                SELECT
+                    task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
+                    tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
+                FROM AS_TABLE($rows);
+                """
+                self.client.execute(oldest_query, {"$rows": oldest_rows})
         return len(rows)
 
     def replace_task_milestones(self, task_id: str, milestones: list[dict[str, Any]]) -> int:
@@ -583,7 +639,7 @@ class OperationalTaskRepo:
         query = f"""
         DECLARE $statuses AS List<Utf8>;
         SELECT
-            task_id, title, brand, format_, customer, raw_timing, owner_id, group_id, status, start_date, end_date, next_due_date,
+            task_id, title, brand, format_, customer, raw_timing, owner_id, group_id, status, start_date, end_date, next_due_date, history,
             tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
         FROM `{self.tasks_table}`
         WHERE
@@ -626,6 +682,7 @@ class OperationalTaskRepo:
                     "start_date": getattr(row, "start_date", None),
                     "end_date": getattr(row, "end_date", None),
                     "next_due_date": getattr(row, "next_due_date", None),
+                    "history": "" if missing_extended_columns else str(getattr(row, "history", "")),
                     "tags_json": str(getattr(row, "tags_json", "[]")),
                     "links_json": str(getattr(row, "links_json", "{}")),
                     "task_hash": str(getattr(row, "task_hash", "")) or None,
@@ -740,7 +797,7 @@ class OperationalTaskRepo:
             return False
         return any(
             marker in text
-            for marker in ("brand", "format_", "customer", "raw_timing", "raw_payload")
+            for marker in ("brand", "format_", "customer", "raw_timing", "history", "raw_payload")
         )
 
     def list_milestones(

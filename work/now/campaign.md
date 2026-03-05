@@ -9,6 +9,7 @@ Single source of truth for campaign lifecycle state.
 - none
 
 ## Done
+- CAM-HISTORY-FIELD-NORMALIZATION-V1 (archived in `work/archive/campaigns/CAM-HISTORY-FIELD-NORMALIZATION-V1/`)
 - CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1/`)
 - CAM-ENTRYPOINT-HYGIENE-V2 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-HYGIENE-V2/`)
 - CAM-ENTRYPOINT-DEHYBRID-V2 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-DEHYBRID-V2/`)
