@@ -218,7 +218,7 @@ class FrontendReadmodelBuilderService:
         legacy_status = str(payload_obj.get("status", "")).strip()
         if legacy_status:
             return legacy_status
-        return ""
+        return str(row.get("status", "")).strip()
 
     @staticmethod
     def _resolve_synthetic_start_date(row: dict[str, Any]) -> str:

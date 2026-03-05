@@ -34,6 +34,7 @@ def frontend_api_v2_doc() -> dict[str, Any]:
                 "type": "string",
                 "default": "work,pre_done",
                 "description": "Comma-separated statuses list.",
+                "allowed_values": ["work", "pre_done", "wait", "done"],
                 "example": "work,pre_done,wait",
             },
             "designer": {

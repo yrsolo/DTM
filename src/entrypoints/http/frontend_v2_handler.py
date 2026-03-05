@@ -146,6 +146,8 @@ class FrontendV2Handler:
                             history = str(payload_obj.get("history", "")).strip()
                             if not history:
                                 history = str(payload_obj.get("status", "")).strip()
+                            if not history:
+                                history = str(row.get("status", "")).strip()
                             task["history"] = history
                         owner_id = str(row.get("owner_id", "")).strip()
                         if owner_id:
@@ -261,6 +263,8 @@ class FrontendV2Handler:
                         if not isinstance(task, dict):
                             continue
                         history_value = task.get("history", "")
+                        if not str(history_value or "").strip():
+                            history_value = task.get("status", "")
                         task["history"] = str(history_value or "").strip()
                 if any(
                     [

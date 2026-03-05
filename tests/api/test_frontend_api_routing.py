@@ -115,9 +115,14 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         response = asyncio.run(index.handler(event, None))
         payload = json.loads(response.get("body", "{}"))
         field_status = payload.get("field_status", {})
+        statuses_query = payload.get("query", {}).get("statuses", {})
         self.assertEqual(response["statusCode"], 200)
         self.assertEqual(field_status.get("tasks[].hash"), "reserved")
         self.assertEqual(field_status.get("summary"), "implemented")
+        self.assertEqual(
+            statuses_query.get("allowed_values"),
+            ["work", "pre_done", "wait", "done"],
+        )
 
     def test_v2_window_validation_requires_both_bounds(self) -> None:
         event = _fixture_event()
