@@ -66,6 +66,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         payload = json.loads(response["body"])
         self.assertEqual(response["statusCode"], 200)
         self.assertEqual(payload.get("meta", {}).get("artifact"), "dtm_frontend_api_v2")
+        self.assertIn("history", payload.get("tasks", [{}])[0])
 
     def test_v2_endpoint_returns_v2_payload(self) -> None:
         event = _fixture_event()

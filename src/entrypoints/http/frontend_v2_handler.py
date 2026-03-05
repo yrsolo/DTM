@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import time
 from typing import Any
 
@@ -85,7 +86,14 @@ class FrontendV2Handler:
             missing_business_fields = any(
                 field not in first_task for field in ("brand", "format_", "customer")
             ) if isinstance(first_task, dict) else True
-            return (not include_people and people_empty) or missing_business_fields or owner_people_mismatch or people_ids_not_hashed
+            missing_history_field = ("history" not in first_task) if isinstance(first_task, dict) else True
+            return (
+                (not include_people and people_empty)
+                or missing_business_fields
+                or missing_history_field
+                or owner_people_mismatch
+                or people_ids_not_hashed
+            )
 
         def _enrich_payload_from_operational(payload: dict[str, Any]) -> dict[str, Any]:
             try:
@@ -121,6 +129,24 @@ class FrontendV2Handler:
                         for field in ("brand", "format_", "customer"):
                             if field not in task or task.get(field) in (None, ""):
                                 task[field] = str(row.get(field, "")).strip()
+                        if ("history" not in task) or (task.get("history") is None):
+                            raw_payload = row.get("raw_payload")
+                            payload_obj: dict[str, Any] = {}
+                            if isinstance(raw_payload, dict):
+                                payload_obj = raw_payload
+                            elif isinstance(raw_payload, str):
+                                text = raw_payload.strip()
+                                if text:
+                                    try:
+                                        parsed = json.loads(text)
+                                        if isinstance(parsed, dict):
+                                            payload_obj = parsed
+                                    except json.JSONDecodeError:
+                                        payload_obj = {}
+                            history = str(payload_obj.get("history", "")).strip()
+                            if not history:
+                                history = str(payload_obj.get("status", "")).strip()
+                            task["history"] = history
                         owner_id = str(row.get("owner_id", "")).strip()
                         if owner_id:
                             task["ownerId"] = owner_id
@@ -229,6 +255,13 @@ class FrontendV2Handler:
                 payload["meta"]["readmodelId"] = row.readmodel_id
                 payload["meta"]["readmodelHash"] = row.payload_hash
                 payload["meta"]["builtFromSourceHash"] = row.built_from_source_hash
+                tasks = payload.get("tasks", [])
+                if isinstance(tasks, list):
+                    for task in tasks:
+                        if not isinstance(task, dict):
+                            continue
+                        history_value = task.get("history", "")
+                        task["history"] = str(history_value or "").strip()
                 if any(
                     [
                         designer,
