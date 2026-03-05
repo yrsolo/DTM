@@ -159,6 +159,10 @@ class ReadmodelUsesMilestonesTableTestCase(unittest.TestCase):
         self.assertEqual(tasks[0]["milestones"][1]["type"], "animatic")
         self.assertEqual(tasks[0]["date"]["start"], "2026-03-04")
         self.assertEqual(tasks[0]["date"]["end"], "2026-03-11")
+        self.assertEqual(
+            readmodel_repo.saved_payload["filters"]["statuses"],
+            ["work", "pre_done", "wait", "done"],
+        )
         self.assertTrue(readmodel_repo.saved_payload["filters"]["include_people"])
         self.assertEqual(len(readmodel_repo.saved_payload["entities"]["people"]), 1)
 

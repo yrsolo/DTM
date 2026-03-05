@@ -58,6 +58,8 @@ class ReadmodelBuildResult:
 class FrontendReadmodelBuilderService:
     """Build `frontend_v2:default` payload and persist it in YDB."""
 
+    _READMODEL_SNAPSHOT_STATUSES = ["work", "pre_done", "wait", "done"]
+
     def __init__(
         self,
         *,
@@ -101,7 +103,7 @@ class FrontendReadmodelBuilderService:
                 ydb_queries_count=self.operational_repo.client.stats.ydb_queries_count + self.readmodel_repo.client.stats.ydb_queries_count,
             )
 
-        task_rows = self.operational_repo.list_tasks(statuses=["work", "pre_done"])
+        task_rows = self.operational_repo.list_tasks(statuses=list(self._READMODEL_SNAPSHOT_STATUSES))
         people_views = self._build_people_from_task_rows(task_rows)
         task_versions: dict[str, int] = {}
         for row in task_rows:
@@ -168,8 +170,8 @@ class FrontendReadmodelBuilderService:
             people=people_views,
             env_name=self.env_name,
             source_sheet_name=self.source_sheet_name,
-            statuses=["work", "pre_done"],
-            limit=500,
+            statuses=list(self._READMODEL_SNAPSHOT_STATUSES),
+            limit=max(len(task_views), 500),
             include_people=True,
             designer_filter="",
         )

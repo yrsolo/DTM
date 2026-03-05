@@ -1,5 +1,7 @@
 # Active Tasks
 
+- [x] API-READMODEL-STATUS-T001: include final/idle statuses (`done`, `wait`) into readmodel snapshot build so `/api/v2/frontend?statuses=done` returns data.
+
 - [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P01-T001: add first-class `history` column into YDB schema (`_ddl_tasks` + `ensure_tasks_history_column` migration hook in `ensure_tables`).
 - [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P02-T001: hard-cutover operational write path to persist `history` in `dtm_tasks` upserts (main + fallback queries).
 - [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P03-T001: hard-cutover read paths (`readmodel_builder`, `frontend_v2_handler`) to read `history` only from row column (no JSON parse from `raw_payload`).
