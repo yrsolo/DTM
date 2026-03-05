@@ -580,59 +580,102 @@ class OperationalTaskRepo:
         payload_json: str,
         created_at_utc: datetime | None = None,
     ) -> None:
-        query = f"""
-        DECLARE $task_id AS Utf8;
-        DECLARE $version AS Uint64;
-        DECLARE $status AS Utf8;
-        DECLARE $content_hash AS Utf8;
-        DECLARE $payload_json AS Utf8;
-        DECLARE $created_at_utc AS Timestamp;
-        UPSERT INTO `{self.versions_table}` (
+        self.upsert_task_versions_bulk(
+            [
+                {
+                    "task_id": task_id,
+                    "version": version,
+                    "status": status,
+                    "content_hash": content_hash,
+                    "payload_json": payload_json,
+                    "created_at_utc": created_at_utc or _utc_now(),
+                }
+            ]
+        )
+
+    def upsert_task_versions_bulk(self, rows: list[dict[str, Any]]) -> int:
+        normalized_rows: list[dict[str, Any]] = []
+        for row in rows:
+            task_id = str(row.get("task_id", "")).strip()
+            version = int(row.get("version", 0) or 0)
+            if not task_id or version <= 0:
+                continue
+            normalized_rows.append(
+                {
+                    "task_id": task_id,
+                    "version": version,
+                    "status": str(row.get("status", "active")).strip() or "active",
+                    "content_hash": str(row.get("content_hash", "")).strip(),
+                    "payload_json": str(row.get("payload_json", "")),
+                    "created_at_utc": row.get("created_at_utc") or _utc_now(),
+                }
+            )
+        if not normalized_rows:
+            return 0
+        chunk_size = 200
+        query = """
+        DECLARE $rows AS List<
+            Struct<
+                task_id:Utf8,
+                version:Uint64,
+                status:Utf8,
+                content_hash:Utf8,
+                payload_json:Utf8,
+                created_at_utc:Timestamp
+            >
+        >;
+        UPSERT INTO `%s` (
             task_id, version, status, content_hash, payload_json, created_at_utc
         )
-        VALUES (
-            $task_id, $version, $status, $content_hash, $payload_json, $created_at_utc
-        );
-        """
-        try:
-            self.client.execute(
-                query,
-                {
-                    "$task_id": str(task_id).strip(),
-                    "$version": int(version),
-                    "$status": str(status).strip() or "active",
-                    "$content_hash": str(content_hash).strip(),
-                    "$payload_json": payload_json,
-                    "$created_at_utc": created_at_utc or _utc_now(),
-                },
-            )
-        except Exception as exc:
-            text = str(exc).lower()
-            if "path not found" in text or "table not found" in text:
-                return
-            raise
+        SELECT
+            task_id, version, status, content_hash, payload_json, created_at_utc
+        FROM AS_TABLE($rows);
+        """ % self.versions_table
+        written = 0
+        for offset in range(0, len(normalized_rows), chunk_size):
+            chunk = normalized_rows[offset : offset + chunk_size]
+            try:
+                self.client.execute(query, {"$rows": chunk})
+                written += len(chunk)
+            except Exception as exc:
+                text = str(exc).lower()
+                if "path not found" in text or "table not found" in text:
+                    return written
+                raise
+        return written
 
     def archive_task_version(self, *, task_id: str, version: int) -> None:
-        query = f"""
-        DECLARE $task_id AS Utf8;
-        DECLARE $version AS Uint64;
-        UPDATE `{self.versions_table}`
-        SET status = "archive"
-        WHERE task_id = $task_id AND version = $version;
-        """
-        try:
-            self.client.execute(
-                query,
-                {
-                    "$task_id": str(task_id).strip(),
-                    "$version": int(version),
-                },
-            )
-        except Exception as exc:
-            text = str(exc).lower()
-            if "path not found" in text or "table not found" in text:
-                return
-            raise
+        self.archive_task_versions_bulk([{"task_id": task_id, "version": version}])
+
+    def archive_task_versions_bulk(self, rows: list[dict[str, Any]]) -> int:
+        normalized_rows: list[dict[str, Any]] = []
+        for row in rows:
+            task_id = str(row.get("task_id", "")).strip()
+            version = int(row.get("version", 0) or 0)
+            if not task_id or version <= 0:
+                continue
+            normalized_rows.append({"task_id": task_id, "version": version})
+        if not normalized_rows:
+            return 0
+        chunk_size = 200
+        archived = 0
+        query = """
+        DECLARE $rows AS List<Struct<task_id:Utf8, version:Uint64>>;
+        UPSERT INTO `%s` (task_id, version, status)
+        SELECT task_id, version, "archive"
+        FROM AS_TABLE($rows);
+        """ % self.versions_table
+        for offset in range(0, len(normalized_rows), chunk_size):
+            chunk = normalized_rows[offset : offset + chunk_size]
+            try:
+                self.client.execute(query, {"$rows": chunk})
+                archived += len(chunk)
+            except Exception as exc:
+                text = str(exc).lower()
+                if "path not found" in text or "table not found" in text:
+                    return archived
+                raise
+        return archived
 
     def list_tasks(
         self,

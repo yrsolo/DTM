@@ -134,6 +134,9 @@ class SyncRunResult:
     forced_refresh: bool
     tasks_upserted: int
     milestones_upserted: int
+    version_rows_upserted: int
+    version_rows_archived: int
+    milestones_v_rows_upserted: int
     ydb_queries_count: int
     ydb_error_code: str
 
@@ -254,6 +257,9 @@ class YdbSyncService:
             forced_refresh=force_refresh,
             tasks_upserted=0,
             milestones_upserted=0,
+            version_rows_upserted=0,
+            version_rows_archived=0,
+            milestones_v_rows_upserted=0,
             ydb_queries_count=self.repo.client.stats.ydb_queries_count,
             ydb_error_code=self.repo.client.stats.error_code,
         )
@@ -304,6 +310,9 @@ class YdbSyncService:
                 forced_refresh=force_refresh,
                 tasks_upserted=0,
                 milestones_upserted=0,
+                version_rows_upserted=0,
+                version_rows_archived=0,
+                milestones_v_rows_upserted=0,
                 ydb_queries_count=self.repo.client.stats.ydb_queries_count,
                 ydb_error_code=self.repo.client.stats.error_code,
             )
@@ -328,6 +337,9 @@ class YdbSyncService:
                 forced_refresh=force_refresh,
                 tasks_upserted=0,
                 milestones_upserted=0,
+                version_rows_upserted=0,
+                version_rows_archived=0,
+                milestones_v_rows_upserted=0,
                 ydb_queries_count=self.repo.client.stats.ydb_queries_count,
                 ydb_error_code=self.repo.client.stats.error_code,
             )
@@ -336,7 +348,8 @@ class YdbSyncService:
         milestones_by_task: dict[str, list[dict[str, Any]]] = {}
         milestones_versions_by_task: dict[tuple[str, int], list[dict[str, Any]]] = {}
         changed_version_tasks: dict[str, int] = {}
-        pending_archives: list[tuple[str, int]] = []
+        versions_rows_bulk: list[dict[str, Any]] = []
+        archives_rows_bulk: list[dict[str, Any]] = []
         normalized_task_ids = [
             str(task.get("task_id", task.get("id", ""))).strip()
             for task in normalized_tasks
@@ -395,17 +408,19 @@ class YdbSyncService:
                 create_new_version = False
 
             if create_new_version:
-                self.repo.upsert_task_version(
-                    task_id=task_id,
-                    version=task_revision,
-                    status="active",
-                    content_hash=content_hash,
-                    payload_json=json.dumps(task, ensure_ascii=False, sort_keys=True),
-                    created_at_utc=now_utc,
+                versions_rows_bulk.append(
+                    {
+                        "task_id": task_id,
+                        "version": task_revision,
+                        "status": "active",
+                        "content_hash": content_hash,
+                        "payload_json": json.dumps(task, ensure_ascii=False, sort_keys=True),
+                        "created_at_utc": now_utc,
+                    }
                 )
                 changed_version_tasks[task_id] = task_revision
                 if previous_version > 0 and not force_refresh:
-                    pending_archives.append((task_id, previous_version))
+                    archives_rows_bulk.append({"task_id": task_id, "version": previous_version})
 
             task_rows.append(
                 {
@@ -442,9 +457,12 @@ class YdbSyncService:
             milestones_total = 0
             print("legacy_milestones_write=skipped reason=disabled")
 
+        version_rows_upserted = self.repo.upsert_task_versions_bulk(versions_rows_bulk)
+        version_rows_archived = self.repo.archive_task_versions_bulk(archives_rows_bulk)
+        milestones_v_rows_upserted = 0
         if milestones_versions_by_task:
-            milestones_written = self.repo.upsert_task_milestones_versions_bulk(milestones_versions_by_task)
-            if milestones_written <= 0:
+            milestones_v_rows_upserted = self.repo.upsert_task_milestones_versions_bulk(milestones_versions_by_task)
+            if milestones_v_rows_upserted <= 0:
                 raise RuntimeError("milestones_write_empty")
         tasks_upserted = self.repo.upsert_tasks_batch(task_rows)
 
@@ -474,9 +492,6 @@ class YdbSyncService:
             if missing_milestones:
                 raise RuntimeError("milestones_current_version_missing")
 
-        for task_id, previous_version in pending_archives:
-            self.repo.archive_task_version(task_id=task_id, version=previous_version)
-
         self.repo.set_sync_state(
             source_id=source_id,
             preflight_hash_50=preflight_hash_50,
@@ -496,6 +511,9 @@ class YdbSyncService:
             forced_refresh=force_refresh,
             tasks_upserted=tasks_upserted,
             milestones_upserted=milestones_total,
+            version_rows_upserted=version_rows_upserted,
+            version_rows_archived=version_rows_archived,
+            milestones_v_rows_upserted=milestones_v_rows_upserted,
             ydb_queries_count=self.repo.client.stats.ydb_queries_count,
             ydb_error_code=self.repo.client.stats.error_code,
         )

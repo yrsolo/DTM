@@ -93,11 +93,19 @@ class _RepoStub:
                 rows.append(payload)
         return rows
 
+    def upsert_task_versions_bulk(self, rows):  # noqa: ANN001
+        self.version_upserts += len(rows)
+        return len(rows)
+
+    def archive_task_versions_bulk(self, rows):  # noqa: ANN001
+        self.version_archives += len(rows)
+        return len(rows)
+
     def archive_task_version(self, *, task_id, version):  # noqa: ANN001, ARG002
-        self.version_archives += 1
+        raise AssertionError("single-row archive_task_version must not be used in sync runtime")
 
     def upsert_task_version(self, **kwargs):  # noqa: ANN003
-        self.version_upserts += 1
+        raise AssertionError("single-row upsert_task_version must not be used in sync runtime")
 
 
 class SyncSourceHashGateTestCase(unittest.TestCase):
@@ -275,6 +283,21 @@ class SyncSourceHashGateTestCase(unittest.TestCase):
         self.assertEqual(repo._tasks["new-task"]["task_revision"], 1)
         self.assertEqual(repo.version_upserts, 1)
         self.assertEqual(repo.milestone_version_upserts, 1)
+
+    def test_run_path_does_not_use_single_row_version_methods(self) -> None:
+        repo = _RepoStub()
+        service = YdbSyncService(repo)  # type: ignore[arg-type]
+        snapshot = {"values": [["id"], ["42"]], "colors": ["#fff"]}
+
+        service.run(
+            source_id="sheet:test",
+            preflight_range_values=snapshot,
+            source_range_values=snapshot,
+            normalized_tasks=[{"task_id": "42", "title": "Task", "status": "work", "milestones": []}],
+            force_refresh=False,
+        )
+
+        self.assertEqual(repo.version_upserts, 1)
 
     def test_start_milestone_is_added_when_missing(self) -> None:
         repo = _RepoStub()

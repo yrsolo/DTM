@@ -156,6 +156,9 @@ class TimerPipeline:
                     f"forced_refresh={sync_result.forced_refresh} "
                     f"tasks_upserted={sync_result.tasks_upserted} "
                     f"milestones_upserted={sync_result.milestones_upserted} "
+                    f"version_rows_upserted={getattr(sync_result, 'version_rows_upserted', 0)} "
+                    f"version_rows_archived={getattr(sync_result, 'version_rows_archived', 0)} "
+                    f"milestones_v_rows_upserted={getattr(sync_result, 'milestones_v_rows_upserted', 0)} "
                     f"ydb_queries_count={sync_result.ydb_queries_count} "
                     f"error_code={sync_result.ydb_error_code}"
                 )

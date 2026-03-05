@@ -3,7 +3,7 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
-- none
+- CAM-SYNC-BULK-PIPELINE-V1
 
 ## Planned
 - none

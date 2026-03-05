@@ -1,5 +1,10 @@
 # Active Tasks
 
+- [x] CAM-SYNC-BULK-PIPELINE-V1-P01-T001: add YDB bulk primitives for task versions (`upsert_task_versions_bulk`, `archive_task_versions_bulk`) with chunking.
+- [x] CAM-SYNC-BULK-PIPELINE-V1-P02-T001: refactor sync runtime to compute version/archive rows in memory and flush in bulk (no per-task version writes).
+- [x] CAM-SYNC-BULK-PIPELINE-V1-P03-T001: extend sync/timer observability with bulk counters and keep test stubs backward-safe.
+- [x] CAM-SYNC-BULK-PIPELINE-V1-P04-T001: add/refresh targeted tests (`sync_source_hash_gate`, `pipeline_runtime`, adapter bulk versions tests).
+
 - [x] API-TASKID-T001: preserve source sheet `id` column as canonical `task_id` (stop overwriting with row index in Sheets loaders).
 - [x] API-LIMIT-SORT-T001: apply `limit` after descending sort by task end date so API returns latest N tasks.
 - [x] API-READMODEL-DATE-T001: harden numeric date coercion in readmodel builder to handle epoch-like large ints without overflow.

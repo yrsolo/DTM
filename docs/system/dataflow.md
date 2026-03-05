@@ -62,3 +62,12 @@ Builder flow:
 4. upsert one row in readmodel table
 
 API v2 serves the readmodel snapshot.
+
+## 7) Operational sync write strategy
+Sync runtime writes operational data in bulk batches only:
+- tasks: `upsert_tasks_batch(...)`
+- versions: `upsert_task_versions_bulk(...)`
+- archive marks: `archive_task_versions_bulk(...)`
+- milestones_v: `upsert_task_milestones_versions_bulk(...)`
+
+Runtime path must not do per-task YDB version writes inside task loop.
