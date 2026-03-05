@@ -131,6 +131,27 @@ class SyncSourceHashGateTestCase(unittest.TestCase):
         self.assertEqual(repo.upsert_calls, 1)
         self.assertEqual(repo.milestone_replace_calls, 1)
 
+    def test_sync_preflight_handles_legacy_int_last_full_timestamp(self) -> None:
+        repo = _RepoStub()
+        snapshot = {"values": [["id"], ["1"]], "colors": ["#fff"]}
+        repo._state = type(  # noqa: SLF001
+            "LegacyState",
+            (),
+            {
+                "preflight_hash_50": stable_json_hash(snapshot),
+                "source_hash_full": "hash",
+                "last_full_sync_at_utc": 1741123200,
+            },
+        )()
+        service = YdbSyncService(repo, write_legacy_milestones=True)  # type: ignore[arg-type]
+        result = service.run_preflight_only(
+            source_id="sheet:test",
+            preflight_range_values=snapshot,
+            force_refresh=False,
+            full_sync_interval_hours=24,
+        )
+        self.assertTrue((result is None) or hasattr(result, "source_id"))
+
     def test_color_only_change_does_not_increment_version(self) -> None:
         repo = _RepoStub()
         service = YdbSyncService(repo, write_legacy_milestones=True)  # type: ignore[arg-type]

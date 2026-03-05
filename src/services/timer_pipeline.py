@@ -35,6 +35,31 @@ class TimerPipeline:
     def __init__(self, ctx: AppContext) -> None:
         self._ctx = ctx
 
+    @staticmethod
+    def _to_utc_datetime(value: Any) -> datetime | None:
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            return value if value.tzinfo is not None else value.replace(tzinfo=timezone.utc)
+        if isinstance(value, (int, float)):
+            raw = float(value)
+            if raw <= 0:
+                return None
+            if raw > 1e18:
+                raw /= 1_000_000_000.0
+            elif raw > 1e15:
+                raw /= 1_000_000.0
+            elif raw > 1e12:
+                raw /= 1_000.0
+            return datetime.fromtimestamp(raw, tz=timezone.utc)
+        text = str(value).strip()
+        if not text:
+            return None
+        try:
+            return datetime.fromisoformat(text.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+
     def run(self, request: RunRequest) -> PipelineResult:
         deps = self._ctx.deps
         cfg = self._ctx.cfg
@@ -90,8 +115,11 @@ class TimerPipeline:
                 sa_key_file=ydb_sa_key_file,
                 ensure_schema=False,
             ).get_readmodel("frontend_v2:default")
-            if existing_readmodel is not None and existing_readmodel.generated_at_utc is not None and not request.force_refresh:
-                age_seconds = (datetime.now(timezone.utc) - existing_readmodel.generated_at_utc).total_seconds()
+            generated_at_utc = self._to_utc_datetime(
+                existing_readmodel.generated_at_utc if existing_readmodel is not None else None
+            )
+            if generated_at_utc is not None and not request.force_refresh:
+                age_seconds = (datetime.now(timezone.utc) - generated_at_utc).total_seconds()
                 ttl_skip = age_seconds < pipeline_cfg.readmodel_ttl_minutes * 60
             if ttl_skip:
                 self._ctx.log(

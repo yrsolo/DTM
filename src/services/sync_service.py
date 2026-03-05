@@ -35,6 +35,31 @@ def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _to_utc_datetime(value: Any) -> datetime | None:
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value if value.tzinfo is not None else value.replace(tzinfo=timezone.utc)
+    if isinstance(value, (int, float)):
+        raw = float(value)
+        if raw <= 0:
+            return None
+        if raw > 1e18:
+            raw /= 1_000_000_000.0
+        elif raw > 1e15:
+            raw /= 1_000_000.0
+        elif raw > 1e12:
+            raw /= 1_000.0
+        return datetime.fromtimestamp(raw, tz=timezone.utc)
+    text = str(value).strip()
+    if not text:
+        return None
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
 def _content_hash_for_task(task: dict[str, Any], milestones: list[dict[str, Any]]) -> str:
     basis = {
         "title": str(task.get("title", task.get("name", ""))).strip(),
@@ -170,7 +195,7 @@ class YdbSyncService:
                 now_utc=now_utc,
                 reason="preflight_changed",
             )
-        last_full = state.last_full_sync_at_utc
+        last_full = _to_utc_datetime(state.last_full_sync_at_utc)
         if last_full is None:
             return PreflightDecision(
                 preflight_hash_50=preflight_hash_50,
@@ -206,12 +231,16 @@ class YdbSyncService:
         )
         if decision.full_sync_required:
             return None
+        current_state = self.repo.get_sync_state(source_id)
+        last_full_sync_at_utc = _to_utc_datetime(
+            current_state.last_full_sync_at_utc if current_state is not None else None
+        )
         self.repo.set_sync_state(
             source_id=source_id,
             preflight_hash_50=decision.preflight_hash_50,
             source_hash_full=decision.previous_source_hash_full or "",
             synced_at_utc=decision.now_utc,
-            last_full_sync_at_utc=self.repo.get_sync_state(source_id).last_full_sync_at_utc,
+            last_full_sync_at_utc=last_full_sync_at_utc,
             last_success_at_utc=decision.now_utc,
         )
         return SyncRunResult(
@@ -252,12 +281,16 @@ class YdbSyncService:
         source_hash_full = stable_json_hash(source_range_values)
 
         if not decision.full_sync_required:
+            current_state = self.repo.get_sync_state(source_id)
+            last_full_sync_at_utc = _to_utc_datetime(
+                current_state.last_full_sync_at_utc if current_state is not None else None
+            )
             self.repo.set_sync_state(
                 source_id=source_id,
                 preflight_hash_50=preflight_hash_50,
                 source_hash_full=previous_full or source_hash_full,
                 synced_at_utc=now_utc,
-                last_full_sync_at_utc=self.repo.get_sync_state(source_id).last_full_sync_at_utc,
+                last_full_sync_at_utc=last_full_sync_at_utc,
                 last_success_at_utc=now_utc,
             )
             return SyncRunResult(
