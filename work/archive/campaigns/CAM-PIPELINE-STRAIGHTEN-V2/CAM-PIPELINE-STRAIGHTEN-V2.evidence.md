@@ -23,3 +23,8 @@
   - `python -m unittest tests.services.test_pipeline_runtime -v` (4/4 OK)
   - `python -m unittest tests.services.test_sync_source_hash_gate -v` (8/8 OK)
   - `python -m unittest tests.api.test_frontend_api_routing tests.api.test_frontend_api_v2_payload -v` (19/19 OK)
+- 2026-03-05: legacy-safe API snapshot recovery path stabilized without touching working legacy timer.
+  - `src/services/timer_pipeline.py`: `mode=sync-only` now executes canonical YDB sync/readmodel rebuild even when `store_mode=legacy`.
+  - `agent/invoke_function_smoke.py`: added `--force-refresh` payload flag.
+  - `scripts/invoke_cloud_timer.cmd`: added `--sync-only` and `--force-refresh` flags (`timer dry-run mock` remains default).
+  - docs aligned: `docs/system/entrypoints_index_main.md`, `docs/system/runbook.md`.

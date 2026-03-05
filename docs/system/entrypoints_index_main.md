@@ -28,6 +28,7 @@ Important behavior:
 - Preflight-first pipeline can skip full snapshot fetch when unchanged.
 - Canonical sync module is `src/services/sync_service.py`.
 - Standard timer mode does not import or execute `GoogleSheetPlanner` wiring.
+- In `store_mode=legacy`, `mode=timer` keeps legacy render/update path, while `mode=sync-only` explicitly triggers canonical YDB sync + readmodel rebuild (safe API recovery path).
 
 ## `index.py`
 

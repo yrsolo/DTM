@@ -38,6 +38,8 @@ def _build_payload(args: argparse.Namespace) -> dict[str, Any]:
         payload["dry_run"] = True
     if args.mock_external:
         payload["mock_external"] = True
+    if args.force_refresh:
+        payload["force_refresh"] = True
     return payload
 
 
@@ -65,6 +67,11 @@ def main() -> int:
         "--mock-external",
         action="store_true",
         help="Set mock_external=true in payload",
+    )
+    parser.add_argument(
+        "--force-refresh",
+        action="store_true",
+        help="Set force_refresh=true in payload",
     )
     args = parser.parse_args()
 

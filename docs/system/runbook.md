@@ -24,6 +24,10 @@ Run job mode that performs:
 - normalize + upsert operational
 - build readmodel snapshot
 
+Operational note for current split runtime:
+- `mode=timer` in `store_mode=legacy` keeps legacy sheet render/update path.
+- `mode=sync-only` is the canonical recovery path for API v2 snapshot rebuild via YDB/readmodel even when `store_mode=legacy`.
+
 Key safety knobs:
 - `READMODEL_TTL_MINUTES` (default 9)
 - `PREFLIGHT_TOP_ROWS` (default 50)
@@ -59,6 +63,5 @@ If logs show `synthetic_start_used` warnings:
 1) Development goes to `dev` (small commits, push to origin).
 2) When test contour validation is needed, merge `dev` into `test`.
 3) Push `test` to origin:
-   - test deploy workflow starts automatically,
-   - automation creates/updates PR flow `test -> main`.
-4) Production promotion stays owner-controlled: owner reviews and merges PR into `main`, then run manual production release workflow.
+   - test deploy workflow starts automatically.
+4) Production promotion stays owner-controlled: owner manually creates/reviews PR `test -> main`, then runs manual production release workflow.

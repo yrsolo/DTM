@@ -7,6 +7,8 @@
 - [x] API-STATUS-COLOR-T001: fix inflated `work` statuses by mapping from canonical column-A colors (`A2:A...`) instead of lossy wide-range snapshot colors.
 - [x] OPS-TOOLS-TIMER-T001: add Windows CMD wrapper `scripts/invoke_cloud_timer.cmd` for HTTP timer invoke (dry-run default, `--live` optional).
 - [x] RUNTIME-TIMER-T001: restore legacy planner execution for standard timer/test modes when `store_mode=legacy` to avoid no-op local/cloud timer runs.
+- [x] API-REBUILD-T001: allow canonical YDB/readmodel rebuild via `mode=sync-only` even when `store_mode=legacy`.
+- [x] API-REBUILD-T002: add cloud invoke flags `--sync-only` and `--force-refresh` (cmd + smoke utility) for deterministic API snapshot recovery.
 
 - [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P01-T001: inventory functional context dataclasses/lambda wiring and record replacements in `docs/system/demonster_inventory.md`.
 - [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P02-T001: normalize `AppContext` runtime deps (no callback/factory fields) and bootstrap wiring.

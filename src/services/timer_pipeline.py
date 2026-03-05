@@ -42,10 +42,9 @@ class TimerPipeline:
         store_mode = str(cfg.runtime.sources.store_mode_default)
         runtime_env = cfg.runtime.runtime.env_default
 
-        if not (
-            store_mode in {"dual_write", "ydb_primary", "ydb_only"}
-            and request.mode in {"timer", "test", "sync-only"}
-        ):
+        ydb_enabled_store_mode = store_mode in {"dual_write", "ydb_primary", "ydb_only"}
+        sync_only_rebuild_mode = str(request.mode).strip().lower() == "sync-only"
+        if not ((ydb_enabled_store_mode and request.mode in {"timer", "test", "sync-only"}) or sync_only_rebuild_mode):
             return PipelineResult(sync_deferred=False, readmodel_deferred=False, ttl_skip=False)
 
         ydb_endpoint = str(deps.get("ydb_endpoint", ""))

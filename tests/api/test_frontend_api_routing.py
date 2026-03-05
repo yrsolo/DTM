@@ -178,6 +178,32 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(payload.get("meta", {}).get("readmodelSource"), "ydb")
         self.assertEqual(payload.get("summary", {}).get("tasksReturned"), 1)
 
+    def test_runtime_mode_parses_sync_only_and_force_refresh(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["queryStringParameters"] = {
+            "mode": "sync-only",
+            "force_refresh": "1",
+        }
+        request_payload, is_http_event = index._extract_payload(event)
+        run_mode = index._extract_run_mode(
+            event,
+            request_payload,
+            is_http_event,
+            allowed_run_modes=index.ALLOWED_RUN_MODES,
+            query_params=index._query_params,
+        )
+        force_refresh = index._extract_force_refresh(
+            event,
+            request_payload,
+            is_http_event,
+            query_params=index._query_params,
+            parse_bool=index._parse_bool,
+        )
+        self.assertEqual(run_mode, "sync-only")
+        self.assertTrue(force_refresh)
+
     def test_v2_returns_503_when_readmodel_transport_unavailable(self) -> None:
         class _BrokenReadmodelRepo:
             def __init__(self, *args, **kwargs) -> None:  # noqa: D401, ANN002, ANN003
