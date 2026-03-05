@@ -91,7 +91,11 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
         cfg=APP_CONTEXT.cfg,
         dry_run=dry_run,
     )
-    use_legacy_planner = str(mode).startswith("legacy_planner_")
+    store_mode = str(APP_STORE_MODE).strip().lower()
+    legacy_store_mode = store_mode not in {"dual_write", "ydb_primary", "ydb_only"}
+    use_legacy_planner = str(mode).startswith("legacy_planner_") or (
+        legacy_store_mode and str(mode) in {"timer", "test", "sync-only", "morning", "reminders-only"}
+    )
     quality_report: dict[str, Any] = {"summary": {"task_row_issue_count": 0}}
 
     if use_legacy_planner:
