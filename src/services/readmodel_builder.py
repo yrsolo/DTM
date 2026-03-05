@@ -103,7 +103,10 @@ class FrontendReadmodelBuilderService:
                 ydb_queries_count=self.operational_repo.client.stats.ydb_queries_count + self.readmodel_repo.client.stats.ydb_queries_count,
             )
 
-        task_rows = self.operational_repo.list_tasks(statuses=list(self._READMODEL_SNAPSHOT_STATUSES))
+        task_rows = self.operational_repo.list_tasks(
+            statuses=list(self._READMODEL_SNAPSHOT_STATUSES),
+            include_raw_payload=False,
+        )
         people_views = self._build_people_from_task_rows(task_rows)
         task_versions: dict[str, int] = {}
         for row in task_rows:

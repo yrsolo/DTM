@@ -24,7 +24,8 @@ class _OperationalRepoStub:
     def get_sync_state(self, source_id: str):  # noqa: ARG002
         return _SyncState(source_hash="hash-1", last_success_at_utc=datetime.now(timezone.utc))
 
-    def list_tasks(self, *, statuses=None):  # noqa: ANN001, ARG002
+    def list_tasks(self, *, statuses=None, include_raw_payload=True):  # noqa: ANN001, ARG002
+        _ = include_raw_payload
         return [
             {
                 "task_id": "42",

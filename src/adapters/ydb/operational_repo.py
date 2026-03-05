@@ -634,20 +634,35 @@ class OperationalTaskRepo:
                 return
             raise
 
-    def list_tasks(self, *, statuses: list[str] | None = None) -> list[dict[str, Any]]:
+    def list_tasks(
+        self,
+        *,
+        statuses: list[str] | None = None,
+        include_raw_payload: bool = True,
+    ) -> list[dict[str, Any]]:
         status_filter = [str(item).strip().lower() for item in (statuses or []) if str(item).strip()]
+        raw_payload_column = ", raw_payload" if include_raw_payload else ""
         query = f"""
         DECLARE $statuses AS List<Utf8>;
+        DECLARE $after_task_id AS Utf8;
+        DECLARE $chunk_size AS Uint64;
         SELECT
             task_id, title, brand, format_, customer, raw_timing, owner_id, group_id, status, start_date, end_date, next_due_date, history,
-            tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
+            tags_json, links_json, task_hash, task_revision{raw_payload_column}, updated_at_utc
         FROM `{self.tasks_table}`
         WHERE
-            ListLength($statuses) = 0
-            OR status IN $statuses;
+            task_id > $after_task_id
+            AND (
+                ListLength($statuses) = 0
+                OR status IN $statuses
+            )
+        ORDER BY task_id
+        LIMIT $chunk_size;
         """
+        chunk_size = 200
+        legacy_query = ""
         try:
-            result_sets = self.client.execute(query, {"$statuses": status_filter})
+            self.client.execute(query, {"$statuses": status_filter, "$after_task_id": "", "$chunk_size": chunk_size})
             missing_extended_columns = False
         except Exception as exc:
             if not self._is_missing_task_columns_error(exc):
@@ -655,43 +670,66 @@ class OperationalTaskRepo:
             missing_extended_columns = True
             legacy_query = f"""
             DECLARE $statuses AS List<Utf8>;
+            DECLARE $after_task_id AS Utf8;
+            DECLARE $chunk_size AS Uint64;
             SELECT
                 task_id, title, owner_id, group_id, status, start_date, end_date, next_due_date,
                 tags_json, links_json, task_hash, task_revision, raw_payload, updated_at_utc
             FROM `{self.tasks_table}`
             WHERE
-                ListLength($statuses) = 0
-                OR status IN $statuses;
+                task_id > $after_task_id
+                AND (
+                    ListLength($statuses) = 0
+                    OR status IN $statuses
+                )
+            ORDER BY task_id
+            LIMIT $chunk_size;
             """
-            result_sets = self.client.execute(legacy_query, {"$statuses": status_filter})
-        if not result_sets:
-            return []
-        rows: list[dict[str, Any]] = []
-        for row in result_sets[0].rows:
-            rows.append(
-                {
-                    "task_id": str(getattr(row, "task_id", "")),
-                    "title": str(getattr(row, "title", "")),
-                    "brand": "" if missing_extended_columns else str(getattr(row, "brand", "")),
-                    "format_": "" if missing_extended_columns else str(getattr(row, "format_", "")),
-                    "customer": "" if missing_extended_columns else str(getattr(row, "customer", "")),
-                    "raw_timing": "" if missing_extended_columns else str(getattr(row, "raw_timing", "")),
-                    "owner_id": str(getattr(row, "owner_id", "")),
-                    "group_id": str(getattr(row, "group_id", "")),
-                    "status": str(getattr(row, "status", "")),
-                    "start_date": getattr(row, "start_date", None),
-                    "end_date": getattr(row, "end_date", None),
-                    "next_due_date": getattr(row, "next_due_date", None),
-                    "history": "" if missing_extended_columns else str(getattr(row, "history", "")),
-                    "tags_json": str(getattr(row, "tags_json", "[]")),
-                    "links_json": str(getattr(row, "links_json", "{}")),
-                    "task_hash": str(getattr(row, "task_hash", "")) or None,
-                    "task_revision": int(getattr(row, "task_revision", 0) or 0),
-                    "current_version": int(getattr(row, "task_revision", 0) or 0),
-                    "updated_at_utc": getattr(row, "updated_at_utc", None),
-                    "raw_payload": str(getattr(row, "raw_payload", "{}")),
-                }
+            self.client.execute(
+                legacy_query,
+                {"$statuses": status_filter, "$after_task_id": "", "$chunk_size": chunk_size},
             )
+        rows: list[dict[str, Any]] = []
+        after_task_id = ""
+        while True:
+            if missing_extended_columns:
+                query_to_use = legacy_query
+                params = {"$statuses": status_filter, "$after_task_id": after_task_id, "$chunk_size": chunk_size}
+            else:
+                query_to_use = query
+                params = {"$statuses": status_filter, "$after_task_id": after_task_id, "$chunk_size": chunk_size}
+            result_sets = self.client.execute(query_to_use, params)
+            if not result_sets or not result_sets[0].rows:
+                break
+            batch_rows = result_sets[0].rows
+            for row in batch_rows:
+                rows.append(
+                    {
+                        "task_id": str(getattr(row, "task_id", "")),
+                        "title": str(getattr(row, "title", "")),
+                        "brand": "" if missing_extended_columns else str(getattr(row, "brand", "")),
+                        "format_": "" if missing_extended_columns else str(getattr(row, "format_", "")),
+                        "customer": "" if missing_extended_columns else str(getattr(row, "customer", "")),
+                        "raw_timing": "" if missing_extended_columns else str(getattr(row, "raw_timing", "")),
+                        "owner_id": str(getattr(row, "owner_id", "")),
+                        "group_id": str(getattr(row, "group_id", "")),
+                        "status": str(getattr(row, "status", "")),
+                        "start_date": getattr(row, "start_date", None),
+                        "end_date": getattr(row, "end_date", None),
+                        "next_due_date": getattr(row, "next_due_date", None),
+                        "history": "" if missing_extended_columns else str(getattr(row, "history", "")),
+                        "tags_json": str(getattr(row, "tags_json", "[]")),
+                        "links_json": str(getattr(row, "links_json", "{}")),
+                        "task_hash": str(getattr(row, "task_hash", "")) or None,
+                        "task_revision": int(getattr(row, "task_revision", 0) or 0),
+                        "current_version": int(getattr(row, "task_revision", 0) or 0),
+                        "updated_at_utc": getattr(row, "updated_at_utc", None),
+                        "raw_payload": str(getattr(row, "raw_payload", "{}")) if include_raw_payload else "{}",
+                    }
+                )
+            after_task_id = str(getattr(batch_rows[-1], "task_id", "")).strip()
+            if len(batch_rows) < chunk_size or not after_task_id:
+                break
         return rows
 
     def list_task_version_index(self, *, statuses: list[str] | None = None) -> list[dict[str, Any]]:

@@ -75,6 +75,49 @@ class OperationalRepoHistoryTestCase(unittest.TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["history"], "raw status timeline")
 
+    def test_list_tasks_can_skip_raw_payload_column(self) -> None:
+        captured = {"query": ""}
+
+        class _Row:
+            task_id = "1"
+            title = "Task"
+            brand = "Brand"
+            format_ = "Format"
+            customer = "Customer"
+            raw_timing = "raw"
+            owner_id = "owner"
+            group_id = "group"
+            status = "done"
+            start_date = None
+            end_date = None
+            next_due_date = None
+            history = "history"
+            tags_json = "[]"
+            links_json = "{}"
+            task_hash = "hash"
+            task_revision = 2
+            updated_at_utc = None
+
+        class _ResultSet:
+            rows = [_Row()]
+
+        repo = OperationalTaskRepo.__new__(OperationalTaskRepo)
+        repo.tasks_table = "dtm_tasks"
+
+        def _execute(query: str, params: dict):  # noqa: ANN001
+            _ = params
+            captured["query"] = query
+            return [_ResultSet()]
+
+        repo.client = _ClientStub()
+        repo.client.execute = _execute  # type: ignore[method-assign]
+
+        rows = repo.list_tasks(statuses=["done"], include_raw_payload=False)
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["raw_payload"], "{}")
+        self.assertNotIn(" raw_payload,", captured["query"])
+
 
 if __name__ == "__main__":
     unittest.main()
