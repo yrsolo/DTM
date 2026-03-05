@@ -138,7 +138,6 @@ class SheetsNormalizedTaskSource:
         df["color_status"] = df["color"].apply(
             lambda color: self.task_repository.color_status_map.get(color, "work")
         )
-        df["id"] = df.index + 2
         df["name"] = df.apply(self.task_repository._generate_task_name, axis=1)
 
         self.task_repository.df = df

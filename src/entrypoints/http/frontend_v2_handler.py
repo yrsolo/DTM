@@ -315,6 +315,15 @@ class FrontendV2Handler:
                     if _window_intersects(task, start=window_start, end=window_end)
                 ]
 
+            def _latest_sort_key(task: dict[str, Any]) -> tuple[date, date, str]:
+                date_payload = task.get("date", {}) if isinstance(task.get("date", {}), dict) else {}
+                end_value = _coerce_iso_date(date_payload.get("end")) or date.min
+                start_value = _coerce_iso_date(date_payload.get("start")) or date.min
+                task_id = str(task.get("id", "")).strip()
+                return (end_value, start_value, task_id)
+
+            filtered_tasks = sorted(filtered_tasks, key=_latest_sort_key, reverse=True)
+
             tasks_total = len(filtered_tasks)
             limited_tasks = filtered_tasks[: max(limit, 0)]
             payload["tasks"] = limited_tasks

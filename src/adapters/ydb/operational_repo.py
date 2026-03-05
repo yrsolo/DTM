@@ -770,20 +770,23 @@ class OperationalTaskRepo:
         FROM `{self.tasks_table}`
         WHERE task_id IN $task_ids;
         """
-        result_sets = self.client.execute(query, {"$task_ids": keys})
-        if not result_sets:
-            return []
         rows: list[dict[str, Any]] = []
-        for row in result_sets[0].rows:
-            rows.append(
-                {
-                    "task_id": str(getattr(row, "task_id", "")),
-                    "status": str(getattr(row, "status", "")),
-                    "task_hash": str(getattr(row, "task_hash", "")) or None,
-                    "task_revision": int(getattr(row, "task_revision", 0) or 0),
-                    "current_version": int(getattr(row, "task_revision", 0) or 0),
-                }
-            )
+        chunk_size = 200
+        for offset in range(0, len(keys), chunk_size):
+            chunk = keys[offset : offset + chunk_size]
+            result_sets = self.client.execute(query, {"$task_ids": chunk})
+            if not result_sets:
+                continue
+            for row in result_sets[0].rows:
+                rows.append(
+                    {
+                        "task_id": str(getattr(row, "task_id", "")),
+                        "status": str(getattr(row, "status", "")),
+                        "task_hash": str(getattr(row, "task_hash", "")) or None,
+                        "task_revision": int(getattr(row, "task_revision", 0) or 0),
+                        "current_version": int(getattr(row, "task_revision", 0) or 0),
+                    }
+                )
         return rows
 
     def list_task_head_versions_by_ids(self, task_ids: list[str]) -> list[dict[str, Any]]:
@@ -807,25 +810,28 @@ class OperationalTaskRepo:
         INNER JOIN $heads AS h
         ON v.task_id = h.task_id AND v.version = h.version;
         """
-        try:
-            result_sets = self.client.execute(query, {"$task_ids": keys})
-        except Exception as exc:
-            text = str(exc).lower()
-            if "path not found" in text or "table not found" in text or "member not found" in text:
-                return self.list_task_version_index_by_ids(keys)
-            raise
-        if not result_sets:
-            return []
         rows: list[dict[str, Any]] = []
-        for row in result_sets[0].rows:
-            rows.append(
-                {
-                    "task_id": str(getattr(row, "task_id", "")),
-                    "task_hash": str(getattr(row, "task_hash", "")) or None,
-                    "task_revision": int(getattr(row, "task_revision", 0) or 0),
-                    "current_version": int(getattr(row, "task_revision", 0) or 0),
-                }
-            )
+        chunk_size = 200
+        for offset in range(0, len(keys), chunk_size):
+            chunk = keys[offset : offset + chunk_size]
+            try:
+                result_sets = self.client.execute(query, {"$task_ids": chunk})
+            except Exception as exc:
+                text = str(exc).lower()
+                if "path not found" in text or "table not found" in text or "member not found" in text:
+                    return self.list_task_version_index_by_ids(keys)
+                raise
+            if not result_sets:
+                continue
+            for row in result_sets[0].rows:
+                rows.append(
+                    {
+                        "task_id": str(getattr(row, "task_id", "")),
+                        "task_hash": str(getattr(row, "task_hash", "")) or None,
+                        "task_revision": int(getattr(row, "task_revision", 0) or 0),
+                        "current_version": int(getattr(row, "task_revision", 0) or 0),
+                    }
+                )
         return rows
 
     @staticmethod

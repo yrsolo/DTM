@@ -28,6 +28,28 @@ def _build_row(task_id: int, timing: str) -> dict[str, object]:
 
 
 class TimingYearModesTestCase(unittest.TestCase):
+    def test_load_pipeline_keeps_source_id_column_as_task_id(self) -> None:
+        class _ServiceStub:
+            def get_dataframe(self, spreadsheet_name, worksheet_name, worksheet_range=None, header=True):  # noqa: ANN001, ARG002
+                if worksheet_name == "tasks":
+                    return pd.DataFrame([_build_row("uuid-task-001", "15.12.2026 stage-a")])
+                return pd.DataFrame([["stub"]])
+
+            def get_cell_colors(self, spreadsheet_name, worksheet_name, worksheet_range):  # noqa: ANN001, ARG002
+                return ["#FFFFFF"]
+
+        sheet_info = SimpleNamespace(spreadsheet_name="stub", get_sheet_name=lambda name: name)
+        repo = GoogleSheetsTaskRepository(
+            sheet_info=sheet_info,
+            source_sheet_info=sheet_info,
+            service=_ServiceStub(),
+        )
+
+        repo._load_and_process_data()
+
+        self.assertIn("uuid-task-001", repo.tasks)
+        self.assertNotIn(2, repo.tasks)
+
     def test_legacy_mode_regression_keeps_expected_year_shift(self) -> None:
         parser = TimingParser(timing_year_mode="legacy")
         timings = parser.parse(
