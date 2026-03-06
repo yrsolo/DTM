@@ -3,15 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
-from types import SimpleNamespace
+from datetime import date
 from typing import Any
 
-import pandas as pd
-
-from core.api_payload_v2 import build_frontend_api_payload_v2
-from core.models.people import Person
-from src.snapshot_engine.model import PrepSnapshot, TaskSheet
+from src.snapshot_engine.frontend_v2_payload_builder import FrontendV2PayloadBuilder
+from src.snapshot_engine.model import PrepSnapshot
 
 
 @dataclass(frozen=True)
@@ -26,77 +22,34 @@ class FrontendV2Query:
     window_mode: str = "intersects"
 
 
-def _to_task_object(sheet: TaskSheet) -> Any:
-    timing = {pd.Timestamp(key): list(value) for key, value in sheet.timing.items() if key}
-    min_date = min(timing.keys()) if timing else None
-    max_date = max(timing.keys()) if timing else None
-    return SimpleNamespace(
-        id=sheet.task_id,
-        name=sheet.title,
-        designer=sheet.owner_id,
-        status=sheet.history,
-        history=sheet.history,
-        color_status=sheet.status,
-        brand=sheet.brand,
-        format_=sheet.format_,
-        project_name=sheet.group_id,
-        customer=sheet.customer,
-        raw_timing=sheet.raw_timing,
-        timing=timing,
-        min_date=min_date,
-        max_date=max_date,
-    )
-
-
 class SnapshotQueryEngine:
-    def __init__(self, *, env_name: str, source_sheet_name: str) -> None:
+    def __init__(
+        self,
+        *,
+        env_name: str,
+        source_sheet_name: str,
+        frontend_builder: FrontendV2PayloadBuilder | None = None,
+    ) -> None:
         self._env_name = env_name
         self._source_sheet_name = source_sheet_name
-
-    @staticmethod
-    def _build_people(tasks: list[Any]) -> list[Person]:
-        names: dict[str, Person] = {}
-        for task in tasks:
-            for raw_name in str(getattr(task, "designer", "")).split("\n"):
-                name = str(raw_name).strip()
-                if not name:
-                    continue
-                if name in names:
-                    continue
-                names[name] = Person(
-                    person_id=name,
-                    name=name,
-                    email="",
-                    position="designer",
-                    telegram_id="",
-                    chat_id="",
-                    info="",
-                    vacation="",
-                )
-        return sorted(names.values(), key=lambda item: item.id)
+        self._frontend_builder = frontend_builder or FrontendV2PayloadBuilder()
 
     def query_frontend_v2(self, snap: PrepSnapshot, query: FrontendV2Query) -> dict[str, Any]:
-        tasks = [_to_task_object(view.sheet) for view in snap.tasks_by_id.values()]
-        people = self._build_people(tasks)
-        payload = build_frontend_api_payload_v2(
-            tasks=tasks,
-            people=people,
-            env_name=self._env_name,
-            source_sheet_name=self._source_sheet_name,
+        normalized_query = FrontendV2Query(
             statuses=list(query.statuses),
+            designer=str(query.designer),
             limit=int(query.limit),
             include_people=bool(query.include_people),
-            designer_filter=str(query.designer),
+            window_enabled=bool(query.window_enabled),
             window_start=query.window_start if query.window_enabled else None,
             window_end=query.window_end if query.window_enabled else None,
-            window_mode=query.window_mode,
-            generated_at=snap.built_at_utc if snap.built_at_utc.tzinfo else snap.built_at_utc.replace(tzinfo=timezone.utc),
-            synced_at=datetime.now(timezone.utc),
+            window_mode=str(query.window_mode or "intersects"),
         )
-        payload.setdefault("meta", {})
-        payload["meta"]["sourceHash"] = snap.raw_source_hash
-        payload["meta"]["sourceId"] = snap.source_id
-        payload["meta"]["readmodelSource"] = "s3_snapshot"
-        payload["meta"]["queryFilterApplied"] = True
-        payload["meta"]["queryFilterNote"] = ""
-        return payload
+        selected = self._frontend_builder.select_tasks(snap, normalized_query)
+        return self._frontend_builder.build(
+            snap,
+            normalized_query,
+            selected,
+            env_name=self._env_name,
+            source_sheet_name=self._source_sheet_name,
+        ).data

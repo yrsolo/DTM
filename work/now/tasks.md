@@ -1,10 +1,10 @@
 # Active Tasks
 
-- [ ] LEGACY-CUT-BOOTSTRAP-T001: register new campaign pack files (`CAM-LEGACY-CUT-API-V1`, `CAM-NOTIFY-MODULE-V1`, `CAM-RENDER-MODULE-V1`, `CAM-HTTP-FALLBACK-REMOVAL-V1`, `CAM-LEGACY-PLANNER-DELETE-V1`, `CAM-GREP-GATES-V1`, `priorities_legacy_cut.md`).
-- [ ] CAM-LEGACY-CUT-API-V1-P01-T001: freeze API v2 parity spec for Snapshot Engine migration and add `docs/snapshot_engine/api_v2_parity.md`.
-- [ ] CAM-LEGACY-CUT-API-V1-P02-T001: integrate `src/snapshot_engine/frontend_v2_payload_builder.py` into query engine and remove legacy payload-builder coupling.
-- [ ] CAM-NOTIFY-MODULE-V1-P01-T001: scaffold new notify module (`src/notify/*`) and wire runtime mode plan.
-- [ ] CAM-RENDER-MODULE-V1-P01-T001: scaffold new render module (`src/render/*`) and wire runtime mode plan.
+- [x] LEGACY-CUT-BOOTSTRAP-T001: register new campaign pack files (`CAM-LEGACY-CUT-API-V1`, `CAM-NOTIFY-MODULE-V1`, `CAM-RENDER-MODULE-V1`, `CAM-HTTP-FALLBACK-REMOVAL-V1`, `CAM-LEGACY-PLANNER-DELETE-V1`, `CAM-GREP-GATES-V1`, `priorities_legacy_cut.md`).
+- [x] CAM-LEGACY-CUT-API-V1-P01-T001: freeze API v2 parity spec for Snapshot Engine migration and add `docs/snapshot_engine/api_v2_parity.md`.
+- [x] CAM-LEGACY-CUT-API-V1-P02-T001: integrate `src/snapshot_engine/frontend_v2_payload_builder.py` into query engine and remove legacy payload-builder coupling.
+- [x] CAM-NOTIFY-MODULE-V1-P01-T001: scaffold new notify module (`src/notify/*`) and wire runtime mode plan.
+- [x] CAM-RENDER-MODULE-V1-P01-T001: scaffold new render module (`src/render/*`) and wire runtime mode plan.
 - [ ] CAM-HTTP-FALLBACK-REMOVAL-V1-P01-T001: remove HTTP fallback-to-legacy branches for API v2 snapshot-missing path.
 - [ ] CAM-LEGACY-PLANNER-DELETE-V1-P01-T001: map and remove planner imports from standard runtime modes.
 - [ ] CAM-GREP-GATES-V1-P01-T001: add `scripts/check_no_legacy_imports.py` and CI enforcement gate.
@@ -259,5 +259,6 @@
 
 ## Last Update
 - 2026-03-05 (restored API v2 `tasks[].history`, aligned tests/snapshots/docs, and synced `test` branch to `dev`)
+
 
 
