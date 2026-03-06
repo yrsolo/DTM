@@ -17,7 +17,7 @@ pipeline:
 snapshot_engine:
   enabled: true
   storage: s3
-  bucket: dtm
+  bucket: dtm-front
   prefix_raw: snapshots/raw/default.json
   prefix_prep: snapshots/prep/default.json
   prefix_extra: snapshots/extra/
