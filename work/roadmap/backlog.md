@@ -1,12 +1,20 @@
 # Backlog
 
 ## In Progress
-- CAM-SNAPSHOT-ENGINE-V1
+- none
 
 ## Planned
 - none
 
 ## Done
+- CAM-SNAPSHOT-ENGINE-V1 (archived)
+- CAM-RENDER-MODULE-V1 (archived)
+- CAM-LEGACY-PLANNER-DELETE-V1 (archived)
+- CAM-GREP-GATES-V1 (archived)
+- CAM-HTTP-FALLBACK-REMOVAL-V1 (archived)
+- CAM-LEGACY-CUT-API-V1 (archived)
+- CAM-NOTIFY-MODULE-V1 (archived)
+- CAM-SYNC-BULK-PIPELINE-V1 (archived)
 - CAM-HISTORY-FIELD-NORMALIZATION-V1 (archived)
 - CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1 (archived)
 - CAM-ENTRYPOINT-HYGIENE-V2 (archived)

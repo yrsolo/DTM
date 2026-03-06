@@ -8,6 +8,13 @@ from typing import Any
 
 
 @dataclass(slots=True, frozen=True)
+class Window:
+    start: date | None
+    end: date | None
+    mode: str = "intersects"
+
+
+@dataclass(slots=True, frozen=True)
 class Milestone:
     type: str
     planned: date | None = None

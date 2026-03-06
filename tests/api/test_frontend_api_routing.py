@@ -208,6 +208,21 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(run_mode, "sync-only")
         self.assertTrue(force_refresh)
 
+    def test_runtime_mode_parses_render_v2(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["queryStringParameters"] = {"mode": "render_v2"}
+        request_payload, is_http_event = index._extract_payload(event)
+        run_mode = index._extract_run_mode(
+            event,
+            request_payload,
+            is_http_event,
+            allowed_run_modes=index.ALLOWED_RUN_MODES,
+            query_params=index._query_params,
+        )
+        self.assertEqual(run_mode, "render_v2")
+
     def test_v2_returns_503_when_snapshot_source_unavailable(self) -> None:
         frontend_v2_module.build_snapshot_engine = lambda _ctx: (_ for _ in ()).throw(RuntimeError("s3 down"))  # type: ignore[assignment]
         event = _fixture_event()
