@@ -29,7 +29,6 @@
 
 ## Current blockers for full cutover
 1. Standard legacy `timer/test/morning` branch still enters planner when `store_mode=legacy`.
-2. Group-query handler still uses legacy text parser/formatter wrappers (`src.legacy.http_core_bindings`), even though planner dependency is removed.
 
 ## Next safe migration slice
 1. Replace `src.legacy.http_core_bindings` in group-query handler with dedicated snapshot-native parser/formatter.
@@ -38,4 +37,5 @@
 ## Progress update (P02-T001)
 - `src/entrypoints/http/group_query_tasks_loader.py` no longer imports planner bootstrap.
 - Active-task loading in helper now reads from snapshot engine via frontend query adapter.
+- `src/entrypoints/http/group_query_handler.py` no longer imports `src.legacy.http_core_bindings`; parser/formatter logic moved local to snapshot-based handler.
 
