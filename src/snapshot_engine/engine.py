@@ -64,6 +64,14 @@ class SnapshotEngine:
         )
 
 
+def _resolve_env_prefix(value: str, env_name: str) -> str:
+    token = "{env}"
+    cleaned = str(value or "").strip()
+    if token in cleaned:
+        return cleaned.replace(token, str(env_name or "").strip().lower() or "dev")
+    return cleaned
+
+
 def build_snapshot_engine(ctx: AppContext) -> SnapshotEngine:
     from src.snapshot_engine.stores.s3_store import build_s3_stores
 
@@ -72,14 +80,15 @@ def build_snapshot_engine(ctx: AppContext) -> SnapshotEngine:
     snap_cfg = cfg.runtime.snapshot_engine
     db_cfg = cfg.db.object_storage
     endpoint_url = str(db_cfg.get("endpoint_url_default", "")).strip()
+    env_name = str(cfg.runtime.runtime.env_default).strip().lower() or "dev"
     raw_cache, prep_cache, extra_store = build_s3_stores(
         bucket=str(snap_cfg.bucket).strip(),
         endpoint_url=endpoint_url,
         aws_access_key_id=deps.get("aws_access_key_id"),
         aws_secret_access_key=deps.get("aws_secret_access_key"),
-        raw_key=str(snap_cfg.prefix_raw).strip(),
-        prep_key=str(snap_cfg.prefix_prep).strip(),
-        extra_prefix=str(snap_cfg.prefix_extra).strip(),
+        raw_key=_resolve_env_prefix(str(snap_cfg.prefix_raw), env_name),
+        prep_key=_resolve_env_prefix(str(snap_cfg.prefix_prep), env_name),
+        extra_prefix=_resolve_env_prefix(str(snap_cfg.prefix_extra), env_name),
     )
     prep_builder = PrepBuilder(extra_store)
     query_engine = SnapshotQueryEngine(

@@ -15,3 +15,8 @@
 - `task_id` = ID из исходной таблицы (канонический идентификатор)
 
 Runtime больше не использует YDB readmodel как source-of-truth для API v2.
+
+Изоляция test/prod в одном бакете:
+- `prefix_raw/prefix_prep/prefix_extra` поддерживают шаблон `{env}`.
+- Для `ENV=test` ключи пишутся в `snapshots/test/...`.
+- Для `ENV=prod` ключи пишутся в `snapshots/prod/...`.
