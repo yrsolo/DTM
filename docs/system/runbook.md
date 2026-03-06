@@ -18,15 +18,16 @@ Option A (recommended): run migration mode with env flag:
 
 Option B: call schema ensure via code path (dev only).
 
-## 3) Timer sync + readmodel build
+## 3) Timer update (Snapshot Engine)
 Run job mode that performs:
-- hash gate (preflight + full)
-- normalize + upsert operational
-- build readmodel snapshot
+- Sheets snapshot fetch (`values + colors`)
+- normalize -> raw snapshot
+- prep build (raw + extra merge)
+- S3 write for raw/prep snapshots
 
-Operational note for current split runtime:
-- `mode=timer` in `store_mode=legacy` keeps legacy sheet render/update path.
-- `mode=sync-only` is the canonical recovery path for API v2 snapshot rebuild via YDB/readmodel even when `store_mode=legacy`.
+Operational mode note:
+- canonical API v2 data source is S3 prep snapshot.
+- `mode=sync-only` remains the explicit manual rebuild mode.
 
 Key safety knobs:
 - `READMODEL_TTL_MINUTES` (default 9)
@@ -35,29 +36,29 @@ Key safety knobs:
 - `FORCE_REFRESH=1` to force rebuild WITHOUT version bumps
 
 ## 4) API (frontend v2)
-API should read a single row readmodel snapshot from:
-- `dtm_readmodel_frontend_v2` (id: `frontend_v2:default`)
+API reads prep snapshot from S3 via snapshot engine.
 
-If `READMODEL_SOURCE=ydb`, the handler must not rebuild on the fly.
+Health markers in response:
+- `meta.readmodelSource = "s3_snapshot"`
+- `meta.sourceHash`
+- `meta.sourceId`
 
 ## 5) Milestones invariants
 Milestones must never be empty:
 - sync adds `start` if missing
-- builder synthesizes `start` if milestones_v missing for the current version
+- builder synthesizes `start` if timing is empty in source
 
 ## 6) Troubleshooting
-### RESOURCE_EXHAUSTED (YDB serverless)
-- backoff parameters are controlled by:
-  - `YDB_EXHAUSTED_MAX_ATTEMPTS`
-  - `YDB_EXHAUSTED_BASE_BACKOFF_SECONDS`
-  - `YDB_EXHAUSTED_MAX_BACKOFF_SECONDS`
-  - `YDB_EXHAUSTED_JITTER_RATIO`
-- reduce query count: prefer readmodel single-row reads, avoid N+1.
+### Snapshot source unavailable
+- check Object Storage credentials and bucket/prefix config:
+  - `runtime.snapshot_engine.bucket`
+  - `runtime.snapshot_engine.prefix_raw|prefix_prep|prefix_extra`
+- startup should fail-fast if snapshot engine is enabled but required fields are empty.
 
 ### Missing milestones
-If logs show `synthetic_start_used` warnings:
-- likely milestones_v was not written/backfilled for some tasks.
-- run backfill/migration script or investigate sync errors.
+If logs show synthetic `start`:
+- timing payload in source task is empty or not parsed.
+- verify source timing text and normalization logs.
 
 ## 7) Branching and test deploy
 1) Development goes to `dev` (small commits, push to origin).

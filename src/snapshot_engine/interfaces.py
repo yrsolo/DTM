@@ -1,0 +1,43 @@
+"""Snapshot engine protocol interfaces."""
+
+from __future__ import annotations
+
+from typing import Protocol
+
+from src.snapshot_engine.model import PrepSnapshot, RawSnapshot, SheetSnapshot, TaskExtra
+
+
+class SheetsSource(Protocol):
+    @property
+    def source_id(self) -> str: ...
+
+    @property
+    def source_sheet_name(self) -> str: ...
+
+    def fetch_snapshot(self, worksheet_range: str) -> SheetSnapshot: ...
+
+    def build_tasks(self, full_snapshot: SheetSnapshot) -> list[object]: ...
+
+
+class Hasher(Protocol):
+    def hash_sheet_snapshot(self, snapshot: SheetSnapshot) -> str: ...
+
+
+class Normalizer(Protocol):
+    def normalize(self, *, source_id: str, source_hash: str, snapshot: SheetSnapshot) -> RawSnapshot: ...
+
+
+class RawCache(Protocol):
+    def get(self) -> RawSnapshot | None: ...
+    def put(self, raw: RawSnapshot) -> None: ...
+
+
+class PrepCache(Protocol):
+    def get(self) -> PrepSnapshot | None: ...
+    def put(self, prep: PrepSnapshot) -> None: ...
+
+
+class ExtraStore(Protocol):
+    def get_many(self, task_ids: list[str]) -> dict[str, TaskExtra]: ...
+    def upsert(self, extra: TaskExtra) -> None: ...
+    def mark_orphaned(self, task_id: str, orphaned: bool = True) -> None: ...

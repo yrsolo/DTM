@@ -7,13 +7,13 @@ import json
 import sys
 import unittest
 from pathlib import Path
-from types import SimpleNamespace
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 import index
+from src.entrypoints.http import frontend_v2_handler as frontend_v2_module
 
 
 FIXTURE_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "http_event_yc_api_gw.json"
@@ -23,31 +23,38 @@ def _fixture_event() -> dict:
     return json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
 
 
+class _FakeSnapshotEngine:
+    def __init__(self, payload: dict):
+        self.payload = payload
+        self.queries = []
+
+    def frontend_v2(self, query):  # noqa: ANN001
+        self.queries.append(query)
+        return dict(self.payload)
+
+
 class FrontendApiRoutingTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        self._orig_readmodel_repo = index.FrontendReadmodelRepo
-        index.FrontendReadmodelRepo = lambda *args, **kwargs: SimpleNamespace(  # type: ignore[assignment]
-            get_readmodel=lambda readmodel_id: SimpleNamespace(  # noqa: ARG005
-                readmodel_id="frontend_v2:default",
-                payload_hash="sha256:test",
-                built_from_source_hash="source_hash",
-                payload=lambda: {
-                    "meta": {
-                        "artifact": "dtm_frontend_api_v2",
-                        "contractVersion": "2.0.1",
-                        "generatedAt": "2026-03-02T00:00:00Z",
-                        "syncedAt": "2026-03-02T00:00:00Z",
-                    },
-                    "summary": {"tasksReturned": 1},
-                    "filters": {},
-                    "entities": {"people": [], "groups": [], "tags": [], "enums": {}},
-                    "tasks": [{"id": "101"}],
+        self._orig_build_snapshot_engine = frontend_v2_module.build_snapshot_engine
+        self._engine = _FakeSnapshotEngine(
+            payload={
+                "meta": {
+                    "artifact": "dtm_frontend_api_v2",
+                    "contractVersion": "2.0.1",
+                    "generatedAt": "2026-03-02T00:00:00Z",
+                    "syncedAt": "2026-03-02T00:00:00Z",
+                    "readmodelSource": "s3_snapshot",
                 },
-            )
+                "summary": {"tasksReturned": 1},
+                "filters": {},
+                "entities": {"people": [], "groups": [], "tags": [], "enums": {}},
+                "tasks": [{"id": "101", "history": "raw"}],
+            }
         )
+        frontend_v2_module.build_snapshot_engine = lambda _ctx: self._engine  # type: ignore[assignment]
 
     def tearDown(self) -> None:
-        index.FrontendReadmodelRepo = self._orig_readmodel_repo
+        frontend_v2_module.build_snapshot_engine = self._orig_build_snapshot_engine  # type: ignore[assignment]
 
     def test_http_path_from_proxy_template(self) -> None:
         event = _fixture_event()
@@ -77,6 +84,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         payload = json.loads(response["body"])
         self.assertEqual(response["statusCode"], 200)
         self.assertEqual(payload.get("meta", {}).get("artifact"), "dtm_frontend_api_v2")
+        self.assertEqual(payload.get("meta", {}).get("readmodelSource"), "s3_snapshot")
 
     def test_root_returns_v2_doc(self) -> None:
         event = _fixture_event()
@@ -152,62 +160,18 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 400)
         self.assertEqual(payload.get("error", {}).get("code"), "invalid_window")
 
-    def test_v2_reads_tasks_from_readmodel_when_source_ydb(self) -> None:
-        index.FrontendReadmodelRepo = lambda *args, **kwargs: SimpleNamespace(  # type: ignore[assignment]
-            get_readmodel=lambda readmodel_id: SimpleNamespace(  # noqa: ARG005
-                readmodel_id="frontend_v2:default",
-                payload_hash="sha256:test",
-                built_from_source_hash="source_hash",
-                payload=lambda: {
-                    "meta": {"artifact": "dtm_frontend_api_v2"},
-                    "summary": {"tasksReturned": 1},
-                    "filters": {},
-                    "entities": {"people": [], "groups": [], "tags": [], "enums": {}},
-                    "tasks": [{"id": "501"}],
-                },
-            )
-        )
-        event = _fixture_event()
-        event["pathParams"]["proxy"] = "api/v2/frontend"
-        event["params"]["proxy"] = "api/v2/frontend"
-        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend?statuses=work"
-        event["queryStringParameters"] = {"statuses": "work"}
-        response = asyncio.run(index.handler(event, None))
-        payload = json.loads(response.get("body", "{}"))
-        self.assertEqual(response["statusCode"], 200)
-        self.assertEqual(payload.get("meta", {}).get("readmodelSource"), "ydb")
-        self.assertEqual(payload.get("summary", {}).get("tasksReturned"), 1)
-
-    def test_v2_limit_returns_latest_tasks_by_end_date(self) -> None:
-        index.FrontendReadmodelRepo = lambda *args, **kwargs: SimpleNamespace(  # type: ignore[assignment]
-            get_readmodel=lambda readmodel_id: SimpleNamespace(  # noqa: ARG005
-                readmodel_id="frontend_v2:default",
-                payload_hash="sha256:test",
-                built_from_source_hash="source_hash",
-                payload=lambda: {
-                    "meta": {"artifact": "dtm_frontend_api_v2"},
-                    "summary": {"tasksReturned": 3},
-                    "filters": {"statuses": ["work"]},
-                    "entities": {"people": [], "groups": [], "tags": [], "enums": {}},
-                    "tasks": [
-                        {"id": "old", "status": "work", "ownerId": "x", "groupId": "g", "date": {"end": "2026-03-01"}},
-                        {"id": "new", "status": "work", "ownerId": "x", "groupId": "g", "date": {"end": "2026-03-20"}},
-                        {"id": "mid", "status": "work", "ownerId": "x", "groupId": "g", "date": {"end": "2026-03-10"}},
-                    ],
-                },
-            )
-        )
+    def test_v2_limit_and_status_filters_are_forwarded_to_query_engine(self) -> None:
         event = _fixture_event()
         event["pathParams"]["proxy"] = "api/v2/frontend"
         event["params"]["proxy"] = "api/v2/frontend"
         event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend?statuses=work&limit=1"
         event["queryStringParameters"] = {"statuses": "work", "limit": "1"}
         response = asyncio.run(index.handler(event, None))
-        payload = json.loads(response.get("body", "{}"))
 
         self.assertEqual(response["statusCode"], 200)
-        self.assertEqual(payload.get("summary", {}).get("tasksReturned"), 1)
-        self.assertEqual(payload.get("tasks", [{}])[0].get("id"), "new")
+        self.assertEqual(len(self._engine.queries), 1)
+        self.assertEqual(self._engine.queries[0].statuses, ["work"])
+        self.assertEqual(self._engine.queries[0].limit, 1)
 
     def test_runtime_mode_parses_sync_only_and_force_refresh(self) -> None:
         event = _fixture_event()
@@ -235,17 +199,8 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(run_mode, "sync-only")
         self.assertTrue(force_refresh)
 
-    def test_v2_returns_503_when_readmodel_transport_unavailable(self) -> None:
-        class _BrokenReadmodelRepo:
-            def __init__(self, *args, **kwargs) -> None:  # noqa: D401, ANN002, ANN003
-                pass
-
-            def get_readmodel(self, readmodel_id):  # noqa: ANN001
-                _ = readmodel_id
-                raise RuntimeError("ydb package is required")
-
-        index.FrontendReadmodelRepo = _BrokenReadmodelRepo  # type: ignore[assignment]
-
+    def test_v2_returns_503_when_snapshot_source_unavailable(self) -> None:
+        frontend_v2_module.build_snapshot_engine = lambda _ctx: (_ for _ in ()).throw(RuntimeError("s3 down"))  # type: ignore[assignment]
         event = _fixture_event()
         event["pathParams"]["proxy"] = "api/v2/frontend"
         event["params"]["proxy"] = "api/v2/frontend"
@@ -256,7 +211,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
 
         self.assertEqual(response["statusCode"], 503)
         self.assertEqual(payload.get("error", {}).get("code"), "frontend_source_unavailable")
-        self.assertEqual(payload.get("error", {}).get("details", {}).get("source"), "readmodel")
+        self.assertEqual(payload.get("error", {}).get("details", {}).get("source"), "snapshot")
 
 
 if __name__ == "__main__":

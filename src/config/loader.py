@@ -6,7 +6,14 @@ import os
 from pathlib import Path
 from typing import Any
 
-from src.config.schema import AppConfig, DbConfig, LlmConfig, MappingConfig, RuntimeConfig, TablesConfig
+from src.config.schema import (
+    AppConfig,
+    DbConfig,
+    LlmConfig,
+    MappingConfig,
+    RuntimeConfig,
+    TablesConfig,
+)
 
 try:
     import yaml
@@ -130,6 +137,11 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
     web_raw = data.get("web", {}) if isinstance(data.get("web", {}), dict) else {}
     api_raw = data.get("api", {}) if isinstance(data.get("api", {}), dict) else {}
     pipeline_raw = data.get("pipeline", {}) if isinstance(data.get("pipeline", {}), dict) else {}
+    snapshot_engine_raw = (
+        data.get("snapshot_engine", {})
+        if isinstance(data.get("snapshot_engine", {}), dict)
+        else {}
+    )
     sources_raw = data.get("sources", {}) if isinstance(data.get("sources", {}), dict) else {}
     timing_raw = data.get("timing", {}) if isinstance(data.get("timing", {}), dict) else {}
     triggers_raw = data.get("triggers", {}) if isinstance(data.get("triggers", {}), dict) else {}
@@ -154,6 +166,27 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
     )
     defaults.pipeline.force_refresh_default = bool(
         pipeline_raw.get("force_refresh_default", defaults.pipeline.force_refresh_default)
+    )
+    defaults.snapshot_engine.enabled = bool(
+        snapshot_engine_raw.get("enabled", defaults.snapshot_engine.enabled)
+    )
+    defaults.snapshot_engine.storage = str(
+        snapshot_engine_raw.get("storage", defaults.snapshot_engine.storage)
+    )
+    defaults.snapshot_engine.bucket = str(
+        snapshot_engine_raw.get("bucket", defaults.snapshot_engine.bucket)
+    )
+    defaults.snapshot_engine.prefix_raw = str(
+        snapshot_engine_raw.get("prefix_raw", defaults.snapshot_engine.prefix_raw)
+    )
+    defaults.snapshot_engine.prefix_prep = str(
+        snapshot_engine_raw.get("prefix_prep", defaults.snapshot_engine.prefix_prep)
+    )
+    defaults.snapshot_engine.prefix_extra = str(
+        snapshot_engine_raw.get("prefix_extra", defaults.snapshot_engine.prefix_extra)
+    )
+    defaults.snapshot_engine.force_refresh_default = bool(
+        snapshot_engine_raw.get("force_refresh_default", defaults.snapshot_engine.force_refresh_default)
     )
 
     defaults.sources.store_mode_default = str(
@@ -202,6 +235,18 @@ def load_config(config_dir: Path = CONFIG_DIR) -> AppConfig:
 
     runtime_cfg = _runtime_from_dict(runtime_data)
     runtime_cfg = _merge_runtime_env_overrides(runtime_cfg)
+    snapshot_cfg = runtime_cfg.snapshot_engine
+    if bool(snapshot_cfg.enabled):
+        if str(snapshot_cfg.storage).strip().lower() != "s3":
+            raise ValueError("snapshot_engine.storage must be 's3' when snapshot_engine.enabled=true")
+        if not str(snapshot_cfg.bucket).strip():
+            raise ValueError("snapshot_engine.bucket is required when snapshot_engine.enabled=true")
+        if not str(snapshot_cfg.prefix_raw).strip():
+            raise ValueError("snapshot_engine.prefix_raw is required when snapshot_engine.enabled=true")
+        if not str(snapshot_cfg.prefix_prep).strip():
+            raise ValueError("snapshot_engine.prefix_prep is required when snapshot_engine.enabled=true")
+        if not str(snapshot_cfg.prefix_extra).strip():
+            raise ValueError("snapshot_engine.prefix_extra is required when snapshot_engine.enabled=true")
 
     tables_cfg = TablesConfig(
         google_sheets=tables_data.get("google_sheets", {}),
