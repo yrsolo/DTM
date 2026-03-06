@@ -3,6 +3,13 @@
 - [x] LEGACY-CUT-BOOTSTRAP-T001: register new campaign pack files (`CAM-LEGACY-CUT-API-V1`, `CAM-NOTIFY-MODULE-V1`, `CAM-RENDER-MODULE-V1`, `CAM-HTTP-FALLBACK-REMOVAL-V1`, `CAM-LEGACY-PLANNER-DELETE-V1`, `CAM-GREP-GATES-V1`, `priorities_legacy_cut.md`).
 - [x] CAM-LEGACY-CUT-API-V1-P01-T001: freeze API v2 parity spec for Snapshot Engine migration and add `docs/snapshot_engine/api_v2_parity.md`.
 - [x] CAM-LEGACY-CUT-API-V1-P02-T001: integrate `src/snapshot_engine/frontend_v2_payload_builder.py` into query engine and remove legacy payload-builder coupling.
+- [x] CAM-LEGACY-CUT-API-V1-P02-T002: implement API v2 task serialization in snapshot builder (`status`, `history`, dates, milestones).
+- [x] CAM-LEGACY-CUT-API-V1-P02-T003: implement entities/enums projection from `PrepSnapshot` in snapshot builder.
+- [x] CAM-LEGACY-CUT-API-V1-P03-T001: wire builder into `SnapshotQueryEngine` and keep runtime query path snapshot-native.
+- [x] CAM-LEGACY-CUT-API-V1-P03-T002: remove legacy payload-builder and person-model imports from snapshot query contour.
+- [x] CAM-LEGACY-CUT-API-V1-P04-T001: keep parity checks for statuses/window/limit/include_people/history in snapshot query tests.
+- [x] CAM-LEGACY-CUT-API-V1-P04-T002: keep golden payload verification from fixed prep-snapshot fixtures.
+- [x] CAM-LEGACY-CUT-API-V1-P05-T001: enforce grep gate against `core.api_payload_v2`/`pandas`/`core.models.people` under `src/snapshot_engine`.
 - [x] CAM-NOTIFY-MODULE-V1-P01-T001: scaffold new notify module (`src/notify/*`) and wire runtime mode plan.
 - [x] CAM-NOTIFY-MODULE-V1-P02-T001: implement `ReminderUseCase.run(req)` over Snapshot Engine prep snapshot.
 - [x] CAM-NOTIFY-MODULE-V1-P02-T002: support active-status filtering, window filtering, owner grouping, and per-owner limit.
@@ -13,6 +20,14 @@
 - [x] CAM-NOTIFY-MODULE-V1-P05-T001: add unit tests for selection/grouping/status/window behavior.
 - [x] CAM-NOTIFY-MODULE-V1-P05-T002: add formatter output regression checks.
 - [x] CAM-RENDER-MODULE-V1-P01-T001: scaffold new render module (`src/render/*`) and wire runtime mode plan.
+- [x] CAM-RENDER-MODULE-V1-P02-T001: implement snapshot-based task selection in `RenderUseCase.build_plan`.
+- [x] CAM-RENDER-MODULE-V1-P02-T002: produce pure `RenderPlan` values/formats without IO side effects.
+- [x] CAM-RENDER-MODULE-V1-P03-T001: implement `GoogleSheetsPlanWriter` batch write adapter for render plan values.
+- [x] CAM-RENDER-MODULE-V1-P03-T002: keep small smoke-safe write path (single bounded `updateCells` request).
+- [x] CAM-RENDER-MODULE-V1-P04-T001: wire runtime mode `render_v2` in planner runtime entrypoint.
+- [ ] CAM-RENDER-MODULE-V1-P04-T002: disable legacy render flow for standard runtime modes.
+- [x] CAM-RENDER-MODULE-V1-P05-T001: add unit tests for `RenderUseCase.build_plan`.
+- [x] CAM-RENDER-MODULE-V1-P05-T002: add adapter tests for writer batching logic.
 - [x] CAM-HTTP-FALLBACK-REMOVAL-V1-P01-T001: remove HTTP fallback-to-legacy branches for API v2 snapshot-missing path.
 - [ ] CAM-LEGACY-PLANNER-DELETE-V1-P01-T001: map and remove planner imports from standard runtime modes.
 - [x] CAM-GREP-GATES-V1-P01-T001: add `scripts/check_no_legacy_imports.py` and CI enforcement gate.

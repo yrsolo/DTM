@@ -29,7 +29,9 @@ APP_CFG = APP_CONTEXT.cfg
 APP_DEPS = APP_CONTEXT.deps
 APP_DEBUG_HTTP_EVENT = bool(APP_CFG.runtime.api.get("debug_http_event_default", False))
 APP_TRIGGERS = dict(APP_CFG.runtime.triggers)
-ALLOWED_RUN_MODES = frozenset({"timer", "morning", "test", "sync-only", "reminders-only", "reminder_v2"})
+ALLOWED_RUN_MODES = frozenset(
+    {"timer", "morning", "test", "sync-only", "reminders-only", "reminder_v2", "render_v2"}
+)
 
 
 async def handler(event: Any, _: Any) -> dict[str, Any]:

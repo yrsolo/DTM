@@ -20,6 +20,7 @@ from src.entrypoints.jobs.runtime_context_job import RuntimeContextRequest, reso
 from src.entrypoints.jobs.task_payloads import task_to_store_record as _task_to_store_record
 from src.entrypoints.jobs.timer_job import TimerJob
 from src.notify import ReminderFormatter, ReminderJob, ReminderRequest, ReminderUseCase, TelegramReminderSender
+from src.render import GoogleSheetsPlanWriter, RenderJob, RenderRequest, RenderUseCase, SheetTarget
 from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
 from src.snapshot_engine import build_snapshot_engine
 from src.snapshot_engine.model import Window
@@ -124,6 +125,27 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
             )
         )
         return {"artifact": "reminder_v2", "status": "ok", "summary": {"task_row_issue_count": 0}}
+
+    if normalized_mode == "render_v2":
+        snapshot_engine = build_snapshot_engine(APP_CONTEXT)
+        render_usecase = RenderUseCase(snapshot_engine)
+        from utils.service import GoogleSheetInfo, GoogleSheetsService
+
+        sheet_info = GoogleSheetInfo(**APP_SHEET_INFO)
+        writer = GoogleSheetsPlanWriter(
+            GoogleSheetsService(APP_KEY_JSON, dry_run=dry_run),
+            SheetTarget(
+                spreadsheet_name=sheet_info.spreadsheet_name,
+                worksheet_name=sheet_info.get_sheet_name("tasks") or "tasks",
+            ),
+        )
+        RenderJob(render_usecase, writer).run(
+            RenderRequest(
+                window=Window(start=None, end=None, mode="intersects"),
+                statuses=["work", "pre_done"],
+            )
+        )
+        return {"artifact": "render_v2", "status": "ok", "summary": {"task_row_issue_count": 0}}
 
     if use_legacy_planner:
         from src.app.planner_bootstrap import build_planner_dependencies
