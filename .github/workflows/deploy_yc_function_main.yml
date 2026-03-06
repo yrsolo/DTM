@@ -122,6 +122,8 @@ jobs:
             YDB_ID_TEST=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_ID_TEST
             YDB_ENDPOINT_TEST=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_ENDPOINT_TEST
             YDB_DATABASE_TEST=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_DATABASE_TEST
+            AWS_ACCESS_KEY_ID=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/AWS_ACCESS_KEY_ID
+            AWS_SECRET_ACCESS_KEY=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/AWS_SECRET_ACCESS_KEY
           include: |
             **/*.py
             config/**/*.yaml
