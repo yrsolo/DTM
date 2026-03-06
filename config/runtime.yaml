@@ -26,8 +26,6 @@ snapshot_engine:
 sources:
   store_mode_default: legacy
   readmodel_source_default: legacy
-  notify_source_default: readmodel_source
-  render_source_default: readmodel_source
 
 timing:
   year_mode_default: legacy

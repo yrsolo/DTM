@@ -34,8 +34,6 @@ APP_DEPS = APP_CONTEXT.deps
 PIPELINE_CFG = APP_CONTEXT.cfg.runtime.pipeline
 APP_RUNTIME_ENV = APP_CONTEXT.cfg.runtime.runtime.env_default
 APP_STORE_MODE = APP_CONTEXT.cfg.runtime.sources.store_mode_default
-APP_NOTIFY_SOURCE = APP_CONTEXT.cfg.runtime.sources.notify_source_default
-APP_RENDER_SOURCE = APP_CONTEXT.cfg.runtime.sources.render_source_default
 APP_TRIGGERS = APP_CONTEXT.cfg.runtime.triggers
 APP_KEY_JSON = str(APP_DEPS.get("key_json", ""))
 APP_SHEET_INFO = dict(APP_DEPS.get("sheet_info", {}))
@@ -123,6 +121,8 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
             return {"artifact": "reminder_v2", "status": "ok", "summary": {"task_row_issue_count": 0}}
 
     if use_legacy_planner:
+        legacy_notify_source = APP_CONTEXT.cfg.runtime.sources.notify_source_default
+        legacy_render_source = APP_CONTEXT.cfg.runtime.sources.render_source_default
         from src.legacy.planner_bootstrap import build_planner_dependencies
         from src.legacy.planner_runtime import GoogleSheetPlanner
         from src.legacy.planner_setup import PlannerRuntimeBuildRequest, build_planner_runtime
@@ -136,8 +136,8 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
                 mock_external=mock_external,
                 cfg=APP_CONTEXT.cfg,
                 mode=mode,
-                render_source=APP_RENDER_SOURCE,
-                notify_source=APP_NOTIFY_SOURCE,
+                render_source=legacy_render_source,
+                notify_source=legacy_notify_source,
                 ydb_endpoint=APP_YDB_ENDPOINT,
                 ydb_database=APP_YDB_DATABASE,
                 ydb_sa_json_credentials=APP_YDB_SA_JSON_CREDENTIALS,
@@ -169,22 +169,22 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
                     sa_key_file=APP_YDB_SA_KEY_FILE,
                     build_store=build_operational_store,
                     safe_print=_safe_print,
-                )
+                    )
             )
 
-    run_readmodel_freshness_probe(
-        ReadmodelProbeRequest(
-            mode=mode,
-            render_source=APP_RENDER_SOURCE,
-            notify_source=APP_NOTIFY_SOURCE,
-            ydb_endpoint=APP_YDB_ENDPOINT,
-            ydb_database=APP_YDB_DATABASE,
-            ydb_sa_json_credentials=APP_YDB_SA_JSON_CREDENTIALS,
-            ydb_sa_key_file=APP_YDB_SA_KEY_FILE,
-            marker_builder=_readmodel_freshness_marker,
-            safe_print=_safe_print,
+        run_readmodel_freshness_probe(
+            ReadmodelProbeRequest(
+                mode=mode,
+                render_source=legacy_render_source,
+                notify_source=legacy_notify_source,
+                ydb_endpoint=APP_YDB_ENDPOINT,
+                ydb_database=APP_YDB_DATABASE,
+                ydb_sa_json_credentials=APP_YDB_SA_JSON_CREDENTIALS,
+                ydb_sa_key_file=APP_YDB_SA_KEY_FILE,
+                marker_builder=_readmodel_freshness_marker,
+                safe_print=_safe_print,
+            )
         )
-    )
 
     TimerPipeline(APP_CONTEXT).run(
         TimerRunRequest(

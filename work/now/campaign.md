@@ -5,12 +5,12 @@ Single source of truth for campaign lifecycle state.
 ## In Progress
 - CAM-SNAPSHOT-ENGINE-V1
 - CAM-RENDER-MODULE-V1
-- CAM-LEGACY-PLANNER-DELETE-V1
 
 ## Planned
 - none
 
 ## Done
+- CAM-LEGACY-PLANNER-DELETE-V1
 - CAM-GREP-GATES-V1
 - CAM-HTTP-FALLBACK-REMOVAL-V1
 - CAM-LEGACY-CUT-API-V1

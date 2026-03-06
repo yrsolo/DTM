@@ -28,11 +28,11 @@
   - `src/entrypoints/http/group_query_tasks_loader.py` still calls `build_planner_dependencies(...)` directly.
 
 ## Current blockers for full cutover
-1. Planner-specific config knobs and helper modules still exist; they are no longer used by standard modes but not yet removed from default config surface.
+1. Remaining planner/service modules are still present in repository and require final archive/delete decision.
 
 ## Next safe migration slice
-1. Remove planner-specific config knobs from default non-legacy path.
-2. Keep explicit `legacy_planner_*` smoke checks and eventually archive planner module tree.
+1. Keep explicit `legacy_planner_*` smoke checks.
+2. Archive/delete planner module tree after owner confirmation for destructive move.
 
 ## Progress update (P02-T001)
 - `src/entrypoints/http/group_query_tasks_loader.py` no longer imports planner bootstrap.
@@ -53,4 +53,9 @@
   - `src/legacy/planner_setup.py`
   - `src/legacy/source_switch.py`
 - Runtime legacy branch now imports planner dependencies through `src.legacy.*` only.
+
+## Progress update (P04-T001)
+- Removed planner source-switch usage from standard runtime path:
+  - `notify_source_default`/`render_source_default` are resolved only inside explicit `legacy_planner_*` branch.
+- Removed `notify_source_default` and `render_source_default` keys from default `config/runtime.yaml`.
 
