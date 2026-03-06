@@ -42,6 +42,8 @@ def _render_info_page(payload: dict[str, Any]) -> str:
     .controls{{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0}}
     .controls label{{display:flex;align-items:center;gap:6px}}
     .section{{margin-top:16px}}
+    .hline{{display:flex;align-items:center;justify-content:space-between;gap:10px}}
+    .timer{{font-family:Consolas,monospace;font-size:14px;color:#475569}}
     input[type="number"],input[type="date"]{{padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px}}
     button{{margin:4px 6px 4px 0;padding:8px 10px;border:0;border-radius:8px;background:#0f62fe;color:#fff;cursor:pointer}}
     button.alt{{background:#4b5563}}
@@ -76,7 +78,10 @@ def _render_info_page(payload: dict[str, Any]) -> str:
   </div>
 
   <div class="card section">
-    <h2>Admin Actions</h2>
+    <div class="hline">
+      <h2>Admin Actions</h2>
+      <span class="timer" id="adminTimer">00:00.0</span>
+    </div>
     <button onclick="runMode({{mode:'sync-only',force_refresh:true}})">Force snapshot refresh</button>
     <button onclick="runMode({{mode:'timer',force_refresh:true}})">Force render table</button>
     <button onclick="runMode({{mode:'test',mock_external:false,dry_run:false}})">Notify test chat</button>
@@ -85,11 +90,12 @@ def _render_info_page(payload: dict[str, Any]) -> str:
   </div>
 
   <div class="card section">
-    <h2>API Request Builder</h2>
+    <div class="hline">
+      <h2>API Request Builder</h2>
+      <span class="timer" id="apiTimer">00:00.0</span>
+    </div>
     <div class="controls">
       <label><input id="includePeople" type="checkbox" checked /> include_people</label>
-      <button class="alt small" onclick="setIncludePeople(true)">include_people=true</button>
-      <button class="alt small" onclick="setIncludePeople(false)">include_people=false</button>
     </div>
     <div class="controls">
       <label>limit <input id="limitValue" type="number" min="1" max="2000" value="200" /></label>
@@ -119,6 +125,8 @@ def _render_info_page(payload: dict[str, Any]) -> str:
       <button class="alt" onclick="applyApiPreset('all100')">Preset: All 100</button>
       <button class="alt" onclick="applyApiPreset('window14')">Preset: Window 14d</button>
     </div>
+    <div class="row"><span class="k">Request URL:</span></div>
+    <pre id="apiRequestUrl"></pre>
     <pre id="apiResult">Соберите параметры и нажмите Send.</pre>
   </div>
 
@@ -138,6 +146,36 @@ def _render_info_page(payload: dict[str, Any]) -> str:
       }}
       return JSON.stringify(value, null, 2);
     }}
+    function createTimer(elementId){{
+      const el = document.getElementById(elementId);
+      let startAt = 0;
+      let intervalId = null;
+      function format(ms){{
+        const totalSec = ms / 1000.0;
+        const mm = Math.floor(totalSec / 60);
+        const ss = totalSec - mm * 60;
+        const mmStr = String(mm).padStart(2, '0');
+        const ssStr = ss.toFixed(1).padStart(4, '0');
+        return mmStr + ':' + ssStr;
+      }}
+      return {{
+        start(){{
+          startAt = Date.now();
+          if (intervalId) clearInterval(intervalId);
+          el.textContent = '00:00.0';
+          intervalId = setInterval(() => {{
+            el.textContent = format(Date.now() - startAt);
+          }}, 100);
+        }},
+        stop(){{
+          if (intervalId) clearInterval(intervalId);
+          intervalId = null;
+          el.textContent = format(Date.now() - startAt);
+        }},
+      }};
+    }}
+    const adminTimer = createTimer('adminTimer');
+    const apiTimer = createTimer('apiTimer');
     async function loadInfo(){{
       const r = await fetch('/info?format=json', {{cache:'no-store'}});
       const text = await r.text();
@@ -166,9 +204,11 @@ def _render_info_page(payload: dict[str, Any]) -> str:
       document.getElementById('infoResult').textContent = pretty(p);
     }}
     async function runMode(payload){{
+      adminTimer.start();
       const r = await fetch('/', {{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify(payload)}});
       const t = await r.text();
       document.getElementById('adminResult').textContent = 'HTTP '+r.status+'\\n'+pretty(t);
+      adminTimer.stop();
       setTimeout(loadInfo, 1500);
     }}
     function setIncludePeople(flag){{
@@ -212,11 +252,19 @@ def _render_info_page(payload: dict[str, Any]) -> str:
       }}
       return q;
     }}
+    function refreshApiRequestUrl(){{
+      const q = buildApiQuery();
+      const origin = window.location.origin || '';
+      document.getElementById('apiRequestUrl').textContent = origin + '/api/v2/frontend?' + q.toString();
+    }}
     async function sendApiBuilder(){{
+      apiTimer.start();
       const q = buildApiQuery();
       const r = await fetch('/api/v2/frontend?'+q.toString(), {{cache:'no-store'}});
       const t = await r.text();
       document.getElementById('apiResult').textContent = 'HTTP '+r.status+'\\n'+pretty(t);
+      apiTimer.stop();
+      refreshApiRequestUrl();
     }}
     function applyApiPreset(name){{
       if (name === 'active20') {{
@@ -252,7 +300,17 @@ def _render_info_page(payload: dict[str, Any]) -> str:
         document.getElementById('stDone').checked = false;
         setWindowPreset(14);
       }}
+      refreshApiRequestUrl();
     }}
+    const watchIds = ['includePeople','limitValue','stWork','stPreDone','stWait','stDone','windowStart','windowEnd'];
+    for (const id of watchIds) {{
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('change', refreshApiRequestUrl);
+      if (el && el.tagName === 'INPUT' && el.type === 'number') {{
+        el.addEventListener('input', refreshApiRequestUrl);
+      }}
+    }}
+    refreshApiRequestUrl();
     loadInfo();
   </script>
 </body>
