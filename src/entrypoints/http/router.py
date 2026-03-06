@@ -9,6 +9,7 @@ from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.frontend_compat_handlers import FrontendRootHandler
 from src.entrypoints.http.frontend_v2_handler import FrontendV2Handler
 from src.entrypoints.http.group_query_handler import GroupQueryHandler
+from src.entrypoints.http.info_handler import InfoHandler
 
 
 class HttpRouter:
@@ -16,6 +17,7 @@ class HttpRouter:
 
     def __init__(self, ctx: AppContext, *, frontend_readmodel_repo_cls: Any) -> None:
         self._group_query_handler = GroupQueryHandler(ctx)
+        self._info_handler = InfoHandler(ctx)
         self._frontend_root_handler = FrontendRootHandler(ctx)
         self._frontend_v2_handler = FrontendV2Handler(ctx, frontend_readmodel_repo_cls=frontend_readmodel_repo_cls)
 
@@ -23,6 +25,9 @@ class HttpRouter:
         group_query_response = await self._group_query_handler.handle(req)
         if group_query_response is not None:
             return group_query_response
+        info_response = self._info_handler.handle(req)
+        if info_response is not None:
+            return info_response
         root_response = self._frontend_root_handler.handle(req)
         if root_response is not None:
             return root_response
