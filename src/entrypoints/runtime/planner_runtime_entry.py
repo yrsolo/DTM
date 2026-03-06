@@ -19,7 +19,10 @@ from src.entrypoints.jobs.readmodel_probe_job import ReadmodelProbeRequest, run_
 from src.entrypoints.jobs.runtime_context_job import RuntimeContextRequest, resolve_runtime_context
 from src.entrypoints.jobs.task_payloads import task_to_store_record as _task_to_store_record
 from src.entrypoints.jobs.timer_job import TimerJob
+from src.notify import ReminderFormatter, ReminderJob, ReminderRequest, ReminderUseCase, TelegramReminderSender
 from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
+from src.snapshot_engine import build_snapshot_engine
+from src.snapshot_engine.model import Window
 from src.services.timer_pipeline import RunRequest as TimerRunRequest
 from src.services.timer_pipeline import TimerPipeline
 from src.services.usecases.planner_runtime import resolve_run_mode, run_planner_use_case
@@ -93,10 +96,34 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
     )
     store_mode = str(APP_STORE_MODE).strip().lower()
     legacy_store_mode = store_mode not in {"dual_write", "ydb_primary", "ydb_only"}
+    normalized_mode = str(mode).strip().lower()
     use_legacy_planner = str(mode).startswith("legacy_planner_") or (
-        legacy_store_mode and str(mode) in {"timer", "test", "morning", "reminders-only"}
+        legacy_store_mode and normalized_mode in {"timer", "test", "morning"}
     )
     quality_report: dict[str, Any] = {"summary": {"task_row_issue_count": 0}}
+
+    if normalized_mode in {"reminder_v2", "reminders-only"}:
+        snapshot_engine = build_snapshot_engine(APP_CONTEXT)
+        usecase = ReminderUseCase(snapshot_engine)
+        formatter = ReminderFormatter()
+        from src.adapters.telegram import TelegramNotifier
+
+        sender = TelegramReminderSender(
+            TelegramNotifier(
+                bot_token=str(APP_DEPS.get("tg_bot_token", "")),
+                default_chat_id=APP_DEPS.get("default_chat_id"),
+            ),
+            default_chat_id=APP_DEPS.get("default_chat_id"),
+        )
+        await ReminderJob(usecase, formatter, sender).run(
+            ReminderRequest(
+                window=Window(start=None, end=None, mode="intersects"),
+                statuses=["work", "pre_done"],
+                group_by_owner=True,
+                limit_per_owner=50,
+            )
+        )
+        return {"artifact": "reminder_v2", "status": "ok", "summary": {"task_row_issue_count": 0}}
 
     if use_legacy_planner:
         from src.app.planner_bootstrap import build_planner_dependencies

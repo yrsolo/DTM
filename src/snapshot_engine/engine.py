@@ -65,6 +65,9 @@ class SnapshotEngine:
             ),
         )
 
+    def get_prep_snapshot(self) -> Any:
+        return self._prep_cache.get()
+
 
 def _resolve_env_prefix(value: str, env_name: str) -> str:
     token = "{env}"

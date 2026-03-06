@@ -4,6 +4,14 @@
 - [x] CAM-LEGACY-CUT-API-V1-P01-T001: freeze API v2 parity spec for Snapshot Engine migration and add `docs/snapshot_engine/api_v2_parity.md`.
 - [x] CAM-LEGACY-CUT-API-V1-P02-T001: integrate `src/snapshot_engine/frontend_v2_payload_builder.py` into query engine and remove legacy payload-builder coupling.
 - [x] CAM-NOTIFY-MODULE-V1-P01-T001: scaffold new notify module (`src/notify/*`) and wire runtime mode plan.
+- [x] CAM-NOTIFY-MODULE-V1-P02-T001: implement `ReminderUseCase.run(req)` over Snapshot Engine prep snapshot.
+- [x] CAM-NOTIFY-MODULE-V1-P02-T002: support active-status filtering, window filtering, owner grouping, and per-owner limit.
+- [x] CAM-NOTIFY-MODULE-V1-P03-T001: implement pure text formatter for grouped reminders.
+- [x] CAM-NOTIFY-MODULE-V1-P03-T002: implement async telegram sender adapter with default chat fallback.
+- [x] CAM-NOTIFY-MODULE-V1-P04-T001: wire `reminder_v2` runtime mode in planner runtime entrypoint.
+- [x] CAM-NOTIFY-MODULE-V1-P04-T002: disable legacy reminder flow in standard runtime path by aliasing `reminders-only` to v2 path.
+- [x] CAM-NOTIFY-MODULE-V1-P05-T001: add unit tests for selection/grouping/status/window behavior.
+- [x] CAM-NOTIFY-MODULE-V1-P05-T002: add formatter output regression checks.
 - [x] CAM-RENDER-MODULE-V1-P01-T001: scaffold new render module (`src/render/*`) and wire runtime mode plan.
 - [x] CAM-HTTP-FALLBACK-REMOVAL-V1-P01-T001: remove HTTP fallback-to-legacy branches for API v2 snapshot-missing path.
 - [ ] CAM-LEGACY-PLANNER-DELETE-V1-P01-T001: map and remove planner imports from standard runtime modes.

@@ -14,5 +14,7 @@ class ReminderJob:
         self._formatter = formatter
         self._sender = sender
 
-    def run(self, req: ReminderRequest) -> None:
-        raise NotImplementedError
+    async def run(self, req: ReminderRequest) -> None:
+        result = self._usecase.run(req)
+        messages = self._formatter.format(result)
+        await self._sender.send(messages)
