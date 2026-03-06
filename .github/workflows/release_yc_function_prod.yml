@@ -147,6 +147,7 @@ jobs:
             YDB_DATABASE_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_DATABASE_PROD
           include: |
             **/*.py
+            config/**/*.yaml
             requirements.txt
             run_timer.cmd
             AGENTS.md

@@ -124,6 +124,7 @@ jobs:
             YDB_DATABASE_TEST=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_DATABASE_TEST
           include: |
             **/*.py
+            config/**/*.yaml
             requirements.txt
             run_timer.cmd
             AGENTS.md
