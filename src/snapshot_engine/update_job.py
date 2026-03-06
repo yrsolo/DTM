@@ -148,7 +148,11 @@ class UpdateJob:
     def run(self, force: bool = False) -> UpdateResult:
         full_snapshot = self._source.fetch_snapshot("A1:Z2000")
         source_hash = self._hasher.hash_sheet_snapshot(full_snapshot)
-        previous_raw = self._raw_cache.get()
+        try:
+            previous_raw = self._raw_cache.get()
+        except Exception:
+            # Corrupted/legacy cache payload must not block rebuild.
+            previous_raw = None
         if previous_raw is not None and previous_raw.source_hash == source_hash and not force:
             return UpdateResult(
                 source_id=self._source.source_id,
