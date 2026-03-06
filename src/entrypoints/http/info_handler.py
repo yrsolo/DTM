@@ -83,7 +83,7 @@ def _render_info_page(payload: dict[str, Any]) -> str:
       <span class="timer" id="adminTimer">00:00.0</span>
     </div>
     <button onclick="runMode({{mode:'sync-only',force_refresh:true}})">Force snapshot refresh</button>
-    <button onclick="runMode({{mode:'timer',force_refresh:true}})">Force render table</button>
+    <button onclick="runMode({{mode:'render_v2',force_refresh:true,dry_run:false,mock_external:false}})">Force render table</button>
     <button onclick="runMode({{mode:'test',mock_external:false,dry_run:false}})">Notify test chat</button>
     <button onclick="runMode({{mode:'morning',mock_external:false,dry_run:false}})">Notify designer chats</button>
     <pre id="adminResult">Готово к запуску действий.</pre>

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import traceback
 from dataclasses import dataclass
 from typing import Any
@@ -42,7 +43,7 @@ class RuntimeExecutor:
                 mock_external=request.mock_external,
                 force_refresh=request.force_refresh,
             )
-            await main_func(runtime_request)
+            runtime_result = await main_func(runtime_request)
         except Exception as ex:
             if isinstance(ex, UserError):
                 error_family = "user"
@@ -77,4 +78,14 @@ class RuntimeExecutor:
 
             return HttpResponse(status=200, body="!!!EGGORR!!!")
 
-        return HttpResponse(status=200, body="!GOOD!")
+        if runtime_result is None:
+            runtime_result = {
+                "artifact": "dtm_runtime_ok_no_result",
+                "status": "ok",
+                "mode": str(request.mode or "").strip().lower(),
+            }
+        return HttpResponse(
+            status=200,
+            headers={"Content-Type": "application/json; charset=utf-8"},
+            body=json.dumps(runtime_result, ensure_ascii=False),
+        )

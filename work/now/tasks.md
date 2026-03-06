@@ -1,5 +1,6 @@
 # Active Tasks
 
+- [x] FIX-CAM-INFO-RENDER-ACTION-V1-T001: switch `/info` force-render action to `mode=render_v2` and return structured runtime/render report instead of blind `!GOOD!`.
 - [x] LEGACY-CUT-BOOTSTRAP-T001: register new campaign pack files (`CAM-LEGACY-CUT-API-V1`, `CAM-NOTIFY-MODULE-V1`, `CAM-RENDER-MODULE-V1`, `CAM-HTTP-FALLBACK-REMOVAL-V1`, `CAM-LEGACY-PLANNER-DELETE-V1`, `CAM-GREP-GATES-V1`, `priorities_legacy_cut.md`).
 - [x] CAM-LEGACY-CUT-API-V1-P01-T001: freeze API v2 parity spec for Snapshot Engine migration and add `docs/snapshot_engine/api_v2_parity.md`.
 - [x] CAM-LEGACY-CUT-API-V1-P02-T001: integrate `src/snapshot_engine/frontend_v2_payload_builder.py` into query engine and remove legacy payload-builder coupling.

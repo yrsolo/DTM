@@ -59,7 +59,7 @@ class RenderUseCase:
     def build_plan(self, req: RenderRequest) -> RenderPlan:
         prep = self._engine.get_prep_snapshot()
         if prep is None:
-            return RenderPlan(values=[], formats=[])
+            return RenderPlan(values=[], formats=[], warnings=["prep_snapshot_missing"])
 
         statuses = {
             str(item).strip().lower()
@@ -74,6 +74,9 @@ class RenderUseCase:
             if not _matches_window(view, req):
                 continue
             selected.append(view)
+
+        if not selected:
+            return RenderPlan(values=[], formats=[], warnings=["empty_render_plan"])
 
         selected.sort(
             key=lambda item: (
@@ -105,4 +108,4 @@ class RenderUseCase:
                 cells.append(RenderCell(row=row_idx, col=col_idx, value=str(value or "")))
             row_idx += 1
 
-        return RenderPlan(values=cells, formats=[])
+        return RenderPlan(values=cells, formats=[], warnings=[])

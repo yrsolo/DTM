@@ -32,3 +32,14 @@ class RenderPlan:
 
     values: list[RenderCell]
     formats: list[RenderFormat]
+    warnings: list[str] | None = None
+
+
+@dataclass(frozen=True)
+class RenderApplyResult:
+    applied: bool
+    rows_written: int
+    cells_written: int
+    target_spreadsheet: str
+    target_worksheet: str
+    warnings: list[str]
