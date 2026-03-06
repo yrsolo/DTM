@@ -123,10 +123,10 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
             return {"artifact": "reminder_v2", "status": "ok", "summary": {"task_row_issue_count": 0}}
 
     if use_legacy_planner:
-        from src.app.planner_bootstrap import build_planner_dependencies
-        from src.entrypoints.jobs.planner_setup_job import PlannerRuntimeBuildRequest, build_planner_runtime
-        from src.entrypoints.jobs.source_switch_job import apply_task_source_switches
-        from src.services.planner_runtime import GoogleSheetPlanner
+        from src.legacy.planner_bootstrap import build_planner_dependencies
+        from src.legacy.planner_runtime import GoogleSheetPlanner
+        from src.legacy.planner_setup import PlannerRuntimeBuildRequest, build_planner_runtime
+        from src.legacy.source_switch import apply_task_source_switches
 
         planner, _ = build_planner_runtime(
             PlannerRuntimeBuildRequest(

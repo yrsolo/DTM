@@ -28,11 +28,11 @@
   - `src/entrypoints/http/group_query_tasks_loader.py` still calls `build_planner_dependencies(...)` directly.
 
 ## Current blockers for full cutover
-1. Planner modules/files are still located in active namespace (`src/services/planner_runtime.py`, `src/app/planner_bootstrap.py`) and not yet quarantined to dedicated legacy namespace.
+1. Planner-specific config knobs and helper modules still exist; they are no longer used by standard modes but not yet removed from default config surface.
 
 ## Next safe migration slice
-1. Move/quarantine remaining planner modules to explicit legacy namespace.
-2. Remove planner-specific config knobs from default non-legacy path.
+1. Remove planner-specific config knobs from default non-legacy path.
+2. Keep explicit `legacy_planner_*` smoke checks and eventually archive planner module tree.
 
 ## Progress update (P02-T001)
 - `src/entrypoints/http/group_query_tasks_loader.py` no longer imports planner bootstrap.
@@ -45,4 +45,12 @@
   - `timer/test/sync-only` -> `TimerPipeline` (snapshot update)
   - `morning/reminders-only/reminder_v2` -> notify v2 path
   - `timer/test/render_v2` -> render v2 path
+
+## Progress update (P03-T002)
+- Added explicit legacy namespace exports:
+  - `src/legacy/planner_bootstrap.py`
+  - `src/legacy/planner_runtime.py`
+  - `src/legacy/planner_setup.py`
+  - `src/legacy/source_switch.py`
+- Runtime legacy branch now imports planner dependencies through `src.legacy.*` only.
 
