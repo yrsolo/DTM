@@ -3,18 +3,20 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
-- CAM-SNAPSHOT-ENGINE-V1
-- CAM-RENDER-MODULE-V1
+- none
 
 ## Planned
 - none
 
 ## Done
-- CAM-LEGACY-PLANNER-DELETE-V1
-- CAM-GREP-GATES-V1
-- CAM-HTTP-FALLBACK-REMOVAL-V1
-- CAM-LEGACY-CUT-API-V1
-- CAM-NOTIFY-MODULE-V1
+- CAM-SNAPSHOT-ENGINE-V1 (archived in `work/archive/campaigns/CAM-SNAPSHOT-ENGINE-V1/`)
+- CAM-RENDER-MODULE-V1 (archived in `work/archive/campaigns/CAM-RENDER-MODULE-V1/`)
+- CAM-LEGACY-PLANNER-DELETE-V1 (archived in `work/archive/campaigns/CAM-LEGACY-PLANNER-DELETE-V1/`)
+- CAM-GREP-GATES-V1 (archived in `work/archive/campaigns/CAM-GREP-GATES-V1/`)
+- CAM-HTTP-FALLBACK-REMOVAL-V1 (archived in `work/archive/campaigns/CAM-HTTP-FALLBACK-REMOVAL-V1/`)
+- CAM-LEGACY-CUT-API-V1 (archived in `work/archive/campaigns/CAM-LEGACY-CUT-API-V1/`)
+- CAM-NOTIFY-MODULE-V1 (archived in `work/archive/campaigns/CAM-NOTIFY-MODULE-V1/`)
+- CAM-SYNC-BULK-PIPELINE-V1 (archived in `work/archive/campaigns/CAM-SYNC-BULK-PIPELINE-V1/`)
 - CAM-HISTORY-FIELD-NORMALIZATION-V1 (archived in `work/archive/campaigns/CAM-HISTORY-FIELD-NORMALIZATION-V1/`)
 - CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1/`)
 - CAM-ENTRYPOINT-HYGIENE-V2 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-HYGIENE-V2/`)

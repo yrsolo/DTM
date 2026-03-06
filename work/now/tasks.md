@@ -25,7 +25,7 @@
 - [x] CAM-RENDER-MODULE-V1-P03-T001: implement `GoogleSheetsPlanWriter` batch write adapter for render plan values.
 - [x] CAM-RENDER-MODULE-V1-P03-T002: keep small smoke-safe write path (single bounded `updateCells` request).
 - [x] CAM-RENDER-MODULE-V1-P04-T001: wire runtime mode `render_v2` in planner runtime entrypoint.
-- [ ] CAM-RENDER-MODULE-V1-P04-T002: disable legacy render flow for standard runtime modes.
+- [x] CAM-RENDER-MODULE-V1-P04-T002: disable legacy render flow for standard runtime modes (planner restricted to `legacy_planner_*` only).
 - [x] CAM-RENDER-MODULE-V1-P05-T001: add unit tests for `RenderUseCase.build_plan`.
 - [x] CAM-RENDER-MODULE-V1-P05-T002: add adapter tests for writer batching logic.
 - [x] CAM-HTTP-FALLBACK-REMOVAL-V1-P01-T001: remove HTTP fallback-to-legacy branches for API v2 snapshot-missing path.

@@ -17,6 +17,7 @@
 - implemented batch writer `GoogleSheetsPlanWriter` with single `updateCells` request.
 - wired runtime mode `render_v2` in planner runtime entrypoint.
 - allowed `render_v2` parsing in HTTP runtime-mode extraction path via `index.ALLOWED_RUN_MODES`.
+- disabled legacy render flow in standard modes by restricting planner branch to `legacy_planner_*` and routing `timer/test` through render v2 path.
 
 ## Verification
 - `python -m unittest tests.render.test_render_v2 -v` -> OK
