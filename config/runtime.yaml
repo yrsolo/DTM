@@ -14,6 +14,15 @@ pipeline:
   full_sync_interval_hours: 24
   force_refresh_default: false
 
+snapshot_engine:
+  enabled: true
+  storage: s3
+  bucket: dtm
+  prefix_raw: snapshots/{env}/raw/default.json
+  prefix_prep: snapshots/{env}/prep/default.json
+  prefix_extra: snapshots/{env}/extra/
+  force_refresh_default: false
+
 sources:
   store_mode_default: legacy
   readmodel_source_default: legacy

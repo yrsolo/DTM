@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from config import (
     DEFAULT_CHAT_ID,
     KEY_JSON,
@@ -45,5 +47,7 @@ def build_app_context() -> AppContext:
         "write_legacy_milestones": WRITE_LEGACY_MILESTONES,
         "ydb_migrate_on_start": YDB_MIGRATE_ON_START,
         "task_payload_mapper": TaskPayloadMapper(),
+        "aws_access_key_id": os.getenv("AWS_ACCESS_KEY_ID", "").strip(),
+        "aws_secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY", "").strip(),
     }
     return AppContext(cfg=cfg, deps=deps)

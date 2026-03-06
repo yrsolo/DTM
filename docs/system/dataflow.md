@@ -1,73 +1,38 @@
 # Dataflow, Hashing, Versioning (Current)
 
-Canonical path: Sheets -> preflight/full hash gate -> normalize -> YDB operational sync -> readmodel snapshot -> API v2 consumers.
+Canonical path: Sheets -> normalize -> Raw snapshot (S3) -> Prep snapshot (S3) -> API v2/query consumers.
 
-## 1) Snapshot and hash inputs
-A source snapshot is treated as:
-- `values`: raw cell values for the task range
-- `colors`: row/cell colors used for status derivation
+## 1) Snapshot inputs
+Source snapshot is read from Sheets range `A1:Z2000` and includes:
+- `values`
+- `colors`
 
-Hashes are computed on raw snapshot payloads.
+Hash basis is stable JSON over `{values, colors}`.
 
-## 2) Single canonical gate
-Canonical implementation:
-- `src/services/sync_service.py` (`YdbSyncService`)
-- `dtm_sync_state` in YDB as state source
-
-Preflight phase:
-- fetch top rows (`A1:Z<PREFLIGHT_TOP_ROWS>`, default 50)
-- compute `preflight_hash_50`
-- call `run_preflight_only(...)`
-
-Full phase (conditional):
-- full snapshot is fetched only when preflight requires it or force refresh applies
-- compute `source_hash_full`
-- build normalized tasks from full snapshot
-
-## 3) Canonical timer runtime
-Standard runtime object:
+## 2) Canonical timer runtime
+Runtime object:
 - `src/services/timer_pipeline.py` -> `TimerPipeline(AppContext)`
-- call shape: `TimerPipeline(ctx).run(RunRequest(mode, force_refresh, task_source))`
+- `TimerPipeline.run(RunRequest(...))` invokes `SnapshotEngine.update(...)`
 
 Execution order:
-1. preflight snapshot fetch
-2. gate decision (`run_preflight_only`)
-3. optional full snapshot fetch
-4. sync operational rows
-5. build readmodel snapshot
+1. fetch sheet snapshot
+2. compute source hash
+3. compare with previous raw snapshot hash
+4. on change (or force): write Raw -> build Prep -> write Prep
+5. on no-change: skip writes
 
-Evidence logs:
-- `full_snapshot_fetch=skipped reason=preflight_unchanged`
-- `full_snapshot_fetch=performed reason=sync_required`
+No YDB operational/readmodel writes are part of the canonical API v2 runtime path.
 
-## 4) Normalization invariants
-Normalization produces per task:
-- stable task identity and business fields (`brand`, `format_`, `customer`)
-- owner/group/status
-- milestones list
+## 3) Query runtime
+- API handler: `src/entrypoints/http/frontend_v2_handler.py`
+- Query engine: `src/snapshot_engine/query_engine.py`
+- Source: `PrepSnapshot` from S3
 
-Invariant: tasks must never have zero milestones.
+Payload contract remains API v2 compatible (including `history`, `brand`, `format_`, `customer`).
 
-## 5) Revision and milestones policy
-- revisions are stable per `task_id`
-- forced refresh does not bump revision
-- milestones are stored by `(task_id, version, idx)`
-- readmodel builder reads milestones for active task revision
+## 4) Status semantics
+- `status`: normalized color-derived status (`work|pre_done|wait|done|unknown`)
+- `history`: raw textual status from source sheet
 
-## 6) Readmodel build
-Builder flow:
-1. bulk load operational tasks
-2. bulk load versioned milestones
-3. assemble API v2 payload snapshot
-4. upsert one row in readmodel table
-
-API v2 serves the readmodel snapshot.
-
-## 7) Operational sync write strategy
-Sync runtime writes operational data in bulk batches only:
-- tasks: `upsert_tasks_batch(...)`
-- versions: `upsert_task_versions_bulk(...)`
-- archive marks: `archive_task_versions_bulk(...)`
-- milestones_v: `upsert_task_milestones_versions_bulk(...)`
-
-Runtime path must not do per-task YDB version writes inside task loop.
+## 5) Group query runtime
+`src/entrypoints/http/group_query_handler.py` reads active tasks from snapshot-backed API payload and builds Telegram replies from that data.

@@ -145,8 +145,11 @@ jobs:
             YDB_ID_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_ID_PROD
             YDB_ENDPOINT_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_ENDPOINT_PROD
             YDB_DATABASE_PROD=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YDB_DATABASE_PROD
+            AWS_ACCESS_KEY_ID=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/AWS_ACCESS_KEY_ID
+            AWS_SECRET_ACCESS_KEY=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/AWS_SECRET_ACCESS_KEY
           include: |
             **/*.py
+            config/**/*.yaml
             requirements.txt
             run_timer.cmd
             AGENTS.md

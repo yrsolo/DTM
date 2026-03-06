@@ -22,6 +22,17 @@ class PipelineSection:
 
 
 @dataclass(slots=True)
+class SnapshotEngineSection:
+    enabled: bool = False
+    storage: str = "s3"
+    bucket: str = ""
+    prefix_raw: str = "snapshots/raw/default.json"
+    prefix_prep: str = "snapshots/prep/default.json"
+    prefix_extra: str = "snapshots/extra/"
+    force_refresh_default: bool = False
+
+
+@dataclass(slots=True)
 class SourcesSection:
     store_mode_default: str = "legacy"
     readmodel_source_default: str = "legacy"
@@ -41,6 +52,7 @@ class RuntimeConfig:
     web: dict[str, Any] = field(default_factory=dict)
     api: dict[str, Any] = field(default_factory=dict)
     pipeline: PipelineSection = field(default_factory=PipelineSection)
+    snapshot_engine: SnapshotEngineSection = field(default_factory=SnapshotEngineSection)
     sources: SourcesSection = field(default_factory=SourcesSection)
     timing: TimingSection = field(default_factory=TimingSection)
     triggers: dict[str, str] = field(default_factory=dict)
