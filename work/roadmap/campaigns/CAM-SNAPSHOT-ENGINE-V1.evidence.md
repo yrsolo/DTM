@@ -44,3 +44,20 @@
 
 ## Notes
 - `boto3` import moved to lazy runtime initialization inside S3 store to avoid module import failures in environments where S3 runtime path is not executed.
+- Post-cutover incident fixes on test contour:
+  - fixed deploy bundle include set to ship `config/**/*.yaml` into YC function package.
+  - switched snapshot bucket config to `dtm-front`.
+  - added function secrets wiring for `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` from lockbox.
+  - hardened update job self-heal:
+    - corrupted raw cache no longer blocks rebuild,
+    - prep cache is rebuilt when missing/corrupted even if raw hash is unchanged.
+
+## Live Smoke (Test contour)
+- Date: 2026-03-06
+- Command: `scripts\\invoke_cloud_timer.cmd --sync-only --force-refresh --live`
+- API check: `GET /api/v2/frontend?statuses=work,pre_done&limit=20&include_people=true`
+- Result:
+  - HTTP `200`
+  - `meta.readmodelSource = "s3_snapshot"`
+  - `meta.queryFilterApplied = true`
+  - `summary.tasksReturned = 12`
