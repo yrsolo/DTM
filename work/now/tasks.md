@@ -7,7 +7,7 @@
 - [x] CAM-RENDER-MODULE-V1-P01-T001: scaffold new render module (`src/render/*`) and wire runtime mode plan.
 - [ ] CAM-HTTP-FALLBACK-REMOVAL-V1-P01-T001: remove HTTP fallback-to-legacy branches for API v2 snapshot-missing path.
 - [ ] CAM-LEGACY-PLANNER-DELETE-V1-P01-T001: map and remove planner imports from standard runtime modes.
-- [ ] CAM-GREP-GATES-V1-P01-T001: add `scripts/check_no_legacy_imports.py` and CI enforcement gate.
+- [x] CAM-GREP-GATES-V1-P01-T001: add `scripts/check_no_legacy_imports.py` and CI enforcement gate.
 
 - [x] CAM-SNAPSHOT-ENGINE-V1-P01-T001: trust-gate фиксация текущего runtime source-of-truth и policy hard-cutover на S3 snapshot.
 - [x] CAM-SNAPSHOT-ENGINE-V1-P02-T001: реализовать `src/snapshot_engine` (models/interfaces/serialization/prep_builder/update_job/query_engine/engine).
@@ -259,6 +259,7 @@
 
 ## Last Update
 - 2026-03-05 (restored API v2 `tasks[].history`, aligned tests/snapshots/docs, and synced `test` branch to `dev`)
+
 
 
 
