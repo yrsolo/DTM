@@ -5,7 +5,7 @@
 - [x] CAM-LEGACY-CUT-API-V1-P02-T001: integrate `src/snapshot_engine/frontend_v2_payload_builder.py` into query engine and remove legacy payload-builder coupling.
 - [x] CAM-NOTIFY-MODULE-V1-P01-T001: scaffold new notify module (`src/notify/*`) and wire runtime mode plan.
 - [x] CAM-RENDER-MODULE-V1-P01-T001: scaffold new render module (`src/render/*`) and wire runtime mode plan.
-- [ ] CAM-HTTP-FALLBACK-REMOVAL-V1-P01-T001: remove HTTP fallback-to-legacy branches for API v2 snapshot-missing path.
+- [x] CAM-HTTP-FALLBACK-REMOVAL-V1-P01-T001: remove HTTP fallback-to-legacy branches for API v2 snapshot-missing path.
 - [ ] CAM-LEGACY-PLANNER-DELETE-V1-P01-T001: map and remove planner imports from standard runtime modes.
 - [x] CAM-GREP-GATES-V1-P01-T001: add `scripts/check_no_legacy_imports.py` and CI enforcement gate.
 
@@ -259,6 +259,7 @@
 
 ## Last Update
 - 2026-03-05 (restored API v2 `tasks[].history`, aligned tests/snapshots/docs, and synced `test` branch to `dev`)
+
 
 
 

@@ -16,7 +16,6 @@ CHECKS = [
 
 # Current known exceptions while migration is in progress.
 EXCLUDE_SUBSTRINGS = {
-    "src/snapshot_engine/update_job.py",
     "src/entrypoints/http/group_query_handler.py",
     "src/entrypoints/http/group_query_tasks_loader.py",
     "src/entrypoints/jobs/planner_setup_job.py",

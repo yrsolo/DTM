@@ -7,8 +7,6 @@ import json
 from datetime import date, datetime, timezone
 from typing import Any
 
-import pandas as pd
-
 from src.snapshot_engine.interfaces import Hasher, Normalizer, PrepCache, RawCache, SheetsSource
 from src.snapshot_engine.model import Milestone, RawSnapshot, SheetSnapshot, TaskSheet, UpdateResult
 from src.snapshot_engine.prep_builder import PrepBuilder
@@ -74,18 +72,28 @@ class SheetsTaskNormalizer:
 
     @staticmethod
     def _to_date_iso(value: Any) -> str:
-        if isinstance(value, pd.Timestamp):
-            return value.date().isoformat()
         if isinstance(value, datetime):
             return value.date().isoformat()
         if isinstance(value, date):
             return value.isoformat()
+        if hasattr(value, "date"):
+            try:
+                maybe_date = value.date()
+                if isinstance(maybe_date, date):
+                    return maybe_date.isoformat()
+            except Exception:
+                pass
         text = str(value or "").strip()
         if not text:
             return ""
+        for fmt in ("%Y-%m-%d", "%d.%m.%Y", "%d.%m.%y"):
+            try:
+                return datetime.strptime(text[:10], fmt).date().isoformat()
+            except ValueError:
+                continue
         try:
-            return pd.Timestamp(text).date().isoformat()
-        except Exception:
+            return datetime.fromisoformat(text[:10]).date().isoformat()
+        except ValueError:
             return ""
 
     @staticmethod
