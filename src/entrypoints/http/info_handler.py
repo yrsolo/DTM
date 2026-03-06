@@ -39,9 +39,16 @@ def _render_info_page(payload: dict[str, Any]) -> str:
     h1{{margin:0 0 16px}} h2{{margin:0 0 12px;font-size:18px}}
     .k{{font-weight:600}} .v{{font-family:Consolas,monospace}}
     .row{{margin:6px 0}}
+    .controls{{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0}}
+    .controls label{{display:flex;align-items:center;gap:6px}}
+    .section{{margin-top:16px}}
+    .hline{{display:flex;align-items:center;justify-content:space-between;gap:10px}}
+    .timer{{font-family:Consolas,monospace;font-size:14px;color:#475569}}
+    input[type="number"],input[type="date"]{{padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px}}
     button{{margin:4px 6px 4px 0;padding:8px 10px;border:0;border-radius:8px;background:#0f62fe;color:#fff;cursor:pointer}}
     button.alt{{background:#4b5563}}
-    pre{{background:#0b1220;color:#dbeafe;padding:12px;border-radius:10px;overflow:auto;max-height:280px}}
+    button.small{{padding:6px 8px;font-size:12px}}
+    pre{{background:#0b1220;color:#dbeafe;padding:12px;border-radius:10px;overflow:auto;max-height:280px;white-space:pre-wrap}}
   </style>
 </head>
 <body>
@@ -70,30 +77,115 @@ def _render_info_page(payload: dict[str, Any]) -> str:
     </div>
   </div>
 
-  <div class="card" style="margin-top:16px">
-    <h2>Admin Actions</h2>
+  <div class="card section">
+    <div class="hline">
+      <h2>Admin Actions</h2>
+      <span class="timer" id="adminTimer">00:00.0</span>
+    </div>
     <button onclick="runMode({{mode:'sync-only',force_refresh:true}})">Force snapshot refresh</button>
     <button onclick="runMode({{mode:'timer',force_refresh:true}})">Force render table</button>
     <button onclick="runMode({{mode:'test',mock_external:false,dry_run:false}})">Notify test chat</button>
     <button onclick="runMode({{mode:'morning',mock_external:false,dry_run:false}})">Notify designer chats</button>
+    <pre id="adminResult">Готово к запуску действий.</pre>
   </div>
 
-  <div class="card" style="margin-top:16px">
-    <h2>API Presets</h2>
-    <button class="alt" onclick="apiPreset('work,pre_done',20,true)">Active 20</button>
-    <button class="alt" onclick="apiPreset('done',20,false)">Done 20</button>
-    <button class="alt" onclick="apiPreset('work,pre_done,wait,done',100,false)">All 100</button>
+  <div class="card section">
+    <div class="hline">
+      <h2>API Request Builder</h2>
+      <span class="timer" id="apiTimer">00:00.0</span>
+    </div>
+    <div class="controls">
+      <label><input id="includePeople" type="checkbox" checked /> include_people</label>
+    </div>
+    <div class="controls">
+      <label>limit <input id="limitValue" type="number" min="1" max="2000" value="200" /></label>
+      <button class="alt small" onclick="setLimit(20)">20</button>
+      <button class="alt small" onclick="setLimit(100)">100</button>
+      <button class="alt small" onclick="setLimit(200)">200</button>
+      <button class="alt small" onclick="setLimit(500)">500</button>
+    </div>
+    <div class="controls">
+      <span class="k">statuses:</span>
+      <label><input id="stWork" type="checkbox" checked /> work</label>
+      <label><input id="stPreDone" type="checkbox" checked /> pre_done</label>
+      <label><input id="stWait" type="checkbox" /> wait</label>
+      <label><input id="stDone" type="checkbox" /> done</label>
+    </div>
+    <div class="controls">
+      <label>window start <input id="windowStart" type="date" /></label>
+      <label>window end <input id="windowEnd" type="date" /></label>
+      <button class="alt small" onclick="setWindowPreset(7)">next 7d</button>
+      <button class="alt small" onclick="setWindowPreset(14)">next 14d</button>
+      <button class="alt small" onclick="clearWindow()">clear window</button>
+    </div>
+    <div class="controls">
+      <button onclick="sendApiBuilder()">Send</button>
+      <button class="alt" onclick="applyApiPreset('active20')">Preset: Active 20</button>
+      <button class="alt" onclick="applyApiPreset('done20')">Preset: Done 20</button>
+      <button class="alt" onclick="applyApiPreset('all100')">Preset: All 100</button>
+      <button class="alt" onclick="applyApiPreset('window14')">Preset: Window 14d</button>
+    </div>
+    <div class="row"><span class="k">Request URL:</span></div>
+    <pre id="apiRequestUrl"></pre>
+    <pre id="apiResult">Соберите параметры и нажмите Send.</pre>
   </div>
 
-  <div class="card" style="margin-top:16px">
-    <h2>Result</h2>
-    <pre id="result">{escaped}</pre>
+  <div class="card section">
+    <h2>Info JSON</h2>
+    <pre id="infoResult">{escaped}</pre>
   </div>
 
   <script>
+    function pretty(value){{
+      if (typeof value === 'string') {{
+        try {{
+          return JSON.stringify(JSON.parse(value), null, 2);
+        }} catch (_e) {{
+          return value;
+        }}
+      }}
+      return JSON.stringify(value, null, 2);
+    }}
+    function createTimer(elementId){{
+      const el = document.getElementById(elementId);
+      let startAt = 0;
+      let intervalId = null;
+      function format(ms){{
+        const totalSec = ms / 1000.0;
+        const mm = Math.floor(totalSec / 60);
+        const ss = totalSec - mm * 60;
+        const mmStr = String(mm).padStart(2, '0');
+        const ssStr = ss.toFixed(1).padStart(4, '0');
+        return mmStr + ':' + ssStr;
+      }}
+      return {{
+        start(){{
+          startAt = Date.now();
+          if (intervalId) clearInterval(intervalId);
+          el.textContent = '00:00.0';
+          intervalId = setInterval(() => {{
+            el.textContent = format(Date.now() - startAt);
+          }}, 100);
+        }},
+        stop(){{
+          if (intervalId) clearInterval(intervalId);
+          intervalId = null;
+          el.textContent = format(Date.now() - startAt);
+        }},
+      }};
+    }}
+    const adminTimer = createTimer('adminTimer');
+    const apiTimer = createTimer('apiTimer');
     async function loadInfo(){{
       const r = await fetch('/info?format=json', {{cache:'no-store'}});
-      const p = await r.json();
+      const text = await r.text();
+      let p = {{}};
+      try {{
+        p = JSON.parse(text);
+      }} catch (_e) {{
+        document.getElementById('infoResult').textContent = 'HTTP ' + r.status + '\\n' + text;
+        return;
+      }}
       const s = p.snapshot || {{}};
       const c = p.counts || {{}};
       const st = p.storage || {{}};
@@ -109,20 +201,116 @@ def _render_info_page(payload: dict[str, Any]) -> str:
       document.getElementById('bytesTotal').textContent = st.bytesTotal ?? 0;
       document.getElementById('bytesHuman').textContent = st.bytesHuman || '';
       document.getElementById('sizeBreakdown').textContent = JSON.stringify(st.byPrefix || {{}});
-      document.getElementById('result').textContent = JSON.stringify(p, null, 2);
+      document.getElementById('infoResult').textContent = pretty(p);
     }}
     async function runMode(payload){{
+      adminTimer.start();
       const r = await fetch('/', {{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify(payload)}});
       const t = await r.text();
-      document.getElementById('result').textContent = 'HTTP '+r.status+'\\n'+t;
+      document.getElementById('adminResult').textContent = 'HTTP '+r.status+'\\n'+pretty(t);
+      adminTimer.stop();
       setTimeout(loadInfo, 1500);
     }}
-    async function apiPreset(statuses,limit,includePeople){{
-      const q = new URLSearchParams({{statuses:statuses,limit:String(limit),include_people:String(includePeople)}});
+    function setIncludePeople(flag){{
+      document.getElementById('includePeople').checked = !!flag;
+    }}
+    function setLimit(value){{
+      document.getElementById('limitValue').value = String(value);
+    }}
+    function setWindowPreset(days){{
+      const now = new Date();
+      const end = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+      const toIso = (d) => d.toISOString().slice(0,10);
+      document.getElementById('windowStart').value = toIso(now);
+      document.getElementById('windowEnd').value = toIso(end);
+    }}
+    function clearWindow(){{
+      document.getElementById('windowStart').value = '';
+      document.getElementById('windowEnd').value = '';
+    }}
+    function selectedStatuses(){{
+      const statuses = [];
+      if (document.getElementById('stWork').checked) statuses.push('work');
+      if (document.getElementById('stPreDone').checked) statuses.push('pre_done');
+      if (document.getElementById('stWait').checked) statuses.push('wait');
+      if (document.getElementById('stDone').checked) statuses.push('done');
+      return statuses;
+    }}
+    function buildApiQuery(){{
+      const statuses = selectedStatuses();
+      const limit = document.getElementById('limitValue').value || '200';
+      const includePeople = document.getElementById('includePeople').checked;
+      const windowStart = document.getElementById('windowStart').value;
+      const windowEnd = document.getElementById('windowEnd').value;
+      const q = new URLSearchParams();
+      if (statuses.length > 0) q.set('statuses', statuses.join(','));
+      q.set('limit', String(limit));
+      q.set('include_people', String(includePeople));
+      if (windowStart && windowEnd) {{
+        q.set('window_start', windowStart);
+        q.set('window_end', windowEnd);
+      }}
+      return q;
+    }}
+    function refreshApiRequestUrl(){{
+      const q = buildApiQuery();
+      const origin = window.location.origin || '';
+      document.getElementById('apiRequestUrl').textContent = origin + '/api/v2/frontend?' + q.toString();
+    }}
+    async function sendApiBuilder(){{
+      apiTimer.start();
+      const q = buildApiQuery();
       const r = await fetch('/api/v2/frontend?'+q.toString(), {{cache:'no-store'}});
       const t = await r.text();
-      document.getElementById('result').textContent = 'HTTP '+r.status+'\\n'+t;
+      document.getElementById('apiResult').textContent = 'HTTP '+r.status+'\\n'+pretty(t);
+      apiTimer.stop();
+      refreshApiRequestUrl();
     }}
+    function applyApiPreset(name){{
+      if (name === 'active20') {{
+        setIncludePeople(true);
+        setLimit(20);
+        document.getElementById('stWork').checked = true;
+        document.getElementById('stPreDone').checked = true;
+        document.getElementById('stWait').checked = false;
+        document.getElementById('stDone').checked = false;
+        clearWindow();
+      }} else if (name === 'done20') {{
+        setIncludePeople(false);
+        setLimit(20);
+        document.getElementById('stWork').checked = false;
+        document.getElementById('stPreDone').checked = false;
+        document.getElementById('stWait').checked = false;
+        document.getElementById('stDone').checked = true;
+        clearWindow();
+      }} else if (name === 'all100') {{
+        setIncludePeople(false);
+        setLimit(100);
+        document.getElementById('stWork').checked = true;
+        document.getElementById('stPreDone').checked = true;
+        document.getElementById('stWait').checked = true;
+        document.getElementById('stDone').checked = true;
+        clearWindow();
+      }} else if (name === 'window14') {{
+        setIncludePeople(true);
+        setLimit(200);
+        document.getElementById('stWork').checked = true;
+        document.getElementById('stPreDone').checked = true;
+        document.getElementById('stWait').checked = true;
+        document.getElementById('stDone').checked = false;
+        setWindowPreset(14);
+      }}
+      refreshApiRequestUrl();
+    }}
+    const watchIds = ['includePeople','limitValue','stWork','stPreDone','stWait','stDone','windowStart','windowEnd'];
+    for (const id of watchIds) {{
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('change', refreshApiRequestUrl);
+      if (el && el.tagName === 'INPUT' && el.type === 'number') {{
+        el.addEventListener('input', refreshApiRequestUrl);
+      }}
+    }}
+    refreshApiRequestUrl();
     loadInfo();
   </script>
 </body>
