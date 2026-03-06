@@ -6,7 +6,7 @@ ydb:
 
 object_storage:
   endpoint_url_default: https://storage.yandexcloud.net
-  bucket_default: dtm-front
+  bucket_default: dtm
 
 tables:
   tasks: dtm_tasks

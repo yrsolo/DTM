@@ -61,3 +61,13 @@
   - `meta.readmodelSource = "s3_snapshot"`
   - `meta.queryFilterApplied = true`
   - `summary.tasksReturned = 12`
+
+## Bucket migration
+- Moved snapshot storage from `dtm-front` to private `dtm` bucket.
+- Data copy performed for existing keys:
+  - `snapshots/raw/default.json`
+  - `snapshots/prep/default.json`
+- Added isolated test namespace bootstrap objects:
+  - `snapshots/test/raw/default.json`
+  - `snapshots/test/prep/default.json`
+- Config defaults updated to `snapshot_engine.bucket=dtm` and `object_storage.bucket_default=dtm`.
