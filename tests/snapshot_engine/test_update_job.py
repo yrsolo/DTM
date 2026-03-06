@@ -63,6 +63,28 @@ class _FakePrepCache:
         self.put_called = True
 
 
+class _CorruptedPrepCache(_FakePrepCache):
+    def get(self):
+        raise ValueError("corrupted")
+
+
+class _StableRawCache:
+    def __init__(self):
+        self.put_called = False
+        self.row = RawSnapshot(
+            source_id="sheet:test",
+            source_hash="hash",
+            fetched_at_utc=datetime.now(timezone.utc),
+            tasks_by_id={},
+        )
+
+    def get(self):
+        return self.row
+
+    def put(self, raw):  # noqa: ANN001
+        self.put_called = True
+
+
 class _FakePrepBuilder:
     def build(self, raw):  # noqa: ANN001
         return PrepSnapshot(
@@ -91,6 +113,24 @@ class UpdateJobTestCase(unittest.TestCase):
 
         self.assertTrue(result.changed)
         self.assertTrue(raw_cache.put_called)
+        self.assertTrue(prep_cache.put_called)
+
+    def test_rebuilds_prep_when_raw_hash_unchanged_but_prep_corrupted(self) -> None:
+        raw_cache = _StableRawCache()
+        prep_cache = _CorruptedPrepCache()
+        job = UpdateJob(
+            source=_FakeSource(),
+            hasher=_FakeHasher(),
+            normalizer=_FakeNormalizer(),
+            raw_cache=raw_cache,
+            prep_cache=prep_cache,
+            prep_builder=_FakePrepBuilder(),
+        )
+
+        result = job.run(force=False)
+
+        self.assertTrue(result.changed)
+        self.assertFalse(raw_cache.put_called)
         self.assertTrue(prep_cache.put_called)
 
 

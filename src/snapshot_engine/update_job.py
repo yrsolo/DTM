@@ -154,6 +154,21 @@ class UpdateJob:
             # Corrupted/legacy cache payload must not block rebuild.
             previous_raw = None
         if previous_raw is not None and previous_raw.source_hash == source_hash and not force:
+            try:
+                existing_prep = self._prep_cache.get()
+            except Exception:
+                existing_prep = None
+            if existing_prep is None or existing_prep.raw_source_hash != source_hash:
+                repaired_prep = self._prep_builder.build(previous_raw)
+                self._prep_cache.put(repaired_prep)
+                return UpdateResult(
+                    source_id=self._source.source_id,
+                    source_hash=source_hash,
+                    changed=True,
+                    fetched_at_utc=previous_raw.fetched_at_utc,
+                    raw_written=False,
+                    prep_written=True,
+                )
             return UpdateResult(
                 source_id=self._source.source_id,
                 source_hash=source_hash,
