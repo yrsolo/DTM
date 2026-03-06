@@ -28,10 +28,14 @@
   - `src/entrypoints/http/group_query_tasks_loader.py` still calls `build_planner_dependencies(...)` directly.
 
 ## Current blockers for full cutover
-1. `group_query` loading path is still planner-dependent.
-2. Standard legacy `timer/test/morning` branch still enters planner when `store_mode=legacy`.
+1. Standard legacy `timer/test/morning` branch still enters planner when `store_mode=legacy`.
+2. Group-query handler still uses legacy text parser/formatter wrappers (`src.legacy.http_core_bindings`), even though planner dependency is removed.
 
 ## Next safe migration slice
-1. Move group-query tasks loader to snapshot query source.
-2. After that, restrict planner branch to explicit `legacy_planner_*` modes only.
+1. Replace `src.legacy.http_core_bindings` in group-query handler with dedicated snapshot-native parser/formatter.
+2. Restrict planner branch to explicit `legacy_planner_*` modes only.
+
+## Progress update (P02-T001)
+- `src/entrypoints/http/group_query_tasks_loader.py` no longer imports planner bootstrap.
+- Active-task loading in helper now reads from snapshot engine via frontend query adapter.
 

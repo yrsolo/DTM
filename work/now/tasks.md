@@ -34,7 +34,7 @@
 - [x] CAM-HTTP-FALLBACK-REMOVAL-V1-P02-T002: verify deterministic/quick handler response (no request-path rebuild/fallback loops).
 - [x] CAM-HTTP-FALLBACK-REMOVAL-V1-P03-T001: record handler behavior evidence and trust gate for fallback removal campaign.
 - [x] CAM-LEGACY-PLANNER-DELETE-V1-P01-T001: map planner imports/usages in runtime path and record trust/evidence.
-- [ ] CAM-LEGACY-PLANNER-DELETE-V1-P02-T001: migrate `group_query` task loading from planner bootstrap to snapshot source.
+- [x] CAM-LEGACY-PLANNER-DELETE-V1-P02-T001: migrate `group_query` task loading helper from planner bootstrap to snapshot source.
 - [ ] CAM-LEGACY-PLANNER-DELETE-V1-P03-T001: restrict planner execution to explicit `legacy_planner_*` modes only.
 - [ ] CAM-LEGACY-PLANNER-DELETE-V1-P03-T002: isolate/move remaining planner files under explicit legacy namespace.
 - [ ] CAM-LEGACY-PLANNER-DELETE-V1-P04-T001: remove planner-specific default runtime switches from non-legacy config path.
