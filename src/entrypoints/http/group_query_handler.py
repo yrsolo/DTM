@@ -193,6 +193,10 @@ def _task_stage_preview(task: _GroupTaskProjection, due_date: pd.Timestamp) -> s
     return ", ".join(str(stage) for stage in stages[:2])
 
 
+def _sort_by_due_date(item: tuple[pd.Timestamp, _GroupTaskProjection]) -> pd.Timestamp:
+    return item[0]
+
+
 def _build_tasks_reply(tasks: list[_GroupTaskProjection], requester_name: str) -> str:
     now = pd.Timestamp.today().normalize()
     matched = [task for task in tasks if _task_matches_designer(task, requester_name)]
@@ -203,7 +207,7 @@ def _build_tasks_reply(tasks: list[_GroupTaskProjection], requester_name: str) -
         due_date = _task_due_date(task, now)
         if due_date is not None:
             rows.append((due_date, task))
-    rows.sort(key=lambda item: item[0])
+    rows.sort(key=_sort_by_due_date)
     preview = rows[:7]
     lines = [f"@{requester_name}, ваши ближайшие задачи:"]
     for idx, (due_date, task) in enumerate(preview, start=1):
@@ -222,7 +226,7 @@ def _build_deadlines_reply(tasks: list[_GroupTaskProjection]) -> str:
             rows.append((due_date, task))
     if not rows:
         return "Ближайших дедлайнов не найдено."
-    rows.sort(key=lambda item: item[0])
+    rows.sort(key=_sort_by_due_date)
     preview = rows[:10]
     lines = ["Ближайшие дедлайны по команде:"]
     for idx, (due_date, task) in enumerate(preview, start=1):

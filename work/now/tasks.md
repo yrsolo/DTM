@@ -40,6 +40,10 @@
 - [ ] CAM-LEGACY-PLANNER-DELETE-V1-P03-T002: isolate/move remaining planner files under explicit legacy namespace.
 - [ ] CAM-LEGACY-PLANNER-DELETE-V1-P04-T001: remove planner-specific default runtime switches from non-legacy config path.
 - [x] CAM-GREP-GATES-V1-P01-T001: add `scripts/check_no_legacy_imports.py` and CI enforcement gate.
+- [x] CAM-GREP-GATES-V1-P01-T002: enforce forbidden import patterns in snapshot/notify/render/entrypoint contours.
+- [x] CAM-GREP-GATES-V1-P02-T001: integrate guard check in deploy workflows (test/prod).
+- [x] CAM-GREP-GATES-V1-P02-T002: ensure guard exits non-zero on violations (CI gate).
+- [x] CAM-GREP-GATES-V1-P03-T001: sync campaign evidence with current guard policy and verification commands.
 
 - [x] CAM-SNAPSHOT-ENGINE-V1-P01-T001: trust-gate фиксация текущего runtime source-of-truth и policy hard-cutover на S3 snapshot.
 - [x] CAM-SNAPSHOT-ENGINE-V1-P02-T001: реализовать `src/snapshot_engine` (models/interfaces/serialization/prep_builder/update_job/query_engine/engine).

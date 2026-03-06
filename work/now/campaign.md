@@ -8,9 +8,10 @@ Single source of truth for campaign lifecycle state.
 - CAM-LEGACY-PLANNER-DELETE-V1
 
 ## Planned
-- CAM-GREP-GATES-V1
+- none
 
 ## Done
+- CAM-GREP-GATES-V1
 - CAM-HTTP-FALLBACK-REMOVAL-V1
 - CAM-LEGACY-CUT-API-V1
 - CAM-NOTIFY-MODULE-V1
