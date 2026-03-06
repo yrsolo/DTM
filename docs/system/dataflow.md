@@ -23,6 +23,12 @@ Execution order:
 
 No YDB operational/readmodel writes are part of the canonical API v2 runtime path.
 
+## Render v2 safety and target policy
+- `render_v2` reads only snapshot prep data.
+- `render_v2` target worksheet is `task_calendar` (human name: `Задачи`).
+- `render_v2` must never write to `tasks` (`ТАБЛИЧКА`) source sheet.
+- Unsafe target is blocked at runtime with `error.code=render_target_unsafe`.
+
 ## 3) Query runtime
 - API handler: `src/entrypoints/http/frontend_v2_handler.py`
 - Query engine: `src/snapshot_engine/query_engine.py`

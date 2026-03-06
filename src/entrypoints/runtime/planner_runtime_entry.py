@@ -23,6 +23,7 @@ from src.entrypoints.jobs.task_payloads import task_to_store_record as _task_to_
 from src.entrypoints.jobs.timer_job import TimerJob
 from src.notify import ReminderFormatter, ReminderJob, ReminderRequest, ReminderUseCase, TelegramReminderSender
 from src.render import GoogleSheetsPlanWriter, RenderJob, RenderRequest, RenderUseCase, SheetTarget
+from src.render.target_guard import RenderTarget, validate_render_target
 from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
 from src.snapshot_engine import build_snapshot_engine
 from src.snapshot_engine.model import Window
@@ -202,11 +203,48 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
         from utils.service import GoogleSheetInfo, GoogleSheetsService
 
         sheet_info = GoogleSheetInfo(**APP_SHEET_INFO)
+        target_worksheet = sheet_info.get_sheet_name("task_calendar") or "Задачи"
+        source_spreadsheet = str(
+            APP_CONTEXT.cfg.tables.google_sheets.get("source_sheet_name_default", "")
+        ).strip()
+        target_spreadsheet = str(sheet_info.spreadsheet_name or "").strip()
+        tasks_sheet_name = str(sheet_info.get_sheet_name("tasks") or "ТАБЛИЧКА").strip()
+        target_ok, target_warnings = validate_render_target(
+            RenderTarget(
+                source_spreadsheet=source_spreadsheet,
+                target_spreadsheet=target_spreadsheet,
+                tasks_sheet_name=tasks_sheet_name,
+                target_worksheet=str(target_worksheet),
+            )
+        )
+        if not target_ok:
+            return {
+                "artifact": "render_v2",
+                "status": "blocked",
+                "mode": "render_v2",
+                "render_applied": False,
+                "rows_written": 0,
+                "cells_written": 0,
+                "target_spreadsheet": target_spreadsheet,
+                "target_worksheet": target_worksheet,
+                "warnings": list(target_warnings),
+                "error": {
+                    "code": "render_target_unsafe",
+                    "details": {
+                        "source_spreadsheet": source_spreadsheet,
+                        "target_spreadsheet": target_spreadsheet,
+                        "target_worksheet": target_worksheet,
+                        "tasks_sheet_name": tasks_sheet_name,
+                    },
+                },
+                "duration_ms": int((perf_counter() - render_started) * 1000),
+                "summary": {"task_row_issue_count": 0},
+            }
         writer = GoogleSheetsPlanWriter(
             GoogleSheetsService(APP_KEY_JSON, dry_run=dry_run),
             SheetTarget(
                 spreadsheet_name=sheet_info.spreadsheet_name,
-                worksheet_name=sheet_info.get_sheet_name("tasks") or "tasks",
+                worksheet_name=target_worksheet,
             ),
         )
         render_result = RenderJob(render_usecase, writer).run(

@@ -1,13 +1,13 @@
 from .job import RenderJob
-from .model import RenderApplyResult, RenderCell, RenderFormat, RenderPlan, RenderRequest
+from .model import RenderApplyResult, RenderBorder, RenderCell, RenderPlan, RenderRequest
 from .sheets_adapter import GoogleSheetsPlanWriter, SheetTarget, SheetsWriter
 from .usecase import RenderUseCase
 
 __all__ = [
     "GoogleSheetsPlanWriter",
     "RenderApplyResult",
+    "RenderBorder",
     "RenderCell",
-    "RenderFormat",
     "RenderJob",
     "RenderPlan",
     "RenderRequest",

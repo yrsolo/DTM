@@ -50,6 +50,11 @@ Already snapshot-engine backed:
   - `morning/reminders-only/reminder_v2` via notify v2 path
   - `timer/test/render_v2` via render v2 path
 
+Render v2 policy:
+- target worksheet key: `task_calendar` (`Задачи`);
+- forbidden worksheet key: `tasks` (`ТАБЛИЧКА`);
+- if target is unsafe runtime returns structured blocked result with `render_target_unsafe`.
+
 Planned campaign sequence:
 1. `CAM-LEGACY-CUT-API-V1`
 2. `CAM-NOTIFY-MODULE-V1`

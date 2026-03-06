@@ -60,6 +60,12 @@ If logs show synthetic `start`:
 - timing payload in source task is empty or not parsed.
 - verify source timing text and normalization logs.
 
+### Render safety (incident prevention)
+- `render_v2` is allowed to write only to worksheet `task_calendar` (`Задачи`).
+- `render_v2` must never target `tasks` (`ТАБЛИЧКА`).
+- On unsafe target runtime responds with `error.code=render_target_unsafe` and does not write.
+- Before release verify source/target spreadsheet separation for prod contour.
+
 ## 7) Branching and test deploy
 1) Development goes to `dev` (small commits, push to origin).
 2) When test contour validation is needed, merge `dev` into `test`.

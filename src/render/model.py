@@ -17,21 +17,28 @@ class RenderCell:
     row: int
     col: int
     value: Any
+    note: str | None = None
+    color: str | None = None
+    text_color: str | None = None
+    bold: bool | None = None
+    italic: bool | None = None
+    font_size: int | None = None
 
 
 @dataclass(frozen=True)
-class RenderFormat:
-    row: int
-    col: int
-    fmt: dict[str, Any]
+class RenderBorder:
+    worksheet_range: str
+    side: str = "left"
+    width: int = 3
+    color: str = "#5FAD56"
 
 
 @dataclass(frozen=True)
 class RenderPlan:
-    """Pure plan: values and formats to be written to target sheet."""
+    """Pure plan: values and borders to be written to target sheet."""
 
     values: list[RenderCell]
-    formats: list[RenderFormat]
+    borders: list[RenderBorder]
     warnings: list[str] | None = None
 
 
