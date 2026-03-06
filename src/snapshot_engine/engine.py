@@ -33,10 +33,12 @@ class SnapshotEngine:
     def __init__(
         self,
         *,
+        raw_cache: Any,
         prep_cache: Any,
         query_engine: SnapshotQueryEngine,
         update_job_factory: Any,
     ) -> None:
+        self._raw_cache = raw_cache
         self._prep_cache = prep_cache
         self._query_engine = query_engine
         self._update_job_factory = update_job_factory
@@ -107,6 +109,7 @@ def build_snapshot_engine(ctx: AppContext) -> SnapshotEngine:
         )
 
     return SnapshotEngine(
+        raw_cache=raw_cache,
         prep_cache=prep_cache,
         query_engine=query_engine,
         update_job_factory=_update_job_factory,
