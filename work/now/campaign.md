@@ -6,7 +6,12 @@ Single source of truth for campaign lifecycle state.
 - CAM-SNAPSHOT-ENGINE-V1
 
 ## Planned
-- none
+- CAM-LEGACY-CUT-API-V1
+- CAM-NOTIFY-MODULE-V1
+- CAM-RENDER-MODULE-V1
+- CAM-HTTP-FALLBACK-REMOVAL-V1
+- CAM-LEGACY-PLANNER-DELETE-V1
+- CAM-GREP-GATES-V1
 
 ## Done
 - CAM-HISTORY-FIELD-NORMALIZATION-V1 (archived in `work/archive/campaigns/CAM-HISTORY-FIELD-NORMALIZATION-V1/`)

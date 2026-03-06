@@ -38,3 +38,21 @@ For API v2 runtime:
 - metadata marker: `meta.readmodelSource = "s3_snapshot"`
 
 YDB readmodel is not used as primary source in this contour.
+
+## Legacy Cut Roadmap (current)
+
+Still legacy-backed runtime contours:
+- render path in standard `timer/test` flow (planner branch).
+- notify/reminder path for `morning/test/reminders-only` (planner reminder stack).
+
+Already snapshot-engine backed:
+- API v2 (`/api/v2/frontend`)
+- group-query task source
+- info panel (`/info`, `/api/v2/info`)
+
+Planned campaign sequence:
+1. `CAM-LEGACY-CUT-API-V1`
+2. `CAM-NOTIFY-MODULE-V1`
+3. `CAM-RENDER-MODULE-V1`
+4. `CAM-HTTP-FALLBACK-REMOVAL-V1`
+5. `CAM-LEGACY-PLANNER-DELETE-V1`

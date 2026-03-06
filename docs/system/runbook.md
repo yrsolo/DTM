@@ -66,3 +66,24 @@ If logs show synthetic `start`:
 3) Push `test` to origin:
    - test deploy workflow starts automatically.
 4) Production promotion stays owner-controlled: owner manually creates/reviews PR `test -> main`, then runs manual production release workflow.
+
+## 8) Legacy-cut campaign sequence
+Execution order for legacy removal:
+1) `CAM-LEGACY-CUT-API-V1`
+2) `CAM-NOTIFY-MODULE-V1`
+3) `CAM-RENDER-MODULE-V1`
+4) `CAM-HTTP-FALLBACK-REMOVAL-V1`
+5) `CAM-LEGACY-PLANNER-DELETE-V1`
+
+Guard campaign:
+- `CAM-GREP-GATES-V1` must be active before planner deletion stage.
+
+## 9) Anti-relapse gate
+Run import guard before merge to `test`:
+- `python scripts/check_no_legacy_imports.py` (after it is introduced by CAM-GREP-GATES-V1)
+
+Target violations:
+- `import core` / `from core`
+- `import pandas`
+- `GoogleSheetPlanner`
+- `build_planner_dependencies`
