@@ -29,6 +29,10 @@
 - [x] CAM-RENDER-MODULE-V1-P05-T001: add unit tests for `RenderUseCase.build_plan`.
 - [x] CAM-RENDER-MODULE-V1-P05-T002: add adapter tests for writer batching logic.
 - [x] CAM-HTTP-FALLBACK-REMOVAL-V1-P01-T001: remove HTTP fallback-to-legacy branches for API v2 snapshot-missing path.
+- [x] CAM-HTTP-FALLBACK-REMOVAL-V1-P01-T002: standardize unavailable response payload (`frontend_source_unavailable`) in API v2 HTTP path.
+- [x] CAM-HTTP-FALLBACK-REMOVAL-V1-P02-T001: validate cold/no-snapshot path behavior through routing tests.
+- [x] CAM-HTTP-FALLBACK-REMOVAL-V1-P02-T002: verify deterministic/quick handler response (no request-path rebuild/fallback loops).
+- [x] CAM-HTTP-FALLBACK-REMOVAL-V1-P03-T001: record handler behavior evidence and trust gate for fallback removal campaign.
 - [ ] CAM-LEGACY-PLANNER-DELETE-V1-P01-T001: map and remove planner imports from standard runtime modes.
 - [x] CAM-GREP-GATES-V1-P01-T001: add `scripts/check_no_legacy_imports.py` and CI enforcement gate.
 
