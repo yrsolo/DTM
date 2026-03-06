@@ -28,14 +28,21 @@
   - `src/entrypoints/http/group_query_tasks_loader.py` still calls `build_planner_dependencies(...)` directly.
 
 ## Current blockers for full cutover
-1. Standard legacy `timer/test/morning` branch still enters planner when `store_mode=legacy`.
+1. Planner modules/files are still located in active namespace (`src/services/planner_runtime.py`, `src/app/planner_bootstrap.py`) and not yet quarantined to dedicated legacy namespace.
 
 ## Next safe migration slice
-1. Replace `src.legacy.http_core_bindings` in group-query handler with dedicated snapshot-native parser/formatter.
-2. Restrict planner branch to explicit `legacy_planner_*` modes only.
+1. Move/quarantine remaining planner modules to explicit legacy namespace.
+2. Remove planner-specific config knobs from default non-legacy path.
 
 ## Progress update (P02-T001)
 - `src/entrypoints/http/group_query_tasks_loader.py` no longer imports planner bootstrap.
 - Active-task loading in helper now reads from snapshot engine via frontend query adapter.
 - `src/entrypoints/http/group_query_handler.py` no longer imports `src.legacy.http_core_bindings`; parser/formatter logic moved local to snapshot-based handler.
+
+## Progress update (P03-T001)
+- `src/entrypoints/runtime/planner_runtime_entry.py` now enables planner branch only for `legacy_planner_*` modes.
+- Standard modes are routed through modern contours:
+  - `timer/test/sync-only` -> `TimerPipeline` (snapshot update)
+  - `morning/reminders-only/reminder_v2` -> notify v2 path
+  - `timer/test/render_v2` -> render v2 path
 

@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from src.adapters.store_ydb import build_operational_store
+from src.adapters.telegram import TelegramNotifier
 from src.app.bootstrap import build_app_context
 from src.entrypoints.jobs.db_migrate_branch import run_db_migrate_if_requested
 from src.entrypoints.jobs.db_migrate_job import run_db_migrate
@@ -95,20 +96,14 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
         cfg=APP_CONTEXT.cfg,
         dry_run=dry_run,
     )
-    store_mode = str(APP_STORE_MODE).strip().lower()
-    legacy_store_mode = store_mode not in {"dual_write", "ydb_primary", "ydb_only"}
     normalized_mode = str(mode).strip().lower()
-    use_legacy_planner = str(mode).startswith("legacy_planner_") or (
-        legacy_store_mode and normalized_mode in {"timer", "test", "morning"}
-    )
+    use_legacy_planner = normalized_mode.startswith("legacy_planner_")
     quality_report: dict[str, Any] = {"summary": {"task_row_issue_count": 0}}
 
-    if normalized_mode in {"reminder_v2", "reminders-only"}:
+    if normalized_mode in {"reminder_v2", "reminders-only", "morning", "test"}:
         snapshot_engine = build_snapshot_engine(APP_CONTEXT)
         usecase = ReminderUseCase(snapshot_engine)
         formatter = ReminderFormatter()
-        from src.adapters.telegram import TelegramNotifier
-
         sender = TelegramReminderSender(
             TelegramNotifier(
                 bot_token=str(APP_DEPS.get("tg_bot_token", "")),
@@ -124,28 +119,8 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
                 limit_per_owner=50,
             )
         )
-        return {"artifact": "reminder_v2", "status": "ok", "summary": {"task_row_issue_count": 0}}
-
-    if normalized_mode == "render_v2":
-        snapshot_engine = build_snapshot_engine(APP_CONTEXT)
-        render_usecase = RenderUseCase(snapshot_engine)
-        from utils.service import GoogleSheetInfo, GoogleSheetsService
-
-        sheet_info = GoogleSheetInfo(**APP_SHEET_INFO)
-        writer = GoogleSheetsPlanWriter(
-            GoogleSheetsService(APP_KEY_JSON, dry_run=dry_run),
-            SheetTarget(
-                spreadsheet_name=sheet_info.spreadsheet_name,
-                worksheet_name=sheet_info.get_sheet_name("tasks") or "tasks",
-            ),
-        )
-        RenderJob(render_usecase, writer).run(
-            RenderRequest(
-                window=Window(start=None, end=None, mode="intersects"),
-                statuses=["work", "pre_done"],
-            )
-        )
-        return {"artifact": "render_v2", "status": "ok", "summary": {"task_row_issue_count": 0}}
+        if normalized_mode in {"reminder_v2", "reminders-only", "morning"}:
+            return {"artifact": "reminder_v2", "status": "ok", "summary": {"task_row_issue_count": 0}}
 
     if use_legacy_planner:
         from src.app.planner_bootstrap import build_planner_dependencies
@@ -218,5 +193,28 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
             task_source=task_source,
         )
     )
+
+    if normalized_mode in {"timer", "test", "render_v2"}:
+        snapshot_engine = build_snapshot_engine(APP_CONTEXT)
+        render_usecase = RenderUseCase(snapshot_engine)
+        from utils.service import GoogleSheetInfo, GoogleSheetsService
+
+        sheet_info = GoogleSheetInfo(**APP_SHEET_INFO)
+        writer = GoogleSheetsPlanWriter(
+            GoogleSheetsService(APP_KEY_JSON, dry_run=dry_run),
+            SheetTarget(
+                spreadsheet_name=sheet_info.spreadsheet_name,
+                worksheet_name=sheet_info.get_sheet_name("tasks") or "tasks",
+            ),
+        )
+        RenderJob(render_usecase, writer).run(
+            RenderRequest(
+                window=Window(start=None, end=None, mode="intersects"),
+                statuses=["work", "pre_done"],
+            )
+        )
+        if normalized_mode == "render_v2":
+            return {"artifact": "render_v2", "status": "ok", "summary": {"task_row_issue_count": 0}}
+
     _print_quality_report(quality_report)
     return quality_report

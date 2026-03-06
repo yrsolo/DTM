@@ -37,6 +37,7 @@
 - [x] CAM-LEGACY-PLANNER-DELETE-V1-P02-T001: migrate `group_query` task loading helper from planner bootstrap to snapshot source.
 - [x] CAM-LEGACY-PLANNER-DELETE-V1-P02-T002: remove legacy `src.legacy.http_core_bindings` coupling from `group_query` handler parser/formatter path.
 - [ ] CAM-LEGACY-PLANNER-DELETE-V1-P03-T001: restrict planner execution to explicit `legacy_planner_*` modes only.
+- [x] CAM-LEGACY-PLANNER-DELETE-V1-P03-T001: restrict planner execution to explicit `legacy_planner_*` modes only.
 - [ ] CAM-LEGACY-PLANNER-DELETE-V1-P03-T002: isolate/move remaining planner files under explicit legacy namespace.
 - [ ] CAM-LEGACY-PLANNER-DELETE-V1-P04-T001: remove planner-specific default runtime switches from non-legacy config path.
 - [x] CAM-GREP-GATES-V1-P01-T001: add `scripts/check_no_legacy_imports.py` and CI enforcement gate.
