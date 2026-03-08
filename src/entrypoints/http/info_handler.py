@@ -395,9 +395,32 @@ class InfoHandler:
 
         env_name = str(self._ctx.cfg.runtime.runtime.env_default).strip().lower() or "dev"
         snap_cfg = self._ctx.cfg.runtime.snapshot_engine
+        queue_cfg = self._ctx.cfg.runtime.queue
         raw_key = str(snap_cfg.prefix_raw).replace("{env}", env_name)
         root_prefix = self._resolve_root_prefix(raw_key)
         storage = self._storage_stats(str(snap_cfg.bucket), root_prefix)
+        queue_url = str(queue_cfg.prod_queue_url if env_name == "prod" else queue_cfg.test_queue_url).strip()
+        queue_name = queue_url.rstrip("/").rsplit("/", 1)[-1] if queue_url else ""
+        latest_jobs: dict[str, Any] = {}
+        status_store = self._ctx.deps.get("job_status_store")
+        if status_store is not None:
+            for command_type in (
+                "update_snapshot",
+                "send_reminders",
+                "render_timeline_sheet",
+                "render_designers_sheet",
+            ):
+                try:
+                    record = status_store.get_latest(command_type)
+                except Exception:
+                    record = None
+                if record is None:
+                    continue
+                latest_jobs[command_type] = {
+                    "status": record.status,
+                    "jobId": record.job_id,
+                    "finishedAt": "" if record.finished_at_utc is None else record.finished_at_utc.astimezone(timezone.utc).isoformat(),
+                }
         return {
             "artifact": "dtm_info_dashboard",
             "snapshot": {
@@ -418,6 +441,13 @@ class InfoHandler:
                 "byStatus": status_counts,
             },
             "storage": storage,
+            "queue": {
+                "enabled": bool(queue_cfg.enabled),
+                "provider": str(queue_cfg.provider),
+                "queueName": queue_name,
+                "endpointUrl": str(queue_cfg.endpoint_url or ""),
+                "latest": latest_jobs,
+            },
         }
 
     def handle(self, req: HttpRequest) -> HttpResponse | None:

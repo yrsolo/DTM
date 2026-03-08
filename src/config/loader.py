@@ -143,6 +143,7 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
         else {}
     )
     notify_raw = data.get("notify", {}) if isinstance(data.get("notify", {}), dict) else {}
+    queue_raw = data.get("queue", {}) if isinstance(data.get("queue", {}), dict) else {}
     sources_raw = data.get("sources", {}) if isinstance(data.get("sources", {}), dict) else {}
     timing_raw = data.get("timing", {}) if isinstance(data.get("timing", {}), dict) else {}
     triggers_raw = data.get("triggers", {}) if isinstance(data.get("triggers", {}), dict) else {}
@@ -192,6 +193,13 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
     defaults.snapshot_engine.force_refresh_default = bool(
         snapshot_engine_raw.get("force_refresh_default", defaults.snapshot_engine.force_refresh_default)
     )
+    defaults.queue.enabled = bool(queue_raw.get("enabled", defaults.queue.enabled))
+    defaults.queue.provider = str(queue_raw.get("provider", defaults.queue.provider))
+    defaults.queue.endpoint_url = str(queue_raw.get("endpoint_url", defaults.queue.endpoint_url))
+    defaults.queue.test_queue_url = str(queue_raw.get("test_queue_url", defaults.queue.test_queue_url))
+    defaults.queue.prod_queue_url = str(queue_raw.get("prod_queue_url", defaults.queue.prod_queue_url))
+    defaults.queue.status_prefix = str(queue_raw.get("status_prefix", defaults.queue.status_prefix))
+    defaults.queue.latest_prefix = str(queue_raw.get("latest_prefix", defaults.queue.latest_prefix))
     defaults.notify.enhance_concurrency = int(
         notify_raw.get("enhance_concurrency", defaults.notify.enhance_concurrency)
     )
@@ -271,6 +279,21 @@ def load_config(config_dir: Path = CONFIG_DIR) -> AppConfig:
             raise ValueError("snapshot_engine.prefix_extra is required when snapshot_engine.enabled=true")
         if not str(snapshot_cfg.prefix_people).strip():
             raise ValueError("snapshot_engine.prefix_people is required when snapshot_engine.enabled=true")
+    queue_cfg = runtime_cfg.queue
+    if bool(queue_cfg.enabled):
+        if str(queue_cfg.provider).strip().lower() != "yandex_message_queue":
+            raise ValueError("queue.provider must be 'yandex_message_queue' when queue.enabled=true")
+        queue_url = (
+            str(queue_cfg.prod_queue_url).strip()
+            if str(runtime_cfg.runtime.env_default).strip().lower() == "prod"
+            else str(queue_cfg.test_queue_url).strip()
+        )
+        if not queue_url:
+            raise ValueError("Queue URL is required for current env when queue.enabled=true")
+        if not str(queue_cfg.status_prefix).strip():
+            raise ValueError("queue.status_prefix is required when queue.enabled=true")
+        if not str(queue_cfg.latest_prefix).strip():
+            raise ValueError("queue.latest_prefix is required when queue.enabled=true")
 
     tables_cfg = TablesConfig(
         google_sheets=tables_data.get("google_sheets", {}),

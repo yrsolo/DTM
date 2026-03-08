@@ -24,6 +24,21 @@ from src.config.loader import load_config
 from src.services.mappers.task_payload_mapper import TaskPayloadMapper
 
 
+def _resolve_env_prefix(value: str, env_name: str) -> str:
+    token = "{env}"
+    cleaned = str(value or "").strip()
+    if token in cleaned:
+        return cleaned.replace(token, str(env_name or "").strip().lower() or "dev")
+    return cleaned
+
+
+def _resolve_queue_url(cfg) -> str:
+    env_name = str(cfg.runtime.runtime.env_default or "").strip().lower()
+    if env_name == "prod":
+        return str(cfg.runtime.queue.prod_queue_url or "").strip()
+    return str(cfg.runtime.queue.test_queue_url or "").strip()
+
+
 def build_app_context() -> AppContext:
     """Load YAML config and return bootstrap context.
 
@@ -55,4 +70,43 @@ def build_app_context() -> AppContext:
         "google_llm_api_key": os.getenv("GOOGLE_LLM_API_KEY", "").strip(),
         "yandex_llm_api_key": os.getenv("YANDEX_LLM_API_KEY", "").strip(),
     }
-    return AppContext(cfg=cfg, deps=deps)
+    ctx = AppContext(cfg=cfg, deps=deps)
+    queue_cfg = cfg.runtime.queue
+    if bool(queue_cfg.enabled):
+        from src.commands.yandex_mq import YandexMessageQueueProducer
+        from src.jobs.render_designers_job import RenderDesignersJob
+        from src.jobs.render_timeline_job import RenderTimelineJob
+        from src.jobs.send_reminders_job import SendRemindersJob
+        from src.jobs.update_snapshot_job import UpdateSnapshotJob
+        from src.worker.dispatcher import CommandDispatcher
+        from src.worker.status_store import S3JobStatusStore
+        from src.worker.worker import Worker
+
+        bucket = str(cfg.runtime.snapshot_engine.bucket).strip()
+        endpoint_url = str(cfg.db.object_storage.get("endpoint_url_default", "")).strip() or None
+        env_name = str(cfg.runtime.runtime.env_default or "").strip().lower() or "dev"
+        status_store = S3JobStatusStore(
+            bucket=bucket,
+            endpoint_url=endpoint_url,
+            aws_access_key_id=deps.get("aws_access_key_id"),
+            aws_secret_access_key=deps.get("aws_secret_access_key"),
+            status_prefix=_resolve_env_prefix(str(queue_cfg.status_prefix), env_name),
+            latest_prefix=_resolve_env_prefix(str(queue_cfg.latest_prefix), env_name),
+        )
+        producer = YandexMessageQueueProducer(
+            queue_url=_resolve_queue_url(cfg),
+            endpoint_url=str(queue_cfg.endpoint_url or "").strip() or None,
+            aws_access_key_id=deps.get("aws_access_key_id"),
+            aws_secret_access_key=deps.get("aws_secret_access_key"),
+        )
+        dispatcher = CommandDispatcher(
+            update_snapshot_job=UpdateSnapshotJob(ctx),
+            send_reminders_job=SendRemindersJob(ctx),
+            render_timeline_job=RenderTimelineJob(ctx),
+            render_designers_job=RenderDesignersJob(ctx),
+        )
+        deps["job_status_store"] = status_store
+        deps["command_queue_producer"] = producer
+        deps["command_dispatcher"] = dispatcher
+        deps["command_worker"] = Worker(status_store=status_store, dispatcher=dispatcher, logger=ctx.log)
+    return ctx

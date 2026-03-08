@@ -1,10 +1,9 @@
 # Backlog
 
 ## In Progress
-- none
+- CAM-QUEUE-FOUNDATION-ON-CF-V1
 
 ## Planned
-- CAM-QUEUE-FOUNDATION-ON-CF-V1
 - CAM-ADMIN-ACTIONS-ASYNC-V1
 - CAM-GROUP-QUERY-UNIFY-WITH-REMINDER-V1
 - CAM-TELEGRAM-INTAKE-V1
@@ -19,3 +18,4 @@
 ## Notes
 - Completed campaigns are stored in `work/archive/campaigns/`.
 - `work/now/campaign.md` is the primary lifecycle registry; keep this file aligned with it.
+- Queue infra is configured for both contours; current in-progress slice is queue-enabled deploy and end-to-end worker smoke.

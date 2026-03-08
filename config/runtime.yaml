@@ -24,6 +24,15 @@ snapshot_engine:
   prefix_people: snapshots/{env}/people/default.json
   force_refresh_default: false
 
+queue:
+  enabled: true
+  provider: yandex_message_queue
+  endpoint_url: https://message-queue.api.cloud.yandex.net
+  test_queue_url: https://message-queue.api.cloud.yandex.net/b1g6d49mf4scmtn4kjki/dj60000000h3q8v503h2/dtm-test-commands
+  prod_queue_url: https://message-queue.api.cloud.yandex.net/b1g6d49mf4scmtn4kjki/dj60000000h3q8vp03h2/dtm-prod-commands
+  status_prefix: jobs/{env}/status/
+  latest_prefix: jobs/{env}/latest/
+
 notify:
   enhance_concurrency: 4
   send_retry_attempts: 3

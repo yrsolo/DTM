@@ -34,6 +34,17 @@ class SnapshotEngineSection:
 
 
 @dataclass(slots=True)
+class QueueSection:
+    enabled: bool = False
+    provider: str = "yandex_message_queue"
+    endpoint_url: str = "https://message-queue.api.cloud.yandex.net"
+    test_queue_url: str = ""
+    prod_queue_url: str = ""
+    status_prefix: str = "jobs/{env}/status/"
+    latest_prefix: str = "jobs/{env}/latest/"
+
+
+@dataclass(slots=True)
 class NotifySection:
     enhance_concurrency: int = 4
     send_retry_attempts: int = 3
@@ -64,6 +75,7 @@ class RuntimeConfig:
     api: dict[str, Any] = field(default_factory=dict)
     pipeline: PipelineSection = field(default_factory=PipelineSection)
     snapshot_engine: SnapshotEngineSection = field(default_factory=SnapshotEngineSection)
+    queue: QueueSection = field(default_factory=QueueSection)
     notify: NotifySection = field(default_factory=NotifySection)
     sources: SourcesSection = field(default_factory=SourcesSection)
     timing: TimingSection = field(default_factory=TimingSection)

@@ -3,10 +3,9 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
-- none
+- CAM-QUEUE-FOUNDATION-ON-CF-V1
 
 ## Planned
-- CAM-QUEUE-FOUNDATION-ON-CF-V1
 - CAM-ADMIN-ACTIONS-ASYNC-V1
 - CAM-GROUP-QUERY-UNIFY-WITH-REMINDER-V1
 - CAM-TELEGRAM-INTAKE-V1

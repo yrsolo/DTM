@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
+import json
+from datetime import datetime, timezone
 from typing import Any
+from uuid import uuid4
 
 from src.app.bootstrap import build_app_context
+from src.commands.model import Command, RequestedBy
+from src.commands.types import SEND_REMINDERS, UPDATE_SNAPSHOT
+from src.commands.yandex_mq import is_message_queue_event, queue_messages_from_event
 from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
 from src.entrypoints.http.debug_utils import debug_http_shape as _debug_http_shape
 from src.entrypoints.http.dto import HttpRequest, to_gateway_response
@@ -34,8 +40,63 @@ ALLOWED_RUN_MODES = frozenset(
 )
 
 
+def _enqueue_trigger_command(*, trigger_mode: str) -> dict[str, Any] | None:
+    producer = APP_DEPS.get("command_queue_producer")
+    status_store = APP_DEPS.get("job_status_store")
+    if producer is None or status_store is None:
+        return None
+    mode = str(trigger_mode or "").strip().lower()
+    if mode == "timer":
+        command_type = UPDATE_SNAPSHOT
+        payload: dict[str, Any] = {"force_refresh": False, "dry_run": False}
+    elif mode == "morning":
+        command_type = SEND_REMINDERS
+        payload = {
+            "mode": "morning",
+            "statuses": ["work", "pre_done"],
+            "include_today": True,
+            "include_next_workday": True,
+            "force_test_chat": False,
+            "mock_external": False,
+        }
+    else:
+        return None
+    cmd = Command(
+        job_id=uuid4().hex,
+        type=command_type,
+        created_at_utc=datetime.now(timezone.utc),
+        requested_by=RequestedBy(source="trigger"),
+        payload=payload,
+    )
+    producer.send(cmd)
+    status_store.put_queued(cmd)
+    return {
+        "artifact": "command_enqueued",
+        "status": "accepted",
+        "job_id": cmd.job_id,
+        "command_type": cmd.type,
+        "trigger_mode": mode,
+    }
+
+
 async def handler(event: Any, _: Any) -> dict[str, Any]:
     """Yandex Cloud handler."""
+    if is_message_queue_event(event):
+        worker = APP_DEPS.get("command_worker")
+        if worker is None:
+            return {
+                "statusCode": 503,
+                "body": json.dumps(
+                    {
+                        "artifact": "command_worker",
+                        "status": "queue_unavailable",
+                    },
+                    ensure_ascii=False,
+                ),
+            }
+        result = await worker.run_once_from_messages(queue_messages_from_event(event))
+        return {"statusCode": 200, "body": json.dumps(result, ensure_ascii=False)}
+
     request_payload, is_http_event = _extract_payload(event)
     if request_payload.get("healthcheck"):
         return {
@@ -89,6 +150,10 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
     trigger_mode = _resolve_trigger_mode(event_dict, APP_TRIGGERS)
     if not run_mode and trigger_mode:
         run_mode = trigger_mode
+    if not is_http_event and trigger_mode:
+        enqueue_result = _enqueue_trigger_command(trigger_mode=trigger_mode)
+        if enqueue_result is not None:
+            return {"statusCode": 200, "body": json.dumps(enqueue_result, ensure_ascii=False)}
     if is_http_event and not run_mode:
         return to_gateway_response(
             _json_response(
