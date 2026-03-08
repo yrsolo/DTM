@@ -82,10 +82,10 @@ def _render_info_page(payload: dict[str, Any]) -> str:
       <h2>Admin Actions</h2>
       <span class="timer" id="adminTimer">00:00.0</span>
     </div>
-    <button onclick="runMode({{mode:'sync-only',force_refresh:true}})">Force snapshot refresh</button>
-    <button onclick="runMode({{mode:'render_v2',force_refresh:true,dry_run:false,mock_external:false}})">Force render table</button>
-    <button onclick="runMode({{mode:'test',mock_external:false,dry_run:false}})">Notify test chat</button>
-    <button onclick="runMode({{mode:'morning',mock_external:false,dry_run:false}})">Notify designer chats</button>
+    <button onclick="enqueueAdminCommand('/admin/commands/update-snapshot', {{force_refresh:true,dry_run:false}})">Force snapshot refresh</button>
+    <button onclick="enqueueAdminCommand('/admin/commands/render-timeline', {{statuses:['work','pre_done'],dry_run:false}})">Force render table</button>
+    <button onclick="enqueueAdminCommand('/admin/commands/send-reminders', {{mode:'test',statuses:['work','pre_done'],include_today:true,include_next_workday:true,force_test_chat:true,mock_external:false}})">Notify test chat</button>
+    <button onclick="enqueueAdminCommand('/admin/commands/send-reminders', {{mode:'morning',statuses:['work','pre_done'],include_today:true,include_next_workday:true,force_test_chat:false,mock_external:false}})">Notify designer chats</button>
     <pre id="adminResult">Готово к запуску действий.</pre>
   </div>
 
@@ -203,11 +203,36 @@ def _render_info_page(payload: dict[str, Any]) -> str:
       document.getElementById('sizeBreakdown').textContent = JSON.stringify(st.byPrefix || {{}});
       document.getElementById('infoResult').textContent = pretty(p);
     }}
-    async function runMode(payload){{
+    async function pollJob(jobId){{
+      for (let attempt = 0; attempt < 60; attempt += 1) {{
+        const r = await fetch('/admin/jobs/' + encodeURIComponent(jobId), {{cache:'no-store'}});
+        const text = await r.text();
+        let payload = text;
+        try {{
+          payload = JSON.parse(text);
+        }} catch (_e) {{}}
+        document.getElementById('adminResult').textContent = 'HTTP ' + r.status + '\\n' + pretty(payload);
+        if (r.ok && payload && typeof payload === 'object') {{
+          const status = String(payload.status || '').toLowerCase();
+          if (status === 'succeeded' || status === 'failed') {{
+            return;
+          }}
+        }}
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }}
+    }}
+    async function enqueueAdminCommand(url, payload){{
       adminTimer.start();
-      const r = await fetch('/', {{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify(payload)}});
+      const r = await fetch(url, {{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify(payload)}});
       const t = await r.text();
-      document.getElementById('adminResult').textContent = 'HTTP '+r.status+'\\n'+pretty(t);
+      let parsed = t;
+      try {{
+        parsed = JSON.parse(t);
+      }} catch (_e) {{}}
+      document.getElementById('adminResult').textContent = 'HTTP '+r.status+'\\n'+pretty(parsed);
+      if (r.ok && parsed && typeof parsed === 'object' && parsed.job_id) {{
+        await pollJob(parsed.job_id);
+      }}
       adminTimer.stop();
       setTimeout(loadInfo, 1500);
     }}

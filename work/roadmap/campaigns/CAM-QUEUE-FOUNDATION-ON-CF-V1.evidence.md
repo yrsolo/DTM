@@ -66,3 +66,17 @@
   - admin enqueue endpoint
   - MQ-triggered worker path
   - S3 job status updates
+
+## Cloud Smoke - 2026-03-08
+
+- test deploy:
+  - `origin/test` promoted to queue-enabled version
+  - function `dtm` active latest version: `d4e8v7evpor1jt2h7d6g`
+- initial failure:
+  - `NoRegionError` from `boto3.client('sqs', ...)` inside `YandexMessageQueueProducer`
+  - fixed by forcing `region_name='ru-central1'`
+- verified after hotfix:
+  - `/info?format=json` returns queue block with `enabled=true`
+  - `POST /admin/commands/update-snapshot` returns `artifact=command_enqueued`
+  - `GET /admin/jobs/<job_id>` returns `status=succeeded`
+  - worker summary confirms `update_snapshot` completed successfully

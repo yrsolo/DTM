@@ -1,6 +1,7 @@
 # Active Tasks
 
-- CAM-QUEUE-FOUNDATION-ON-CF-V1 P05: deploy queue-enabled runtime and verify end-to-end worker execution on test
+- CAM-ADMIN-ACTIONS-ASYNC-V1 P01: migrate `/info` admin buttons from sync runtime posts to enqueue endpoints
+- CAM-ADMIN-ACTIONS-ASYNC-V1 P02: poll `/admin/jobs/{job_id}` and show real queued/running/succeeded/failed state in `/info`
 
 ## Done
 
@@ -8,6 +9,7 @@
 - CAM-QUEUE-FOUNDATION-ON-CF-V1 P02: implemented command DTO, serializer, queue config, and S3-backed job status store
 - CAM-QUEUE-FOUNDATION-ON-CF-V1 P03: added queue event classifier, worker scaffolding, trigger enqueue fallback, and hidden admin enqueue/status endpoints
 - CAM-QUEUE-FOUNDATION-ON-CF-V1 P04: created Yandex Message Queue test/prod queues and attached Cloud Function triggers
+- CAM-QUEUE-FOUNDATION-ON-CF-V1 P05: deployed queue-enabled test contour and verified enqueue -> worker -> job status success path
 
 ## Notes
 

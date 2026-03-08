@@ -13,6 +13,10 @@
   - `/info` already exposes operational controls and snapshot state.
   - current buttons still post sync runtime modes directly.
   - current UX lacks detached job tracking.
+  - queue foundation is now live on test contour:
+    - enqueue endpoints exist
+    - worker consumes MQ trigger events
+    - `/admin/jobs/{job_id}` returns persisted state
 
 ## Notes
 
