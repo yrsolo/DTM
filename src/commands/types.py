@@ -4,6 +4,7 @@ UPDATE_SNAPSHOT = "update_snapshot"
 SEND_REMINDERS = "send_reminders"
 RENDER_TIMELINE_SHEET = "render_timeline_sheet"
 RENDER_DESIGNERS_SHEET = "render_designers_sheet"
+GROUP_QUERY_REPLY = "group_query_reply"
 
 SUPPORTED_COMMAND_TYPES = frozenset(
     {
@@ -11,5 +12,6 @@ SUPPORTED_COMMAND_TYPES = frozenset(
         SEND_REMINDERS,
         RENDER_TIMELINE_SHEET,
         RENDER_DESIGNERS_SHEET,
+        GROUP_QUERY_REPLY,
     }
 )

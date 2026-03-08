@@ -107,6 +107,18 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertIn("/admin/commands/render-timeline", response.get("body", ""))
         self.assertIn("/admin/jobs/", response.get("body", ""))
 
+    def test_info_json_contains_telegram_block(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "info"
+        event["params"]["proxy"] = "info"
+        event["url"] = "https://dtm-api-test.solofarm.ru/info?format=json"
+        event["queryStringParameters"] = {"format": "json"}
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response.get("body", "{}"))
+        self.assertEqual(response["statusCode"], 200)
+        self.assertIn("telegram", payload)
+        self.assertIn("webhookPath", payload["telegram"])
+
     def test_v2_doc_contains_endpoints_query_and_response_fields(self) -> None:
         event = _fixture_event()
         event["pathParams"]["proxy"] = "api/v2/frontend/doc"

@@ -69,6 +69,7 @@ def build_app_context() -> AppContext:
         "proxy_url": os.getenv("PROXY_URL", "").strip(),
         "google_llm_api_key": os.getenv("GOOGLE_LLM_API_KEY", "").strip(),
         "yandex_llm_api_key": os.getenv("YANDEX_LLM_API_KEY", "").strip(),
+        "tg_webhook_secret_token": os.getenv("TG_WEBHOOK_SECRET_TOKEN", "").strip(),
     }
     ctx = AppContext(cfg=cfg, deps=deps)
     queue_cfg = cfg.runtime.queue
@@ -78,6 +79,7 @@ def build_app_context() -> AppContext:
         from src.jobs.render_timeline_job import RenderTimelineJob
         from src.jobs.send_reminders_job import SendRemindersJob
         from src.jobs.update_snapshot_job import UpdateSnapshotJob
+        from src.jobs.group_query_reply_job import GroupQueryReplyJob
         from src.worker.dispatcher import CommandDispatcher
         from src.worker.status_store import S3JobStatusStore
         from src.worker.worker import Worker
@@ -104,6 +106,7 @@ def build_app_context() -> AppContext:
             send_reminders_job=SendRemindersJob(ctx),
             render_timeline_job=RenderTimelineJob(ctx),
             render_designers_job=RenderDesignersJob(ctx),
+            group_query_reply_job=GroupQueryReplyJob(ctx),
         )
         deps["job_status_store"] = status_store
         deps["command_queue_producer"] = producer

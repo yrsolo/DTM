@@ -29,7 +29,8 @@ Timer pipeline now updates snapshot engine storage (S3 raw/prep) and does not bu
 ## HTTP handlers
 - `FrontendRootHandler`: root/doc compatibility
 - `FrontendV2Handler`: reads data from snapshot engine prep cache
-- `GroupQueryHandler`: reads active snapshot-backed tasks and sends Telegram response
+- `TelegramWebhookHandler`: validates Telegram webhook secret, parses update, maps to internal command, and enqueues it
+- `GroupQueryHandler`: compatibility wrapper aliasing Telegram webhook intake
 
 ## API source-of-truth
 
@@ -43,12 +44,19 @@ YDB readmodel is not used as primary source in this contour.
 
 Already snapshot-engine backed:
 - API v2 (`/api/v2/frontend`)
-- group-query task source
+- worker-side group-query reply job task source
 - info panel (`/info`, `/api/v2/info`)
 - standard runtime modes:
   - `timer/test/sync-only` via `TimerPipeline`
   - `morning/reminders-only/reminder_v2` via notify v2 path
   - `timer/test/render_v2` via render v2 path
+
+Telegram intake policy:
+- webhook path stays `/telegram`
+- webhook validates `X-Telegram-Bot-Api-Secret-Token`
+- webhook does not execute business selection/rendering inline
+- webhook enqueues commands such as `group_query_reply`
+- worker jobs perform the actual Telegram reply or admin action
 
 Render v2 policy:
 - target worksheet key: `task_calendar` (`Задачи`);

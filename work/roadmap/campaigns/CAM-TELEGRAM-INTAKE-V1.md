@@ -23,6 +23,9 @@ Introduce thin Telegram webhook intake that validates, parses, and enqueues comm
 - Primary implementation skeleton: `docs/system/telegram_intake_skeleton.md`
 - Current trust level: medium
 - Current touchpoints:
+  - `src/telegram/webhook.py`
+  - `src/telegram/parser.py`
+  - `src/jobs/group_query_reply_job.py`
   - `src/entrypoints/http/group_query_handler.py`
   - `src/adapters/telegram.py`
   - `src/notify/job.py`
@@ -44,3 +47,4 @@ Introduce thin Telegram webhook intake that validates, parses, and enqueues comm
 - webhook path validates and enqueues only
 - heavy business logic stays out of webhook
 - `/info` can expose webhook health metadata
+- worker executes `group_query_reply` after enqueue instead of synchronous webhook reply

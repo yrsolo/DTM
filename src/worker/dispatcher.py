@@ -5,6 +5,7 @@ from typing import Any
 
 from src.commands.model import Command
 from src.commands.types import (
+    GROUP_QUERY_REPLY,
     RENDER_DESIGNERS_SHEET,
     RENDER_TIMELINE_SHEET,
     SEND_REMINDERS,
@@ -22,12 +23,14 @@ class CommandDispatcher:
         send_reminders_job: Any,
         render_timeline_job: Any,
         render_designers_job: Any,
+        group_query_reply_job: Any,
     ) -> None:
         self._handlers = {
             UPDATE_SNAPSHOT: update_snapshot_job,
             SEND_REMINDERS: send_reminders_job,
             RENDER_TIMELINE_SHEET: render_timeline_job,
             RENDER_DESIGNERS_SHEET: render_designers_job,
+            GROUP_QUERY_REPLY: group_query_reply_job,
         }
 
     async def dispatch(self, cmd: Command) -> JobResult:

@@ -142,6 +142,7 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
         if isinstance(data.get("snapshot_engine", {}), dict)
         else {}
     )
+    telegram_raw = data.get("telegram", {}) if isinstance(data.get("telegram", {}), dict) else {}
     notify_raw = data.get("notify", {}) if isinstance(data.get("notify", {}), dict) else {}
     queue_raw = data.get("queue", {}) if isinstance(data.get("queue", {}), dict) else {}
     sources_raw = data.get("sources", {}) if isinstance(data.get("sources", {}), dict) else {}
@@ -200,6 +201,12 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
     defaults.queue.prod_queue_url = str(queue_raw.get("prod_queue_url", defaults.queue.prod_queue_url))
     defaults.queue.status_prefix = str(queue_raw.get("status_prefix", defaults.queue.status_prefix))
     defaults.queue.latest_prefix = str(queue_raw.get("latest_prefix", defaults.queue.latest_prefix))
+    defaults.telegram.webhook_path = str(telegram_raw.get("webhook_path", defaults.telegram.webhook_path))
+    allowed_updates = telegram_raw.get("allowed_updates", defaults.telegram.allowed_updates)
+    if isinstance(allowed_updates, list):
+        defaults.telegram.allowed_updates = [str(item).strip() for item in allowed_updates if str(item).strip()]
+    defaults.telegram.max_connections = int(telegram_raw.get("max_connections", defaults.telegram.max_connections))
+    defaults.telegram.secret_required = bool(telegram_raw.get("secret_required", defaults.telegram.secret_required))
     defaults.notify.enhance_concurrency = int(
         notify_raw.get("enhance_concurrency", defaults.notify.enhance_concurrency)
     )

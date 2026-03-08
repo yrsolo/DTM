@@ -44,8 +44,19 @@ Payload contract remains API v2 compatible (including `history`, `brand`, `forma
 - `status`: normalized color-derived status (`work|pre_done|wait|done|unknown`)
 - `history`: raw textual status from source sheet
 
-## 5) Group query runtime
-`src/entrypoints/http/group_query_handler.py` reads active tasks from snapshot-backed API payload and builds Telegram replies from that data.
+## 5) Telegram group query/runtime
+- webhook intake: `src/telegram/webhook.py`
+- parser: `src/telegram/parser.py`
+- worker job: `src/jobs/group_query_reply_job.py`
+
+Execution order:
+1. receive Telegram webhook on `/telegram`
+2. validate `X-Telegram-Bot-Api-Secret-Token`
+3. parse update into internal command
+4. enqueue `group_query_reply` (or safe admin command)
+5. worker executes reminder-based selection and sends Telegram reply
+
+No business selection or snapshot reads happen inline in webhook intake.
 
 ## 6) Reminder parity runtime
 - reminder modes (`reminder_v2`, `reminders-only`, `morning`, `test`) use `src/notify/*` parity contour.

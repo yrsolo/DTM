@@ -421,11 +421,17 @@ class InfoHandler:
         env_name = str(self._ctx.cfg.runtime.runtime.env_default).strip().lower() or "dev"
         snap_cfg = self._ctx.cfg.runtime.snapshot_engine
         queue_cfg = self._ctx.cfg.runtime.queue
+        telegram_cfg = self._ctx.cfg.runtime.telegram
         raw_key = str(snap_cfg.prefix_raw).replace("{env}", env_name)
         root_prefix = self._resolve_root_prefix(raw_key)
         storage = self._storage_stats(str(snap_cfg.bucket), root_prefix)
         queue_url = str(queue_cfg.prod_queue_url if env_name == "prod" else queue_cfg.test_queue_url).strip()
         queue_name = queue_url.rstrip("/").rsplit("/", 1)[-1] if queue_url else ""
+        webhook_path = str(telegram_cfg.webhook_path or "/telegram").strip() or "/telegram"
+        api_domain = str(
+            self._ctx.cfg.runtime.web.get("api_domain_prod" if env_name == "prod" else "api_domain_test", "")
+        ).strip()
+        webhook_url = f"https://{api_domain}{webhook_path}" if api_domain else webhook_path
         latest_jobs: dict[str, Any] = {}
         status_store = self._ctx.deps.get("job_status_store")
         if status_store is not None:
@@ -434,6 +440,7 @@ class InfoHandler:
                 "send_reminders",
                 "render_timeline_sheet",
                 "render_designers_sheet",
+                "group_query_reply",
             ):
                 try:
                     record = status_store.get_latest(command_type)
@@ -472,6 +479,14 @@ class InfoHandler:
                 "queueName": queue_name,
                 "endpointUrl": str(queue_cfg.endpoint_url or ""),
                 "latest": latest_jobs,
+            },
+            "telegram": {
+                "webhookPath": webhook_path,
+                "webhookUrl": webhook_url,
+                "allowedUpdates": list(telegram_cfg.allowed_updates or []),
+                "maxConnections": int(telegram_cfg.max_connections),
+                "secretRequired": bool(telegram_cfg.secret_required),
+                "secretConfigured": bool(str(self._ctx.deps.get("tg_webhook_secret_token", "")).strip()),
             },
         }
 

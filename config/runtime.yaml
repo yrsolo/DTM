@@ -33,6 +33,14 @@ queue:
   status_prefix: jobs/{env}/status/
   latest_prefix: jobs/{env}/latest/
 
+telegram:
+  webhook_path: /telegram
+  allowed_updates:
+    - message
+    - callback_query
+  max_connections: 5
+  secret_required: true
+
 notify:
   enhance_concurrency: 4
   send_retry_attempts: 3

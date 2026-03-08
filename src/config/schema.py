@@ -45,6 +45,14 @@ class QueueSection:
 
 
 @dataclass(slots=True)
+class TelegramSection:
+    webhook_path: str = "/telegram"
+    allowed_updates: list[str] = field(default_factory=lambda: ["message", "callback_query"])
+    max_connections: int = 5
+    secret_required: bool = True
+
+
+@dataclass(slots=True)
 class NotifySection:
     enhance_concurrency: int = 4
     send_retry_attempts: int = 3
@@ -76,6 +84,7 @@ class RuntimeConfig:
     pipeline: PipelineSection = field(default_factory=PipelineSection)
     snapshot_engine: SnapshotEngineSection = field(default_factory=SnapshotEngineSection)
     queue: QueueSection = field(default_factory=QueueSection)
+    telegram: TelegramSection = field(default_factory=TelegramSection)
     notify: NotifySection = field(default_factory=NotifySection)
     sources: SourcesSection = field(default_factory=SourcesSection)
     timing: TimingSection = field(default_factory=TimingSection)

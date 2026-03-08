@@ -4,6 +4,10 @@
 
 ## Done
 
+- CAM-TELEGRAM-INTAKE-V1 P01: add telegram config and trust-gated webhook parser/handler modules
+- CAM-TELEGRAM-INTAKE-V1 P02: switch `/telegram` HTTP path to secret-validated enqueue-only webhook flow
+- CAM-TELEGRAM-INTAKE-V1 P03: add `group_query_reply` worker job so webhook no longer executes business logic inline
+- CAM-TELEGRAM-INTAKE-V1 P04: expose webhook config block in `/info` and cover intake/job behavior with tests
 - CAM-GROUP-QUERY-UNIFY-WITH-REMINDER-V1 P01: replace `group_query_handler.py` filtering path with shared `ReminderUseCase.select()` flow
 - CAM-GROUP-QUERY-UNIFY-WITH-REMINDER-V1 P02: add dedicated group-query formatter and remove payload-shaped task extraction assumptions
 - CAM-GROUP-QUERY-UNIFY-WITH-REMINDER-V1 P03: update handler tests to build `PrepSnapshot` fixtures and prove today/next-workday parity

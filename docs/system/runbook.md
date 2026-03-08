@@ -57,6 +57,22 @@ Delivery safety:
 - vacation `да` skips delivery.
 - retry policy: 3 attempts with backoff and classified counters.
 
+## 4.2) Telegram webhook intake
+Telegram runtime policy:
+- only webhook mode, no polling
+- webhook path: `runtime.telegram.webhook_path` (current default `/telegram`)
+- secret header required: `X-Telegram-Bot-Api-Secret-Token`
+- webhook returns transport success quickly and enqueues command execution
+
+Current supported enqueue mappings:
+- group `/tasks` or mention -> `group_query_reply`
+- group `/deadlines` or mention with deadline wording -> `group_query_reply`
+- private `/update` from default chat -> `update_snapshot`
+- private `/reminders_test` from default chat -> `send_reminders`
+
+Ops visibility:
+- `/info?format=json` includes `telegram.webhookPath`, `telegram.webhookUrl`, `telegram.allowedUpdates`, `telegram.maxConnections`, `telegram.secretConfigured`
+
 ## 5) Milestones invariants
 Milestones must never be empty:
 - sync adds `start` if missing
