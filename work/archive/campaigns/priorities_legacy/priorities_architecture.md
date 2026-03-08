@@ -1,3 +1,9 @@
+# Archived Priorities - Architecture
+
+Archived on 2026-03-08 after cleanup of active roadmap guidance.
+
+## Original Content
+
 # priorities_architecture.md - Prioritety kampaniy "chistyy payplayn"
 
 ## Priority 0 - Pryamoy i odnoznachnyy dataflow

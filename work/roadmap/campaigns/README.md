@@ -8,5 +8,5 @@ This directory stores only active or planned campaign charters/plans/evidence.
 - Lifecycle status buckets (`in progress / planned / done / parked`) are tracked in `work/now/campaign.md` and mirrored in `work/roadmap/backlog.md`.
 
 Current state:
-- active/planned campaign files are empty (all current campaigns are archived),
-- only registry docs like `README.md` and `priorities.md` remain here.
+- active execution is empty right now,
+- planned campaign files and the active `priorities.md` live here until they are started or archived.

@@ -1,3 +1,9 @@
+# Archived Priorities - Legacy Cut
+
+Archived on 2026-03-08 after cleanup of active roadmap guidance.
+
+## Original Content
+
 # priorities_legacy_cut.md
 
 ## Priority order

@@ -4,33 +4,18 @@
 - none
 
 ## Planned
-- none
+- CAM-QUEUE-FOUNDATION-ON-CF-V1
+- CAM-ADMIN-ACTIONS-ASYNC-V1
+- CAM-GROUP-QUERY-UNIFY-WITH-REMINDER-V1
+- CAM-TELEGRAM-INTAKE-V1
+- CAM-FILE-ATTACHMENTS-V1
 
 ## Done
-- CAM-RENDER-INCIDENT-RCA-AND-GANTT-PARITY-V1 (archived)
-- CAM-NOTIFY-PARITY-V1 (archived)
-- CAM-SNAPSHOT-ENGINE-V1 (archived)
-- CAM-RENDER-MODULE-V1 (archived)
-- CAM-LEGACY-PLANNER-DELETE-V1 (archived)
-- CAM-GREP-GATES-V1 (archived)
-- CAM-HTTP-FALLBACK-REMOVAL-V1 (archived)
-- CAM-LEGACY-CUT-API-V1 (archived)
-- CAM-NOTIFY-MODULE-V1 (archived)
-- CAM-SYNC-BULK-PIPELINE-V1 (archived)
-- CAM-HISTORY-FIELD-NORMALIZATION-V1 (archived)
-- CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1 (archived)
-- CAM-ENTRYPOINT-HYGIENE-V2 (archived)
-- CAM-ENTRYPOINT-DEHYBRID-V2 (archived)
-- CAM-PIPELINE-STRAIGHTEN-V2 (archived)
-- CAM-CONFIG-REFORM-V0 (archived)
-- CAM-PIPELINE-CLEAN-SKELETON-V1 (archived)
-- CAM-CORE-CLEANUP-V1 (archived)
-- CAM-DEDUP-LEGACY-REMOVAL-V1 (archived)
-- CAM-PIPELINE-STRAIGHTEN-V1 (archived)
-- CAM-ENTRYPOINT-DEHYBRID-V1 (archived)
-- CAM-ENTRYPOINT-HYGIENE-V1 (archived)
-- CAM-ENTRYPOINT-WRAPPER-DTO-V1 (archived)
-- CAM-API-V2-CONTRACT-RESTORE-V1 (archived)
+- none
 
 ## Parked
 - none
+
+## Notes
+- Completed campaigns are stored in `work/archive/campaigns/`.
+- `work/now/campaign.md` is the primary lifecycle registry; keep this file aligned with it.
