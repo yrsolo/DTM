@@ -73,6 +73,26 @@ Current supported enqueue mappings:
 Ops visibility:
 - `/info?format=json` includes `telegram.webhookPath`, `telegram.webhookUrl`, `telegram.allowedUpdates`, `telegram.maxConnections`, `telegram.secretConfigured`
 
+## 4.4) `/info` operational dashboard
+`/info` is the operator page for async runtime visibility.
+
+Current observability sources:
+- S3 snapshot meta and storage counters
+- S3 job-status store:
+  - latest by command
+  - recent terminal jobs
+  - recent failed jobs
+- Yandex Message Queue live attributes
+- Yandex Cloud Functions live build metadata
+
+Key JSON blocks:
+- `build`
+- `queue.live`
+- `jobs.recent`
+- `jobs.failedRecent`
+- `jobs.latestByCommand`
+- `renderDebug`
+
 ## 4.3) Attachment metadata flow
 Attachment upload/runtime policy:
 - request upload contract through hidden admin endpoint `POST /admin/attachments/request-upload`
@@ -108,6 +128,20 @@ If logs show synthetic `start`:
 - `render_v2` must never target `tasks` (`ТАБЛИЧКА`).
 - On unsafe target runtime responds with `error.code=render_target_unsafe` and does not write.
 - Before release verify source/target spreadsheet separation for prod contour.
+
+### Render triage through `/info`
+When `Force render table` appears to do nothing:
+1. open `/info`
+2. inspect `Queue State`
+3. inspect `Last Render Job`
+4. inspect `Render Debug`
+
+Interpretation:
+- queue visible > 0 and no terminal render job -> worker/trigger problem
+- `renderDebug.state=blocked` -> target guard blocked write
+- `renderDebug.state=failed` -> render job failed; inspect `error`
+- `renderDebug.state=noop` -> render ran but had nothing to apply
+- `renderDebug.state=applied` -> render reported success; verify target spreadsheet/worksheet
 
 ## 7) Branching and test deploy
 1) Development goes to `dev` (small commits, push to origin).

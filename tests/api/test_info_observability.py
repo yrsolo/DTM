@@ -1,0 +1,189 @@
+from __future__ import annotations
+
+import json
+import sys
+import unittest
+from datetime import datetime, timezone
+from pathlib import Path
+from types import SimpleNamespace
+
+ROOT_DIR = Path(__file__).resolve().parents[2]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+from src.entrypoints.http.dto import HttpRequest
+from src.entrypoints.http.info_handler import InfoHandler
+from src.worker.model import JobStatusRecord
+
+
+class _FakeSnapshotCache:
+    def __init__(self, value):
+        self._value = value
+
+    def get(self):
+        return self._value
+
+
+class _FakeSnapshotEngine:
+    def __init__(self) -> None:
+        now = datetime(2026, 3, 9, 12, 0, tzinfo=timezone.utc)
+        prep = SimpleNamespace(
+            tasks_by_id={
+                "task-1": SimpleNamespace(sheet=SimpleNamespace(status="work")),
+                "task-2": SimpleNamespace(sheet=SimpleNamespace(status="done")),
+            },
+            source_id="sheet:test",
+            raw_source_hash="sha256:test",
+            built_at_utc=now,
+        )
+        raw = SimpleNamespace(fetched_at_utc=now)
+        self._prep_cache = _FakeSnapshotCache(prep)
+        self._raw_cache = _FakeSnapshotCache(raw)
+
+
+class _FakeStatusStore:
+    def __init__(self) -> None:
+        self.render_record = JobStatusRecord(
+            job_id="job-render-1",
+            command_type="render_timeline_sheet",
+            status="succeeded",
+            requested_at_utc=datetime(2026, 3, 9, 10, 0, tzinfo=timezone.utc),
+            started_at_utc=datetime(2026, 3, 9, 10, 0, 1, tzinfo=timezone.utc),
+            finished_at_utc=datetime(2026, 3, 9, 10, 0, 5, tzinfo=timezone.utc),
+            requested_by={"source": "admin"},
+            summary={
+                "render_applied": False,
+                "rows_written": 0,
+                "cells_written": 0,
+                "target_spreadsheet": "Спонсорские ТНТ ТЕСТ",
+                "target_worksheet": "Задачи",
+            },
+            warnings=["no_matching_tasks"],
+        )
+        self.update_record = JobStatusRecord(
+            job_id="job-update-1",
+            command_type="update_snapshot",
+            status="failed",
+            requested_at_utc=datetime(2026, 3, 9, 9, 0, tzinfo=timezone.utc),
+            finished_at_utc=datetime(2026, 3, 9, 9, 0, 3, tzinfo=timezone.utc),
+            requested_by={"source": "trigger"},
+            summary={"artifact": "update_snapshot"},
+            error={"code": "snapshot_failed"},
+        )
+
+    def get_recent(self, limit: int = 20):
+        return [self.render_record, self.update_record][:limit]
+
+    def get_latest(self, command_type: str):
+        if command_type == "render_timeline_sheet":
+            return self.render_record
+        if command_type == "update_snapshot":
+            return self.update_record
+        return None
+
+
+class InfoObservabilityTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+        import src.entrypoints.http.info_handler as module
+
+        self.module = module
+        self.original_build_snapshot_engine = module.build_snapshot_engine
+        self.original_get_queue_live_stats = module.get_queue_live_stats
+        self.original_get_function_build_info = module.get_function_build_info
+        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        module.get_queue_live_stats = lambda **_kwargs: SimpleNamespace(  # type: ignore[assignment]
+            to_dict=lambda: {
+                "queue_name": "dtm-test-commands",
+                "messages_visible": 2,
+                "messages_in_flight": 1,
+                "messages_delayed": 0,
+                "dlq_configured": True,
+            }
+        )
+        module.get_function_build_info = lambda **_kwargs: SimpleNamespace(  # type: ignore[assignment]
+            function_name="dtm",
+            active_version_id="d4etest",
+            deployed_at="2026-03-09T09:00:00Z",
+            runtime="python311",
+            memory="512MB",
+            timeout_seconds=240,
+            entrypoint="index.handler",
+            service_account_id="aje-test",
+        )
+        self.ctx = SimpleNamespace(
+            cfg=SimpleNamespace(
+                runtime=SimpleNamespace(
+                    runtime=SimpleNamespace(env_default="test"),
+                    snapshot_engine=SimpleNamespace(
+                        bucket="dtm",
+                        prefix_raw="snapshots/{env}/raw/default.json",
+                        prefix_prep="snapshots/{env}/prep/default.json",
+                        prefix_extra="snapshots/{env}/extra/",
+                    ),
+                    queue=SimpleNamespace(
+                        enabled=True,
+                        provider="yandex_message_queue",
+                        endpoint_url="https://message-queue.api.cloud.yandex.net",
+                        test_queue_url="https://message-queue.api.cloud.yandex.net/folder/queue/dtm-test-commands",
+                        prod_queue_url="",
+                    ),
+                    telegram=SimpleNamespace(
+                        webhook_path="/telegram",
+                        allowed_updates=["message", "callback_query"],
+                        max_connections=5,
+                        secret_required=True,
+                    ),
+                    web={"api_domain_test": "dtm-api-test.solofarm.ru", "api_domain_prod": "dtm-api.solofarm.ru"},
+                ),
+                db=SimpleNamespace(object_storage={"endpoint_url_default": "https://storage.yandexcloud.net"}),
+                deploy=SimpleNamespace(
+                    yandex_cloud=SimpleNamespace(
+                        folder_id="folder-test",
+                        function_name_test="dtm",
+                        function_name_prod="dtm-prod",
+                    )
+                ),
+            ),
+            deps={
+                "job_status_store": _FakeStatusStore(),
+                "tg_webhook_secret_token": "secret",
+                "aws_access_key_id": "ak",
+                "aws_secret_access_key": "sk",
+                "ydb_sa_json_credentials": "{}",
+                "ydb_sa_key_file": "",
+            },
+        )
+
+    def tearDown(self) -> None:
+        self.module.build_snapshot_engine = self.original_build_snapshot_engine  # type: ignore[assignment]
+        self.module.get_queue_live_stats = self.original_get_queue_live_stats  # type: ignore[assignment]
+        self.module.get_function_build_info = self.original_get_function_build_info  # type: ignore[assignment]
+
+    def test_info_json_includes_build_queue_jobs_and_render_debug(self) -> None:
+        handler = InfoHandler(self.ctx)
+        response = handler.handle(
+            HttpRequest(method="GET", path="/info", query={"format": "json"}, is_http_event=True)
+        )
+        self.assertIsNotNone(response)
+        payload = json.loads(response.body)
+        self.assertIn("build", payload)
+        self.assertIn("queue", payload)
+        self.assertIn("live", payload["queue"])
+        self.assertIn("jobs", payload)
+        self.assertEqual(payload["renderDebug"]["state"], "noop")
+        self.assertEqual(payload["build"]["activeVersionId"], "d4etest")
+        self.assertEqual(payload["queue"]["live"]["messages_visible"], 2)
+        self.assertEqual(len(payload["jobs"]["recent"]), 2)
+
+    def test_info_html_contains_new_operational_sections(self) -> None:
+        handler = InfoHandler(self.ctx)
+        response = handler.handle(HttpRequest(method="GET", path="/info", is_http_event=True))
+        self.assertIsNotNone(response)
+        self.assertIn("Function Build", response.body)
+        self.assertIn("Queue State", response.body)
+        self.assertIn("Recent Jobs", response.body)
+        self.assertIn("Last Render Job", response.body)
+
+
+if __name__ == "__main__":
+    unittest.main()

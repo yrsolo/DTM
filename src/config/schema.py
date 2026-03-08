@@ -127,9 +127,27 @@ class MappingConfig:
 
 
 @dataclass(slots=True)
+class DeployCloudConfig:
+    folder_id: str = ""
+    service_account_id: str = ""
+    function_entrypoint: str = "index.handler"
+    function_runtime: str = "python311"
+    function_timeout: str = "240s"
+    function_memory: str = "512Mb"
+    function_name_test: str = ""
+    function_name_prod: str = ""
+
+
+@dataclass(slots=True)
+class DeployConfig:
+    yandex_cloud: DeployCloudConfig = field(default_factory=DeployCloudConfig)
+
+
+@dataclass(slots=True)
 class AppConfig:
     runtime: RuntimeConfig
     tables: TablesConfig
     db: DbConfig
     llm: LlmConfig
     mapping: MappingConfig
+    deploy: DeployConfig

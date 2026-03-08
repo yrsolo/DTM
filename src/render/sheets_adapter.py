@@ -63,6 +63,11 @@ class GoogleSheetsPlanWriter(SheetsWriter):
                 target_spreadsheet=self._target.spreadsheet_name,
                 target_worksheet=self._target.worksheet_name,
                 warnings=list(plan.warnings or ["empty_render_plan"]),
+                plan_cells_total=len(plan.values),
+                plan_borders_total=len(plan.borders),
+                selected_tasks=int(plan.selected_tasks),
+                designer_groups=int(plan.designer_groups),
+                rendered_task_rows=int(plan.rendered_task_rows),
             )
 
         self._service.set_spreadsheet_and_worksheet(
@@ -96,4 +101,9 @@ class GoogleSheetsPlanWriter(SheetsWriter):
             target_spreadsheet=self._target.spreadsheet_name,
             target_worksheet=self._target.worksheet_name,
             warnings=list(plan.warnings or []),
+            plan_cells_total=len(plan.values),
+            plan_borders_total=len(plan.borders),
+            selected_tasks=int(plan.selected_tasks),
+            designer_groups=int(plan.designer_groups),
+            rendered_task_rows=int(plan.rendered_task_rows),
         )

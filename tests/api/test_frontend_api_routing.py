@@ -6,6 +6,7 @@ import asyncio
 import json
 import sys
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
@@ -14,6 +15,8 @@ if str(ROOT_DIR) not in sys.path:
 
 import index
 from src.entrypoints.http import frontend_v2_handler as frontend_v2_module
+from src.entrypoints.http import info_handler as info_handler_module
+from src.worker.model import JobStatusRecord
 
 
 FIXTURE_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "http_event_yc_api_gw.json"
@@ -33,9 +36,64 @@ class _FakeSnapshotEngine:
         return dict(self.payload)
 
 
+class _FakeInfoSnapshotEngine:
+    def __init__(self) -> None:
+        now = "2026-03-09T12:00:00Z"
+        self._prep_cache = type(
+            "PrepCache",
+            (),
+            {
+                "get": staticmethod(
+                    lambda: type(
+                        "Prep",
+                        (),
+                        {
+                            "tasks_by_id": {"task-1": type("TaskView", (), {"sheet": type("Sheet", (), {"status": "work"})()})()},
+                            "source_id": "sheet:test",
+                            "raw_source_hash": "sha256:test",
+                            "built_at_utc": datetime.fromisoformat(now.replace("Z", "+00:00")),
+                        },
+                    )()
+                )
+            },
+        )()
+        self._raw_cache = type(
+            "RawCache",
+            (),
+            {"get": staticmethod(lambda: type("Raw", (), {"fetched_at_utc": datetime.fromisoformat(now.replace("Z", "+00:00"))})())},
+        )()
+
+
+class _FakeInfoStatusStore:
+    def __init__(self) -> None:
+        self.render = JobStatusRecord(
+            job_id="job-render-1",
+            command_type="render_timeline_sheet",
+            status="succeeded",
+            requested_at_utc=datetime(2026, 3, 9, 12, 0, tzinfo=timezone.utc),
+            finished_at_utc=datetime(2026, 3, 9, 12, 0, 5, tzinfo=timezone.utc),
+            requested_by={"source": "admin"},
+            summary={"render_applied": False, "target_worksheet": "Задачи"},
+            warnings=["no_matching_tasks"],
+        )
+
+    def get_recent(self, limit: int = 20):
+        return [self.render][:limit]
+
+    def get_latest(self, command_type: str):
+        if command_type == "render_timeline_sheet":
+            return self.render
+        return None
+
+
 class FrontendApiRoutingTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self._orig_build_snapshot_engine = frontend_v2_module.build_snapshot_engine
+        self._orig_info_build_snapshot_engine = info_handler_module.build_snapshot_engine
+        self._orig_info_get_queue_live_stats = info_handler_module.get_queue_live_stats
+        self._orig_info_get_function_build_info = info_handler_module.get_function_build_info
+        self._orig_info_storage_stats = info_handler_module.InfoHandler._storage_stats
+        self._orig_job_status_store = index.APP_DEPS.get("job_status_store")
         self._engine = _FakeSnapshotEngine(
             payload={
                 "meta": {
@@ -52,9 +110,41 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
             }
         )
         frontend_v2_module.build_snapshot_engine = lambda _ctx: self._engine  # type: ignore[assignment]
+        info_handler_module.build_snapshot_engine = lambda _ctx: _FakeInfoSnapshotEngine()  # type: ignore[assignment]
+        info_handler_module.get_queue_live_stats = lambda **_kwargs: type(  # type: ignore[assignment]
+            "QueueStats",
+            (),
+            {"to_dict": staticmethod(lambda: {"queue_name": "dtm-test-commands", "messages_visible": 1, "messages_in_flight": 0, "messages_delayed": 0, "dlq_configured": True})},
+        )()
+        info_handler_module.get_function_build_info = lambda **_kwargs: type(  # type: ignore[assignment]
+            "BuildInfo",
+            (),
+            {
+                "function_name": "dtm",
+                "active_version_id": "d4etest",
+                "deployed_at": "2026-03-09T09:00:00Z",
+                "runtime": "python311",
+                "memory": "512MB",
+                "timeout_seconds": 240,
+                "entrypoint": "index.handler",
+                "service_account_id": "aje-test",
+            },
+        )()
+        info_handler_module.InfoHandler._storage_stats = lambda _self, _bucket, _prefix: {  # type: ignore[assignment]
+            "objectsTotal": 4,
+            "bytesTotal": 1024,
+            "bytesHuman": "1.00 KB",
+            "byPrefix": {"raw": 100, "prep": 200, "extra": 300, "attachments": 400, "jobs": 24},
+        }
+        index.APP_DEPS["job_status_store"] = _FakeInfoStatusStore()
 
     def tearDown(self) -> None:
         frontend_v2_module.build_snapshot_engine = self._orig_build_snapshot_engine  # type: ignore[assignment]
+        info_handler_module.build_snapshot_engine = self._orig_info_build_snapshot_engine  # type: ignore[assignment]
+        info_handler_module.get_queue_live_stats = self._orig_info_get_queue_live_stats  # type: ignore[assignment]
+        info_handler_module.get_function_build_info = self._orig_info_get_function_build_info  # type: ignore[assignment]
+        info_handler_module.InfoHandler._storage_stats = self._orig_info_storage_stats  # type: ignore[assignment]
+        index.APP_DEPS["job_status_store"] = self._orig_job_status_store
 
     def test_http_path_from_proxy_template(self) -> None:
         event = _fixture_event()
@@ -104,8 +194,10 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         response = asyncio.run(index.handler(event, None))
         self.assertEqual(response["statusCode"], 200)
         self.assertIn("DTM Info Dashboard", response.get("body", ""))
-        self.assertIn("/admin/commands/render-timeline", response.get("body", ""))
-        self.assertIn("/admin/jobs/", response.get("body", ""))
+        self.assertIn("Function Build", response.get("body", ""))
+        self.assertIn("Queue State", response.get("body", ""))
+        self.assertIn("Recent Jobs", response.get("body", ""))
+        self.assertIn("Last Render Job", response.get("body", ""))
 
     def test_info_json_contains_telegram_block(self) -> None:
         event = _fixture_event()
@@ -118,6 +210,10 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 200)
         self.assertIn("telegram", payload)
         self.assertIn("webhookPath", payload["telegram"])
+        self.assertIn("build", payload)
+        self.assertIn("jobs", payload)
+        self.assertIn("renderDebug", payload)
+        self.assertEqual(payload.get("build", {}).get("activeVersionId"), "d4etest")
 
     def test_v2_doc_contains_endpoints_query_and_response_fields(self) -> None:
         event = _fixture_event()

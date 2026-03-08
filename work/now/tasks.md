@@ -1,8 +1,15 @@
 # Active Tasks
 
-- none
+- CAM-INFO-OPS-OBSERVABILITY-V1 P07: deploy observability slice to `test` and inspect `/info` + last `render_timeline_sheet` job to determine whether render is blocked, failed, no-op, or not executed
 
 ## Done
+
+- CAM-INFO-OPS-OBSERVABILITY-V1 P01: register campaign, trust gate, and verified touchpoints for `/info`, queue status, and render diagnostics
+- CAM-INFO-OPS-OBSERVABILITY-V1 P02: extend `S3JobStatusStore` with recent terminal history and accessors
+- CAM-INFO-OPS-OBSERVABILITY-V1 P03: add live Yandex queue/function info adapters and surface them in `/info?format=json`
+- CAM-INFO-OPS-OBSERVABILITY-V1 P04: expand `/info` HTML with build, queue state, recent jobs, and last render job panels
+- CAM-INFO-OPS-OBSERVABILITY-V1 P05: enrich `render_timeline_sheet` result with counters/no-op reasons and derive `renderDebug`
+- CAM-INFO-OPS-OBSERVABILITY-V1 P06: run focused tests and capture evidence for render failure triage
 
 - CAM-FILE-ATTACHMENTS-V1 P01: add attachment metadata model and S3 serialization/store support in snapshot extra-store
 - CAM-FILE-ATTACHMENTS-V1 P02: add `attach_task_file` command type, worker job, and snapshot-engine prep refresh flow

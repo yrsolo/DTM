@@ -121,14 +121,19 @@ class RenderUseCase:
             )
 
         if not by_owner:
-            return RenderPlan(values=[], borders=[], warnings=["empty_render_plan"])
+            return RenderPlan(values=[], borders=[], warnings=["no_matching_tasks"])
 
         start, end, today = self._window_bounds(req)
         values: list[RenderCell] = []
         row = 2
+        total_selected_tasks = 0
+        total_designer_groups = 0
+        total_rendered_task_rows = 0
 
         for owner in sorted(by_owner.keys()):
             owner_tasks = sorted(by_owner[owner], key=lambda item: item.min_date)
+            total_designer_groups += 1
+            total_selected_tasks += len(owner_tasks)
             base_color = self._color()
             timeline_base = self._color("gray")
 
@@ -169,6 +174,7 @@ class RenderUseCase:
             total = max(1, len(owner_tasks))
             for index, timeline in enumerate(owner_tasks):
                 task = timeline.task
+                total_rendered_task_rows += 1
                 emphasis = 1 if total == 1 else 0.5 + 1.5 * (total - index) / total
                 task_color = base_color**emphasis
                 note = (
@@ -234,4 +240,11 @@ class RenderUseCase:
                 color="#5FAD56",
             )
         ]
-        return RenderPlan(values=values, borders=borders, warnings=[])
+        return RenderPlan(
+            values=values,
+            borders=borders,
+            warnings=[],
+            selected_tasks=total_selected_tasks,
+            designer_groups=total_designer_groups,
+            rendered_task_rows=total_rendered_task_rows,
+        )

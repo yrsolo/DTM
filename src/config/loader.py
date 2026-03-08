@@ -9,6 +9,7 @@ from typing import Any
 from src.config.schema import (
     AppConfig,
     DbConfig,
+    DeployConfig,
     LlmConfig,
     MappingConfig,
     RuntimeConfig,
@@ -269,6 +270,7 @@ def load_config(config_dir: Path = CONFIG_DIR) -> AppConfig:
     db_data = _load_yaml(config_dir / "db.yaml")
     llm_data = _load_yaml(config_dir / "llm.yaml")
     mapping_data = _load_yaml(config_dir / "mapping.yaml")
+    deploy_data = _load_yaml(config_dir / "deploy.yaml")
 
     runtime_cfg = _runtime_from_dict(runtime_data)
     runtime_cfg = _merge_runtime_env_overrides(runtime_cfg)
@@ -340,12 +342,43 @@ def load_config(config_dir: Path = CONFIG_DIR) -> AppConfig:
         project_aliases=mapping_data.get("project_aliases", {}),
         hidden_stage_names=mapping_data.get("hidden_stage_names", []),
     )
+    deploy_cloud_raw = (
+        deploy_data.get("yandex_cloud", {})
+        if isinstance(deploy_data.get("yandex_cloud", {}), dict)
+        else {}
+    )
+    deploy_cfg = DeployConfig()
+    deploy_cfg.yandex_cloud.folder_id = str(
+        deploy_cloud_raw.get("folder_id", deploy_cfg.yandex_cloud.folder_id)
+    )
+    deploy_cfg.yandex_cloud.service_account_id = str(
+        deploy_cloud_raw.get("service_account_id", deploy_cfg.yandex_cloud.service_account_id)
+    )
+    deploy_cfg.yandex_cloud.function_entrypoint = str(
+        deploy_cloud_raw.get("function_entrypoint", deploy_cfg.yandex_cloud.function_entrypoint)
+    )
+    deploy_cfg.yandex_cloud.function_runtime = str(
+        deploy_cloud_raw.get("function_runtime", deploy_cfg.yandex_cloud.function_runtime)
+    )
+    deploy_cfg.yandex_cloud.function_timeout = str(
+        deploy_cloud_raw.get("function_timeout", deploy_cfg.yandex_cloud.function_timeout)
+    )
+    deploy_cfg.yandex_cloud.function_memory = str(
+        deploy_cloud_raw.get("function_memory", deploy_cfg.yandex_cloud.function_memory)
+    )
+    deploy_cfg.yandex_cloud.function_name_test = str(
+        deploy_cloud_raw.get("function_name_test", deploy_cfg.yandex_cloud.function_name_test)
+    )
+    deploy_cfg.yandex_cloud.function_name_prod = str(
+        deploy_cloud_raw.get("function_name_prod", deploy_cfg.yandex_cloud.function_name_prod)
+    )
     return AppConfig(
         runtime=runtime_cfg,
         tables=tables_cfg,
         db=db_cfg,
         llm=llm_cfg,
         mapping=mapping_cfg,
+        deploy=deploy_cfg,
     )
 
 

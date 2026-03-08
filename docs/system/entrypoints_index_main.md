@@ -32,6 +32,7 @@ Timer pipeline now updates snapshot engine storage (S3 raw/prep) and does not bu
 - `TelegramWebhookHandler`: validates Telegram webhook secret, parses update, maps to internal command, and enqueues it
 - `GroupQueryHandler`: compatibility wrapper aliasing Telegram webhook intake
 - `AdminQueueHandler`: hidden admin enqueue/upload-contract endpoints for async mutations (`update_snapshot`, render, reminders, attachments)
+- `InfoHandler`: operator dashboard for snapshot state, queue live state, build metadata, recent jobs, and render diagnostics
 
 ## API source-of-truth
 
@@ -69,6 +70,12 @@ Render v2 policy:
 - target worksheet key: `task_calendar` (`Задачи`);
 - forbidden worksheet key: `tasks` (`ТАБЛИЧКА`);
 - if target is unsafe runtime returns structured blocked result with `render_target_unsafe`.
+
+Info observability policy:
+- `/info` stays synchronous and read-only
+- it may call live Yandex APIs for queue depth and active function build metadata
+- async admin actions report through queue-backed job status and recent-history blocks
+- render RCA should use `jobs.latestByCommand.render_timeline_sheet` and `renderDebug`, not raw enqueue HTTP status
 
 Planned campaign sequence:
 1. `CAM-LEGACY-CUT-API-V1`

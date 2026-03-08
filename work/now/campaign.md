@@ -3,7 +3,7 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
-- none
+- CAM-INFO-OPS-OBSERVABILITY-V1
 
 ## Planned
 - none

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import timezone
+from datetime import datetime, timezone
 from html import escape
 from typing import Any
 
@@ -11,7 +11,10 @@ from src.app.context import AppContext
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import html_response, json_response
+from src.infra.yc_function_info import get_function_build_info
+from src.infra.yc_queue_info import get_queue_live_stats
 from src.snapshot_engine.engine import build_snapshot_engine
+from src.worker.model import JobStatusRecord
 
 
 def _human_size(value: int) -> str:
@@ -22,6 +25,66 @@ def _human_size(value: int) -> str:
         size /= 1024.0
         idx += 1
     return f"{size:.2f} {units[idx]}"
+
+
+def _iso(value: datetime | None) -> str:
+    if value is None:
+        return ""
+    return value.astimezone(timezone.utc).isoformat()
+
+
+def _job_record_payload(record: JobStatusRecord) -> dict[str, Any]:
+    return {
+        "jobId": record.job_id,
+        "commandType": record.command_type,
+        "status": record.status,
+        "requestedAt": _iso(record.requested_at_utc),
+        "startedAt": _iso(record.started_at_utc),
+        "finishedAt": _iso(record.finished_at_utc),
+        "requestedBy": dict(record.requested_by),
+        "summary": dict(record.summary),
+        "warnings": list(record.warnings),
+        "error": dict(record.error or {}) if record.error else None,
+    }
+
+
+def _render_debug_payload(record: JobStatusRecord | None) -> dict[str, Any]:
+    if record is None:
+        return {
+            "lastJobId": "",
+            "state": "unknown",
+            "reason": "no_render_job_history",
+            "details": {},
+        }
+    summary = dict(record.summary or {})
+    warnings = [str(item) for item in list(record.warnings or [])]
+    error = dict(record.error or {}) if record.error else {}
+    if record.status == "failed":
+        if str(error.get("code", "")).strip() == "render_target_unsafe":
+            state = "blocked"
+            reason = "blocked_by_target_safety_guard"
+        else:
+            state = "failed"
+            reason = str(error.get("code", "")).strip() or "render_job_failed"
+    elif record.status == "succeeded":
+        if bool(summary.get("render_applied", False)):
+            state = "applied"
+            reason = "render_applied_successfully"
+        else:
+            state = "noop"
+            reason = warnings[0] if warnings else "render_not_applied"
+    elif record.status in {"queued", "running"}:
+        state = "pending"
+        reason = f"job_{record.status}"
+    else:
+        state = "unknown"
+        reason = record.status or "unknown"
+    return {
+        "lastJobId": record.job_id,
+        "state": state,
+        "reason": reason,
+        "details": _job_record_payload(record),
+    }
 
 
 def _render_info_page(payload: dict[str, Any]) -> str:
@@ -74,6 +137,43 @@ def _render_info_page(payload: dict[str, Any]) -> str:
       <div class="row"><span class="k">Size bytes:</span> <span class="v" id="bytesTotal"></span></div>
       <div class="row"><span class="k">Size human:</span> <span class="v" id="bytesHuman"></span></div>
       <div class="row"><span class="k">Breakdown:</span> <span class="v" id="sizeBreakdown"></span></div>
+    </div>
+    <div class="card">
+      <h2>Function Build</h2>
+      <div class="row"><span class="k">Function:</span> <span class="v" id="buildFunctionName"></span></div>
+      <div class="row"><span class="k">Version:</span> <span class="v" id="buildVersionId"></span></div>
+      <div class="row"><span class="k">Deployed:</span> <span class="v" id="buildDeployedAt"></span></div>
+      <div class="row"><span class="k">Runtime:</span> <span class="v" id="buildRuntime"></span></div>
+      <div class="row"><span class="k">Memory/timeout:</span> <span class="v" id="buildResources"></span></div>
+      <div class="row"><span class="k">Entrypoint:</span> <span class="v" id="buildEntrypoint"></span></div>
+    </div>
+    <div class="card">
+      <h2>Queue State</h2>
+      <div class="row"><span class="k">Name:</span> <span class="v" id="queueName"></span></div>
+      <div class="row"><span class="k">Visible:</span> <span class="v" id="queueVisible"></span></div>
+      <div class="row"><span class="k">In flight:</span> <span class="v" id="queueInflight"></span></div>
+      <div class="row"><span class="k">Delayed:</span> <span class="v" id="queueDelayed"></span></div>
+      <div class="row"><span class="k">DLQ:</span> <span class="v" id="queueDlq"></span></div>
+      <div class="row"><span class="k">Error:</span> <span class="v" id="queueError"></span></div>
+    </div>
+  </div>
+
+  <div class="grid section">
+    <div class="card">
+      <h2>Recent Jobs</h2>
+      <pre id="recentJobs">[]</pre>
+    </div>
+    <div class="card">
+      <h2>Last Errors</h2>
+      <pre id="recentErrors">[]</pre>
+    </div>
+    <div class="card">
+      <h2>Last Render Job</h2>
+      <pre id="lastRenderJob">{{}}</pre>
+    </div>
+    <div class="card">
+      <h2>Render Debug</h2>
+      <pre id="renderDebug">{{}}</pre>
     </div>
   </div>
 
@@ -189,6 +289,15 @@ def _render_info_page(payload: dict[str, Any]) -> str:
       const s = p.snapshot || {{}};
       const c = p.counts || {{}};
       const st = p.storage || {{}};
+      const q = p.queue || {{}};
+      const ql = q.live || {{}};
+      const b = p.build || {{}};
+      const jobs = p.jobs || {{}};
+      const recent = jobs.recent || [];
+      const failed = jobs.failedRecent || [];
+      const latestByCommand = jobs.latestByCommand || {{}};
+      const lastRender = latestByCommand.render_timeline_sheet || null;
+      const renderDebug = p.renderDebug || {{}};
       document.getElementById('env').textContent = s.env || '';
       document.getElementById('bucket').textContent = s.bucket || '';
       document.getElementById('sourceId').textContent = s.sourceId || '';
@@ -201,6 +310,22 @@ def _render_info_page(payload: dict[str, Any]) -> str:
       document.getElementById('bytesTotal').textContent = st.bytesTotal ?? 0;
       document.getElementById('bytesHuman').textContent = st.bytesHuman || '';
       document.getElementById('sizeBreakdown').textContent = JSON.stringify(st.byPrefix || {{}});
+      document.getElementById('buildFunctionName').textContent = b.functionName || '';
+      document.getElementById('buildVersionId').textContent = b.activeVersionId || '';
+      document.getElementById('buildDeployedAt').textContent = b.deployedAt || b.error || '';
+      document.getElementById('buildRuntime').textContent = b.runtime || '';
+      document.getElementById('buildResources').textContent = (b.memory || '') + ((b.timeoutSeconds ?? '') !== '' ? ' / ' + String(b.timeoutSeconds) + 's' : '');
+      document.getElementById('buildEntrypoint').textContent = b.entrypoint || '';
+      document.getElementById('queueName').textContent = ql.queue_name || q.queueName || '';
+      document.getElementById('queueVisible').textContent = String(ql.messages_visible ?? '');
+      document.getElementById('queueInflight').textContent = String(ql.messages_in_flight ?? '');
+      document.getElementById('queueDelayed').textContent = String(ql.messages_delayed ?? '');
+      document.getElementById('queueDlq').textContent = ql.dlq_configured === undefined ? '' : String(!!ql.dlq_configured);
+      document.getElementById('queueError').textContent = ql.error || '';
+      document.getElementById('recentJobs').textContent = pretty(recent);
+      document.getElementById('recentErrors').textContent = pretty(failed);
+      document.getElementById('lastRenderJob').textContent = pretty(lastRender || {{}});
+      document.getElementById('renderDebug').textContent = pretty(renderDebug);
       document.getElementById('infoResult').textContent = pretty(p);
     }}
     async function pollJob(jobId){{
@@ -366,7 +491,7 @@ class InfoHandler:
         )
         total_objects = 0
         total_bytes = 0
-        by_prefix = {"raw": 0, "prep": 0, "extra": 0, "attachments": 0}
+        by_prefix = {"raw": 0, "prep": 0, "extra": 0, "attachments": 0, "jobs": 0}
         token = None
         while True:
             kwargs = {"Bucket": bucket, "Prefix": root_prefix, "MaxKeys": 1000}
@@ -386,6 +511,8 @@ class InfoHandler:
                     by_prefix["extra"] += size
                 elif "/attachments/" in key:
                     by_prefix["attachments"] += size
+                elif "/jobs/" in key:
+                    by_prefix["jobs"] += size
             if not response.get("IsTruncated"):
                 break
             token = response.get("NextContinuationToken")
@@ -403,6 +530,104 @@ class InfoHandler:
         if parts:
             return parts[0] + "/"
         return ""
+
+    def _latest_jobs_payload(self, status_store: Any) -> dict[str, Any]:
+        latest_jobs: dict[str, Any] = {}
+        for command_type in (
+            "update_snapshot",
+            "send_reminders",
+            "render_timeline_sheet",
+            "render_designers_sheet",
+            "group_query_reply",
+            "attach_task_file",
+        ):
+            try:
+                record = status_store.get_latest(command_type)
+            except Exception:
+                record = None
+            if record is None:
+                continue
+            latest_jobs[command_type] = _job_record_payload(record)
+        return latest_jobs
+
+    def _recent_jobs_payload(self, status_store: Any) -> dict[str, Any]:
+        try:
+            recent_records = list(status_store.get_recent(20))
+        except Exception as exc:
+            return {"recent": [], "failedRecent": [], "error": str(exc)}
+        recent_payload = [_job_record_payload(record) for record in recent_records]
+        failed_payload = [item for item in recent_payload if str(item.get("status", "")).lower() == "failed"]
+        latest_by_command: dict[str, Any] = {}
+        for item in recent_payload:
+            command_type = str(item.get("commandType", "")).strip()
+            if command_type and command_type not in latest_by_command:
+                latest_by_command[command_type] = item
+        last_successful_render = next(
+            (
+                item
+                for item in recent_payload
+                if str(item.get("commandType", "")) == "render_timeline_sheet"
+                and str(item.get("status", "")).lower() == "succeeded"
+                and bool(dict(item.get("summary", {}) or {}).get("render_applied", False))
+            ),
+            None,
+        )
+        last_successful_update = next(
+            (
+                item
+                for item in recent_payload
+                if str(item.get("commandType", "")) == "update_snapshot"
+                and str(item.get("status", "")).lower() == "succeeded"
+            ),
+            None,
+        )
+        return {
+            "recent": recent_payload,
+            "failedRecent": failed_payload,
+            "latestByCommand": latest_by_command,
+            "lastSuccessfulRender": last_successful_render,
+            "lastSuccessfulUpdate": last_successful_update,
+        }
+
+    def _queue_live_payload(self, queue_url: str) -> dict[str, Any]:
+        if not queue_url:
+            return {"error": "queue_url_missing"}
+        try:
+            stats = get_queue_live_stats(
+                queue_url=queue_url,
+                endpoint_url=str(self._ctx.cfg.runtime.queue.endpoint_url or "").strip() or None,
+                aws_access_key_id=self._ctx.deps.get("aws_access_key_id"),
+                aws_secret_access_key=self._ctx.deps.get("aws_secret_access_key"),
+            )
+        except Exception as exc:
+            return {"queue_name": queue_url.rstrip("/").rsplit("/", 1)[-1], "error": str(exc)}
+        return stats.to_dict()
+
+    def _build_payload(self, env_name: str) -> dict[str, Any]:
+        function_name = str(
+            self._ctx.cfg.deploy.yandex_cloud.function_name_prod
+            if env_name == "prod"
+            else self._ctx.cfg.deploy.yandex_cloud.function_name_test
+        ).strip()
+        try:
+            info = get_function_build_info(
+                folder_id=str(self._ctx.cfg.deploy.yandex_cloud.folder_id).strip(),
+                function_name=function_name,
+                sa_json_credentials=self._ctx.deps.get("ydb_sa_json_credentials"),
+                sa_key_file=self._ctx.deps.get("ydb_sa_key_file"),
+            )
+        except Exception as exc:
+            return {"functionName": function_name, "error": str(exc)}
+        return {
+            "functionName": info.function_name,
+            "activeVersionId": info.active_version_id,
+            "deployedAt": info.deployed_at,
+            "runtime": info.runtime,
+            "memory": info.memory,
+            "timeoutSeconds": info.timeout_seconds,
+            "entrypoint": info.entrypoint,
+            "serviceAccountId": info.service_account_id,
+        }
 
     def _info_payload(self) -> dict[str, Any]:
         prep = None
@@ -434,28 +659,47 @@ class InfoHandler:
             self._ctx.cfg.runtime.web.get("api_domain_prod" if env_name == "prod" else "api_domain_test", "")
         ).strip()
         webhook_url = f"https://{api_domain}{webhook_path}" if api_domain else webhook_path
-        latest_jobs: dict[str, Any] = {}
         status_store = self._ctx.deps.get("job_status_store")
+        jobs_payload = {
+            "recent": [],
+            "failedRecent": [],
+            "latestByCommand": {},
+            "lastSuccessfulRender": None,
+            "lastSuccessfulUpdate": None,
+        }
+        latest_jobs: dict[str, Any] = {}
         if status_store is not None:
-            for command_type in (
-                "update_snapshot",
-                "send_reminders",
-                "render_timeline_sheet",
-                "render_designers_sheet",
-                "group_query_reply",
-                "attach_task_file",
-            ):
-                try:
-                    record = status_store.get_latest(command_type)
-                except Exception:
-                    record = None
-                if record is None:
-                    continue
-                latest_jobs[command_type] = {
-                    "status": record.status,
-                    "jobId": record.job_id,
-                    "finishedAt": "" if record.finished_at_utc is None else record.finished_at_utc.astimezone(timezone.utc).isoformat(),
-                }
+            jobs_payload = self._recent_jobs_payload(status_store)
+            latest_jobs = self._latest_jobs_payload(status_store)
+            merged_latest = dict(jobs_payload.get("latestByCommand", {}) or {})
+            merged_latest.update(latest_jobs)
+            jobs_payload["latestByCommand"] = merged_latest
+        queue_live = self._queue_live_payload(queue_url) if bool(queue_cfg.enabled) else {}
+        build_payload = self._build_payload(env_name)
+        latest_render = None
+        latest_by_command = dict(jobs_payload.get("latestByCommand", {}) or {})
+        if isinstance(latest_by_command, dict):
+            candidate = latest_by_command.get("render_timeline_sheet")
+            if isinstance(candidate, dict):
+                latest_render = JobStatusRecord(
+                    job_id=str(candidate.get("jobId", "")).strip(),
+                    command_type=str(candidate.get("commandType", "render_timeline_sheet")).strip(),
+                    status=str(candidate.get("status", "")).strip(),
+                    requested_at_utc=datetime.fromisoformat(
+                        str(candidate.get("requestedAt", "")).replace("Z", "+00:00")
+                    ) if str(candidate.get("requestedAt", "")).strip() else datetime.now(timezone.utc),
+                    started_at_utc=datetime.fromisoformat(
+                        str(candidate.get("startedAt", "")).replace("Z", "+00:00")
+                    ) if str(candidate.get("startedAt", "")).strip() else None,
+                    finished_at_utc=datetime.fromisoformat(
+                        str(candidate.get("finishedAt", "")).replace("Z", "+00:00")
+                    ) if str(candidate.get("finishedAt", "")).strip() else None,
+                    requested_by=dict(candidate.get("requestedBy", {}) or {}),
+                    summary=dict(candidate.get("summary", {}) or {}),
+                    warnings=[str(item) for item in list(candidate.get("warnings", []) or [])],
+                    error=dict(candidate.get("error", {}) or {}) or None,
+                )
+        render_debug = _render_debug_payload(latest_render)
         return {
             "artifact": "dtm_info_dashboard",
             "snapshot": {
@@ -481,8 +725,12 @@ class InfoHandler:
                 "provider": str(queue_cfg.provider),
                 "queueName": queue_name,
                 "endpointUrl": str(queue_cfg.endpoint_url or ""),
-                "latest": latest_jobs,
+                "latest": latest_by_command,
+                "live": queue_live,
             },
+            "build": build_payload,
+            "jobs": jobs_payload,
+            "renderDebug": render_debug,
             "telegram": {
                 "webhookPath": webhook_path,
                 "webhookUrl": webhook_url,

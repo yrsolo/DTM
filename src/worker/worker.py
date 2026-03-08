@@ -3,6 +3,9 @@ from __future__ import annotations
 from typing import Any
 
 from src.commands.serializer import command_from_json
+from src.services.errors import PermanentError, TransientError
+
+from .model import JobResult
 
 
 class Worker:
@@ -29,7 +32,25 @@ class Worker:
                 self._logger(f"worker_duplicate_running job_id={cmd.job_id}")
                 continue
             self._status_store.put_running(cmd)
-            result = await self._dispatcher.dispatch(cmd)
+            try:
+                result = await self._dispatcher.dispatch(cmd)
+            except (TransientError, PermanentError) as error:
+                result = JobResult(
+                    success=False,
+                    details={"errorType": type(error).__name__},
+                    warnings=[],
+                    error={
+                        "code": str(getattr(error, "code", "") or "worker_dispatch_failed"),
+                        "message": str(error),
+                    },
+                )
+            except Exception as error:  # pragma: no cover
+                result = JobResult(
+                    success=False,
+                    details={"errorType": type(error).__name__},
+                    warnings=[],
+                    error={"code": "worker_dispatch_failed", "message": str(error)},
+                )
             self._status_store.put_finished(cmd, result)
             if result.success:
                 succeeded += 1
