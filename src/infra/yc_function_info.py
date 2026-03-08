@@ -43,8 +43,11 @@ def _load_sa_key(raw_json: str | None, file_path: str | None) -> dict[str, Any]:
         except Exception:
             decoded = base64.b64decode(raw).decode("utf-8")
             return dict(json.loads(decoded))
-    path = Path(str(file_path or "").strip())
-    if path.exists():
+    path_value = str(file_path or "").strip()
+    if not path_value:
+        raise RuntimeError("Yandex service account key is unavailable.")
+    path = Path(path_value)
+    if path.exists() and path.is_file():
         return dict(json.loads(path.read_text(encoding="utf-8")))
     raise RuntimeError("Yandex service account key is unavailable.")
 

@@ -19,7 +19,7 @@
 ## Notes
 - Completed campaigns are stored in `work/archive/campaigns/`.
 - `work/now/campaign.md` is the primary lifecycle registry; keep this file aligned with it.
-- `/info` observability slice is implemented locally and test-verified; current next step is cloud deploy + render RCA on `test`.
+- `/info` observability slice is live on `test`; render RCA shows queue+worker+apply path is healthy, and current remaining hotfix is the build-info adapter for function metadata.
 - Queue foundation and async admin actions are live on test.
 - Group query now reuses reminder milestone selection semantics and no longer owns a separate filtering path.
 - Telegram webhook now validates secret token, enqueues commands, and uses worker-side `group_query_reply`.

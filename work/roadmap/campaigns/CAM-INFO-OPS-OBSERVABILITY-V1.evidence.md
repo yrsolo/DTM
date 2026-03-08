@@ -82,3 +82,39 @@
   - target guard block
   - no-op
   - applied-to-wrong-target
+
+## Live Test Verification
+
+- last_verified_at: 2026-03-09
+- verified_by: codex
+- trust_level: high
+- environment: `test`
+- evidence:
+  - `/admin/commands/render-timeline` returned `202 accepted`
+  - polled `/admin/jobs/95cbe3766ae74908baa5e0f94ecb0146`
+  - `/info?format=json` after job completion showed:
+    - `queue.live.messages_visible=0`
+    - `queue.live.messages_in_flight=0`
+    - `renderDebug.state=applied`
+    - latest `render_timeline_sheet` job status `succeeded`
+    - `render_applied=true`
+    - `rows_written=20`
+    - `cells_written=1532`
+    - `selected_tasks=11`
+    - `target_spreadsheet="Спонсорские ТНТ ТЕСТ"`
+    - `target_worksheet="Задачи"`
+
+## RCA Result
+
+- eliminated:
+  - queue backlog / stuck messages
+  - worker dispatch failure
+  - render target safety block
+  - no-op render path
+- confirmed:
+  - worker executed render successfully on `test`
+  - current render path writes to the expected target spreadsheet and worksheet
+- separate defect found:
+  - `/info.build` on live runtime still fails with `"[Errno 21] Is a directory: '.'"`
+  - root cause is empty service-account key path being interpreted as current directory in `src/infra/yc_function_info.py`
+  - fixed locally; requires deploy to `test`
