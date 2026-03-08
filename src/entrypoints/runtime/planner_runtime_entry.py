@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from time import perf_counter
 from typing import Any
 
 from src.adapters.store_ydb import build_operational_store
@@ -195,6 +196,7 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
     )
 
     if normalized_mode in {"timer", "test", "render_v2"}:
+        render_started = perf_counter()
         snapshot_engine = build_snapshot_engine(APP_CONTEXT)
         render_usecase = RenderUseCase(snapshot_engine)
         from utils.service import GoogleSheetInfo, GoogleSheetsService
@@ -207,14 +209,27 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
                 worksheet_name=sheet_info.get_sheet_name("tasks") or "tasks",
             ),
         )
-        RenderJob(render_usecase, writer).run(
+        render_result = RenderJob(render_usecase, writer).run(
             RenderRequest(
                 window=Window(start=None, end=None, mode="intersects"),
                 statuses=["work", "pre_done"],
             )
         )
         if normalized_mode == "render_v2":
-            return {"artifact": "render_v2", "status": "ok", "summary": {"task_row_issue_count": 0}}
+            return {
+                "artifact": "render_v2",
+                "status": "ok",
+                "mode": "render_v2",
+                "force_refresh": bool(force_refresh),
+                "render_applied": bool(render_result.applied),
+                "rows_written": int(render_result.rows_written),
+                "cells_written": int(render_result.cells_written),
+                "target_spreadsheet": str(render_result.target_spreadsheet),
+                "target_worksheet": str(render_result.target_worksheet),
+                "warnings": list(render_result.warnings),
+                "duration_ms": int((perf_counter() - render_started) * 1000),
+                "summary": {"task_row_issue_count": 0},
+            }
 
     _print_quality_report(quality_report)
     return quality_report

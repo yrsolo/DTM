@@ -104,6 +104,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         response = asyncio.run(index.handler(event, None))
         self.assertEqual(response["statusCode"], 200)
         self.assertIn("DTM Info Dashboard", response.get("body", ""))
+        self.assertIn("mode:'render_v2'", response.get("body", ""))
 
     def test_v2_doc_contains_endpoints_query_and_response_fields(self) -> None:
         event = _fixture_event()

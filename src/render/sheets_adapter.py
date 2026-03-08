@@ -3,13 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from .model import RenderPlan
+from .model import RenderApplyResult, RenderPlan
 
 
 class SheetsWriter:
     """Infra adapter that writes RenderPlan to Google Sheets in batches."""
 
-    def apply(self, plan: RenderPlan) -> None:
+    def apply(self, plan: RenderPlan) -> RenderApplyResult:
         raise NotImplementedError
 
 
@@ -26,9 +26,16 @@ class GoogleSheetsPlanWriter(SheetsWriter):
         self._service = service
         self._target = target
 
-    def apply(self, plan: RenderPlan) -> None:
+    def apply(self, plan: RenderPlan) -> RenderApplyResult:
         if not plan.values:
-            return
+            return RenderApplyResult(
+                applied=False,
+                rows_written=0,
+                cells_written=0,
+                target_spreadsheet=self._target.spreadsheet_name,
+                target_worksheet=self._target.worksheet_name,
+                warnings=list(plan.warnings or ["empty_render_plan"]),
+            )
         min_row = min(cell.row for cell in plan.values)
         max_row = max(cell.row for cell in plan.values)
         min_col = min(cell.col for cell in plan.values)
@@ -72,3 +79,11 @@ class GoogleSheetsPlanWriter(SheetsWriter):
             }
         }
         self._service.execute_updates(self._target.spreadsheet_name, [request])
+        return RenderApplyResult(
+            applied=True,
+            rows_written=height,
+            cells_written=height * width,
+            target_spreadsheet=self._target.spreadsheet_name,
+            target_worksheet=self._target.worksheet_name,
+            warnings=list(plan.warnings or []),
+        )

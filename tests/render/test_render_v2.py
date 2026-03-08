@@ -88,7 +88,7 @@ class RenderV2TestCase(unittest.TestCase):
             RenderRequest(window=Window(start=None, end=None), statuses=["work"])
         )
 
-        writer.apply(plan)
+        result = writer.apply(plan)
 
         self.assertEqual(len(service.executed), 1)
         spreadsheet_name, requests = service.executed[0]
@@ -97,6 +97,20 @@ class RenderV2TestCase(unittest.TestCase):
         update_cells = requests[0].get("updateCells", {})
         self.assertEqual(update_cells.get("range", {}).get("sheetId"), 11)
         self.assertEqual(update_cells.get("fields"), "userEnteredValue")
+        self.assertTrue(result.applied)
+        self.assertEqual(result.target_worksheet, "tasks")
+        self.assertGreaterEqual(result.rows_written, 1)
+
+    def test_writer_returns_noop_when_plan_empty(self) -> None:
+        service = _FakeService()
+        writer = GoogleSheetsPlanWriter(service, SheetTarget("book", "tasks"))
+        result = writer.apply(plan=RenderUseCase(_FakeEngine(None)).build_plan(RenderRequest()))
+
+        self.assertFalse(result.applied)
+        self.assertEqual(result.rows_written, 0)
+        self.assertEqual(result.cells_written, 0)
+        self.assertIn("prep_snapshot_missing", result.warnings)
+        self.assertEqual(len(service.executed), 0)
 
 
 if __name__ == "__main__":
