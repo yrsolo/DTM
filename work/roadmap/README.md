@@ -1,13 +1,14 @@
 # Campaign Roadmap
 
-| CAM | Goal | Priority | Status |
-| --- | --- | --- | --- |
-| CAM-CORE-CLEANUP-V1 | Keep `core/` domain-only and move infra wiring to app/services/adapters | High | active |
-| CAM-CONFIG-REFORM-V0 | Finalize YAML-first runtime config and remove leftover env constants | High | planned |
-| CAM-DEDUP-LEGACY-REMOVAL-V1 | Remove duplicated legacy paths and dead compatibility code | Medium | planned |
-
-Detailed files:
-- `work/roadmap/campaigns/`
+Current roadmap state is tracked in:
 - `work/roadmap/backlog.md`
+- `work/roadmap/campaigns/`
+
+Rules:
+- `work/roadmap/campaigns/` contains only active or not-yet-archived campaign files.
+- completed campaigns must be moved to `work/archive/campaigns/<CAMPAIGN>/`.
+- `work/now/campaign.md` and `work/roadmap/backlog.md` must stay aligned.
+
+Historical roadmap materials remain in:
 - `work/archive/roadmap_legacy/backlog_legacy.md`
 - `work/archive/roadmap_legacy/plan_legacy/`

@@ -1,13 +1,14 @@
 # Backlog
 
 ## In Progress
-- CAM-RENDER-INCIDENT-RCA-AND-GANTT-PARITY-V1
-- CAM-NOTIFY-PARITY-V1
+- none
 
 ## Planned
 - none
 
 ## Done
+- CAM-RENDER-INCIDENT-RCA-AND-GANTT-PARITY-V1 (archived)
+- CAM-NOTIFY-PARITY-V1 (archived)
 - CAM-SNAPSHOT-ENGINE-V1 (archived)
 - CAM-RENDER-MODULE-V1 (archived)
 - CAM-LEGACY-PLANNER-DELETE-V1 (archived)

@@ -3,13 +3,14 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
-- CAM-RENDER-INCIDENT-RCA-AND-GANTT-PARITY-V1
-- CAM-NOTIFY-PARITY-V1
+- none
 
 ## Planned
 - none
 
 ## Done
+- CAM-RENDER-INCIDENT-RCA-AND-GANTT-PARITY-V1 (archived in `work/archive/campaigns/CAM-RENDER-INCIDENT-RCA-AND-GANTT-PARITY-V1/`)
+- CAM-NOTIFY-PARITY-V1 (archived in `work/archive/campaigns/CAM-NOTIFY-PARITY-V1/`)
 - CAM-SNAPSHOT-ENGINE-V1 (archived in `work/archive/campaigns/CAM-SNAPSHOT-ENGINE-V1/`)
 - CAM-RENDER-MODULE-V1 (archived in `work/archive/campaigns/CAM-RENDER-MODULE-V1/`)
 - CAM-LEGACY-PLANNER-DELETE-V1 (archived in `work/archive/campaigns/CAM-LEGACY-PLANNER-DELETE-V1/`)
