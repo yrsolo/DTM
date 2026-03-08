@@ -74,6 +74,7 @@ class YandexMessageQueueProducer(CommandQueueProducer):
             raise PermanentError("boto3 package is required for Yandex Message Queue", code="mq_sdk_missing") from error
         self._client = boto3.client(
             "sqs",
+            region_name="ru-central1",
             endpoint_url=(str(endpoint_url).strip() or None),
             aws_access_key_id=(str(aws_access_key_id).strip() or None),
             aws_secret_access_key=(str(aws_secret_access_key).strip() or None),
