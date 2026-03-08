@@ -241,6 +241,18 @@ class FrontendV2PayloadBuilder:
                     "format_": _to_str(sheet.format_),
                     "customer": _to_str(sheet.customer),
                     "history": _to_str(sheet.history),
+                    "attachments": [
+                        {
+                            "id": _to_str(item.id),
+                            "filename": _to_str(item.filename),
+                            "mime": _to_str(item.mime),
+                            "size": int(item.size),
+                            "uploadedAt": _utc_iso(item.uploaded_at_utc),
+                            "uploadedBy": _to_str(item.uploaded_by),
+                            "preview": _to_str(item.preview),
+                        }
+                        for item in list((view.extra.attachments if view.extra is not None else []) or [])
+                    ],
                     "ownerId": _owner_id(sheet),
                     "groupId": _group_id(sheet),
                     "status": _to_str(sheet.status) or "unknown",

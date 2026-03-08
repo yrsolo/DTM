@@ -23,6 +23,18 @@ class Milestone:
 
 
 @dataclass(slots=True, frozen=True)
+class AttachmentMeta:
+    id: str
+    key: str
+    filename: str
+    mime: str
+    size: int
+    uploaded_at_utc: datetime
+    uploaded_by: str
+    preview: str = ""
+
+
+@dataclass(slots=True, frozen=True)
 class TaskSheet:
     task_id: str
     title: str
@@ -44,6 +56,7 @@ class TaskExtra:
     task_id: str
     orphaned: bool = False
     updated_at_utc: datetime | None = None
+    attachments: list[AttachmentMeta] = field(default_factory=list)
     docs: list[dict[str, Any]] = field(default_factory=list)
     links: list[str] = field(default_factory=list)
     notes: str = ""

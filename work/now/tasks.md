@@ -4,6 +4,10 @@
 
 ## Done
 
+- CAM-FILE-ATTACHMENTS-V1 P01: add attachment metadata model and S3 serialization/store support in snapshot extra-store
+- CAM-FILE-ATTACHMENTS-V1 P02: add `attach_task_file` command type, worker job, and snapshot-engine prep refresh flow
+- CAM-FILE-ATTACHMENTS-V1 P03: add hidden upload-contract/enqueue endpoint and expose attachment metadata in snapshot-backed API payload/docs
+- CAM-FILE-ATTACHMENTS-V1 P04: cover attach flow with store/job/API tests and record evidence
 - CAM-TELEGRAM-INTAKE-V1 P01: add telegram config and trust-gated webhook parser/handler modules
 - CAM-TELEGRAM-INTAKE-V1 P02: switch `/telegram` HTTP path to secret-validated enqueue-only webhook flow
 - CAM-TELEGRAM-INTAKE-V1 P03: add `group_query_reply` worker job so webhook no longer executes business logic inline

@@ -6,6 +6,8 @@ import sys
 import unittest
 from datetime import datetime, timezone
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
@@ -53,6 +55,13 @@ class _FakeCtx:
             "command_queue_producer": producer,
             "job_status_store": status_store,
         }
+        self.cfg = SimpleNamespace(
+            runtime=SimpleNamespace(
+                runtime=SimpleNamespace(env_default="test"),
+                snapshot_engine=SimpleNamespace(bucket="dtm"),
+            ),
+            db=SimpleNamespace(object_storage={"endpoint_url_default": "https://storage.yandexcloud.net"}),
+        )
 
 
 class _FakeWorker:
@@ -62,6 +71,22 @@ class _FakeWorker:
     async def run_once_from_messages(self, messages):
         self.messages = list(messages)
         return {"artifact": "command_worker", "status": "ok", "processed": len(self.messages)}
+
+
+class _FakeSnapshotEngine:
+    def get_prep_snapshot(self):
+        return SimpleNamespace(tasks_by_id={"task-1": object()})
+
+
+class _FakeBoto3Client:
+    def generate_presigned_url(self, *args, **kwargs):
+        return "https://example.test/upload"
+
+
+class _FakeBoto3Module:
+    @staticmethod
+    def client(*args, **kwargs):
+        return _FakeBoto3Client()
 
 
 class CommandQueueFoundationTestCase(unittest.TestCase):
@@ -105,6 +130,61 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
         self.assertEqual(producer.commands[0].type, "send_reminders")
         payload = json.loads(response.body)
         self.assertEqual(payload["status"], "accepted")
+
+    def test_admin_queue_handler_enqueues_attach_task_file_command(self) -> None:
+        producer = _FakeProducer()
+        status_store = _FakeStatusStore()
+        handler = AdminQueueHandler(_FakeCtx(producer=producer, status_store=status_store))
+        response = handler.handle(
+            HttpRequest(
+                method="POST",
+                path="/admin/commands/attach-task-file",
+                body={
+                    "task_id": "task-1",
+                    "key": "attachments/test/task-1/a1-file.pdf",
+                    "filename": "file.pdf",
+                    "mime": "application/pdf",
+                    "size": 42,
+                    "uploaded_by": "tester",
+                },
+                is_http_event=True,
+            )
+        )
+        self.assertIsNotNone(response)
+        self.assertEqual(response.status, 202)
+        self.assertEqual(len(producer.commands), 1)
+        self.assertEqual(producer.commands[0].type, "attach_task_file")
+        self.assertEqual(producer.commands[0].payload["task_id"], "task-1")
+
+    def test_admin_queue_handler_returns_upload_contract_for_existing_task(self) -> None:
+        import src.entrypoints.http.admin_queue_handler as module
+
+        original_build_snapshot_engine = module.build_snapshot_engine
+        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        try:
+            handler = AdminQueueHandler(_FakeCtx())
+            with patch.dict(sys.modules, {"boto3": _FakeBoto3Module()}):
+                response = handler.handle(
+                    HttpRequest(
+                        method="POST",
+                        path="/admin/attachments/request-upload",
+                        body={
+                            "task_id": "task-1",
+                            "filename": "spec final.pdf",
+                            "mime": "application/pdf",
+                            "size": 128,
+                        },
+                        is_http_event=True,
+                    )
+                )
+        finally:
+            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+        self.assertIsNotNone(response)
+        self.assertEqual(response.status, 200)
+        payload = json.loads(response.body)
+        self.assertEqual(payload["artifact"], "attachment_upload_request")
+        self.assertIn("attachments/test/task-1/", payload["key"])
+        self.assertEqual(payload["headers"]["Content-Type"], "application/pdf")
 
     def test_job_status_handler_reads_status(self) -> None:
         status_store = _FakeStatusStore()

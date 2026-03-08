@@ -27,6 +27,12 @@ People routing snapshot:
 - timer update also refreshes people snapshot from sheet `Люди` into S3.
 - notify uses people snapshot as canonical source for `chat_id` and `vacation`.
 
+Attachment metadata contour:
+- binary payloads are uploaded directly to Object Storage under `attachments/{env}/{task_id}/...`
+- metadata is persisted in snapshot extra-store under `snapshots/{env}/extra/{task_id}.json`
+- worker command `attach_task_file` updates extra-store and rebuilds prep from current raw snapshot
+- API v2 exposes attachment metadata through `tasks[].attachments` without exposing storage keys
+
 ## Render v2 safety and target policy
 - `render_v2` reads only snapshot prep data.
 - `render_v2` target worksheet is `task_calendar` (human name: `Задачи`).

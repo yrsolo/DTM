@@ -31,6 +31,7 @@ Timer pipeline now updates snapshot engine storage (S3 raw/prep) and does not bu
 - `FrontendV2Handler`: reads data from snapshot engine prep cache
 - `TelegramWebhookHandler`: validates Telegram webhook secret, parses update, maps to internal command, and enqueues it
 - `GroupQueryHandler`: compatibility wrapper aliasing Telegram webhook intake
+- `AdminQueueHandler`: hidden admin enqueue/upload-contract endpoints for async mutations (`update_snapshot`, render, reminders, attachments)
 
 ## API source-of-truth
 
@@ -57,6 +58,12 @@ Telegram intake policy:
 - webhook does not execute business selection/rendering inline
 - webhook enqueues commands such as `group_query_reply`
 - worker jobs perform the actual Telegram reply or admin action
+
+Attachment mutation policy:
+- upload contract is requested through hidden admin endpoint, not through API v2 read path
+- binary upload goes directly to Object Storage
+- worker-side `attach_task_file` command updates snapshot extra-store and rebuilds prep
+- API v2 only exposes attachment metadata, not storage keys
 
 Render v2 policy:
 - target worksheet key: `task_calendar` (`Задачи`);

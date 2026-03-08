@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 from datetime import datetime, timezone
 
-from src.snapshot_engine.model import PrepSnapshot, RawSnapshot, TaskExtra, TaskSheet
+from src.snapshot_engine.model import AttachmentMeta, PrepSnapshot, RawSnapshot, TaskExtra, TaskSheet
 from src.snapshot_engine.prep_builder import PrepBuilder
 
 
@@ -39,7 +39,20 @@ class PrepBuilderTestCase(unittest.TestCase):
         )
 
     def test_build_merges_extras_and_indexes(self) -> None:
-        extra = TaskExtra(task_id="t1")
+        extra = TaskExtra(
+            task_id="t1",
+            attachments=[
+                AttachmentMeta(
+                    id="a1",
+                    key="attachments/test/t1/a1-file.pdf",
+                    filename="file.pdf",
+                    mime="application/pdf",
+                    size=10,
+                    uploaded_at_utc=datetime(2026, 3, 8, 10, 0, tzinfo=timezone.utc),
+                    uploaded_by="tester",
+                )
+            ],
+        )
         store = _FakeExtraStore(extras={"t1": extra})
         raw = RawSnapshot(
             source_id="sheet:test",
@@ -58,6 +71,7 @@ class PrepBuilderTestCase(unittest.TestCase):
         self.assertIn("t2", prep.indexes.by_status["done"])
         self.assertIn("t1", prep.indexes.by_owner["u1"])
         self.assertIsNotNone(prep.tasks_by_id["t1"].extra)
+        self.assertEqual(prep.tasks_by_id["t1"].extra.attachments[0].filename, "file.pdf")
 
     def test_build_marks_orphaned_extras(self) -> None:
         store = _FakeExtraStore(extras={"ghost": TaskExtra(task_id="ghost")})

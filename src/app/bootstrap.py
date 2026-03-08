@@ -80,6 +80,7 @@ def build_app_context() -> AppContext:
         from src.jobs.send_reminders_job import SendRemindersJob
         from src.jobs.update_snapshot_job import UpdateSnapshotJob
         from src.jobs.group_query_reply_job import GroupQueryReplyJob
+        from src.jobs.attach_task_file_job import AttachTaskFileJob
         from src.worker.dispatcher import CommandDispatcher
         from src.worker.status_store import S3JobStatusStore
         from src.worker.worker import Worker
@@ -107,6 +108,7 @@ def build_app_context() -> AppContext:
             render_timeline_job=RenderTimelineJob(ctx),
             render_designers_job=RenderDesignersJob(ctx),
             group_query_reply_job=GroupQueryReplyJob(ctx),
+            attach_task_file_job=AttachTaskFileJob(ctx),
         )
         deps["job_status_store"] = status_store
         deps["command_queue_producer"] = producer

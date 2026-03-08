@@ -73,6 +73,19 @@ Current supported enqueue mappings:
 Ops visibility:
 - `/info?format=json` includes `telegram.webhookPath`, `telegram.webhookUrl`, `telegram.allowedUpdates`, `telegram.maxConnections`, `telegram.secretConfigured`
 
+## 4.3) Attachment metadata flow
+Attachment upload/runtime policy:
+- request upload contract through hidden admin endpoint `POST /admin/attachments/request-upload`
+- upload binary directly to Object Storage with returned `PUT` URL
+- enqueue metadata mutation through `POST /admin/commands/attach-task-file`
+- worker updates extra-store and rebuilds prep from current raw snapshot
+
+Current storage policy:
+- binary key prefix: `attachments/{env}/{task_id}/{attachment_id}-{filename}`
+- metadata source of truth: `snapshots/{env}/extra/{task_id}.json`
+- API v2 exposes only attachment metadata (`id`, `filename`, `mime`, `size`, `uploadedAt`, `uploadedBy`, `preview`)
+- storage `key` is not exposed in frontend API payload
+
 ## 5) Milestones invariants
 Milestones must never be empty:
 - sync adds `start` if missing

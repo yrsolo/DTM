@@ -366,7 +366,7 @@ class InfoHandler:
         )
         total_objects = 0
         total_bytes = 0
-        by_prefix = {"raw": 0, "prep": 0, "extra": 0}
+        by_prefix = {"raw": 0, "prep": 0, "extra": 0, "attachments": 0}
         token = None
         while True:
             kwargs = {"Bucket": bucket, "Prefix": root_prefix, "MaxKeys": 1000}
@@ -384,6 +384,8 @@ class InfoHandler:
                     by_prefix["prep"] += size
                 elif "/extra/" in key:
                     by_prefix["extra"] += size
+                elif "/attachments/" in key:
+                    by_prefix["attachments"] += size
             if not response.get("IsTruncated"):
                 break
             token = response.get("NextContinuationToken")
@@ -441,6 +443,7 @@ class InfoHandler:
                 "render_timeline_sheet",
                 "render_designers_sheet",
                 "group_query_reply",
+                "attach_task_file",
             ):
                 try:
                     record = status_store.get_latest(command_type)

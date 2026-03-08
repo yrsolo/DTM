@@ -7,6 +7,8 @@ from datetime import date
 from typing import Any
 
 from src.app.context import AppContext
+from src.services.errors import UserError
+from src.snapshot_engine.model import AttachmentMeta, TaskExtra
 from src.snapshot_engine.prep_builder import PrepBuilder
 from src.snapshot_engine.query_engine import FrontendV2Query, SnapshotQueryEngine
 from src.snapshot_engine.update_job import (
@@ -36,15 +38,19 @@ class SnapshotEngine:
         *,
         raw_cache: Any,
         prep_cache: Any,
+        extra_store: Any,
         people_store: Any,
         query_engine: SnapshotQueryEngine,
+        prep_builder: PrepBuilder,
         update_job_factory: Any,
         people_update_job_factory: Any,
     ) -> None:
         self._raw_cache = raw_cache
         self._prep_cache = prep_cache
+        self._extra_store = extra_store
         self._people_store = people_store
         self._query_engine = query_engine
+        self._prep_builder = prep_builder
         self._update_job_factory = update_job_factory
         self._people_update_job_factory = people_update_job_factory
 
@@ -76,8 +82,45 @@ class SnapshotEngine:
     def get_prep_snapshot(self) -> Any:
         return self._prep_cache.get()
 
+    def get_raw_snapshot(self) -> Any:
+        return self._raw_cache.get()
+
     def get_people_snapshot(self) -> Any:
         return self._people_store.get()
+
+    def attach_file_metadata(self, *, task_id: str, attachment: AttachmentMeta) -> dict[str, Any]:
+        raw = self._raw_cache.get()
+        if raw is None:
+            raise UserError("Raw snapshot is unavailable.", code="raw_snapshot_unavailable")
+        task_key = str(task_id or "").strip()
+        if not task_key or task_key not in raw.tasks_by_id:
+            raise UserError("Task was not found in current snapshot.", code="task_not_found")
+        extras = self._extra_store.get_many([task_key])
+        current = extras.get(task_key) or TaskExtra(task_id=task_key)
+        attachments = [item for item in list(current.attachments or []) if str(item.id) != str(attachment.id)]
+        attachments.append(attachment)
+        attachments.sort(key=lambda item: (item.uploaded_at_utc.isoformat(), item.id))
+        updated = TaskExtra(
+            task_id=current.task_id,
+            orphaned=bool(current.orphaned),
+            updated_at_utc=attachment.uploaded_at_utc,
+            attachments=attachments,
+            docs=list(current.docs),
+            links=list(current.links),
+            notes=str(current.notes),
+            artifacts=list(current.artifacts),
+        )
+        self._extra_store.upsert(updated)
+        prep = self._prep_builder.build(raw)
+        self._prep_cache.put(prep)
+        return {
+            "artifact": "attach_task_file",
+            "status": "ok",
+            "task_id": task_key,
+            "attachment_id": str(attachment.id),
+            "attachments_total": len(attachments),
+            "prep_written": True,
+        }
 
 
 def _resolve_env_prefix(value: str, env_name: str) -> str:
@@ -134,8 +177,10 @@ def build_snapshot_engine(ctx: AppContext) -> SnapshotEngine:
     return SnapshotEngine(
         raw_cache=raw_cache,
         prep_cache=prep_cache,
+        extra_store=extra_store,
         people_store=people_store,
         query_engine=query_engine,
+        prep_builder=prep_builder,
         update_job_factory=_update_job_factory,
         people_update_job_factory=_people_update_job_factory,
     )

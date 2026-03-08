@@ -21,11 +21,13 @@ Add task attachments through Object Storage and snapshot-backed metadata without
 ## Implementation Skeleton Reference
 
 - Primary implementation skeleton: `docs/system/file_attachments_skeleton.md`
-- Current trust level: medium
+- Current trust level: high
 - Current touchpoints:
   - `src/snapshot_engine/model.py`
   - `src/snapshot_engine/prep_builder.py`
   - `src/snapshot_engine/stores/s3_store.py`
+  - `src/entrypoints/http/admin_queue_handler.py`
+  - `src/worker/dispatcher.py`
 - Depends on: `CAM-QUEUE-FOUNDATION-ON-CF-V1`
 - Forbidden shortcuts:
   - no binary file blobs in queue messages
