@@ -1,11 +1,11 @@
-from .formatter import FormattedMessage, ReminderFormatter
+from .formatter import ReminderFormatter
 from .job import ReminderJob
-from .model import ReminderGroup, ReminderRequest, ReminderResult
-from .telegram_sender import TelegramClient, TelegramReminderSender
-from .usecase import ReminderUseCase
+from .model import ReminderDraft, ReminderGroup, ReminderRequest, ReminderResult
+from .telegram_sender import TelegramClient
+from .usecase import ReminderUseCase, next_workday, normalize_person_name
 
 __all__ = [
-    "FormattedMessage",
+    "ReminderDraft",
     "ReminderFormatter",
     "ReminderGroup",
     "ReminderJob",
@@ -13,5 +13,6 @@ __all__ = [
     "ReminderResult",
     "ReminderUseCase",
     "TelegramClient",
-    "TelegramReminderSender",
+    "next_workday",
+    "normalize_person_name",
 ]

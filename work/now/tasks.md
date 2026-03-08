@@ -1,5 +1,16 @@
-# Active Tasks
+﻿# Active Tasks
 
+- [x] CAM-NOTIFY-PARITY-V1-P01-T001: trust-gate freeze for notify parity against `core/reminder.py` and current `src/notify/*` runtime path.
+- [x] CAM-NOTIFY-PARITY-V1-P02-T001: add people snapshot model/interfaces/S3 store and update-job contour (`Люди` -> snapshot).
+- [x] CAM-NOTIFY-PARITY-V1-P03-T001: implement milestone-day parity selection (today + next workday, weekend-aware) with active statuses default.
+- [x] CAM-NOTIFY-PARITY-V1-P04-T001: implement legacy-like draft formatter and stage filtering parity.
+- [x] CAM-NOTIFY-PARITY-V1-P04-T002: add LLM enhancement flow with fallback counters (tests mock LLM).
+- [x] CAM-NOTIFY-PARITY-V1-P05-T001: implement delivery routing/checks (person/chat/vacation/test-chat override) + retry/backoff/classification + dedup.
+- [x] CAM-NOTIFY-PARITY-V1-P06-T001: wire reminder modes to parity job and return structured runtime counters.
+- [x] CAM-NOTIFY-PARITY-V1-P07-T001: add typed notify parity config in `config/runtime.yaml` + schema/loader.
+- [x] CAM-NOTIFY-PARITY-V1-P08-T001: add notify + snapshot people tests and update docs/evidence.
+
+- [x] CAM-RENDER-INCIDENT-RCA-AND-GANTT-PARITY-V1-T001: enforce render_v2 target safety gate, switch target worksheet to `Ð—Ð°Ð´Ð°Ñ‡Ð¸`, and restore Gantt-parity render plan.
 - [x] FIX-CAM-INFO-RENDER-ACTION-V1-T001: switch `/info` force-render action to `mode=render_v2` and return structured runtime/render report instead of blind `!GOOD!`.
 - [x] LEGACY-CUT-BOOTSTRAP-T001: register new campaign pack files (`CAM-LEGACY-CUT-API-V1`, `CAM-NOTIFY-MODULE-V1`, `CAM-RENDER-MODULE-V1`, `CAM-HTTP-FALLBACK-REMOVAL-V1`, `CAM-LEGACY-PLANNER-DELETE-V1`, `CAM-GREP-GATES-V1`, `priorities_legacy_cut.md`).
 - [x] CAM-LEGACY-CUT-API-V1-P01-T001: freeze API v2 parity spec for Snapshot Engine migration and add `docs/snapshot_engine/api_v2_parity.md`.
@@ -49,14 +60,14 @@
 - [x] CAM-GREP-GATES-V1-P02-T002: ensure guard exits non-zero on violations (CI gate).
 - [x] CAM-GREP-GATES-V1-P03-T001: sync campaign evidence with current guard policy and verification commands.
 
-- [x] CAM-SNAPSHOT-ENGINE-V1-P01-T001: trust-gate фиксация текущего runtime source-of-truth и policy hard-cutover на S3 snapshot.
-- [x] CAM-SNAPSHOT-ENGINE-V1-P02-T001: реализовать `src/snapshot_engine` (models/interfaces/serialization/prep_builder/update_job/query_engine/engine).
-- [x] CAM-SNAPSHOT-ENGINE-V1-P03-T001: реализовать S3 stores (`RawCache`, `PrepCache`, `ExtraStore`) на базе Object Storage.
-- [x] CAM-SNAPSHOT-ENGINE-V1-P04-T001: добавить typed `snapshot_engine` секцию в config schema/loader/runtime.yaml и fail-fast validation.
-- [x] CAM-SNAPSHOT-ENGINE-V1-P05-T001: интегрировать SnapshotEngine в bootstrap/context и переключить `TimerPipeline` на update job.
-- [x] CAM-SNAPSHOT-ENGINE-V1-P06-T001: переключить `frontend_v2_handler` (и group-query loader path) на чтение PrepSnapshot через SnapshotEngine.
-- [x] CAM-SNAPSHOT-ENGINE-V1-P07-T001: обновить docs (`docs/snapshot_engine/*`, `docs/system/dataflow.md`, `docs/system/entrypoints_index_main.md`).
-- [x] CAM-SNAPSHOT-ENGINE-V1-P08-T001: добавить unit/api/runtime тесты и прогнать smoke/регрессию.
+- [x] CAM-SNAPSHOT-ENGINE-V1-P01-T001: trust-gate Ñ„Ð¸ÐºÑÐ°Ñ†Ð¸Ñ Ñ‚ÐµÐºÑƒÑ‰ÐµÐ³Ð¾ runtime source-of-truth Ð¸ policy hard-cutover Ð½Ð° S3 snapshot.
+- [x] CAM-SNAPSHOT-ENGINE-V1-P02-T001: Ñ€ÐµÐ°Ð»Ð¸Ð·Ð¾Ð²Ð°Ñ‚ÑŒ `src/snapshot_engine` (models/interfaces/serialization/prep_builder/update_job/query_engine/engine).
+- [x] CAM-SNAPSHOT-ENGINE-V1-P03-T001: Ñ€ÐµÐ°Ð»Ð¸Ð·Ð¾Ð²Ð°Ñ‚ÑŒ S3 stores (`RawCache`, `PrepCache`, `ExtraStore`) Ð½Ð° Ð±Ð°Ð·Ðµ Object Storage.
+- [x] CAM-SNAPSHOT-ENGINE-V1-P04-T001: Ð´Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ typed `snapshot_engine` ÑÐµÐºÑ†Ð¸ÑŽ Ð² config schema/loader/runtime.yaml Ð¸ fail-fast validation.
+- [x] CAM-SNAPSHOT-ENGINE-V1-P05-T001: Ð¸Ð½Ñ‚ÐµÐ³Ñ€Ð¸Ñ€Ð¾Ð²Ð°Ñ‚ÑŒ SnapshotEngine Ð² bootstrap/context Ð¸ Ð¿ÐµÑ€ÐµÐºÐ»ÑŽÑ‡Ð¸Ñ‚ÑŒ `TimerPipeline` Ð½Ð° update job.
+- [x] CAM-SNAPSHOT-ENGINE-V1-P06-T001: Ð¿ÐµÑ€ÐµÐºÐ»ÑŽÑ‡Ð¸Ñ‚ÑŒ `frontend_v2_handler` (Ð¸ group-query loader path) Ð½Ð° Ñ‡Ñ‚ÐµÐ½Ð¸Ðµ PrepSnapshot Ñ‡ÐµÑ€ÐµÐ· SnapshotEngine.
+- [x] CAM-SNAPSHOT-ENGINE-V1-P07-T001: Ð¾Ð±Ð½Ð¾Ð²Ð¸Ñ‚ÑŒ docs (`docs/snapshot_engine/*`, `docs/system/dataflow.md`, `docs/system/entrypoints_index_main.md`).
+- [x] CAM-SNAPSHOT-ENGINE-V1-P08-T001: Ð´Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ unit/api/runtime Ñ‚ÐµÑÑ‚Ñ‹ Ð¸ Ð¿Ñ€Ð¾Ð³Ð½Ð°Ñ‚ÑŒ smoke/Ñ€ÐµÐ³Ñ€ÐµÑÑÐ¸ÑŽ.
 
 - [x] CAM-SYNC-BULK-PIPELINE-V1-P01-T001: add YDB bulk primitives for task versions (`upsert_task_versions_bulk`, `archive_task_versions_bulk`) with chunking.
 - [x] CAM-SYNC-BULK-PIPELINE-V1-P02-T001: refactor sync runtime to compute version/archive rows in memory and flush in bulk (no per-task version writes).
@@ -153,7 +164,7 @@
 - [x] P07-T002: extract `GoogleSheetPlanner` implementation from `core/planner.py` into `src/services/planner_runtime.py` with compatibility shim.
 - [x] P07-T003: audit internal usages of `core/*` compatibility shims and prepare deprecation checklist.
 - [x] P07-T004: move `TaskTimingProcessor` from `core/manager.py` to dedicated domain module and remove non-legacy shim import.
-- [x] P07-T005: owner decision received — keep `old/*` and notebooks untouched; keep compatibility re-exports for legacy contour.
+- [x] P07-T005: owner decision received â€” keep `old/*` and notebooks untouched; keep compatibility re-exports for legacy contour.
 - [x] P08-T001: finalize shim scope docs and run active-path import audit to ensure no non-legacy shim usage.
 - [x] CFG-P02-T001: remove direct config dependency from src/services/planner_runtime.py where it can be derived from injected dependencies.
 - [x] CFG-P02-T002: design and start migration of src/app/planner_bootstrap.py from global config imports to cfg-driven wiring.
@@ -302,5 +313,9 @@
 
 
 
+
+
+- [x] CAM-RENDER-MODULE-V1-T006: extend render_v2 to render Ð”Ð¸Ð·Ð°Ð¹Ð½ÐµÑ€Ñ‹ sheet in snapshot contour with legacy-compatible layout and per-sheet render result payload.
+- [x] CAM-RENDER-MODULE-V1-T007: disable legacy ÐšÐ°Ð»ÐµÐ½Ð´Ð°Ñ€ÑŒ render (designer_task_to_calendar) in runtime flow; keep Ð—Ð°Ð´Ð°Ñ‡Ð¸ + Ð”Ð¸Ð·Ð°Ð¹Ð½ÐµÑ€Ñ‹ only.
 
 

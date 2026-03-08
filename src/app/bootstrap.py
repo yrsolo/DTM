@@ -49,5 +49,10 @@ def build_app_context() -> AppContext:
         "task_payload_mapper": TaskPayloadMapper(),
         "aws_access_key_id": os.getenv("AWS_ACCESS_KEY_ID", "").strip(),
         "aws_secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY", "").strip(),
+        "openai_token": os.getenv("OPENAI_TOKEN", "").strip(),
+        "org_token": os.getenv("ORG_TOKEN", "").strip(),
+        "proxy_url": os.getenv("PROXY_URL", "").strip(),
+        "google_llm_api_key": os.getenv("GOOGLE_LLM_API_KEY", "").strip(),
+        "yandex_llm_api_key": os.getenv("YANDEX_LLM_API_KEY", "").strip(),
     }
     return AppContext(cfg=cfg, deps=deps)

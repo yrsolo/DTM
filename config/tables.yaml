@@ -1,7 +1,7 @@
 google_sheets:
   source_sheet_name_default: Спонсорские ТНТ
   target_sheet_name_default: Спонсорские ТНТ ТЕСТ
-  target_sheet_name_prod_default: Спонсорские ТНТ
+  target_sheet_name_prod_default: Спонсорские ТНТ РЕНДЕР
 
 sheet_names:
   tasks: ТАБЛИЧКА

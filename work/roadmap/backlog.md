@@ -1,7 +1,8 @@
 # Backlog
 
 ## In Progress
-- none
+- CAM-RENDER-INCIDENT-RCA-AND-GANTT-PARITY-V1
+- CAM-NOTIFY-PARITY-V1
 
 ## Planned
 - none

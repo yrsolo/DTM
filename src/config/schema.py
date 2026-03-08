@@ -29,7 +29,18 @@ class SnapshotEngineSection:
     prefix_raw: str = "snapshots/raw/default.json"
     prefix_prep: str = "snapshots/prep/default.json"
     prefix_extra: str = "snapshots/extra/"
+    prefix_people: str = "snapshots/people/default.json"
     force_refresh_default: bool = False
+
+
+@dataclass(slots=True)
+class NotifySection:
+    enhance_concurrency: int = 4
+    send_retry_attempts: int = 3
+    send_retry_backoff_seconds: float = 0.5
+    send_retry_backoff_multiplier: float = 2.0
+    test_chat_id_override: str = ""
+    llm_mode_default: str = "provider"
 
 
 @dataclass(slots=True)
@@ -53,6 +64,7 @@ class RuntimeConfig:
     api: dict[str, Any] = field(default_factory=dict)
     pipeline: PipelineSection = field(default_factory=PipelineSection)
     snapshot_engine: SnapshotEngineSection = field(default_factory=SnapshotEngineSection)
+    notify: NotifySection = field(default_factory=NotifySection)
     sources: SourcesSection = field(default_factory=SourcesSection)
     timing: TimingSection = field(default_factory=TimingSection)
     triggers: dict[str, str] = field(default_factory=dict)

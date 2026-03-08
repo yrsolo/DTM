@@ -21,7 +21,16 @@ snapshot_engine:
   prefix_raw: snapshots/{env}/raw/default.json
   prefix_prep: snapshots/{env}/prep/default.json
   prefix_extra: snapshots/{env}/extra/
+  prefix_people: snapshots/{env}/people/default.json
   force_refresh_default: false
+
+notify:
+  enhance_concurrency: 4
+  send_retry_attempts: 3
+  send_retry_backoff_seconds: 0.5
+  send_retry_backoff_multiplier: 2.0
+  test_chat_id_override: ""
+  llm_mode_default: provider
 
 sources:
   store_mode_default: legacy

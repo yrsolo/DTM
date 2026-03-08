@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import unittest
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from src.render import GoogleSheetsPlanWriter, RenderRequest, RenderUseCase, SheetTarget
 from src.snapshot_engine.model import PrepIndexes, PrepSnapshot, TaskSheet, TaskView, Window
@@ -17,18 +17,31 @@ class _FakeEngine:
 
 class _FakeService:
     def __init__(self) -> None:
-        self.executed: list[tuple[str, list[dict]]] = []
+        self.updated_cells: list[dict] = []
+        self.updated_borders: list[dict] = []
+        self.exec_calls: list[str] = []
+        self.cleared: list[tuple[str, str]] = []
 
-    def get_sheet_id_by_name(self, spreadsheet_name: str, worksheet_name: str):  # noqa: ANN201
-        if spreadsheet_name == "book" and worksheet_name == "tasks":
-            return 11
+    def set_spreadsheet_and_worksheet(self, spreadsheet_name: str, worksheet_name: str) -> None:  # noqa: ARG002
         return None
 
-    def execute_updates(self, spreadsheet_name: str, requests: list[dict]) -> None:
-        self.executed.append((spreadsheet_name, requests))
+    def clear_cells(self, spreadsheet_name: str, sheet_name: str, range_: str = "A1:ZZ1000") -> None:  # noqa: ARG002
+        self.cleared.append((spreadsheet_name, sheet_name))
+
+    def clear_requests(self) -> None:
+        return None
+
+    def update_cell(self, spreadsheet_name: str, sheet_name: str, cell_data: dict) -> None:  # noqa: ARG002
+        self.updated_cells.append(dict(cell_data))
+
+    def update_borders(self, spreadsheet_name: str, sheet_name: str, border_data: dict) -> None:  # noqa: ARG002
+        self.updated_borders.append(dict(border_data))
+
+    def execute_updates(self, spreadsheet_name: str) -> None:
+        self.exec_calls.append(spreadsheet_name)
 
 
-def _task(task_id: str, owner: str, status: str, end_day: str) -> TaskView:
+def _task(task_id: str, owner: str, status: str, timings: dict[str, list[str]]) -> TaskView:
     return TaskView(
         sheet=TaskSheet(
             task_id=task_id,
@@ -37,11 +50,11 @@ def _task(task_id: str, owner: str, status: str, end_day: str) -> TaskView:
             group_id="group-1",
             brand="brand",
             format_="fmt",
-            customer="customer",
-            raw_timing="raw",
+            customer="manager",
+            raw_timing="raw timing",
             status=status,
             history=f"history-{task_id}",
-            timing={end_day: ["stage"]},
+            timing=timings,
             milestones=[],
         ),
         extra=None,
@@ -49,70 +62,91 @@ def _task(task_id: str, owner: str, status: str, end_day: str) -> TaskView:
 
 
 class RenderV2TestCase(unittest.TestCase):
-    def test_usecase_builds_sorted_plan_for_active_statuses(self) -> None:
+    def test_usecase_builds_gantt_like_plan(self) -> None:
         prep = PrepSnapshot(
             source_id="sheet:test",
             raw_source_hash="hash",
             built_at_utc=datetime.now(timezone.utc),
             tasks_by_id={
-                "1": _task("1", "o1", "work", "2026-03-05"),
-                "2": _task("2", "o2", "done", "2026-03-10"),
-                "3": _task("3", "o1", "pre_done", "2026-03-15"),
+                "1": _task("1", "owner-1", "work", {"2026-03-05": ["ответ"], "2026-03-06": ["анима"]}),
+                "2": _task("2", "owner-2", "pre_done", {"2026-03-06": ["сдача"]}),
             },
             indexes=PrepIndexes(),
         )
         plan = RenderUseCase(_FakeEngine(prep)).build_plan(
             RenderRequest(
-                window=Window(start=None, end=None),
+                window=Window(start=date(2026, 3, 1), end=date(2026, 3, 10)),
                 statuses=["work", "pre_done"],
             )
         )
-        values = {(cell.row, cell.col): cell.value for cell in plan.values}
-        self.assertEqual(values[(1, 1)], "id")
-        # newest active task goes first
-        self.assertEqual(values[(2, 1)], "3")
-        self.assertEqual(values[(3, 1)], "1")
-        self.assertEqual(values[(2, 7)], "history-3")
+        self.assertGreater(len(plan.values), 10)
+        self.assertGreaterEqual(len(plan.borders), 1)
+        # Stage labels are preserved from timing text (including "ответ клиента").
+        stage_cells = [cell for cell in plan.values if cell.row >= 3 and cell.col >= 2 and str(cell.value)]
+        self.assertTrue(any("ОТВЕТ" in str(cell.value) for cell in stage_cells))
+        # Timestamp in A1.
+        a1 = [cell for cell in plan.values if cell.row == 1 and cell.col == 1]
+        self.assertEqual(len(a1), 1)
+        # Designer row in column A.
+        owner_cells = [cell for cell in plan.values if cell.col == 1 and str(cell.value).startswith("owner-")]
+        self.assertGreaterEqual(len(owner_cells), 2)
 
-    def test_writer_sends_single_batch_request(self) -> None:
-        service = _FakeService()
-        writer = GoogleSheetsPlanWriter(service, SheetTarget("book", "tasks"))
+    def test_usecase_keeps_continuous_task_band_between_min_and_max_dates(self) -> None:
         prep = PrepSnapshot(
             source_id="sheet:test",
             raw_source_hash="hash",
             built_at_utc=datetime.now(timezone.utc),
-            tasks_by_id={"1": _task("1", "o1", "work", "2026-03-05")},
+            tasks_by_id={
+                "1": _task("1", "owner-1", "work", {"2026-03-05": ["ответ клиента"], "2026-03-07": ["анима"]}),
+            },
             indexes=PrepIndexes(),
         )
         plan = RenderUseCase(_FakeEngine(prep)).build_plan(
-            RenderRequest(window=Window(start=None, end=None), statuses=["work"])
+            RenderRequest(
+                window=Window(start=date(2026, 3, 1), end=date(2026, 3, 10)),
+                statuses=["work"],
+            )
         )
+        # Owner row=2, first task row=3, start at 01.03 -> day 06.03 is col 7.
+        mid_day_cells = [cell for cell in plan.values if cell.row == 3 and cell.col == 7]
+        self.assertEqual(len(mid_day_cells), 1)
+        self.assertEqual(str(mid_day_cells[0].value), "")
+        self.assertIsNotNone(mid_day_cells[0].color)
+
+    def test_writer_applies_cells_and_borders(self) -> None:
+        prep = PrepSnapshot(
+            source_id="sheet:test",
+            raw_source_hash="hash",
+            built_at_utc=datetime.now(timezone.utc),
+            tasks_by_id={"1": _task("1", "owner-1", "work", {"2026-03-05": ["ответ"]})},
+            indexes=PrepIndexes(),
+        )
+        plan = RenderUseCase(_FakeEngine(prep)).build_plan(
+            RenderRequest(window=Window(start=date(2026, 3, 1), end=date(2026, 3, 10)), statuses=["work"])
+        )
+        service = _FakeService()
+        writer = GoogleSheetsPlanWriter(service, SheetTarget("book", "Задачи"))
 
         result = writer.apply(plan)
 
-        self.assertEqual(len(service.executed), 1)
-        spreadsheet_name, requests = service.executed[0]
-        self.assertEqual(spreadsheet_name, "book")
-        self.assertEqual(len(requests), 1)
-        update_cells = requests[0].get("updateCells", {})
-        self.assertEqual(update_cells.get("range", {}).get("sheetId"), 11)
-        self.assertEqual(update_cells.get("fields"), "userEnteredValue")
         self.assertTrue(result.applied)
-        self.assertEqual(result.target_worksheet, "tasks")
-        self.assertGreaterEqual(result.rows_written, 1)
+        self.assertEqual(result.target_worksheet, "Задачи")
+        self.assertGreater(result.cells_written, 0)
+        self.assertEqual(len(service.exec_calls), 1)
+        self.assertGreater(len(service.updated_cells), 0)
+        self.assertGreater(len(service.updated_borders), 0)
 
-    def test_writer_returns_noop_when_plan_empty(self) -> None:
+    def test_prep_missing_returns_noop_warning(self) -> None:
+        plan = RenderUseCase(_FakeEngine(None)).build_plan(RenderRequest())
         service = _FakeService()
-        writer = GoogleSheetsPlanWriter(service, SheetTarget("book", "tasks"))
-        result = writer.apply(plan=RenderUseCase(_FakeEngine(None)).build_plan(RenderRequest()))
+        writer = GoogleSheetsPlanWriter(service, SheetTarget("book", "Задачи"))
+
+        result = writer.apply(plan)
 
         self.assertFalse(result.applied)
-        self.assertEqual(result.rows_written, 0)
-        self.assertEqual(result.cells_written, 0)
         self.assertIn("prep_snapshot_missing", result.warnings)
-        self.assertEqual(len(service.executed), 0)
+        self.assertEqual(len(service.exec_calls), 0)
 
 
 if __name__ == "__main__":
     unittest.main()
-

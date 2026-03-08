@@ -43,6 +43,20 @@ Health markers in response:
 - `meta.sourceHash`
 - `meta.sourceId`
 
+## 4.1) Reminder v2
+Reminder runtime source:
+- tasks from prep snapshot
+- people routing from people snapshot (`snapshots/{env}/people/default.json`)
+
+Reminder selection:
+- designers are selected only by milestones on today and next workday.
+- default statuses: `work`, `pre_done`.
+
+Delivery safety:
+- if `ENV=test`, sends are forced to test chat override.
+- vacation `да` skips delivery.
+- retry policy: 3 attempts with backoff and classified counters.
+
 ## 5) Milestones invariants
 Milestones must never be empty:
 - sync adds `start` if missing
@@ -52,13 +66,19 @@ Milestones must never be empty:
 ### Snapshot source unavailable
 - check Object Storage credentials and bucket/prefix config:
   - `runtime.snapshot_engine.bucket`
-  - `runtime.snapshot_engine.prefix_raw|prefix_prep|prefix_extra`
+  - `runtime.snapshot_engine.prefix_raw|prefix_prep|prefix_extra|prefix_people`
 - startup should fail-fast if snapshot engine is enabled but required fields are empty.
 
 ### Missing milestones
 If logs show synthetic `start`:
 - timing payload in source task is empty or not parsed.
 - verify source timing text and normalization logs.
+
+### Render safety (incident prevention)
+- `render_v2` is allowed to write only to worksheet `task_calendar` (`Задачи`).
+- `render_v2` must never target `tasks` (`ТАБЛИЧКА`).
+- On unsafe target runtime responds with `error.code=render_target_unsafe` and does not write.
+- Before release verify source/target spreadsheet separation for prod contour.
 
 ## 7) Branching and test deploy
 1) Development goes to `dev` (small commits, push to origin).
