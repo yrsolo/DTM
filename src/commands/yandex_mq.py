@@ -66,8 +66,16 @@ class YandexMessageQueueProducer(CommandQueueProducer):
         aws_secret_access_key: str | None = None,
     ) -> None:
         self._queue_url = str(queue_url).strip()
+        self._endpoint_url = str(endpoint_url).strip() or None
+        self._aws_access_key_id = str(aws_access_key_id).strip() or None
+        self._aws_secret_access_key = str(aws_secret_access_key).strip() or None
+        self._client = None
         if not self._queue_url:
             raise ValueError("queue_url is required")
+
+    def _get_client(self):
+        if self._client is not None:
+            return self._client
         try:
             import boto3  # type: ignore
         except Exception as error:  # pragma: no cover
@@ -75,13 +83,14 @@ class YandexMessageQueueProducer(CommandQueueProducer):
         self._client = boto3.client(
             "sqs",
             region_name="ru-central1",
-            endpoint_url=(str(endpoint_url).strip() or None),
-            aws_access_key_id=(str(aws_access_key_id).strip() or None),
-            aws_secret_access_key=(str(aws_secret_access_key).strip() or None),
+            endpoint_url=self._endpoint_url,
+            aws_access_key_id=self._aws_access_key_id,
+            aws_secret_access_key=self._aws_secret_access_key,
         )
+        return self._client
 
     def send(self, cmd: Command) -> None:
         try:
-            self._client.send_message(QueueUrl=self._queue_url, MessageBody=command_to_json(cmd))
+            self._get_client().send_message(QueueUrl=self._queue_url, MessageBody=command_to_json(cmd))
         except Exception as error:
             raise TransientError(str(error), code="mq_send_failed") from error

@@ -5,7 +5,6 @@ from src.render import GoogleSheetsPlanWriter, RenderJob, RenderRequest, RenderU
 from src.render.target_guard import RenderTarget, validate_render_target
 from src.snapshot_engine import build_snapshot_engine
 from src.snapshot_engine.model import Window
-from utils.service import GoogleSheetInfo, GoogleSheetsService
 
 
 class RenderTimelineJob:
@@ -13,6 +12,8 @@ class RenderTimelineJob:
         self._ctx = ctx
 
     def run(self, cmd):
+        from utils.service import GoogleSheetInfo, GoogleSheetsService
+
         snapshot_engine = build_snapshot_engine(self._ctx)
         usecase = RenderUseCase(snapshot_engine)
         sheet_info = GoogleSheetInfo(**dict(self._ctx.deps.get("sheet_info", {})))

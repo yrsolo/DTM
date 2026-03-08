@@ -3,14 +3,15 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
-- CAM-ADMIN-ACTIONS-ASYNC-V1
+- none
 
 ## Planned
-- CAM-GROUP-QUERY-UNIFY-WITH-REMINDER-V1
 - CAM-TELEGRAM-INTAKE-V1
 - CAM-FILE-ATTACHMENTS-V1
 
 ## Done
+- CAM-GROUP-QUERY-UNIFY-WITH-REMINDER-V1
+- CAM-ADMIN-ACTIONS-ASYNC-V1
 - CAM-QUEUE-FOUNDATION-ON-CF-V1
 - archived campaigns live in `work/archive/campaigns/`
 

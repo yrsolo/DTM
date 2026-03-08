@@ -43,18 +43,27 @@ class S3JobStatusStore:
         self._bucket = str(bucket).strip()
         self._status_prefix = str(status_prefix).strip().rstrip("/") + "/"
         self._latest_prefix = str(latest_prefix).strip().rstrip("/") + "/"
+        self._endpoint_url = str(endpoint_url).strip() or None
+        self._aws_access_key_id = str(aws_access_key_id).strip() or None
+        self._aws_secret_access_key = str(aws_secret_access_key).strip() or None
+        self._client = None
         if not self._bucket:
             raise ValueError("bucket is required")
+
+    def _get_client(self):
+        if self._client is not None:
+            return self._client
         try:
             import boto3  # type: ignore
         except Exception as error:  # pragma: no cover
             raise PermanentError("boto3 package is required for S3 job status store", code="s3_sdk_missing") from error
         self._client = boto3.client(
             "s3",
-            endpoint_url=(str(endpoint_url).strip() or None),
-            aws_access_key_id=(str(aws_access_key_id).strip() or None),
-            aws_secret_access_key=(str(aws_secret_access_key).strip() or None),
+            endpoint_url=self._endpoint_url,
+            aws_access_key_id=self._aws_access_key_id,
+            aws_secret_access_key=self._aws_secret_access_key,
         )
+        return self._client
 
     def _status_key(self, job_id: str) -> str:
         return f"{self._status_prefix}{job_id}.json"
@@ -65,7 +74,7 @@ class S3JobStatusStore:
     def _put_json(self, key: str, payload: dict[str, Any]) -> None:
         body = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
         try:
-            self._client.put_object(
+            self._get_client().put_object(
                 Bucket=self._bucket,
                 Key=key,
                 Body=body,
@@ -76,7 +85,7 @@ class S3JobStatusStore:
 
     def _get_json(self, key: str) -> dict[str, Any] | None:
         try:
-            response = self._client.get_object(Bucket=self._bucket, Key=key)
+            response = self._get_client().get_object(Bucket=self._bucket, Key=key)
         except Exception as error:
             response_dict = getattr(error, "response", {})
             code = str(response_dict.get("Error", {}).get("Code", "")).strip() if isinstance(response_dict, dict) else ""

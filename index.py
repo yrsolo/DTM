@@ -28,7 +28,6 @@ from src.entrypoints.http.runtime_execution import RuntimeExecutionRequest, Runt
 from src.entrypoints.http.runtime_mode import extract_force_refresh as _extract_force_refresh
 from src.entrypoints.http.runtime_mode import extract_run_mode as _extract_run_mode
 from src.entrypoints.http.runtime_mode import resolve_trigger_mode as _resolve_trigger_mode
-from src.entrypoints.runtime.planner_runtime_entry import PlannerRuntimeRequest, run_planner_runtime
 
 APP_CONTEXT = build_app_context()
 APP_CFG = APP_CONTEXT.cfg
@@ -191,6 +190,8 @@ async def handler(event: Any, _: Any) -> dict[str, Any]:
         mock_external=mock_external,
         force_refresh=force_refresh,
     )
+    from src.entrypoints.runtime.planner_runtime_entry import PlannerRuntimeRequest, run_planner_runtime
+
     runtime_response = await RuntimeExecutor(APP_CONTEXT).execute(
         runtime_request,
         main_func=run_planner_runtime,
