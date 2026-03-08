@@ -293,7 +293,10 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
     if normalized_mode in {"timer", "test", "render_v2"}:
         render_started = perf_counter()
         snapshot_engine = build_snapshot_engine(APP_CONTEXT)
-        render_usecase = RenderUseCase(snapshot_engine)
+        render_usecase = RenderUseCase(
+            snapshot_engine,
+            timezone_name=str(APP_CONTEXT.cfg.runtime.runtime.timezone or "Europe/Moscow"),
+        )
         from utils.service import GoogleSheetInfo, GoogleSheetsService
 
         sheet_info = GoogleSheetInfo(**APP_SHEET_INFO)
@@ -379,7 +382,10 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
                 "duration_ms": int((perf_counter() - render_started) * 1000),
                 "summary": {"task_row_issue_count": 0},
             }
-        designers_usecase = DesignersRenderUseCase(snapshot_engine)
+        designers_usecase = DesignersRenderUseCase(
+            snapshot_engine,
+            timezone_name=str(APP_CONTEXT.cfg.runtime.runtime.timezone or "Europe/Moscow"),
+        )
         designers_writer = GoogleSheetsPlanWriter(
             GoogleSheetsService(APP_KEY_JSON, dry_run=dry_run),
             SheetTarget(

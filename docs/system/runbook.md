@@ -143,6 +143,11 @@ Interpretation:
 - `renderDebug.state=noop` -> render ran but had nothing to apply
 - `renderDebug.state=applied` -> render reported success; verify target spreadsheet/worksheet
 
+### Human-facing timezone policy
+- human-facing render timestamps use `runtime.timezone` (current default `Europe/Moscow`)
+- this affects the display timestamp in rendered Google Sheets (for example cell `A1`) and “today” anchor logic used by render selection/highlighting
+- JSON/system timestamps remain UTC ISO for API and operator JSON payloads
+
 ## 7) Branching and test deploy
 1) Development goes to `dev` (small commits, push to origin).
 2) When test contour validation is needed, merge `dev` into `test`.

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from typing import Iterable
 
+from src.app.timezone_utils import format_sheet_timestamp, now_in_timezone, today_in_timezone
 from src.snapshot_engine.engine import SnapshotEngine
 from src.snapshot_engine.model import TaskView
 from utils.func import GetColor, RGBColor
@@ -81,12 +82,13 @@ def _iter_days_half_open(start: date, end_exclusive: date) -> Iterable[date]:
 class RenderUseCase:
     """Build Gantt-like render plan from snapshot tasks."""
 
-    def __init__(self, engine: SnapshotEngine):
+    def __init__(self, engine: SnapshotEngine, timezone_name: str = "Europe/Moscow"):
         self._engine = engine
         self._color = GetColor()
+        self._timezone_name = str(timezone_name or "Europe/Moscow").strip() or "Europe/Moscow"
 
     def _window_bounds(self, req: RenderRequest) -> tuple[date, date, date]:
-        today = date.today()
+        today = today_in_timezone(self._timezone_name)
         if req.window is not None and req.window.start is not None and req.window.end is not None:
             start = req.window.start
             end = req.window.end
@@ -228,7 +230,7 @@ class RenderUseCase:
             RenderCell(
                 row=1,
                 col=1,
-                value=datetime.now().strftime("%H:%M %B %d"),
+                value=format_sheet_timestamp(now_in_timezone(self._timezone_name)),
                 bold=True,
             )
         )

@@ -70,12 +70,14 @@ Render v2 policy:
 - target worksheet key: `task_calendar` (`Задачи`);
 - forbidden worksheet key: `tasks` (`ТАБЛИЧКА`);
 - if target is unsafe runtime returns structured blocked result with `render_target_unsafe`.
+- human-facing render timestamps and `today` anchor use configured runtime timezone (`runtime.timezone`, default `Europe/Moscow`).
 
 Info observability policy:
 - `/info` stays synchronous and read-only
 - it may call live Yandex APIs for queue depth and active function build metadata
 - async admin actions report through queue-backed job status and recent-history blocks
 - render RCA should use `jobs.latestByCommand.render_timeline_sheet` and `renderDebug`, not raw enqueue HTTP status
+- `/info?format=json` keeps machine timestamps in UTC; HTML may show additive MSK display for operator convenience
 
 Planned campaign sequence:
 1. `CAM-LEGACY-CUT-API-V1`

@@ -246,6 +246,24 @@ def _render_info_page(payload: dict[str, Any]) -> str:
       }}
       return JSON.stringify(value, null, 2);
     }}
+    function formatUtcAndMsk(value){{
+      const text = String(value || '').trim();
+      if (!text) return '';
+      const date = new Date(text);
+      if (Number.isNaN(date.getTime())) return text;
+      const utc = date.toISOString();
+      const msk = new Intl.DateTimeFormat('ru-RU', {{
+        timeZone: 'Europe/Moscow',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }}).format(date);
+      return utc + ' / MSK ' + msk;
+    }}
     function createTimer(elementId){{
       const el = document.getElementById(elementId);
       let startAt = 0;
@@ -302,8 +320,8 @@ def _render_info_page(payload: dict[str, Any]) -> str:
       document.getElementById('bucket').textContent = s.bucket || '';
       document.getElementById('sourceId').textContent = s.sourceId || '';
       document.getElementById('sourceHash').textContent = s.sourceHash || '';
-      document.getElementById('rawFetchedAt').textContent = s.rawFetchedAt || '';
-      document.getElementById('prepBuiltAt').textContent = s.prepBuiltAt || '';
+      document.getElementById('rawFetchedAt').textContent = formatUtcAndMsk(s.rawFetchedAt);
+      document.getElementById('prepBuiltAt').textContent = formatUtcAndMsk(s.prepBuiltAt);
       document.getElementById('tasksTotal').textContent = c.tasksTotal ?? 0;
       document.getElementById('statusCounts').textContent = JSON.stringify(c.byStatus || {{}});
       document.getElementById('objectsTotal').textContent = st.objectsTotal ?? 0;
@@ -312,7 +330,7 @@ def _render_info_page(payload: dict[str, Any]) -> str:
       document.getElementById('sizeBreakdown').textContent = JSON.stringify(st.byPrefix || {{}});
       document.getElementById('buildFunctionName').textContent = b.functionName || '';
       document.getElementById('buildVersionId').textContent = b.activeVersionId || '';
-      document.getElementById('buildDeployedAt').textContent = b.deployedAt || b.error || '';
+      document.getElementById('buildDeployedAt').textContent = b.error || formatUtcAndMsk(b.deployedAt);
       document.getElementById('buildRuntime').textContent = b.runtime || '';
       document.getElementById('buildResources').textContent = (b.memory || '') + ((b.timeoutSeconds ?? '') !== '' ? ' / ' + String(b.timeoutSeconds) + 's' : '');
       document.getElementById('buildEntrypoint').textContent = b.entrypoint || '';

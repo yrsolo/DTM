@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import unittest
 from datetime import date, datetime, timezone
+from unittest.mock import patch
 
 from src.render import DesignersRenderUseCase, RenderRequest
 from src.snapshot_engine.model import PrepIndexes, PrepSnapshot, TaskSheet, TaskView, Window
@@ -81,6 +82,27 @@ class DesignersRenderV2TestCase(unittest.TestCase):
             RenderRequest(statuses=["work"])
         )
         self.assertIn("empty_render_plan", list(filtered_plan.warnings or []))
+
+
+    def test_timestamp_and_next_due_use_configured_timezone(self) -> None:
+        prep = PrepSnapshot(
+            source_id="sheet:test",
+            raw_source_hash="hash",
+            built_at_utc=datetime.now(timezone.utc),
+            tasks_by_id={"1": _task("1", "owner", "work", {"2026-03-06": ["Ð°Ð½Ð¸Ð¼Ð°"]})},
+            indexes=PrepIndexes(),
+        )
+        fake_now = datetime(2026, 3, 6, 8, 45, tzinfo=timezone.utc)
+        with (
+            patch("src.render.designers_usecase.now_in_timezone", return_value=fake_now),
+            patch("src.render.designers_usecase.today_in_timezone", return_value=date(2026, 3, 6)),
+        ):
+            plan = DesignersRenderUseCase(_FakeEngine(prep), timezone_name="Europe/Moscow").build_plan(
+                RenderRequest(statuses=["work"])
+            )
+        a1 = [cell for cell in plan.values if cell.row == 1 and cell.col == 1]
+        self.assertEqual(len(a1), 1)
+        self.assertEqual(str(a1[0].value), "08:45 March 06")
 
 
 if __name__ == "__main__":

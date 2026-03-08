@@ -15,7 +15,10 @@ class RenderDesignersJob:
         from utils.service import GoogleSheetInfo, GoogleSheetsService
 
         snapshot_engine = build_snapshot_engine(self._ctx)
-        usecase = DesignersRenderUseCase(snapshot_engine)
+        usecase = DesignersRenderUseCase(
+            snapshot_engine,
+            timezone_name=str(self._ctx.cfg.runtime.runtime.timezone or "Europe/Moscow"),
+        )
         sheet_info = GoogleSheetInfo(**dict(self._ctx.deps.get("sheet_info", {})))
         source_spreadsheet = str(self._ctx.cfg.tables.google_sheets.get("source_sheet_name_default", "")).strip()
         target_spreadsheet = str(sheet_info.spreadsheet_name or "").strip()

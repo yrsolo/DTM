@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Iterable
 
+from src.app.timezone_utils import format_sheet_timestamp, now_in_timezone, today_in_timezone
 from src.snapshot_engine.engine import SnapshotEngine
 from src.snapshot_engine.model import TaskView
 from utils.func import GetColor
@@ -55,8 +56,8 @@ def _matches_window(task: TaskView, req: RenderRequest) -> bool:
     return start <= req.window.end and end >= req.window.start
 
 
-def _next_due(task: TaskView) -> date | None:
-    today = date.today()
+def _next_due(task: TaskView, timezone_name: str) -> date | None:
+    today = today_in_timezone(timezone_name)
     dates: list[date] = []
     for key in dict(task.sheet.timing or {}).keys():
         parsed = _to_iso_date(key)
@@ -79,9 +80,10 @@ class _DesignerTask:
 class DesignersRenderUseCase:
     """Build designers sheet plan with legacy-compatible layout."""
 
-    def __init__(self, engine: SnapshotEngine):
+    def __init__(self, engine: SnapshotEngine, timezone_name: str = "Europe/Moscow"):
         self._engine = engine
         self._color = GetColor()
+        self._timezone_name = str(timezone_name or "Europe/Moscow").strip() or "Europe/Moscow"
 
     def _select_tasks(self, req: RenderRequest) -> list[_DesignerTask]:
         prep = self._engine.get_prep_snapshot()
@@ -104,8 +106,8 @@ class DesignersRenderUseCase:
             result.append(_DesignerTask(owner=owner, task=view))
         result.sort(
             key=lambda item: (
-                _next_due(item.task) is None,
-                _next_due(item.task) or date.max,
+                _next_due(item.task, self._timezone_name) is None,
+                _next_due(item.task, self._timezone_name) or date.max,
                 str(item.task.sheet.title or ""),
             )
         )
@@ -161,7 +163,7 @@ class DesignersRenderUseCase:
             RenderCell(
                 row=1,
                 col=1,
-                value=datetime.now().strftime("%H:%M %B %d"),
+                value=format_sheet_timestamp(now_in_timezone(self._timezone_name)),
             )
         )
         return RenderPlan(values=values, borders=[], warnings=[])
