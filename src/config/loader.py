@@ -142,6 +142,7 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
         if isinstance(data.get("snapshot_engine", {}), dict)
         else {}
     )
+    notify_raw = data.get("notify", {}) if isinstance(data.get("notify", {}), dict) else {}
     sources_raw = data.get("sources", {}) if isinstance(data.get("sources", {}), dict) else {}
     timing_raw = data.get("timing", {}) if isinstance(data.get("timing", {}), dict) else {}
     triggers_raw = data.get("triggers", {}) if isinstance(data.get("triggers", {}), dict) else {}
@@ -185,8 +186,29 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
     defaults.snapshot_engine.prefix_extra = str(
         snapshot_engine_raw.get("prefix_extra", defaults.snapshot_engine.prefix_extra)
     )
+    defaults.snapshot_engine.prefix_people = str(
+        snapshot_engine_raw.get("prefix_people", defaults.snapshot_engine.prefix_people)
+    )
     defaults.snapshot_engine.force_refresh_default = bool(
         snapshot_engine_raw.get("force_refresh_default", defaults.snapshot_engine.force_refresh_default)
+    )
+    defaults.notify.enhance_concurrency = int(
+        notify_raw.get("enhance_concurrency", defaults.notify.enhance_concurrency)
+    )
+    defaults.notify.send_retry_attempts = int(
+        notify_raw.get("send_retry_attempts", defaults.notify.send_retry_attempts)
+    )
+    defaults.notify.send_retry_backoff_seconds = float(
+        notify_raw.get("send_retry_backoff_seconds", defaults.notify.send_retry_backoff_seconds)
+    )
+    defaults.notify.send_retry_backoff_multiplier = float(
+        notify_raw.get("send_retry_backoff_multiplier", defaults.notify.send_retry_backoff_multiplier)
+    )
+    defaults.notify.test_chat_id_override = str(
+        notify_raw.get("test_chat_id_override", defaults.notify.test_chat_id_override)
+    )
+    defaults.notify.llm_mode_default = str(
+        notify_raw.get("llm_mode_default", defaults.notify.llm_mode_default)
     )
 
     defaults.sources.store_mode_default = str(
@@ -247,6 +269,8 @@ def load_config(config_dir: Path = CONFIG_DIR) -> AppConfig:
             raise ValueError("snapshot_engine.prefix_prep is required when snapshot_engine.enabled=true")
         if not str(snapshot_cfg.prefix_extra).strip():
             raise ValueError("snapshot_engine.prefix_extra is required when snapshot_engine.enabled=true")
+        if not str(snapshot_cfg.prefix_people).strip():
+            raise ValueError("snapshot_engine.prefix_people is required when snapshot_engine.enabled=true")
 
     tables_cfg = TablesConfig(
         google_sheets=tables_data.get("google_sheets", {}),

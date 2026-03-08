@@ -6,7 +6,7 @@ from typing import Iterable
 
 from src.snapshot_engine.engine import SnapshotEngine
 from src.snapshot_engine.model import TaskView
-from utils.func import GetColor, RGBColor, filter_stages
+from utils.func import GetColor, RGBColor
 
 from .model import RenderBorder, RenderCell, RenderPlan, RenderRequest
 
@@ -39,8 +39,7 @@ def _task_stage_for_day(task: TaskView, day: date) -> str:
     stage_items = list(dict(task.sheet.timing or {}).get(day.isoformat(), []))
     if not stage_items:
         return ""
-    visible = filter_stages(stage_items)
-    return ", ".join(visible)
+    return ", ".join(str(item) for item in stage_items if str(item).strip())
 
 
 def _matches_window(task: TaskView, req: RenderRequest) -> bool:
@@ -68,6 +67,13 @@ class _TaskTimeline:
 def _iter_days(start: date, end: date) -> Iterable[date]:
     day = start
     while day <= end:
+        yield day
+        day += timedelta(days=1)
+
+
+def _iter_days_half_open(start: date, end_exclusive: date) -> Iterable[date]:
+    day = start
+    while day < end_exclusive:
         yield day
         day += timedelta(days=1)
 
@@ -124,21 +130,22 @@ class RenderUseCase:
         for owner in sorted(by_owner.keys()):
             owner_tasks = sorted(by_owner[owner], key=lambda item: item.min_date)
             base_color = self._color()
+            timeline_base = self._color("gray")
 
             # Per-owner timeline row.
             col = 2
-            for day in _iter_days(start, end):
+            for day in _iter_days_half_open(start, end):
                 if day.weekday() >= 5:
-                    day_color = (base_color if day != today else self._color("green")) ** 0.25
+                    day_color = (timeline_base if day != today else self._color("green")) ** 0.25
                 else:
-                    day_color = base_color if day != today else self._color("green")
+                    day_color = timeline_base if day != today else self._color("green")
                 values.append(
                     RenderCell(
                         row=row,
                         col=col,
                         value=day.strftime("%d.%m"),
                         color=_as_hex(day_color),
-                        text_color=_as_hex(base_color**3),
+                        text_color=_as_hex(timeline_base**3),
                         bold=True,
                         italic=True,
                         font_size=9,
@@ -184,9 +191,6 @@ class RenderUseCase:
                 col = 2 + (task_start - start).days
                 for day in _iter_days(task_start, task_end):
                     stage = _task_stage_for_day(task, day)
-                    if not stage:
-                        col += 1
-                        continue
                     if day.weekday() >= 5:
                         stage_color = (
                             task_color
@@ -204,7 +208,7 @@ class RenderUseCase:
                             row=row,
                             col=col,
                             value=stage[:5].upper(),
-                            note=f"{stage}\n{task.sheet.title}",
+                            note=f"{stage} \n{task.sheet.title}" if stage else "",
                             color=_as_hex(stage_color),
                             text_color=_as_hex(task_color**0.01),
                             bold=True,

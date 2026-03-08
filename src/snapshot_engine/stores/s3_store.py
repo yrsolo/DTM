@@ -6,12 +6,14 @@ from datetime import datetime, timezone
 from typing import Any
 
 from src.services.errors import PermanentError, TransientError
-from src.snapshot_engine.model import PrepSnapshot, RawSnapshot, TaskExtra
+from src.snapshot_engine.model import PeopleSnapshot, PrepSnapshot, RawSnapshot, TaskExtra
 from src.snapshot_engine.serialization import (
     dumps_json,
     extra_from_dict,
     extra_to_dict,
     loads_json,
+    people_from_dict,
+    people_to_dict,
     prep_from_dict,
     prep_to_dict,
     raw_from_dict,
@@ -140,6 +142,21 @@ class S3ExtraStore:
         self._store.put(self._key(task_id), payload)
 
 
+class S3PeopleStore:
+    def __init__(self, store: _S3JsonStore, key: str) -> None:
+        self._store = store
+        self._key = str(key).strip()
+
+    def get(self) -> PeopleSnapshot | None:
+        payload = self._store.get(self._key)
+        if payload is None:
+            return None
+        return people_from_dict(payload)
+
+    def put(self, snapshot: PeopleSnapshot) -> None:
+        self._store.put(self._key, people_to_dict(snapshot))
+
+
 def build_s3_stores(
     *,
     bucket: str,
@@ -149,7 +166,8 @@ def build_s3_stores(
     raw_key: str,
     prep_key: str,
     extra_prefix: str,
-) -> tuple[S3RawCache, S3PrepCache, S3ExtraStore]:
+    people_key: str,
+) -> tuple[S3RawCache, S3PrepCache, S3ExtraStore, S3PeopleStore]:
     store = _S3JsonStore(
         bucket=bucket,
         endpoint_url=endpoint_url,
@@ -160,4 +178,5 @@ def build_s3_stores(
         S3RawCache(store, raw_key),
         S3PrepCache(store, prep_key),
         S3ExtraStore(store, extra_prefix),
+        S3PeopleStore(store, people_key),
     )

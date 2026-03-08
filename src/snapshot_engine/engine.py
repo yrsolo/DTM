@@ -10,6 +10,7 @@ from src.app.context import AppContext
 from src.snapshot_engine.prep_builder import PrepBuilder
 from src.snapshot_engine.query_engine import FrontendV2Query, SnapshotQueryEngine
 from src.snapshot_engine.update_job import (
+    PeopleSnapshotUpdater,
     SheetSnapshotHasher,
     SheetsTaskNormalizer,
     TaskSourceSheetsAdapter,
@@ -35,17 +36,24 @@ class SnapshotEngine:
         *,
         raw_cache: Any,
         prep_cache: Any,
+        people_store: Any,
         query_engine: SnapshotQueryEngine,
         update_job_factory: Any,
+        people_update_job_factory: Any,
     ) -> None:
         self._raw_cache = raw_cache
         self._prep_cache = prep_cache
+        self._people_store = people_store
         self._query_engine = query_engine
         self._update_job_factory = update_job_factory
+        self._people_update_job_factory = people_update_job_factory
 
     def update(self, *, task_source: Any, force: bool = False) -> Any:
         update_job = self._update_job_factory(task_source)
-        return update_job.run(force=force)
+        result = update_job.run(force=force)
+        people_updater = self._people_update_job_factory(task_source)
+        people_updater.run(TaskSourceSheetsAdapter(task_source))
+        return result
 
     def frontend_v2(self, query: SnapshotFrontendQuery) -> dict[str, Any]:
         prep = self._prep_cache.get()
@@ -68,6 +76,9 @@ class SnapshotEngine:
     def get_prep_snapshot(self) -> Any:
         return self._prep_cache.get()
 
+    def get_people_snapshot(self) -> Any:
+        return self._people_store.get()
+
 
 def _resolve_env_prefix(value: str, env_name: str) -> str:
     token = "{env}"
@@ -86,7 +97,7 @@ def build_snapshot_engine(ctx: AppContext) -> SnapshotEngine:
     db_cfg = cfg.db.object_storage
     endpoint_url = str(db_cfg.get("endpoint_url_default", "")).strip()
     env_name = str(cfg.runtime.runtime.env_default).strip().lower() or "dev"
-    raw_cache, prep_cache, extra_store = build_s3_stores(
+    raw_cache, prep_cache, extra_store, people_store = build_s3_stores(
         bucket=str(snap_cfg.bucket).strip(),
         endpoint_url=endpoint_url,
         aws_access_key_id=deps.get("aws_access_key_id"),
@@ -94,6 +105,7 @@ def build_snapshot_engine(ctx: AppContext) -> SnapshotEngine:
         raw_key=_resolve_env_prefix(str(snap_cfg.prefix_raw), env_name),
         prep_key=_resolve_env_prefix(str(snap_cfg.prefix_prep), env_name),
         extra_prefix=_resolve_env_prefix(str(snap_cfg.prefix_extra), env_name),
+        people_key=_resolve_env_prefix(str(snap_cfg.prefix_people), env_name),
     )
     prep_builder = PrepBuilder(extra_store)
     query_engine = SnapshotQueryEngine(
@@ -111,9 +123,19 @@ def build_snapshot_engine(ctx: AppContext) -> SnapshotEngine:
             prep_builder=prep_builder,
         )
 
+    def _people_update_job_factory(_task_source: Any) -> PeopleSnapshotUpdater:
+        people_field_map = dict(cfg.tables.field_maps.get("people", {}))
+        return PeopleSnapshotUpdater(
+            people_store=people_store,
+            source_id=f"sheet:{cfg.tables.google_sheets.get('source_sheet_name_default', '')}:people:A1:Z200",
+            people_field_map=people_field_map,
+        )
+
     return SnapshotEngine(
         raw_cache=raw_cache,
         prep_cache=prep_cache,
+        people_store=people_store,
         query_engine=query_engine,
         update_job_factory=_update_job_factory,
+        people_update_job_factory=_people_update_job_factory,
     )

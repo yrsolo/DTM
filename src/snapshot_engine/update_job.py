@@ -7,8 +7,8 @@ import json
 from datetime import date, datetime, timezone
 from typing import Any
 
-from src.snapshot_engine.interfaces import Hasher, Normalizer, PrepCache, RawCache, SheetsSource
-from src.snapshot_engine.model import Milestone, RawSnapshot, SheetSnapshot, TaskSheet, UpdateResult
+from src.snapshot_engine.interfaces import Hasher, Normalizer, PeopleStore, PrepCache, RawCache, SheetsSource
+from src.snapshot_engine.model import Milestone, PeopleSnapshot, PersonView, RawSnapshot, SheetSnapshot, TaskSheet, UpdateResult
 from src.snapshot_engine.prep_builder import PrepBuilder
 
 
@@ -133,6 +133,86 @@ class TaskSourceSheetsAdapter:
             "colors": full_snapshot.colors,
         }
         return list(self._task_source.build_tasks_from_snapshot(payload))
+
+    def read_worksheet_values(self, sheet_key: str, worksheet_range: str) -> list[list[Any]]:
+        repo = getattr(self._task_source, "task_repository", None)
+        if repo is None:
+            return []
+        source_info = getattr(repo, "source_sheet_info", None)
+        service = getattr(repo, "service", None)
+        if source_info is None or service is None:
+            return []
+        sheet_name_getter = getattr(source_info, "get_sheet_name", None)
+        spreadsheet_name = str(getattr(source_info, "spreadsheet_name", "")).strip()
+        if not spreadsheet_name or not callable(sheet_name_getter):
+            return []
+        worksheet_name = str(sheet_name_getter(sheet_key) or "").strip()
+        if not worksheet_name:
+            return []
+        values = service.get_worksheet_values(
+            spreadsheet_name=spreadsheet_name,
+            worksheet_name=worksheet_name,
+            worksheet_range=worksheet_range,
+        )
+        return list(values or [])
+
+
+def normalize_person_name(value: Any) -> str:
+    text = str(value or "").strip().lower()
+    if not text:
+        return ""
+    return " ".join(text.split())
+
+
+class PeopleSnapshotUpdater:
+    def __init__(self, *, people_store: PeopleStore, source_id: str, people_field_map: dict[str, str]) -> None:
+        self._people_store = people_store
+        self._source_id = str(source_id).strip()
+        self._people_field_map = dict(people_field_map)
+
+    @staticmethod
+    def _header_index(values: list[list[Any]]) -> dict[str, int]:
+        if not values:
+            return {}
+        header = [str(item or "").strip() for item in list(values[0] or [])]
+        result: dict[str, int] = {}
+        for idx, column in enumerate(header):
+            if column and column not in result:
+                result[column] = idx
+        return result
+
+    @staticmethod
+    def _cell(row: list[Any], idx: int | None) -> str:
+        if idx is None or idx < 0 or idx >= len(row):
+            return ""
+        return str(row[idx] or "").strip()
+
+    def run(self, source: TaskSourceSheetsAdapter) -> PeopleSnapshot:
+        values = source.read_worksheet_values("people", "A1:Z200")
+        header_index = self._header_index(values)
+        people_by_name: dict[str, PersonView] = {}
+        for row in list(values[1:] if len(values) > 1 else []):
+            if not isinstance(row, list):
+                continue
+            name = self._cell(row, header_index.get(self._people_field_map.get("name", "")))
+            name_key = normalize_person_name(name)
+            if not name_key:
+                continue
+            person = PersonView(
+                name=name,
+                chat_id=self._cell(row, header_index.get(self._people_field_map.get("chat_id", ""))),
+                vacation=self._cell(row, header_index.get(self._people_field_map.get("vacation", ""))),
+                position=self._cell(row, header_index.get(self._people_field_map.get("position", ""))),
+                person_id=self._cell(row, header_index.get(self._people_field_map.get("person_id", ""))),
+            )
+            people_by_name[name_key] = person
+        snapshot = PeopleSnapshot(
+            source_id=self._source_id,
+            fetched_at_utc=datetime.now(timezone.utc),
+            people_by_name=people_by_name,
+        )
+        self._people_store.put(snapshot)
+        return snapshot
 
 
 class UpdateJob:

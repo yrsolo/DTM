@@ -1,85 +1,90 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timedelta
 
 from src.snapshot_engine.engine import SnapshotEngine
 from src.snapshot_engine.model import TaskView
 
-from .model import ReminderGroup, ReminderRequest, ReminderResult
+from .model import ReminderGroup, ReminderRequest
 
 
-@dataclass(frozen=True)
-class _TaskRange:
-    start: date | None
-    end: date | None
+def normalize_person_name(value: str) -> str:
+    text = str(value or "").strip().lower()
+    if not text:
+        return ""
+    return " ".join(text.split())
 
 
-def _task_range(task: TaskView) -> _TaskRange:
-    all_dates: list[date] = []
-    for key in dict(task.sheet.timing or {}).keys():
-        text = str(key or "").strip()
-        if not text:
-            continue
-        try:
-            all_dates.append(date.fromisoformat(text[:10]))
-        except ValueError:
-            continue
+def next_workday(today: date) -> date:
+    weekday = today.weekday()
+    if weekday == 4:
+        return today + timedelta(days=3)
+    if weekday == 5:
+        return today + timedelta(days=2)
+    return today + timedelta(days=1)
+
+
+def _milestone_days(task: TaskView) -> set[date]:
+    days: set[date] = set()
     for milestone in list(task.sheet.milestones or []):
-        if milestone.planned is not None:
-            all_dates.append(milestone.planned)
-        if milestone.actual is not None:
-            all_dates.append(milestone.actual)
-    if not all_dates:
-        return _TaskRange(start=None, end=None)
-    ordered = sorted(all_dates)
-    return _TaskRange(start=ordered[0], end=ordered[-1])
-
-
-def _matches_window(task: TaskView, req: ReminderRequest) -> bool:
-    if req.window.start is None or req.window.end is None:
-        return True
-    tr = _task_range(task)
-    if tr.start is None and tr.end is None:
-        return False
-    start = tr.start or tr.end
-    end = tr.end or tr.start
-    if start is None or end is None:
-        return False
-    return start <= req.window.end and end >= req.window.start
+        day = milestone.planned or milestone.actual
+        if day is not None:
+            days.add(day)
+    return days
 
 
 class ReminderUseCase:
-    """Pure selection + grouping. Does not format or send."""
+    """Selection and grouping parity for reminder_v2."""
 
     def __init__(self, engine: SnapshotEngine):
         self._engine = engine
 
-    def run(self, req: ReminderRequest) -> ReminderResult:
+    def select(self, req: ReminderRequest) -> tuple[list[ReminderGroup], date, date]:
         prep = self._engine.get_prep_snapshot()
         if prep is None:
-            return ReminderResult(groups=[])
-        statuses = {str(item).strip().lower() for item in list(req.statuses or ["work", "pre_done"]) if str(item).strip()}
-        selected: list[TaskView] = []
-        for view in prep.tasks_by_id.values():
-            status = str(view.sheet.status or "").strip().lower()
+            today = req.today_override or datetime.now().date()
+            return [], today, next_workday(today)
+
+        today = req.today_override or datetime.now().date()
+        next_day = next_workday(today)
+        statuses = {
+            str(item).strip().lower()
+            for item in list(req.statuses or ["work", "pre_done"])
+            if str(item).strip()
+        }
+        tasks_today: dict[str, list[TaskView]] = {}
+        tasks_next: dict[str, list[TaskView]] = {}
+        for task in prep.tasks_by_id.values():
+            status = str(task.sheet.status or "").strip().lower()
             if statuses and status not in statuses:
                 continue
-            if not _matches_window(view, req):
+            milestone_days = _milestone_days(task)
+            if not milestone_days:
                 continue
-            selected.append(view)
-        selected.sort(key=lambda item: (str(item.sheet.owner_id), str(item.sheet.task_id)))
+            owner = str(task.sheet.owner_id or "").strip()
+            if not owner:
+                continue
+            if req.include_today and today in milestone_days:
+                tasks_today.setdefault(owner, []).append(task)
+            if req.include_next_workday and next_day in milestone_days:
+                tasks_next.setdefault(owner, []).append(task)
 
-        groups: dict[str, list[TaskView]] = {}
-        for view in selected:
-            owner = str(view.sheet.owner_id).strip() or "unassigned"
-            groups.setdefault(owner, []).append(view)
-
-        result_groups: list[ReminderGroup] = []
-        for owner_id, tasks in groups.items():
-            items = list(tasks)
-            if req.limit_per_owner is not None and req.limit_per_owner > 0:
-                items = items[: int(req.limit_per_owner)]
-            result_groups.append(ReminderGroup(owner_id=owner_id, tasks=items))
-        result_groups.sort(key=lambda item: str(item.owner_id))
-        return ReminderResult(groups=result_groups)
+        owners = sorted(set(tasks_today.keys()) | set(tasks_next.keys()))
+        groups: list[ReminderGroup] = []
+        for owner in owners:
+            today_items = sorted(
+                tasks_today.get(owner, []),
+                key=lambda item: (str(item.sheet.brand), str(item.sheet.title), str(item.sheet.task_id)),
+            )
+            next_items = sorted(
+                tasks_next.get(owner, []),
+                key=lambda item: (str(item.sheet.brand), str(item.sheet.title), str(item.sheet.task_id)),
+            )
+            groups.append(
+                ReminderGroup(
+                    owner_name=owner,
+                    tasks_today=today_items,
+                    tasks_next_workday=next_items,
+                )
+            )
+        return groups, today, next_day

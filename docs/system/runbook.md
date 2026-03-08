@@ -43,6 +43,20 @@ Health markers in response:
 - `meta.sourceHash`
 - `meta.sourceId`
 
+## 4.1) Reminder v2
+Reminder runtime source:
+- tasks from prep snapshot
+- people routing from people snapshot (`snapshots/{env}/people/default.json`)
+
+Reminder selection:
+- designers are selected only by milestones on today and next workday.
+- default statuses: `work`, `pre_done`.
+
+Delivery safety:
+- if `ENV=test`, sends are forced to test chat override.
+- vacation `да` skips delivery.
+- retry policy: 3 attempts with backoff and classified counters.
+
 ## 5) Milestones invariants
 Milestones must never be empty:
 - sync adds `start` if missing
@@ -52,7 +66,7 @@ Milestones must never be empty:
 ### Snapshot source unavailable
 - check Object Storage credentials and bucket/prefix config:
   - `runtime.snapshot_engine.bucket`
-  - `runtime.snapshot_engine.prefix_raw|prefix_prep|prefix_extra`
+  - `runtime.snapshot_engine.prefix_raw|prefix_prep|prefix_extra|prefix_people`
 - startup should fail-fast if snapshot engine is enabled but required fields are empty.
 
 ### Missing milestones

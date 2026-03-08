@@ -81,12 +81,37 @@ class RenderV2TestCase(unittest.TestCase):
         )
         self.assertGreater(len(plan.values), 10)
         self.assertGreaterEqual(len(plan.borders), 1)
+        # Stage labels are preserved from timing text (including "ответ клиента").
+        stage_cells = [cell for cell in plan.values if cell.row >= 3 and cell.col >= 2 and str(cell.value)]
+        self.assertTrue(any("ОТВЕТ" in str(cell.value) for cell in stage_cells))
         # Timestamp in A1.
         a1 = [cell for cell in plan.values if cell.row == 1 and cell.col == 1]
         self.assertEqual(len(a1), 1)
         # Designer row in column A.
         owner_cells = [cell for cell in plan.values if cell.col == 1 and str(cell.value).startswith("owner-")]
         self.assertGreaterEqual(len(owner_cells), 2)
+
+    def test_usecase_keeps_continuous_task_band_between_min_and_max_dates(self) -> None:
+        prep = PrepSnapshot(
+            source_id="sheet:test",
+            raw_source_hash="hash",
+            built_at_utc=datetime.now(timezone.utc),
+            tasks_by_id={
+                "1": _task("1", "owner-1", "work", {"2026-03-05": ["ответ клиента"], "2026-03-07": ["анима"]}),
+            },
+            indexes=PrepIndexes(),
+        )
+        plan = RenderUseCase(_FakeEngine(prep)).build_plan(
+            RenderRequest(
+                window=Window(start=date(2026, 3, 1), end=date(2026, 3, 10)),
+                statuses=["work"],
+            )
+        )
+        # Owner row=2, first task row=3, start at 01.03 -> day 06.03 is col 7.
+        mid_day_cells = [cell for cell in plan.values if cell.row == 3 and cell.col == 7]
+        self.assertEqual(len(mid_day_cells), 1)
+        self.assertEqual(str(mid_day_cells[0].value), "")
+        self.assertIsNotNone(mid_day_cells[0].color)
 
     def test_writer_applies_cells_and_borders(self) -> None:
         prep = PrepSnapshot(

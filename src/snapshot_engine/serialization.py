@@ -8,6 +8,8 @@ from typing import Any
 
 from src.snapshot_engine.model import (
     Milestone,
+    PeopleSnapshot,
+    PersonView,
     PrepIndexes,
     PrepSnapshot,
     RawSnapshot,
@@ -173,6 +175,44 @@ def prep_from_dict(payload: dict[str, Any]) -> PrepSnapshot:
             by_status={str(k): [str(v) for v in list(vals or [])] for k, vals in dict(indexes_payload.get("by_status", {})).items()},
             by_owner={str(k): [str(v) for v in list(vals or [])] for k, vals in dict(indexes_payload.get("by_owner", {})).items()},
         ),
+    )
+
+
+def people_to_dict(snapshot: PeopleSnapshot) -> dict[str, Any]:
+    people: dict[str, dict[str, Any]] = {}
+    for key, person in snapshot.people_by_name.items():
+        people[str(key)] = {
+            "name": str(person.name),
+            "chat_id": str(person.chat_id),
+            "vacation": str(person.vacation),
+            "position": str(person.position),
+            "person_id": str(person.person_id),
+        }
+    return {
+        "source_id": str(snapshot.source_id),
+        "fetched_at_utc": _dt(snapshot.fetched_at_utc),
+        "people_by_name": people,
+    }
+
+
+def people_from_dict(payload: dict[str, Any]) -> PeopleSnapshot:
+    people_raw = payload.get("people_by_name", {})
+    people_by_name: dict[str, PersonView] = {}
+    if isinstance(people_raw, dict):
+        for key, item in people_raw.items():
+            if not isinstance(item, dict):
+                continue
+            people_by_name[str(key)] = PersonView(
+                name=str(item.get("name", "")).strip(),
+                chat_id=str(item.get("chat_id", "")).strip(),
+                vacation=str(item.get("vacation", "")).strip(),
+                position=str(item.get("position", "")).strip(),
+                person_id=str(item.get("person_id", "")).strip(),
+            )
+    return PeopleSnapshot(
+        source_id=str(payload.get("source_id", "")).strip(),
+        fetched_at_utc=_parse_dt(payload.get("fetched_at_utc")) or datetime.now(timezone.utc),
+        people_by_name=people_by_name,
     )
 
 

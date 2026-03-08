@@ -54,7 +54,8 @@ async def run_planner_use_case(
         start_time = pd.Timestamp.now()
         planner.update()
         planner.task_to_calendar()
-        planner.designer_task_to_calendar()
+        # Legacy "Календарь" sheet render is intentionally disabled.
+        print("calendar_render=disabled")
         planner.task_to_table()
         run_time = pd.Timestamp.now() - start_time
         print(f"Table update runtime: {run_time}")
@@ -71,4 +72,3 @@ async def run_planner_use_case(
         print(f"Reminder runtime: {run_time}")
 
     return planner.build_quality_report()
-

@@ -57,6 +57,15 @@ class TaskView:
 
 
 @dataclass(slots=True, frozen=True)
+class PersonView:
+    name: str
+    chat_id: str
+    vacation: str
+    position: str
+    person_id: str = ""
+
+
+@dataclass(slots=True, frozen=True)
 class PrepIndexes:
     by_status: dict[str, list[str]] = field(default_factory=dict)
     by_owner: dict[str, list[str]] = field(default_factory=dict)
@@ -77,6 +86,13 @@ class PrepSnapshot:
     built_at_utc: datetime
     tasks_by_id: dict[str, TaskView]
     indexes: PrepIndexes = field(default_factory=PrepIndexes)
+
+
+@dataclass(slots=True, frozen=True)
+class PeopleSnapshot:
+    source_id: str
+    fetched_at_utc: datetime
+    people_by_name: dict[str, PersonView]
 
 
 @dataclass(slots=True, frozen=True)
