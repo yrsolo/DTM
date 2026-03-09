@@ -1,8 +1,24 @@
 # Active Tasks
 
-- CAM-INFO-OPS-OBSERVABILITY-V1 P08: deploy build-info hotfix to `test`, verify `/info.build` is populated, then close campaign
+- none
 
 ## Done
+
+- CAM-LEGACY-ARCHIVE-CLEANUP-V1 P01: verified `main.py` is only used by `local_run.py` and old planner/readmodel-probe stack is not needed by live features
+- CAM-LEGACY-ARCHIVE-CLEANUP-V1 P02: added `local_runtime.py`, switched `local_run.py`, and archived `main.py`
+- CAM-LEGACY-ARCHIVE-CLEANUP-V1 P03: moved planner/bootstrap/render/readmodel-probe modules under `src/legacy/`
+- CAM-LEGACY-ARCHIVE-CLEANUP-V1 P04: rewired compatibility/tooling imports and tightened legacy import guard
+- CAM-LEGACY-ARCHIVE-CLEANUP-V1 P05: archived compat `core/bootstrap.py`, `core/manager.py`, planner use-case shim, and moved legacy tests under `tests/legacy/`
+- CAM-LEGACY-ARCHIVE-CLEANUP-V1 P06: updated docs/tracking and re-ran smoke/regression checks
+- CAM-LEGACY-ARCHIVE-CLEANUP-V1 P07: archived stale active system docs to `docs/archive/system_legacy/` and rewrote active `docs/system/*` to current runtime state
+
+- CAM-ENTRYPOINT-LEGACY-CUT-FINAL-V1 P01: register campaign, trust gate, and verified runtime/entrypoint cut line
+- CAM-ENTRYPOINT-LEGACY-CUT-FINAL-V1 P02: thin `index.py` into dispatcher + transport shells and remove `FrontendReadmodelRepo` leak
+- CAM-ENTRYPOINT-LEGACY-CUT-FINAL-V1 P03: cut legacy planner/store/readmodel probe branch from standard runtime
+- CAM-ENTRYPOINT-LEGACY-CUT-FINAL-V1 P04: archive dead-end legacy entrypoint jobs and add grep gate
+- CAM-ENTRYPOINT-LEGACY-CUT-FINAL-V1 P05: run routing/runtime regression tests, update docs, and close campaign
+
+- CAM-INFO-OPS-OBSERVABILITY-V1 P08: deploy build-info hotfix to `test`, verify `/info.build` is populated, then close campaign
 
 - CAM-INFO-OPS-OBSERVABILITY-V1 P01: register campaign, trust gate, and verified touchpoints for `/info`, queue status, and render diagnostics
 - CAM-INFO-OPS-OBSERVABILITY-V1 P02: extend `S3JobStatusStore` with recent terminal history and accessors

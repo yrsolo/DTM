@@ -1,89 +1,59 @@
 ﻿# Configuration (Current)
 
-Current runtime source of truth: `config/constants.py`, with YAML-backed defaults via `src/config/loader.py`.
+## Source of truth
+Typed config is loaded through:
+- `src/config/schema.py`
+- `src/config/loader.py`
+- composed in `src/app/bootstrap.py`
 
-Transition scaffold for `CAM-CONFIG-REFORM-V0`:
+Primary config files:
 - `config/runtime.yaml`
 - `config/tables.yaml`
 - `config/db.yaml`
 - `config/llm.yaml`
 - `config/mapping.yaml`
 - `config/deploy.yaml`
-- `src/config/schema.py`
-- `src/config/loader.py`
-- `src/app/bootstrap.py`
-
-Entrypoints still import `config/constants.py`, but defaults are sourced from YAML.
 
 ## Runtime contour
-- `ENV` = `dev|test|prod`
-- `STRICT_ENV_GUARD` (optional override)
+- `runtime.env`: `dev|test|prod`
+- `runtime.timezone`: default `Europe/Moscow`
+- `runtime.snapshot_engine.*`: snapshot/Object Storage settings
+- `runtime.queue.*`: Yandex Message Queue settings
+- `runtime.telegram.*`: webhook and sender settings
+- `runtime.notify.*`: reminder retry/enhancer/test-chat policy
 
-## Domains
-- YAML defaults: `config/runtime.yaml` (`web.domain`, `web.api_domain_test`, `web.api_domain_prod`)
-- ENV overrides (optional): `WEB_DOMAIN`, `API_DOMAIN_TEST`, `API_DOMAIN_PROD`
-- `API_DOMAIN` is derived from `ENV`
+## Secrets
+Secrets stay outside repo config files:
+- Google credentials
+- Object Storage credentials
+- Telegram token
+- LLM provider tokens
+- Yandex Cloud auth/service secrets
 
-## Runtime switches (YAML defaults, ENV overrides optional)
-- `DEBUG_HTTP_EVENT`
-- `TIMING_YEAR_MODE`
-- `STORE_MODE`, `READMODEL_SOURCE`, `NOTIFY_SOURCE`, `RENDER_SOURCE`
-- `FORCE_REFRESH`, `READMODEL_TTL_MINUTES`, `PREFLIGHT_TOP_ROWS`, `FULL_SYNC_INTERVAL_HOURS`
-- `LEGACY_BLOB_WRITE`, `WRITE_LEGACY_MILESTONES`, `YDB_MIGRATE_ON_START`
-
-API policy note:
-- API v1 routes are compatibility aliases to API v2 runtime handlers (owner rollback decision dated 2026-03-04).
-- `FRONTEND_API_DEFAULT_VERSION` is removed from active runtime configuration contour.
-
-## YDB
-Contour-aware env keys:
-- `YDB_ID_TEST`, `YDB_ENDPOINT_TEST`, `YDB_DATABASE_TEST`
-- `YDB_ID_PROD`, `YDB_ENDPOINT_PROD`, `YDB_DATABASE_PROD`
-- legacy fallback: `YDB_ID`, `YDB_ENDPOINT`, `YDB_DATABASE`
-
-Backoff tuning:
-- `YDB_EXHAUSTED_MAX_ATTEMPTS`
-- `YDB_EXHAUSTED_BASE_BACKOFF_SECONDS`
-- `YDB_EXHAUSTED_MAX_BACKOFF_SECONDS`
-- `YDB_EXHAUSTED_JITTER_RATIO`
-
-## Google Sheets
-Google key resolution (priority):
-1. `GOOGLE_KEY_JSON_PATH`
-2. `GOOGLE_KEY_JSON_B64`
-3. `GOOGLE_KEY_JSON`
-4. fallback repo file path
-
-Sheet names and column maps are in `config/tables.yaml`.
-Optional overrides via ENV: `SOURCE_SHEET_NAME`, `TARGET_SHEET_NAME`.
+They are resolved through secret storage / env in loader/bootstrap only.
 
 ## Object Storage
-Defaults are in `config/db.yaml` (`object_storage.endpoint_url_default`, `object_storage.bucket_default`).
-Optional overrides: `S3_ENDPOINT_URL`, `S3_BUCKET`.
-Credentials stay in ENV/secret storage: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`.
+Used for:
+- raw snapshot
+- prep snapshot
+- people snapshot
+- extra metadata
+- attachment binaries
+- job status/history
 
-## LLM
-Provider/model defaults are in `config/llm.yaml`.
-Secrets stay in ENV/secret storage:
-- `OPENAI_TOKEN`, `ORG_TOKEN`
-- `GOOGLE_LLM_API_KEY`
-- `YANDEX_LLM_API_KEY`
-
-## Telegram
-- `TG_TOKEN` (secret)
-- `DEFAULT_CHAT_ID` (optional override)
-- `TG_BOT_USERNAME` (optional override)
+## Queue
+Queue config defines:
+- enabled flag
+- queue URLs for test/prod
+- status/history prefixes
+- endpoint/auth data for live queue introspection
 
 ## Deploy workflows
-GitHub Actions now read non-secret deploy defaults from `config/deploy.yaml`.
-Critical secrets remain in GitHub/Lockbox.
+Current workflows:
+- `.github/workflows/deploy_yc_function_main.yml` — deploy on push to `test`
+- `.github/workflows/release_yc_function_prod.yml` — manual prod release
 
-Branch and deploy flow:
-- `dev`: active development branch (regular commits/pushes).
-- `test`: integration branch for test contour deployment.
-- `main`: production promotion branch (owner-approved merge only).
-
-Automation:
-- `.github/workflows/deploy_yc_function_main.yml` runs on push to `test` (test contour deploy).
-- `.github/workflows/open_pr_test_to_main.yml` ensures an open PR `test -> main` exists after updates in `test`.
-- `.github/workflows/release_yc_function_prod.yml` remains manual production release flow.
+## Config policy
+- no `os.getenv()` outside loader/bootstrap
+- services receive typed config objects
+- env-based branching belongs in bootstrap/policy selection, not inside core services

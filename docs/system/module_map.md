@@ -7,17 +7,15 @@ This document is a navigation map of the codebase as it exists now.
 | Path | Role | Responsibility | State | Notes |
 |---|---|---|---|---|
 | `index.py` | Entrypoint (HTTP) | Parse event, dispatch HTTP handlers, optionally trigger planner runtime modes | Refactor | Thin shell; uses `src/entrypoints/http/*` and shared runtime entry. |
-| `main.py` | Entrypoint (Jobs) | Thin wrapper over shared runtime entry | OK | Delegates to `run_planner_runtime(...)` only. |
-| `src/entrypoints/runtime/planner_runtime_entry.py` | Entrypoint (Runtime) | Canonical planner runtime orchestration for job and HTTP-triggered modes | OK | Single runtime entry used by both `main.py` and `index.py`. |
-| `local_run.py` | Support | Local wrapper for runtime modes | OK | Dev convenience tool. |
+| `src/entrypoints/runtime/planner_runtime_entry.py` | Entrypoint (Runtime) | Canonical planner runtime orchestration for local/job and HTTP-triggered modes | OK | Single standard runtime entry used by `index.py` and `src/entrypoints/runtime/local_runtime.py`. |
+| `local_run.py` | Support | Local wrapper for runtime modes | OK | Dev convenience tool; calls `src/entrypoints/runtime/local_runtime.py`. |
 
 ## Entrypoint boundaries
 
 | Path | Role | Responsibility | State | Notes |
 |---|---|---|---|---|
 | `src/entrypoints/http/*` | Entrypoint (HTTP modules) | HTTP parsing/routing/handlers/runtime execution helpers | OK | Canonical HTTP boundary. |
-| `src/entrypoints/jobs/*` | Entrypoint (Jobs modules) | Runtime job steps used by planner runtime entry | OK | Active job orchestration modules. |
-| `src/legacy/http_core_bindings.py` | Legacy bridge | Isolates legacy core composition bindings for HTTP contour | Legacy (contained) | Explicitly isolated legacy namespace. |
+| `src/entrypoints/jobs/*` | Entrypoint (Jobs modules) | Runtime job steps used by planner runtime entry | OK | Active standard-runtime job modules only. |
 
 ## Domain (new)
 
@@ -49,12 +47,13 @@ This document is a navigation map of the codebase as it exists now.
 
 | Path | Role | Responsibility | State | Notes |
 |---|---|---|---|---|
-| `core/*` | Legacy | Old architecture compatibility contour | Legacy | Kept for controlled legacy compatibility only. |
+| `src/legacy/*` | Legacy | Archived planner/bootstrap/render/reference contour, including legacy core/bootstrap/use-case shims | Legacy | Reference-only; must not be imported by standard runtime. |
+| `core/*` | Domain/compat mix | Domain contracts still used by live features; legacy compatibility shims removed from active root | Refactor | `core/bootstrap.py` and `core/manager.py` are archived under `src/legacy/core/`. |
 | `old/v1/*` | Legacy archive | Historical v1 artifacts | Legacy | Preserved as archaeology; not active runtime path. |
 
 ## Immediate guidance
 
-- Keep `index.py` and `main.py` thin wrappers.
+- Keep `index.py` thin; local tooling should use `src/entrypoints/runtime/local_runtime.py`.
 - Keep planner runtime orchestration in `src/entrypoints/runtime/planner_runtime_entry.py`.
 - Keep API/runtime route logic in `src/entrypoints/http/*`.
-- Keep legacy bindings explicit under `src/legacy/*` only.
+- Keep legacy bindings explicit under `src/legacy/*` only; do not recreate compat shims in active `core/`.

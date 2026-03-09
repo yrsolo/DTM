@@ -14,7 +14,7 @@ This is a minimal runbook to operate the current system.
 
 ## 2) Create tables (one-time)
 Option A (recommended): run migration mode with env flag:
-- set `YDB_MIGRATE_ON_START=1` and run the migrate job (see `main.py` mode).
+- set `YDB_MIGRATE_ON_START=1` and run the migrate job through `local_run.py` / standard runtime mode.
 
 Option B: call schema ensure via code path (dev only).
 
@@ -155,23 +155,33 @@ Interpretation:
    - test deploy workflow starts automatically.
 4) Production promotion stays owner-controlled: owner manually creates/reviews PR `test -> main`, then runs manual production release workflow.
 
-## 8) Legacy-cut campaign sequence
-Execution order for legacy removal:
-1) `CAM-LEGACY-CUT-API-V1`
-2) `CAM-NOTIFY-MODULE-V1`
-3) `CAM-RENDER-MODULE-V1`
-4) `CAM-HTTP-FALLBACK-REMOVAL-V1`
-5) `CAM-LEGACY-PLANNER-DELETE-V1`
-
-Guard campaign:
-- `CAM-GREP-GATES-V1` must be active before planner deletion stage.
+## 8) Legacy-cut state
+Current state:
+- `index.py` is a thin shell delegating to `IndexDispatcher`
+- `local_run.py` uses `src/entrypoints/runtime/local_runtime.py`; `main.py` is archived under `src/legacy/main.py`
+- standard runtime no longer supports `legacy_planner_*`
+- legacy planner/bootstrap/render/readmodel-probe/source-switch helpers are archived under `src/legacy/`
+- legacy compat bootstrap/manager/use-case shims are also archived under `src/legacy/core/` and `src/legacy/services/usecases/`
 
 ## 9) Anti-relapse gate
 Run import guard before merge to `test`:
-- `python scripts/check_no_legacy_imports.py` (after it is introduced by CAM-GREP-GATES-V1)
+- `python scripts/check_no_legacy_entrypoint_imports.py`
 
 Target violations:
-- `import core` / `from core`
-- `import pandas`
-- `GoogleSheetPlanner`
-- `build_planner_dependencies`
+- `src.legacy` imports from active entrypoints/runtime
+- `src.adapters.store_ydb`
+- `src.entrypoints.jobs.legacy_store_write_job`
+- `src.entrypoints.jobs.planner_pipeline_job`
+- `src.entrypoints.jobs.planner_setup_job`
+- `src.entrypoints.jobs.source_switch_job`
+- `src.services.usecases.planner_runtime`
+- `src.app.planner_bootstrap`
+- `src.services.planner_runtime`
+- `src.services.calendar_runtime`
+- `src.services.render.task_table_runtime`
+- `src.entrypoints.jobs.readmodel_probe_job`
+- `src.entrypoints.jobs.readmodel_freshness`
+- `core.bootstrap`
+- `core.manager`
+- `main`
+- any import growth in `index.py` beyond `build_app_context` and `IndexDispatcher`

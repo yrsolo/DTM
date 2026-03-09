@@ -1,36 +1,52 @@
-# Runtime modes (Current)
+﻿# Runtime Modes (Current)
 
-## Overview
-The code supports multiple run modes (jobs + HTTP).
-The intent is:
-- timer/sync mode updates YDB from Sheets and refreshes readmodel
-- api mode serves frontend v2 payload from YDB readmodel
-- render mode draws views (often back to Sheets)
-- reminder mode sends Telegram notifications
+## Supported standard modes
 
-## timer (sync + readmodel)
-Pseudo:
-1) read preflight snapshot (values+colors)
-2) hash gate
-3) if needed: read full snapshot → normalize → version → write YDB
-4) build frontend v2 readmodel snapshot
+### `timer`
+- canonical scheduled mode
+- updates snapshot storage
+- may trigger render/notify flows depending on caller path, but standard timer runtime is snapshot-first
 
-## api
-- read `dtm_readmodel_frontend_v2` (1 query)
-- apply request filtering (if implemented)
-- return payload
+### `sync-only`
+- explicit rebuild mode
+- updates raw/prep snapshots
+- used for manual refresh and local/test smoke
 
-## render
-- read tasks (prefer readmodel/bulk)
-- render to sheet target ranges
+### `render_v2`
+- renders Google Sheets views from Prep snapshot
+- supported targets:
+  - timeline sheet (`Задачи`)
+  - designers sheet (`Дизайнеры`)
 
-## reminder
-- read tasks (prefer readmodel/bulk)
-- select tasks for the day/window
-- format message (optional LLM)
-- send via Telegram
+### `reminder_v2`
+- sends reminder flow through new notify contour
 
-## forced refresh
-`FORCE_REFRESH=1` modifies timer mode:
-- may refresh operational head and readmodel
-- must NOT create new versions or write a new milestones_v revision
+### `reminders-only`
+- reminder-only execution without sync/update
+
+### `morning`
+- production-like reminder mode for workday delivery
+
+### `test`
+- safe operator/developer mode
+- test-chat routing for reminders
+- safe defaults for mocks where configured
+
+## Transport mapping
+- HTTP explicit runtime requests go through:
+  - `src/entrypoints/http/http_shell.py`
+  - `src/entrypoints/runtime/runtime_shell.py`
+- scheduled triggers go through:
+  - `src/entrypoints/triggers/trigger_shell.py`
+- queue worker jobs bypass ad-hoc mode routing and execute explicit command jobs
+
+## Unsupported legacy modes
+Legacy planner/store modes are not part of the standard runtime anymore.
+
+Behavior:
+- HTTP: explicit unsupported response
+- runtime shell/debug: structured `unsupported_mode`
+
+## Timezone policy
+- human-facing render timestamps use `runtime.timezone` (default `Europe/Moscow`)
+- JSON/system timestamps remain UTC ISO

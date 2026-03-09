@@ -14,7 +14,7 @@ from agent.reminder_alert_evaluator import (
 )
 from core.read_model import build_read_model
 from core.schema_snapshot import build_schema_snapshot
-from main import main
+from src.entrypoints.runtime.local_runtime import run_local_runtime
 
 
 def build_event(trigger_id):
@@ -222,7 +222,7 @@ if __name__ == "__main__":
     args = parse_args()
     event = load_event(args)
     quality_report = asyncio.run(
-        main(
+        run_local_runtime(
             mode=args.mode,
             event=event,
             dry_run=args.dry_run,

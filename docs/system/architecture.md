@@ -1,51 +1,80 @@
-# Architecture (Current)
+﻿# Architecture (Current)
 
 ## Purpose
-DTM (Designers Task Manager) synchronizes a Google Sheets task table into YDB, builds a **frontend readmodel snapshot**, and uses it to serve/produce:
-- API responses (frontend v2 payload)
-- Sheets rendering (views/diagrams)
-- Telegram reminders (optionally LLM-styled)
+DTM is a Cloud Functions runtime that:
+- reads task data from Google Sheets,
+- builds snapshot artifacts in Object Storage,
+- serves API/query responses from prepared snapshots,
+- renders operational Sheets views,
+- sends Telegram notifications,
+- executes heavy mutations asynchronously through Message Queue workers.
 
-## Canonical pipeline
-**Sheets snapshot (values + colors) → Normalize → Hash/Version → YDB operational tables → Build readmodel snapshot → Consumers**
+## Canonical production contour
+1. Sheets snapshot (`values + colors`)
+2. Normalize into canonical task model
+3. Write Raw snapshot to S3/Object Storage
+4. Merge Extra metadata and build Prep snapshot
+5. Consumers read Prep snapshot
 
-Key property: consumers SHOULD NOT depend on Sheets directly; they use a DB snapshot (readmodel) or operational bulk reads.
+Consumers:
+- `/api/v2/frontend`
+- `/info`
+- render jobs (`Задачи`, `Дизайнеры`)
+- reminder jobs
+- group query reply jobs
 
-## Entrypoints
-- `index.py` — HTTP entrypoint (serverless handler). Routes API and other HTTP calls.
-- `main.py` — job runner (timer sync/build, render, notify, migrate).
-- `local_run.py` — local wrapper for running modes.
+## Runtime topology
+- `index.py` is a thin top-level shell.
+- `src/entrypoints/index_dispatcher.py` classifies event shape.
+- Transport shells handle:
+  - HTTP
+  - queue worker events
+  - scheduled triggers
+  - runtime execution bridge
 
-## Main subsystems
+## Async mutation contour
+Heavy and mutating actions are queue-backed:
+- snapshot update
+- render timeline sheet
+- render designers sheet
+- send reminders
+- attach task file
+- telegram group-query reply
 
-### Source ingestion (Sheets)
-- Reads:
-  - raw values (cells)
-  - colors/status markers (used as status/phase signal)
+Flow:
+1. enqueue command
+2. worker consumes command
+3. writes job status/history to S3
+4. `/info` shows recent/latest job state
 
-### Normalization (domain)
-Transforms sheet rows into canonical normalized tasks:
-- stable fields (title/brand/format/customer/owner/group/raw_timing/etc.)
-- milestones list (planned/actual/status/raw_text/confidence)
-- status derived from colors mapping
+## Standard runtime modes
+Supported standard runtime modes:
+- `timer`
+- `sync-only`
+- `render_v2`
+- `reminder_v2`
+- `reminders-only`
+- `morning`
+- `test`
 
-### Operational storage (YDB)
-YDB stores:
-- Head state for tasks (`dtm_tasks`)
-- Version history (`dtm_task_versions`)
-- Versioned milestones per task revision (`dtm_task_milestones_v`)
-- Sync cursor/metadata (`dtm_sync_state`)
-- Readmodel snapshot row (`dtm_readmodel_frontend_v2`)
+Unsupported legacy planner modes are intentionally rejected.
 
-### Readmodel snapshot
-Readmodel builder loads operational data in bulk and writes a single JSON payload row:
-- API v2 reads this snapshot (1 query) instead of rebuilding on the fly.
+## Entry boundary rules
+- `index.py` must remain thin.
+- `src/entrypoints/**` owns transport parsing/translation only.
+- domain logic lives in `src/core/**` and focused service/use-case modules.
+- archived planner/bootstrap/render/reference code lives under `src/legacy/**` and must not be imported by standard runtime.
 
-## Design constraints
-- Sheets file modified time is unreliable (renderer updates same file). Hash gate must be on **source-range values/colors**.
-- YDB serverless quota: avoid N+1 queries; prefer bulk reads/writes.
-- Timing changes are significant: milestones changes must trigger version bump.
-
-## Target (future) style for entrypoints
-`index.py`/`main.py` should be thin: parse mode/request, call one handler/use-case, return output.
-All flags/if-ladders should be buried into config/strategies/services.
+## Storage roles
+- Object Storage/S3:
+  - raw snapshot
+  - prep snapshot
+  - people snapshot
+  - extra metadata
+  - job status/history
+  - attachment binaries
+- Yandex Message Queue:
+  - async command intake
+- YDB:
+  - no longer canonical for API v2 runtime path
+  - remaining code is legacy/reference or non-canonical support debt

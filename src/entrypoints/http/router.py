@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 from src.app.context import AppContext
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.admin_queue_handler import AdminQueueHandler
@@ -17,13 +15,13 @@ from src.telegram.webhook import TelegramWebhookHandler
 class HttpRouter:
     """Route table based HTTP router."""
 
-    def __init__(self, ctx: AppContext, *, frontend_readmodel_repo_cls: Any) -> None:
+    def __init__(self, ctx: AppContext) -> None:
         self._telegram_webhook_handler = TelegramWebhookHandler(ctx)
         self._admin_queue_handler = AdminQueueHandler(ctx)
         self._job_status_handler = JobStatusHandler(ctx)
         self._info_handler = InfoHandler(ctx)
         self._frontend_root_handler = FrontendRootHandler(ctx)
-        self._frontend_v2_handler = FrontendV2Handler(ctx, frontend_readmodel_repo_cls=frontend_readmodel_repo_cls)
+        self._frontend_v2_handler = FrontendV2Handler(ctx)
 
     async def dispatch(self, req: HttpRequest) -> HttpResponse | None:
         telegram_response = self._telegram_webhook_handler.handle(req)

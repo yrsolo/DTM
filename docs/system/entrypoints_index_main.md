@@ -1,12 +1,16 @@
-# Entrypoints Behavior (Current): `index.py` and `main.py`
+# Entrypoints Behavior (Current): `index.py` and standard runtime shells
 
-## `main.py`
+## Archived local wrapper
 
-`main.py` is a thin wrapper:
-- builds `PlannerRuntimeRequest`
-- delegates execution to `run_planner_runtime(...)`
+`main.py` is no longer an active top-level entrypoint.
 
-No domain orchestration is implemented directly in `main.py`.
+Current local runtime flow:
+- `local_run.py`
+- `src/entrypoints/runtime/local_runtime.py`
+- `run_planner_runtime(...)`
+
+Archived wrapper code now lives under:
+- `src/legacy/main.py`
 
 ## Runtime entry: `src/entrypoints/runtime/planner_runtime_entry.py`
 
@@ -17,14 +21,33 @@ Canonical runtime flow:
 
 Timer pipeline now updates snapshot engine storage (S3 raw/prep) and does not build/read YDB readmodel for API v2 runtime path.
 
+Standard runtime modes only:
+- `timer`
+- `sync-only`
+- `render_v2`
+- `reminder_v2`
+- `reminders-only`
+- `morning`
+- `test`
+
+Legacy planner modes are no longer supported in standard runtime and return explicit `unsupported_mode`.
+
 ## `index.py`
 
-`index.py` is an HTTP/runtime shell:
-- parse event -> `HttpRequest`
-- dispatch via `HttpRouter(ctx).dispatch(req)`
-- for non-HTTP runtime modes call runtime executor
+`index.py` is now a true thin shell:
+- build `AppContext`
+- build `IndexDispatcher`
+- delegate `handler(event, ctx)` to dispatcher
 
-`index.py` does not import `main.main` and has no lambda/factory wiring in runtime dispatch.
+Transport-specific branching lives outside `index.py`:
+- `src/entrypoints/index_dispatcher.py`
+- `src/entrypoints/event_classifier.py`
+- `src/entrypoints/http/http_shell.py`
+- `src/entrypoints/queue/worker_shell.py`
+- `src/entrypoints/triggers/trigger_shell.py`
+- `src/entrypoints/runtime/runtime_shell.py`
+
+`index.py` no longer imports queue DTOs, HTTP parser helpers, runtime executors, YDB repo classes, or `planner_runtime_entry` directly.
 
 ## HTTP handlers
 - `FrontendRootHandler`: root/doc compatibility
@@ -79,9 +102,15 @@ Info observability policy:
 - render RCA should use `jobs.latestByCommand.render_timeline_sheet` and `renderDebug`, not raw enqueue HTTP status
 - `/info?format=json` keeps machine timestamps in UTC; HTML may show additive MSK display for operator convenience
 
-Planned campaign sequence:
-1. `CAM-LEGACY-CUT-API-V1`
-2. `CAM-NOTIFY-MODULE-V1`
-3. `CAM-RENDER-MODULE-V1`
-4. `CAM-HTTP-FALLBACK-REMOVAL-V1`
-5. `CAM-LEGACY-PLANNER-DELETE-V1`
+Legacy reference policy:
+- archived compatibility helpers now live under `src/legacy/entrypoints/jobs/`
+- standard runtime must not import `src.legacy.*` or old planner/store helpers
+- guard script: `python scripts/check_no_legacy_entrypoint_imports.py`
+
+Current state:
+- legacy-cut sequence for standard entrypoints is completed
+- archived planner/bootstrap/render/readmodel-probe code now lives under `src/legacy/`
+- archived compat bootstrap/manager/use-case shims now also live under:
+  - `src/legacy/core/`
+  - `src/legacy/services/usecases/`
+- any remaining legacy cleanup should target reference modules outside active runtime path

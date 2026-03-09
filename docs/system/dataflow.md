@@ -13,6 +13,8 @@ Hash basis is stable JSON over `{values, colors}`.
 Runtime object:
 - `src/services/timer_pipeline.py` -> `TimerPipeline(AppContext)`
 - `TimerPipeline.run(RunRequest(...))` invokes `SnapshotEngine.update(...)`
+- top-level transport dispatch: `index.py` -> `src/entrypoints/index_dispatcher.py`
+- runtime bridge for explicit modes: `src/entrypoints/runtime/runtime_shell.py`
 
 Execution order:
 1. fetch sheet snapshot
@@ -22,6 +24,7 @@ Execution order:
 5. on no-change: skip writes
 
 No YDB operational/readmodel writes are part of the canonical API v2 runtime path.
+No legacy planner/store/readmodel-probe branch is part of the canonical standard runtime path.
 
 People routing snapshot:
 - timer update also refreshes people snapshot from sheet `Люди` into S3.

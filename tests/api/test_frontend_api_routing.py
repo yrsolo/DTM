@@ -16,6 +16,10 @@ if str(ROOT_DIR) not in sys.path:
 import index
 from src.entrypoints.http import frontend_v2_handler as frontend_v2_module
 from src.entrypoints.http import info_handler as info_handler_module
+from src.entrypoints.http.event_parser import extract_payload, http_path, query_params
+from src.entrypoints.http.frontend_query_params import parse_bool
+from src.entrypoints.http.runtime_mode import extract_force_refresh, extract_run_mode
+from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES
 from src.worker.model import JobStatusRecord
 
 
@@ -148,11 +152,11 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
 
     def test_http_path_from_proxy_template(self) -> None:
         event = _fixture_event()
-        self.assertEqual(index._http_path(event), "/api/v1/frontend")
+        self.assertEqual(http_path(event), "/api/v1/frontend")
 
     def test_query_params_from_multivalue(self) -> None:
         event = _fixture_event()
-        params = index._query_params(event)
+        params = query_params(event)
         self.assertEqual(params.get("statuses"), "work,pre_done")
         self.assertEqual(params.get("limit"), "100")
         self.assertEqual(params.get("include_people"), "true")
@@ -300,20 +304,20 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
             "mode": "sync-only",
             "force_refresh": "1",
         }
-        request_payload, is_http_event = index._extract_payload(event)
-        run_mode = index._extract_run_mode(
+        request_payload, is_http_event = extract_payload(event)
+        run_mode = extract_run_mode(
             event,
             request_payload,
             is_http_event,
-            allowed_run_modes=index.ALLOWED_RUN_MODES,
-            query_params=index._query_params,
+            allowed_run_modes=STANDARD_RUN_MODES,
+            query_params=query_params,
         )
-        force_refresh = index._extract_force_refresh(
+        force_refresh = extract_force_refresh(
             event,
             request_payload,
             is_http_event,
-            query_params=index._query_params,
-            parse_bool=index._parse_bool,
+            query_params=query_params,
+            parse_bool=parse_bool,
         )
         self.assertEqual(run_mode, "sync-only")
         self.assertTrue(force_refresh)
@@ -323,15 +327,25 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         event["pathParams"]["proxy"] = "api/v2/frontend"
         event["params"]["proxy"] = "api/v2/frontend"
         event["queryStringParameters"] = {"mode": "render_v2"}
-        request_payload, is_http_event = index._extract_payload(event)
-        run_mode = index._extract_run_mode(
+        request_payload, is_http_event = extract_payload(event)
+        run_mode = extract_run_mode(
             event,
             request_payload,
             is_http_event,
-            allowed_run_modes=index.ALLOWED_RUN_MODES,
-            query_params=index._query_params,
+            allowed_run_modes=STANDARD_RUN_MODES,
+            query_params=query_params,
         )
         self.assertEqual(run_mode, "render_v2")
+
+    def test_legacy_runtime_mode_is_rejected_explicitly(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["queryStringParameters"] = {"mode": "legacy_planner_timer"}
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response.get("body", "{}"))
+        self.assertEqual(response["statusCode"], 400)
+        self.assertEqual(payload.get("error", {}).get("code"), "unsupported_mode")
 
     def test_v2_returns_503_when_snapshot_source_unavailable(self) -> None:
         frontend_v2_module.build_snapshot_engine = lambda _ctx: (_ for _ in ()).throw(RuntimeError("s3 down"))  # type: ignore[assignment]
