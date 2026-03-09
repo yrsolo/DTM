@@ -115,9 +115,11 @@ Preferred widget groups:
 Current status:
 
 - custom metrics write path is verified
-- dashboard automation may remain unsupported in v1 if YC API access is insufficient or endpoint contract is unavailable
+- test contour emits real metrics with `env=test`
+- test dashboard id: `fbe6m08jl1vj212t5v0c`
+- dashboard automation is verified from local YC session via DashboardService gRPC
 
-That is not allowed to block metric ingestion itself.
+Dashboard automation is not allowed to block metric ingestion itself.
 
 ## Smoke checklist
 
@@ -139,6 +141,13 @@ For test contour:
    - dashboard id/name if available
    - function version/time window
 
+Current proven test evidence:
+
+- `/info?format=json` shows `metricsClient=YandexMonitoringMetricsClient`
+- API request emits visible `dtm.api.*`
+- timeline render emits visible `dtm.render.*`
+- worker emits visible `dtm.worker.*`
+
 ## Failure triage
 
 If metrics do not appear:
@@ -149,6 +158,7 @@ If metrics do not appear:
 4. inspect structured warning logs for:
    - `monitoring_metric_emit_failed`
 5. verify endpoint and network access
+6. verify metric payload does not use reserved label `service`; use `service_name`
 
 If dashboard is missing:
 

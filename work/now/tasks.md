@@ -1,6 +1,6 @@
 # Active Tasks
 
-- CAM-2026-03-09-YC-MONITORING-INTEGRATION-V1 P03: deploy monitoring-enabled test contour and capture live metric emission evidence from `/info`, API, render, notify, and telegram
+- none
 
 ## Done
 
@@ -15,7 +15,9 @@
 - CAM-2026-03-09-TELEGRAM-COMMAND-ROUTER-V1 P03: add parser/router tests and align docs/tracking with current post-legacy baseline
 - CAM-2026-03-09-YC-MONITORING-INTEGRATION-V1 P01: add typed monitoring config, YC IAM helper, and real Yandex Monitoring metrics client
 - CAM-2026-03-09-YC-MONITORING-INTEGRATION-V1 P02: wire monitoring backend in bootstrap, add docs, and create/update test Yandex Monitoring dashboard
+- CAM-2026-03-09-YC-MONITORING-INTEGRATION-V1 P03: deploy monitoring-enabled test contour and capture live metric emission evidence from `/info`, API, and render on the real test function
 
 ## Notes
 
 - `CAM-2026-03-09-RUNTIME-DEPLANNERIZE-V1` is not opened as active work because the runtime is already post-deplannerization after the legacy-cut sequence.
+- Monitoring integration is considered complete for test-first scope; notify enqueue inconsistency and `/info` build 404 remain separate follow-up issues.

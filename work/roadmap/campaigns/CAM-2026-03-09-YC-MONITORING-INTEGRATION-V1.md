@@ -35,4 +35,5 @@ Turn the existing observability foundation into a real external metrics backend 
 - active runtime in test contour uses `YandexMonitoringMetricsClient`
 - already instrumented paths emit custom metrics to Yandex Monitoring
 - `/info` exposes additive monitoring metadata
+- test dashboard exists and live evidence is captured
 - docs/runbook/evidence reflect the real test-first contour

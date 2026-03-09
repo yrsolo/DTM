@@ -171,6 +171,18 @@ Current operator checks:
    - telegram accepted path
 4. verify matching `dtm.*` metrics in Yandex Monitoring for `env=test`
 
+Current proven test metrics:
+
+- `dtm.api.requests_total`
+- `dtm.api.duration_ms`
+- `dtm.api.response_size_bytes`
+- `dtm.render.total`
+- `dtm.render.duration_ms`
+- `dtm.render.rows_rendered`
+- `dtm.render.cells_written`
+- `dtm.worker.commands_total`
+- `dtm.worker.command_duration_ms`
+
 If metrics are missing:
 
 1. check monitoring enablement in deployed env
@@ -178,3 +190,4 @@ If metrics are missing:
 3. check attached runtime service account Monitoring write rights
 4. inspect logs for `monitoring_metric_emit_failed`
 5. verify dashboard separately; dashboard automation is allowed to lag behind ingestion
+6. verify payload does not use reserved Monitoring label `service`; runtime must emit `service_name`
