@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from src.app.context import AppContext
-from src.observability import timed
 from src.render import DesignersRenderUseCase, GoogleSheetsPlanWriter, RenderJob, RenderRequest, SheetTarget
 from src.render.target_guard import RenderTarget, validate_render_target
 from src.snapshot_engine import build_snapshot_engine
@@ -49,15 +48,18 @@ class RenderDesignersJob:
             GoogleSheetsService(str(self._ctx.deps.get("key_json", "")), dry_run=bool(cmd.payload.get("dry_run", False))),
             SheetTarget(spreadsheet_name=sheet_info.spreadsheet_name, worksheet_name=target_worksheet),
         )
-        with timed(metrics, "dtm.render.duration_ms", {"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "render", "operation": "designers", "result": "finished"}):
-            result = RenderJob(usecase, writer).run(
-                RenderRequest(
-                    window=Window(start=None, end=None, mode="intersects"),
-                    statuses=list(cmd.payload.get("statuses", ["work", "pre_done"])),
-                )
+        result = RenderJob(usecase, writer).run(
+            RenderRequest(
+                window=Window(start=None, end=None, mode="intersects"),
+                statuses=list(cmd.payload.get("statuses", ["work", "pre_done"])),
             )
+        )
         if metrics is not None:
-            metrics.counter("dtm.render.total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "render", "operation": "designers", "result": "success"})
+            labels = {"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "render", "operation": "designers", "result": "success"}
+            metrics.counter("dtm.render.total", labels=labels)
+            metrics.timing("dtm.render.duration_ms", float(result.total_duration_ms), labels=labels)
+            metrics.timing("dtm.render.build_plan_ms", float(result.build_plan_ms), labels=labels)
+            metrics.timing("dtm.render.write_sheet_ms", float(result.write_sheet_ms), labels=labels)
         if logger is not None:
             logger.info(
                 "render_finished",
@@ -67,6 +69,9 @@ class RenderDesignersJob:
                 render_applied=bool(result.applied),
                 rows_written=int(result.rows_written),
                 cells_written=int(result.cells_written),
+                build_plan_ms=float(result.build_plan_ms),
+                write_sheet_ms=float(result.write_sheet_ms),
+                total_duration_ms=float(result.total_duration_ms),
             )
         return {
             "artifact": "render_designers_sheet",
@@ -77,4 +82,9 @@ class RenderDesignersJob:
             "target_spreadsheet": str(result.target_spreadsheet),
             "target_worksheet": str(result.target_worksheet),
             "warnings": list(result.warnings),
+            "timings_ms": {
+                "build_plan_ms": float(result.build_plan_ms),
+                "write_sheet_ms": float(result.write_sheet_ms),
+                "total_duration_ms": float(result.total_duration_ms),
+            },
         }

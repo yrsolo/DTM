@@ -1,7 +1,7 @@
 # Backlog
 
 ## In Progress
-- none
+- CAM-SNAPSHOT-RENDER-TIMINGS-V1
 
 ## Planned
 - none
@@ -28,6 +28,7 @@
 - Queue retry semantics, grep gates, observability foundation, and Telegram command router are now treated as completed hardening slices on top of the already delivered post-legacy baseline.
 - `/info` remains the operator dashboard and job-status store remains the source of truth for recent command execution state.
 - YC Monitoring integration is complete for the selected test-first scope: test contour emits real custom metrics and the test dashboard exists.
+- Current active hardening slice adds operation-level timing visibility for snapshot update and render.
 - Separate follow-ups remain outside this CAM:
   - `/info` build metadata 404 in `yc_function_info.py`
   - notify enqueue path inconsistency on test

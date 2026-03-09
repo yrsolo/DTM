@@ -123,3 +123,4 @@ class UpdateResult:
     fetched_at_utc: datetime
     raw_written: bool
     prep_written: bool
+    timings_ms: dict[str, float] = field(default_factory=dict)

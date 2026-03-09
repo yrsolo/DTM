@@ -99,27 +99,42 @@ def build_dashboard_widgets(*, env_name: str, namespace: str = "dtm") -> list[An
     )
     del grpc, _dashboard_pb2, _dashboard_service_pb2, _dashboard_service_pb2_grpc
 
-    def _chart(title: str, metric_name: str, x: int, y: int) -> Any:
-        query = f'{metric_name}{{env="{env_name}",service="custom",namespace="{namespace}"}}'
-        target_name = str(metric_name).replace(".", "_")
+    def _chart(title: str, metric_names: list[str], x: int, y: int) -> Any:
+        targets = []
+        for metric_name in metric_names:
+            query = f'{metric_name}{{env="{env_name}",service="custom",namespace="{namespace}"}}'
+            target_name = str(metric_name).replace(".", "_")
+            targets.append(chart_widget_pb2.ChartWidget.Queries.Target(query=query, name=target_name))
         return widget_pb2.Widget(
             position=widget_pb2.Widget.LayoutPosition(x=x, y=y, w=12, h=6),
             chart=chart_widget_pb2.ChartWidget(
-                id=target_name,
+                id=str(title).lower().replace(" ", "_"),
                 title=title,
-                queries=chart_widget_pb2.ChartWidget.Queries(
-                    targets=[chart_widget_pb2.ChartWidget.Queries.Target(query=query, name=target_name)]
-                ),
+                queries=chart_widget_pb2.ChartWidget.Queries(targets=targets),
             ),
         )
 
     return [
-        _chart("Snapshot Updates", "dtm.snapshot.update_total", 0, 0),
-        _chart("API Requests", "dtm.api.requests_total", 12, 0),
-        _chart("Timeline Render", "dtm.render.total", 0, 6),
-        _chart("Notify Runs", "dtm.notify.total", 12, 6),
-        _chart("Telegram Updates", "dtm.telegram.accepted_total", 0, 12),
-        _chart("Worker Commands", "dtm.worker.commands_total", 12, 12),
+        _chart("Snapshot Updates", ["dtm.snapshot.update_total"], 0, 0),
+        _chart(
+            "Snapshot Stage Timings",
+            [
+                "dtm.snapshot.fetch_sheet_ms",
+                "dtm.snapshot.normalize_ms",
+                "dtm.snapshot.build_prep_ms",
+                "dtm.snapshot.write_raw_ms",
+                "dtm.snapshot.write_prep_ms",
+            ],
+            12,
+            0,
+        ),
+        _chart("Snapshot Total Duration", ["dtm.snapshot.update_duration_ms"], 0, 6),
+        _chart("API Requests", ["dtm.api.requests_total", "dtm.api.duration_ms"], 12, 6),
+        _chart("Timeline Render", ["dtm.render.total", "dtm.render.duration_ms"], 0, 12),
+        _chart("Render Stage Timings", ["dtm.render.build_plan_ms", "dtm.render.write_sheet_ms"], 12, 12),
+        _chart("Notify Runs", ["dtm.notify.total", "dtm.notify.duration_ms"], 0, 18),
+        _chart("Telegram Updates", ["dtm.telegram.accepted_total", "dtm.telegram.enqueue_ms"], 12, 18),
+        _chart("Worker Commands", ["dtm.worker.commands_total", "dtm.worker.command_duration_ms"], 0, 24),
     ]
 
 

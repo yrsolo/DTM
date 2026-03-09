@@ -58,3 +58,6 @@ class RenderApplyResult:
     selected_tasks: int = 0
     designer_groups: int = 0
     rendered_task_rows: int = 0
+    build_plan_ms: float = 0.0
+    write_sheet_ms: float = 0.0
+    total_duration_ms: float = 0.0

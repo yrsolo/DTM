@@ -1,6 +1,7 @@
 # Active Tasks
 
-- none
+- CAM-SNAPSHOT-RENDER-TIMINGS-V1 P01: add detailed snapshot timings for fetch/normalize/build_prep/write_raw/write_prep and surface them through metrics and job result
+- CAM-SNAPSHOT-RENDER-TIMINGS-V1 P02: add detailed render timings for build_plan/write_sheet/total and surface them through metrics and job result
 
 ## Done
 

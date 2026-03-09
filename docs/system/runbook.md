@@ -176,12 +176,33 @@ Current proven test metrics:
 - `dtm.api.requests_total`
 - `dtm.api.duration_ms`
 - `dtm.api.response_size_bytes`
+- `dtm.snapshot.fetch_sheet_ms`
+- `dtm.snapshot.normalize_ms`
+- `dtm.snapshot.build_prep_ms`
+- `dtm.snapshot.write_raw_ms`
+- `dtm.snapshot.write_prep_ms`
 - `dtm.render.total`
 - `dtm.render.duration_ms`
+- `dtm.render.build_plan_ms`
+- `dtm.render.write_sheet_ms`
 - `dtm.render.rows_rendered`
 - `dtm.render.cells_written`
 - `dtm.worker.commands_total`
 - `dtm.worker.command_duration_ms`
+
+Detailed operator reading for heavy paths:
+
+- snapshot:
+  - Google read: `dtm.snapshot.fetch_sheet_ms`
+  - normalize/build tasks: `dtm.snapshot.normalize_ms`
+  - prep build: `dtm.snapshot.build_prep_ms`
+  - raw snapshot write: `dtm.snapshot.write_raw_ms`
+  - prep snapshot write: `dtm.snapshot.write_prep_ms`
+  - end-to-end: `dtm.snapshot.update_duration_ms`
+- render:
+  - plan build: `dtm.render.build_plan_ms`
+  - sheet write: `dtm.render.write_sheet_ms`
+  - end-to-end: `dtm.render.duration_ms`
 
 If metrics are missing:
 

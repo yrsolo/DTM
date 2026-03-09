@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import timezone
 
 from src.app.context import AppContext
-from src.observability import timed
 from src.render import GoogleSheetsPlanWriter, RenderJob, RenderRequest, RenderUseCase, SheetTarget
 from src.render.target_guard import RenderTarget, validate_render_target
 from src.snapshot_engine import build_snapshot_engine
@@ -67,15 +66,18 @@ class RenderTimelineJob:
             window=Window(start=None, end=None, mode="intersects"),
             statuses=statuses,
         )
-        with timed(metrics, "dtm.render.duration_ms", {"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "render", "operation": "timeline", "result": "finished"}):
-            result = RenderJob(usecase, writer).run(request)
+        result = RenderJob(usecase, writer).run(request)
         warnings = list(result.warnings)
         if not result.applied and not warnings:
             warnings = ["empty_render_plan"]
         if metrics is not None:
-            metrics.counter("dtm.render.total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "render", "operation": "timeline", "result": "success"})
-            metrics.gauge("dtm.render.rows_rendered", float(result.rendered_task_rows), labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "render", "operation": "timeline", "result": "success"})
-            metrics.gauge("dtm.render.cells_written", float(result.cells_written), labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "render", "operation": "timeline", "result": "success"})
+            labels = {"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "render", "operation": "timeline", "result": "success"}
+            metrics.counter("dtm.render.total", labels=labels)
+            metrics.timing("dtm.render.duration_ms", float(result.total_duration_ms), labels=labels)
+            metrics.timing("dtm.render.build_plan_ms", float(result.build_plan_ms), labels=labels)
+            metrics.timing("dtm.render.write_sheet_ms", float(result.write_sheet_ms), labels=labels)
+            metrics.gauge("dtm.render.rows_rendered", float(result.rendered_task_rows), labels=labels)
+            metrics.gauge("dtm.render.cells_written", float(result.cells_written), labels=labels)
         if logger is not None:
             logger.info(
                 "render_finished",
@@ -85,6 +87,9 @@ class RenderTimelineJob:
                 render_applied=bool(result.applied),
                 rows_written=int(result.rows_written),
                 cells_written=int(result.cells_written),
+                build_plan_ms=float(result.build_plan_ms),
+                write_sheet_ms=float(result.write_sheet_ms),
+                total_duration_ms=float(result.total_duration_ms),
             )
         return {
             "artifact": "render_timeline_sheet",
@@ -103,5 +108,10 @@ class RenderTimelineJob:
             "plan_cells_total": int(result.plan_cells_total),
             "plan_borders_total": int(result.plan_borders_total),
             "duration_ms": int((self._ctx.clock() - started_at).total_seconds() * 1000),
+            "timings_ms": {
+                "build_plan_ms": float(result.build_plan_ms),
+                "write_sheet_ms": float(result.write_sheet_ms),
+                "total_duration_ms": float(result.total_duration_ms),
+            },
             "generated_at": self._ctx.clock().astimezone(timezone.utc).isoformat(),
         }

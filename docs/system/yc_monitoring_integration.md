@@ -145,8 +145,16 @@ Current proven test evidence:
 
 - `/info?format=json` shows `metricsClient=YandexMonitoringMetricsClient`
 - API request emits visible `dtm.api.*`
+- snapshot update emits visible `dtm.snapshot.*` stage metrics after detailed timing instrumentation
 - timeline render emits visible `dtm.render.*`
 - worker emits visible `dtm.worker.*`
+
+Current dashboard template includes dedicated timing charts for:
+
+- snapshot stage timings
+- snapshot total duration
+- render stage timings
+- render total duration
 
 ## Failure triage
 

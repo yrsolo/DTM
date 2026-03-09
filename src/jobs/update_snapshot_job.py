@@ -25,11 +25,22 @@ class UpdateSnapshotJob:
                 force=bool(cmd.payload.get("force_refresh", False)),
             )
         if metrics is not None:
-            metrics.counter("dtm.snapshot.update_total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "snapshot", "operation": "update", "result": "success"})
+            labels = {"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "snapshot", "operation": "update", "result": "success"}
+            metrics.counter("dtm.snapshot.update_total", labels=labels)
             metrics.counter(
                 "dtm.snapshot.changed_total" if bool(result.changed) else "dtm.snapshot.nochange_total",
-                labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "snapshot", "operation": "update", "result": "success"},
+                labels=labels,
             )
+            for metric_name in (
+                "dtm.snapshot.fetch_sheet_ms",
+                "dtm.snapshot.normalize_ms",
+                "dtm.snapshot.build_prep_ms",
+                "dtm.snapshot.write_raw_ms",
+                "dtm.snapshot.write_prep_ms",
+            ):
+                timing_value = result.timings_ms.get(metric_name.removeprefix("dtm.snapshot."))
+                if timing_value is not None:
+                    metrics.timing(metric_name, float(timing_value), labels=labels)
         if logger is not None:
             logger.info(
                 "snapshot_update_finished",
@@ -37,6 +48,7 @@ class UpdateSnapshotJob:
                 changed=bool(result.changed),
                 raw_written=bool(result.raw_written),
                 prep_written=bool(result.prep_written),
+                timings_ms=dict(result.timings_ms),
             )
         return {
             "artifact": "update_snapshot",
@@ -47,4 +59,5 @@ class UpdateSnapshotJob:
             "raw_written": bool(result.raw_written),
             "prep_written": bool(result.prep_written),
             "fetched_at_utc": result.fetched_at_utc.isoformat(),
+            "timings_ms": dict(result.timings_ms),
         }
