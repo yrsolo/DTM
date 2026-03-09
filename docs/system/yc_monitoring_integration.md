@@ -32,8 +32,9 @@ YC API auth is centralized in:
 
 Current pattern:
 
-- service account JSON from runtime/deploy contour
-- IAM token acquired via YC IAM API
+- primary: bearer token from attached runtime service account via metadata endpoint
+- fallback: service account JSON from runtime/deploy contour
+- IAM token acquired via YC IAM API only when JSON key is used
 - Monitoring writes authenticated with bearer IAM token
 
 No interactive `yc` CLI auth is used inside runtime.
@@ -144,7 +145,7 @@ If metrics do not appear:
 
 1. verify monitoring is enabled in runtime env
 2. verify folder id is resolved correctly
-3. verify service account has Monitoring write permission
+3. verify attached runtime service account has Monitoring write permission
 4. inspect structured warning logs for:
    - `monitoring_metric_emit_failed`
 5. verify endpoint and network access

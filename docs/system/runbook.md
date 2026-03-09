@@ -175,6 +175,6 @@ If metrics are missing:
 
 1. check monitoring enablement in deployed env
 2. check resolved folder id
-3. check service account Monitoring write rights
+3. check attached runtime service account Monitoring write rights
 4. inspect logs for `monitoring_metric_emit_failed`
 5. verify dashboard separately; dashboard automation is allowed to lag behind ingestion

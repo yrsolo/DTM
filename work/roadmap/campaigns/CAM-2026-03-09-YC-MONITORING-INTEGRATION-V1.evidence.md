@@ -55,3 +55,10 @@
 
 - runtime service account Monitoring write permission is still unverified until deployed test emits live metrics
 - dashboard creation is verified from local YC session; runtime does not need dashboard mutation rights
+
+## Runtime auth finding
+
+- deployed test function version does not receive `YC_SA_JSON_CREDENTIALS` in runtime env
+- this is acceptable after auth fix:
+  - runtime now falls back to metadata token from attached service account
+  - no secret service-account key needs to be injected into function env for Monitoring/API introspection
