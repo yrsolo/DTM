@@ -78,6 +78,7 @@ jobs:
       - name: Legacy import guard checks
         run: |
           python scripts/check_no_monsters.py
+          python scripts/check_no_legacy_entrypoint_imports.py
           python scripts/check_no_legacy_imports.py
 
       - name: Preflight required variables
@@ -140,6 +141,7 @@ jobs:
           environment: |
             ENV=prod
             RELEASE_DRY_RUN=${{ inputs.dry_run_release }}
+            MONITORING_ENABLED=false
           secrets: |
             TG_TOKEN=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/TG_TOKEN
             OPENAI_TOKEN=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/OPENAI_TOKEN

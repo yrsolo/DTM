@@ -44,6 +44,7 @@ class JobStatusHandler:
                 "requested_by": dict(record.requested_by),
                 "summary": dict(record.summary),
                 "warnings": list(record.warnings),
+                "retryable": bool(record.retryable),
                 "error": dict(record.error or {}) if record.error else None,
             },
         )

@@ -44,6 +44,7 @@ def _job_record_payload(record: JobStatusRecord) -> dict[str, Any]:
         "requestedBy": dict(record.requested_by),
         "summary": dict(record.summary),
         "warnings": list(record.warnings),
+        "retryable": bool(record.retryable),
         "error": dict(record.error or {}) if record.error else None,
     }
 
@@ -59,21 +60,21 @@ def _render_debug_payload(record: JobStatusRecord | None) -> dict[str, Any]:
     summary = dict(record.summary or {})
     warnings = [str(item) for item in list(record.warnings or [])]
     error = dict(record.error or {}) if record.error else {}
-    if record.status == "failed":
+    if record.status in {"failed_terminal", "failed_retryable"}:
         if str(error.get("code", "")).strip() == "render_target_unsafe":
             state = "blocked"
             reason = "blocked_by_target_safety_guard"
         else:
             state = "failed"
             reason = str(error.get("code", "")).strip() or "render_job_failed"
-    elif record.status == "succeeded":
+    elif record.status == "success":
         if bool(summary.get("render_applied", False)):
             state = "applied"
             reason = "render_applied_successfully"
         else:
             state = "noop"
             reason = warnings[0] if warnings else "render_not_applied"
-    elif record.status in {"queued", "running"}:
+    elif record.status in {"accepted", "running"}:
         state = "pending"
         reason = f"job_{record.status}"
     else:
@@ -357,7 +358,7 @@ def _render_info_page(payload: dict[str, Any]) -> str:
         document.getElementById('adminResult').textContent = 'HTTP ' + r.status + '\\n' + pretty(payload);
         if (r.ok && payload && typeof payload === 'object') {{
           const status = String(payload.status || '').toLowerCase();
-          if (status === 'succeeded' || status === 'failed') {{
+          if (status === 'success' || status === 'failed_retryable' || status === 'failed_terminal') {{
             return;
           }}
         }}
@@ -574,7 +575,11 @@ class InfoHandler:
         except Exception as exc:
             return {"recent": [], "failedRecent": [], "error": str(exc)}
         recent_payload = [_job_record_payload(record) for record in recent_records]
-        failed_payload = [item for item in recent_payload if str(item.get("status", "")).lower() == "failed"]
+        failed_payload = [
+            item
+            for item in recent_payload
+            if str(item.get("status", "")).lower() in {"failed_retryable", "failed_terminal"}
+        ]
         latest_by_command: dict[str, Any] = {}
         for item in recent_payload:
             command_type = str(item.get("commandType", "")).strip()
@@ -585,7 +590,7 @@ class InfoHandler:
                 item
                 for item in recent_payload
                 if str(item.get("commandType", "")) == "render_timeline_sheet"
-                and str(item.get("status", "")).lower() == "succeeded"
+                and str(item.get("status", "")).lower() == "success"
                 and bool(dict(item.get("summary", {}) or {}).get("render_applied", False))
             ),
             None,
@@ -595,7 +600,7 @@ class InfoHandler:
                 item
                 for item in recent_payload
                 if str(item.get("commandType", "")) == "update_snapshot"
-                and str(item.get("status", "")).lower() == "succeeded"
+                and str(item.get("status", "")).lower() == "success"
             ),
             None,
         )
@@ -715,9 +720,33 @@ class InfoHandler:
                     requested_by=dict(candidate.get("requestedBy", {}) or {}),
                     summary=dict(candidate.get("summary", {}) or {}),
                     warnings=[str(item) for item in list(candidate.get("warnings", []) or [])],
+                    retryable=bool(candidate.get("retryable", False)),
                     error=dict(candidate.get("error", {}) or {}) or None,
                 )
         render_debug = _render_debug_payload(latest_render)
+        telemetry_payload = {
+            "metricsEnabled": self._ctx.deps.get("metrics_client") is not None,
+            "metricsClient": type(self._ctx.deps.get("metrics_client")).__name__,
+            "monitoringEnabled": bool(
+                getattr(self._ctx.cfg.runtime, "monitoring", None)
+                and self._ctx.cfg.runtime.monitoring.enabled
+            ),
+            "monitoringBackend": str(getattr(self._ctx.cfg.runtime.monitoring, "backend", "") or ""),
+            "monitoringFolderId": str(getattr(self._ctx.cfg.runtime.monitoring, "folder_id", "") or "").strip()
+            or str(self._ctx.cfg.deploy.yandex_cloud.folder_id or "").strip(),
+            "dashboardName": str(
+                self._ctx.cfg.runtime.monitoring.dashboard_name_prod
+                if env_name == "prod"
+                else self._ctx.cfg.runtime.monitoring.dashboard_name_test
+            ).strip(),
+            "dashboardId": str(
+                self._ctx.cfg.runtime.monitoring.dashboard_id_prod
+                if env_name == "prod"
+                else self._ctx.cfg.runtime.monitoring.dashboard_id_test
+            ).strip(),
+            "structuredLoggerEnabled": self._ctx.deps.get("structured_logger") is not None,
+            "structuredLogger": type(self._ctx.deps.get("structured_logger")).__name__,
+        }
         return {
             "artifact": "dtm_info_dashboard",
             "snapshot": {
@@ -743,12 +772,19 @@ class InfoHandler:
                 "provider": str(queue_cfg.provider),
                 "queueName": queue_name,
                 "endpointUrl": str(queue_cfg.endpoint_url or ""),
+                "policy": {
+                    "retryModel": "queue_driven",
+                    "batchPolicy": "per_message",
+                    "terminalStatuses": ["failed_terminal"],
+                    "retryableStatuses": ["failed_retryable"],
+                },
                 "latest": latest_by_command,
                 "live": queue_live,
             },
             "build": build_payload,
             "jobs": jobs_payload,
             "renderDebug": render_debug,
+            "telemetry": telemetry_payload,
             "telegram": {
                 "webhookPath": webhook_path,
                 "webhookUrl": webhook_url,

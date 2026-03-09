@@ -1,10 +1,13 @@
-from .parser import ParsedTelegramAction, ParsedTelegramUpdate, TelegramUpdateParser
+from .command_router import TelegramCommandRouter
+from .model import ParsedTelegramUpdate, RoutedTelegramCommand
+from .parser import TelegramUpdateParser
 from .sender import TelegramSender
 from .webhook import TelegramWebhookHandler
 
 __all__ = [
-    "ParsedTelegramAction",
     "ParsedTelegramUpdate",
+    "RoutedTelegramCommand",
+    "TelegramCommandRouter",
     "TelegramSender",
     "TelegramUpdateParser",
     "TelegramWebhookHandler",

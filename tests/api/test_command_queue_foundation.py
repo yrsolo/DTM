@@ -38,7 +38,7 @@ class _FakeStatusStore:
         record = JobStatusRecord(
             job_id=cmd.job_id,
             command_type=cmd.type,
-            status="queued",
+            status="accepted",
             requested_at_utc=cmd.created_at_utc,
             requested_by={"source": cmd.requested_by.source},
         )
@@ -201,7 +201,8 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
         self.assertEqual(response.status, 200)
         payload = json.loads(response.body)
         self.assertEqual(payload["job_id"], "job-42")
-        self.assertEqual(payload["status"], "queued")
+        self.assertEqual(payload["status"], "accepted")
+        self.assertFalse(payload["retryable"])
 
     def test_index_routes_message_queue_event_to_worker(self) -> None:
         original_worker = index.APP_DEPS.get("command_worker")

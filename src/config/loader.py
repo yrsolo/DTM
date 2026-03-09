@@ -66,6 +66,12 @@ ENV_ALLOWLIST = frozenset(
         "TG_BOT_USERNAME",
         "DEFAULT_CHAT_ID",
         "PROXY_URL",
+        "MONITORING_ENABLED",
+        "MONITORING_BACKEND",
+        "MONITORING_FOLDER_ID",
+        "MONITORING_SERVICE",
+        "MONITORING_NAMESPACE",
+        "MONITORING_DASHBOARD_NAME",
     }
 )
 
@@ -129,6 +135,24 @@ def _merge_runtime_env_overrides(runtime_cfg: RuntimeConfig) -> RuntimeConfig:
     if "TIMING_YEAR_MODE" in os.environ:
         runtime_cfg.timing.year_mode_default = os.environ["TIMING_YEAR_MODE"].strip().lower()
 
+    if "MONITORING_ENABLED" in os.environ:
+        runtime_cfg.monitoring.enabled = _parse_bool(os.environ["MONITORING_ENABLED"])
+    if "MONITORING_BACKEND" in os.environ:
+        runtime_cfg.monitoring.backend = os.environ["MONITORING_BACKEND"].strip().lower()
+    if "MONITORING_FOLDER_ID" in os.environ:
+        runtime_cfg.monitoring.folder_id = os.environ["MONITORING_FOLDER_ID"].strip()
+    if "MONITORING_SERVICE" in os.environ:
+        runtime_cfg.monitoring.service = os.environ["MONITORING_SERVICE"].strip()
+    if "MONITORING_NAMESPACE" in os.environ:
+        runtime_cfg.monitoring.namespace = os.environ["MONITORING_NAMESPACE"].strip()
+    if "MONITORING_DASHBOARD_NAME" in os.environ:
+        dashboard_name = os.environ["MONITORING_DASHBOARD_NAME"].strip()
+        env_mode = str(runtime_cfg.runtime.env_default or "").strip().lower()
+        if env_mode == "prod":
+            runtime_cfg.monitoring.dashboard_name_prod = dashboard_name
+        else:
+            runtime_cfg.monitoring.dashboard_name_test = dashboard_name
+
     return runtime_cfg
 
 
@@ -143,6 +167,7 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
         if isinstance(data.get("snapshot_engine", {}), dict)
         else {}
     )
+    monitoring_raw = data.get("monitoring", {}) if isinstance(data.get("monitoring", {}), dict) else {}
     telegram_raw = data.get("telegram", {}) if isinstance(data.get("telegram", {}), dict) else {}
     notify_raw = data.get("notify", {}) if isinstance(data.get("notify", {}), dict) else {}
     queue_raw = data.get("queue", {}) if isinstance(data.get("queue", {}), dict) else {}
@@ -156,6 +181,44 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
         runtime_raw.get("strict_env_guard_default", defaults.runtime.strict_env_guard_default)
     )
     defaults.runtime.timezone = str(runtime_raw.get("timezone", defaults.runtime.timezone))
+    defaults.monitoring.enabled = bool(monitoring_raw.get("enabled", defaults.monitoring.enabled))
+    defaults.monitoring.backend = str(monitoring_raw.get("backend", defaults.monitoring.backend))
+    defaults.monitoring.folder_id = str(monitoring_raw.get("folder_id", defaults.monitoring.folder_id))
+    defaults.monitoring.endpoint_write = str(
+        monitoring_raw.get("endpoint_write", defaults.monitoring.endpoint_write)
+    )
+    defaults.monitoring.service = str(monitoring_raw.get("service", defaults.monitoring.service))
+    defaults.monitoring.namespace = str(monitoring_raw.get("namespace", defaults.monitoring.namespace))
+    defaults.monitoring.dashboard_name_test = str(
+        monitoring_raw.get("dashboard_name_test", defaults.monitoring.dashboard_name_test)
+    )
+    defaults.monitoring.dashboard_name_prod = str(
+        monitoring_raw.get("dashboard_name_prod", defaults.monitoring.dashboard_name_prod)
+    )
+    defaults.monitoring.dashboard_id_test = str(
+        monitoring_raw.get("dashboard_id_test", defaults.monitoring.dashboard_id_test)
+    )
+    defaults.monitoring.dashboard_id_prod = str(
+        monitoring_raw.get("dashboard_id_prod", defaults.monitoring.dashboard_id_prod)
+    )
+    defaults.monitoring.emit_queue_metrics = bool(
+        monitoring_raw.get("emit_queue_metrics", defaults.monitoring.emit_queue_metrics)
+    )
+    defaults.monitoring.emit_api_metrics = bool(
+        monitoring_raw.get("emit_api_metrics", defaults.monitoring.emit_api_metrics)
+    )
+    defaults.monitoring.emit_snapshot_metrics = bool(
+        monitoring_raw.get("emit_snapshot_metrics", defaults.monitoring.emit_snapshot_metrics)
+    )
+    defaults.monitoring.emit_render_metrics = bool(
+        monitoring_raw.get("emit_render_metrics", defaults.monitoring.emit_render_metrics)
+    )
+    defaults.monitoring.emit_notify_metrics = bool(
+        monitoring_raw.get("emit_notify_metrics", defaults.monitoring.emit_notify_metrics)
+    )
+    defaults.monitoring.emit_telegram_metrics = bool(
+        monitoring_raw.get("emit_telegram_metrics", defaults.monitoring.emit_telegram_metrics)
+    )
     defaults.web = {str(k): v for k, v in web_raw.items()}
     defaults.api = {str(k): v for k, v in api_raw.items()}
 
@@ -303,6 +366,21 @@ def load_config(config_dir: Path = CONFIG_DIR) -> AppConfig:
             raise ValueError("queue.status_prefix is required when queue.enabled=true")
         if not str(queue_cfg.latest_prefix).strip():
             raise ValueError("queue.latest_prefix is required when queue.enabled=true")
+    monitoring_cfg = runtime_cfg.monitoring
+    if bool(monitoring_cfg.enabled):
+        if str(monitoring_cfg.backend).strip().lower() != "yandex_monitoring":
+            raise ValueError("monitoring.backend must be 'yandex_monitoring' when monitoring.enabled=true")
+        folder_id = str(monitoring_cfg.folder_id).strip() or str(
+            deploy_data.get("yandex_cloud", {}).get("folder_id", "")
+        ).strip()
+        if not folder_id:
+            raise ValueError(
+                "monitoring.folder_id or deploy.yandex_cloud.folder_id is required when monitoring.enabled=true"
+            )
+        if not str(monitoring_cfg.endpoint_write).strip():
+            raise ValueError("monitoring.endpoint_write is required when monitoring.enabled=true")
+        if str(monitoring_cfg.service).strip().lower() != "custom":
+            raise ValueError("monitoring.service must be 'custom' for Yandex custom metrics")
 
     tables_cfg = TablesConfig(
         google_sheets=tables_data.get("google_sheets", {}),

@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import timezone
 
 from src.app.context import AppContext
+from src.observability import timed
 from src.render import GoogleSheetsPlanWriter, RenderJob, RenderRequest, RenderUseCase, SheetTarget
 from src.render.target_guard import RenderTarget, validate_render_target
 from src.snapshot_engine import build_snapshot_engine
@@ -14,6 +15,8 @@ class RenderTimelineJob:
         self._ctx = ctx
 
     def run(self, cmd):
+        metrics = self._ctx.deps.get("metrics_client")
+        logger = self._ctx.deps.get("structured_logger")
         from utils.service import GoogleSheetInfo, GoogleSheetsService
 
         started_at = self._ctx.clock()
@@ -64,10 +67,25 @@ class RenderTimelineJob:
             window=Window(start=None, end=None, mode="intersects"),
             statuses=statuses,
         )
-        result = RenderJob(usecase, writer).run(request)
+        with timed(metrics, "dtm.render.duration_ms", {"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "render", "operation": "timeline", "result": "finished"}):
+            result = RenderJob(usecase, writer).run(request)
         warnings = list(result.warnings)
         if not result.applied and not warnings:
             warnings = ["empty_render_plan"]
+        if metrics is not None:
+            metrics.counter("dtm.render.total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "render", "operation": "timeline", "result": "success"})
+            metrics.gauge("dtm.render.rows_rendered", float(result.rendered_task_rows), labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "render", "operation": "timeline", "result": "success"})
+            metrics.gauge("dtm.render.cells_written", float(result.cells_written), labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "render", "operation": "timeline", "result": "success"})
+        if logger is not None:
+            logger.info(
+                "render_finished",
+                render_type="timeline",
+                target_spreadsheet=str(result.target_spreadsheet),
+                target_worksheet=str(result.target_worksheet),
+                render_applied=bool(result.applied),
+                rows_written=int(result.rows_written),
+                cells_written=int(result.cells_written),
+            )
         return {
             "artifact": "render_timeline_sheet",
             "status": "ok",

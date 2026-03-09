@@ -40,6 +40,9 @@ class CommandDispatcher:
         if cmd.type not in SUPPORTED_COMMAND_TYPES:
             return JobResult(
                 success=False,
+                retryable=False,
+                failure_kind="terminal",
+                error_code="unsupported_command_type",
                 error={"code": "unsupported_command_type", "details": {"type": cmd.type}},
             )
         job = self._handlers[cmd.type]
@@ -49,8 +52,20 @@ class CommandDispatcher:
         details = dict(result or {}) if isinstance(result, dict) else {"result": result}
         status = str(details.get("status", "ok")).strip().lower()
         error = details.get("error")
+        retryable = bool(details.get("retryable", False))
+        failure_kind = str(details.get("failure_kind", "")).strip().lower()
+        error_code = str(details.get("error_code", "")).strip()
+        if status in {"failed", "error"} and not failure_kind:
+            failure_kind = "retryable" if retryable else "terminal"
+        if status == "blocked" and not failure_kind:
+            failure_kind = "terminal"
+        if isinstance(error, dict) and error and not error_code:
+            error_code = str(error.get("code", "")).strip()
         return JobResult(
             success=status not in {"failed", "blocked", "error"},
+            retryable=retryable,
+            failure_kind=failure_kind,
+            error_code=error_code,
             details=details,
             warnings=[str(item) for item in list(details.get("warnings", []) or [])],
             error=dict(error or {}) if isinstance(error, dict) and error else None,

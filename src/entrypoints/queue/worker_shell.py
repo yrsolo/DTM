@@ -27,4 +27,6 @@ class WorkerShell:
                 ),
             }
         result = await worker.run_once_from_messages(queue_messages_from_event(event))
-        return {"statusCode": 200, "body": json.dumps(result, ensure_ascii=False)}
+        retry_requested = bool(result.get("retry_requested", False))
+        status_code = 503 if retry_requested else 200
+        return {"statusCode": status_code, "body": json.dumps(result, ensure_ascii=False)}

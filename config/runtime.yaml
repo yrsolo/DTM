@@ -3,6 +3,24 @@ runtime:
   strict_env_guard_default: false
   timezone: Europe/Moscow
 
+monitoring:
+  enabled: false
+  backend: yandex_monitoring
+  folder_id: ""
+  endpoint_write: https://monitoring.api.cloud.yandex.net/monitoring/v2/data/write
+  service: custom
+  namespace: dtm
+  dashboard_name_test: DTM Test Observability
+  dashboard_name_prod: DTM Prod Observability
+  dashboard_id_test: "fbe6m08jl1vj212t5v0c"
+  dashboard_id_prod: ""
+  emit_queue_metrics: true
+  emit_api_metrics: true
+  emit_snapshot_metrics: true
+  emit_render_metrics: true
+  emit_notify_metrics: true
+  emit_telegram_metrics: true
+
 web:
   domain: solofarm.ru
   api_domain_test: dtm-api-test.solofarm.ru

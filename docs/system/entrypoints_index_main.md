@@ -102,6 +102,18 @@ Info observability policy:
 - render RCA should use `jobs.latestByCommand.render_timeline_sheet` and `renderDebug`, not raw enqueue HTTP status
 - `/info?format=json` keeps machine timestamps in UTC; HTML may show additive MSK display for operator convenience
 
+Queue retry policy:
+- queue-driven retry is the current model
+- worker distinguishes `failed_retryable` vs `failed_terminal`
+- worker shell returns non-success transport only when retry is requested
+- canonical status vocabulary is documented in `docs/system/job_status_schema.md`
+
+Telegram command routing policy:
+- parser builds a typed `ParsedTelegramUpdate`
+- `TelegramCommandRouter` maps typed updates to internal command intents
+- webhook stays thin and enqueue-only
+- group query must continue to reuse reminder selection path on worker side
+
 Legacy reference policy:
 - archived compatibility helpers now live under `src/legacy/entrypoints/jobs/`
 - standard runtime must not import `src.legacy.*` or old planner/store helpers

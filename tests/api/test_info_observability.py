@@ -13,6 +13,7 @@ if str(ROOT_DIR) not in sys.path:
 
 from src.entrypoints.http.dto import HttpRequest
 from src.entrypoints.http.info_handler import InfoHandler
+from src.observability import NoopMetricsClient, StdoutJsonLogger
 from src.worker.model import JobStatusRecord
 
 
@@ -46,7 +47,7 @@ class _FakeStatusStore:
         self.render_record = JobStatusRecord(
             job_id="job-render-1",
             command_type="render_timeline_sheet",
-            status="succeeded",
+            status="success",
             requested_at_utc=datetime(2026, 3, 9, 10, 0, tzinfo=timezone.utc),
             started_at_utc=datetime(2026, 3, 9, 10, 0, 1, tzinfo=timezone.utc),
             finished_at_utc=datetime(2026, 3, 9, 10, 0, 5, tzinfo=timezone.utc),
@@ -63,11 +64,12 @@ class _FakeStatusStore:
         self.update_record = JobStatusRecord(
             job_id="job-update-1",
             command_type="update_snapshot",
-            status="failed",
+            status="failed_terminal",
             requested_at_utc=datetime(2026, 3, 9, 9, 0, tzinfo=timezone.utc),
             finished_at_utc=datetime(2026, 3, 9, 9, 0, 3, tzinfo=timezone.utc),
             requested_by={"source": "trigger"},
             summary={"artifact": "update_snapshot"},
+            retryable=False,
             error={"code": "snapshot_failed"},
         )
 
@@ -114,6 +116,15 @@ class InfoObservabilityTestCase(unittest.TestCase):
             cfg=SimpleNamespace(
                 runtime=SimpleNamespace(
                     runtime=SimpleNamespace(env_default="test"),
+                    monitoring=SimpleNamespace(
+                        enabled=True,
+                        backend="yandex_monitoring",
+                        folder_id="folder-test-monitoring",
+                        dashboard_name_test="DTM Test Observability",
+                        dashboard_name_prod="DTM Prod Observability",
+                        dashboard_id_test="dashboard-test-1",
+                        dashboard_id_prod="",
+                    ),
                     snapshot_engine=SimpleNamespace(
                         bucket="dtm",
                         prefix_raw="snapshots/{env}/raw/default.json",
@@ -151,6 +162,8 @@ class InfoObservabilityTestCase(unittest.TestCase):
                 "aws_secret_access_key": "sk",
                 "ydb_sa_json_credentials": "{}",
                 "ydb_sa_key_file": "",
+                "metrics_client": NoopMetricsClient(),
+                "structured_logger": StdoutJsonLogger(),
             },
         )
 
@@ -170,9 +183,16 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertIn("queue", payload)
         self.assertIn("live", payload["queue"])
         self.assertIn("jobs", payload)
+        self.assertIn("telemetry", payload)
         self.assertEqual(payload["renderDebug"]["state"], "noop")
         self.assertEqual(payload["build"]["activeVersionId"], "d4etest")
         self.assertEqual(payload["queue"]["live"]["messages_visible"], 2)
+        self.assertEqual(payload["queue"]["policy"]["retryModel"], "queue_driven")
+        self.assertEqual(payload["telemetry"]["metricsClient"], "NoopMetricsClient")
+        self.assertTrue(payload["telemetry"]["monitoringEnabled"])
+        self.assertEqual(payload["telemetry"]["monitoringBackend"], "yandex_monitoring")
+        self.assertEqual(payload["telemetry"]["dashboardName"], "DTM Test Observability")
+        self.assertEqual(payload["telemetry"]["dashboardId"], "dashboard-test-1")
         self.assertEqual(len(payload["jobs"]["recent"]), 2)
 
     def test_info_html_contains_new_operational_sections(self) -> None:

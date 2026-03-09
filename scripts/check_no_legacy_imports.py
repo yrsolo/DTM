@@ -7,18 +7,103 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 CHECKS = [
-    ("import core", [ROOT / "src" / "snapshot_engine", ROOT / "src" / "notify", ROOT / "src" / "render", ROOT / "src" / "entrypoints"]),
-    ("from core", [ROOT / "src" / "snapshot_engine", ROOT / "src" / "notify", ROOT / "src" / "render", ROOT / "src" / "entrypoints"]),
-    ("import pandas", [ROOT / "src" / "snapshot_engine", ROOT / "src" / "notify", ROOT / "src" / "render", ROOT / "src" / "entrypoints"]),
-    ("GoogleSheetPlanner", [ROOT / "src" / "snapshot_engine", ROOT / "src" / "notify", ROOT / "src" / "render", ROOT / "src" / "entrypoints"]),
-    ("build_planner_dependencies", [ROOT / "src" / "snapshot_engine", ROOT / "src" / "notify", ROOT / "src" / "render", ROOT / "src" / "entrypoints"]),
+    (
+        "import core",
+        [
+            ROOT / "src" / "snapshot_engine",
+            ROOT / "src" / "notify",
+            ROOT / "src" / "render",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "telegram",
+            ROOT / "src" / "commands",
+            ROOT / "src" / "worker",
+            ROOT / "src" / "observability",
+        ],
+    ),
+    (
+        "from core",
+        [
+            ROOT / "src" / "snapshot_engine",
+            ROOT / "src" / "notify",
+            ROOT / "src" / "render",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "telegram",
+            ROOT / "src" / "commands",
+            ROOT / "src" / "worker",
+            ROOT / "src" / "observability",
+        ],
+    ),
+    (
+        "import pandas",
+        [
+            ROOT / "src" / "snapshot_engine",
+            ROOT / "src" / "notify",
+            ROOT / "src" / "render",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "telegram",
+            ROOT / "src" / "commands",
+            ROOT / "src" / "worker",
+            ROOT / "src" / "observability",
+        ],
+    ),
+    (
+        "GoogleSheetPlanner",
+        [
+            ROOT / "src" / "snapshot_engine",
+            ROOT / "src" / "notify",
+            ROOT / "src" / "render",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "telegram",
+            ROOT / "src" / "commands",
+            ROOT / "src" / "worker",
+            ROOT / "src" / "observability",
+        ],
+    ),
+    (
+        "build_planner_dependencies",
+        [
+            ROOT / "src" / "snapshot_engine",
+            ROOT / "src" / "notify",
+            ROOT / "src" / "render",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "telegram",
+            ROOT / "src" / "commands",
+            ROOT / "src" / "worker",
+            ROOT / "src" / "observability",
+        ],
+    ),
+    (
+        "src.legacy",
+        [
+            ROOT / "src" / "snapshot_engine",
+            ROOT / "src" / "notify",
+            ROOT / "src" / "render",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "telegram",
+            ROOT / "src" / "commands",
+            ROOT / "src" / "worker",
+            ROOT / "src" / "observability",
+        ],
+    ),
+    (
+        "src.adapters.store_ydb",
+        [
+            ROOT / "src" / "snapshot_engine",
+            ROOT / "src" / "notify",
+            ROOT / "src" / "render",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "telegram",
+            ROOT / "src" / "commands",
+            ROOT / "src" / "worker",
+            ROOT / "src" / "observability",
+        ],
+    ),
 ]
 
 # Current known exceptions while migration is in progress.
 EXCLUDE_SUBSTRINGS = {
     "src/entrypoints/http/group_query_handler.py",
     "src/entrypoints/http/group_query_tasks_loader.py",
-    "src/entrypoints/jobs/planner_setup_job.py",
     "src/entrypoints/runtime/planner_runtime_entry.py",
 }
 

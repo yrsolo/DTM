@@ -33,6 +33,15 @@ This document is a navigation map of the codebase as it exists now.
 | `src/services/readmodel_builder.py` | Application | Build frontend v2 readmodel snapshot | OK | Canonical snapshot builder. |
 | `src/services/pipeline_runtime.py` | Application | YDB sync + readmodel pipeline orchestration | OK | Preflight can skip full snapshot fetch. |
 | `src/services/sync/*` | Support | Sync helper primitives | Refactor | Keep only stateless primitives; no duplicate sync runner. |
+| `src/observability/*` | Support | Metrics, timing, and structured logging abstractions | OK | Shared instrumentation layer for active runtime. |
+
+## Messaging and worker
+
+| Path | Role | Responsibility | State | Notes |
+|---|---|---|---|---|
+| `src/commands/*` | Application | Internal queue command DTOs, serializer, queue adapters | OK | Canonical async command boundary. |
+| `src/worker/*` | Application | Worker execution, dispatcher, status store | OK | Canonical queue execution boundary. |
+| `src/telegram/*` | Adapter/Application boundary | Typed Telegram parsing, command routing, webhook intake, sender | OK | Webhook stays thin and enqueue-only. |
 
 ## Adapters
 

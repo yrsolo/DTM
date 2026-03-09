@@ -141,6 +141,7 @@ class S3JobStatusStore:
             "requested_by": dict(record.requested_by),
             "summary": dict(record.summary),
             "warnings": list(record.warnings),
+            "retryable": bool(record.retryable),
             "error": dict(record.error or {}) if record.error else None,
         }
 
@@ -156,6 +157,7 @@ class S3JobStatusStore:
             requested_by=dict(payload.get("requested_by", {}) or {}),
             summary=dict(payload.get("summary", {}) or {}),
             warnings=[str(item) for item in list(payload.get("warnings", []) or [])],
+            retryable=bool(payload.get("retryable", False)),
             error=dict(payload.get("error", {}) or {}) or None,
         )
 
@@ -163,7 +165,7 @@ class S3JobStatusStore:
         record = JobStatusRecord(
             job_id=cmd.job_id,
             command_type=cmd.type,
-            status="queued",
+            status="accepted",
             requested_at_utc=cmd.created_at_utc,
             requested_by={
                 "source": cmd.requested_by.source,
@@ -211,6 +213,7 @@ class S3JobStatusStore:
             },
             summary=dict(existing.summary) if existing is not None else {},
             warnings=list(existing.warnings) if existing is not None else [],
+            retryable=False,
         )
         payload = self._record_to_dict(record)
         self._put_json(self._status_key(cmd.job_id), payload)
@@ -222,7 +225,11 @@ class S3JobStatusStore:
         record = JobStatusRecord(
             job_id=cmd.job_id,
             command_type=cmd.type,
-            status="succeeded" if result.success else "failed",
+            status=(
+                "success"
+                if result.success
+                else ("failed_retryable" if result.retryable else "failed_terminal")
+            ),
             requested_at_utc=(existing.requested_at_utc if existing is not None else cmd.created_at_utc),
             started_at_utc=(existing.started_at_utc if existing is not None else None),
             finished_at_utc=datetime.now(timezone.utc),
@@ -233,6 +240,7 @@ class S3JobStatusStore:
             },
             summary=dict(result.details),
             warnings=list(result.warnings),
+            retryable=bool(result.retryable),
             error=dict(result.error or {}) if result.error else None,
         )
         payload = self._record_to_dict(record)

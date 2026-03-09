@@ -21,6 +21,8 @@ from config import (
 )
 from src.app.context import AppContext
 from src.config.loader import load_config
+from src.infra.yc_iam import get_iam_token
+from src.observability import NoopMetricsClient, StdoutJsonLogger, YandexMonitoringMetricsClient
 from src.services.mappers.task_payload_mapper import TaskPayloadMapper
 
 
@@ -47,6 +49,7 @@ def build_app_context() -> AppContext:
     """
 
     cfg = load_config()
+    structured_logger = StdoutJsonLogger()
     deps = {
         "key_json": KEY_JSON,
         "sheet_info": SHEET_INFO,
@@ -70,8 +73,29 @@ def build_app_context() -> AppContext:
         "google_llm_api_key": os.getenv("GOOGLE_LLM_API_KEY", "").strip(),
         "yandex_llm_api_key": os.getenv("YANDEX_LLM_API_KEY", "").strip(),
         "tg_webhook_secret_token": os.getenv("TG_WEBHOOK_SECRET_TOKEN", "").strip(),
+        "metrics_client": NoopMetricsClient(),
+        "structured_logger": structured_logger,
     }
     ctx = AppContext(cfg=cfg, deps=deps)
+    monitoring_cfg = cfg.runtime.monitoring
+    if bool(monitoring_cfg.enabled) and str(monitoring_cfg.backend).strip().lower() == "yandex_monitoring":
+        folder_id = str(monitoring_cfg.folder_id).strip() or str(cfg.deploy.yandex_cloud.folder_id).strip()
+
+        def _iam_token_provider() -> str:
+            return get_iam_token(
+                deps.get("ydb_sa_json_credentials"),
+                deps.get("ydb_sa_key_file"),
+                timeout_seconds=4.0,
+            )
+
+        deps["metrics_client"] = YandexMonitoringMetricsClient(
+            folder_id=folder_id,
+            iam_token_provider=_iam_token_provider,
+            logger=structured_logger,
+            endpoint_write=str(monitoring_cfg.endpoint_write).strip(),
+            service_label=str(monitoring_cfg.service).strip() or "dtm",
+            namespace=str(monitoring_cfg.namespace).strip() or "dtm",
+        )
     queue_cfg = cfg.runtime.queue
     if bool(queue_cfg.enabled):
         from src.commands.yandex_mq import YandexMessageQueueProducer
@@ -113,5 +137,12 @@ def build_app_context() -> AppContext:
         deps["job_status_store"] = status_store
         deps["command_queue_producer"] = producer
         deps["command_dispatcher"] = dispatcher
-        deps["command_worker"] = Worker(status_store=status_store, dispatcher=dispatcher, logger=ctx.log)
+        deps["command_worker"] = Worker(
+            status_store=status_store,
+            dispatcher=dispatcher,
+            logger=ctx.log,
+            metrics=deps.get("metrics_client"),
+            structured_logger=deps.get("structured_logger"),
+            env_name=str(cfg.runtime.runtime.env_default),
+        )
     return ctx

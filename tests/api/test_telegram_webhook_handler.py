@@ -81,6 +81,7 @@ class TelegramWebhookHandlerTestCase(unittest.TestCase):
         self.assertEqual(producer.commands[0].type, GROUP_QUERY_REPLY)
         payload = json.loads(response.body)
         self.assertEqual(payload["status"], "accepted")
+        self.assertEqual(payload["command_name"], "group_tasks_me")
 
     def test_private_admin_update_command_enqueues_snapshot_update(self) -> None:
         producer = _FakeProducer()
@@ -102,6 +103,8 @@ class TelegramWebhookHandlerTestCase(unittest.TestCase):
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 200)
         self.assertEqual(producer.commands[0].type, UPDATE_SNAPSHOT)
+        payload = json.loads(response.body)
+        self.assertEqual(payload["command_name"], "refresh_snapshot")
 
 
 if __name__ == "__main__":

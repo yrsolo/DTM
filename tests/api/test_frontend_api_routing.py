@@ -73,7 +73,7 @@ class _FakeInfoStatusStore:
         self.render = JobStatusRecord(
             job_id="job-render-1",
             command_type="render_timeline_sheet",
-            status="succeeded",
+            status="success",
             requested_at_utc=datetime(2026, 3, 9, 12, 0, tzinfo=timezone.utc),
             finished_at_utc=datetime(2026, 3, 9, 12, 0, 5, tzinfo=timezone.utc),
             requested_by={"source": "admin"},

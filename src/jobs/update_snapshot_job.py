@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from src.app.context import AppContext
+from src.observability import timed
 from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
 from src.snapshot_engine import build_snapshot_engine
 
@@ -10,16 +11,33 @@ class UpdateSnapshotJob:
         self._ctx = ctx
 
     def run(self, cmd):
+        metrics = self._ctx.deps.get("metrics_client")
+        logger = self._ctx.deps.get("structured_logger")
         task_source = build_sheets_normalized_task_source(
             key_json=str(self._ctx.deps.get("key_json", "")),
             sheet_info_data=dict(self._ctx.deps.get("sheet_info", {})),
             cfg=self._ctx.cfg,
             dry_run=bool(cmd.payload.get("dry_run", False)),
         )
-        result = build_snapshot_engine(self._ctx).update(
-            task_source=task_source,
-            force=bool(cmd.payload.get("force_refresh", False)),
-        )
+        with timed(metrics, "dtm.snapshot.update_duration_ms", {"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "snapshot", "operation": "update", "result": "finished"}):
+            result = build_snapshot_engine(self._ctx).update(
+                task_source=task_source,
+                force=bool(cmd.payload.get("force_refresh", False)),
+            )
+        if metrics is not None:
+            metrics.counter("dtm.snapshot.update_total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "snapshot", "operation": "update", "result": "success"})
+            metrics.counter(
+                "dtm.snapshot.changed_total" if bool(result.changed) else "dtm.snapshot.nochange_total",
+                labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "snapshot", "operation": "update", "result": "success"},
+            )
+        if logger is not None:
+            logger.info(
+                "snapshot_update_finished",
+                source_id=result.source_id,
+                changed=bool(result.changed),
+                raw_written=bool(result.raw_written),
+                prep_written=bool(result.prep_written),
+            )
         return {
             "artifact": "update_snapshot",
             "status": "ok",

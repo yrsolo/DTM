@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from time import perf_counter
 from typing import Any
 
 from src.app.context import AppContext
@@ -37,9 +38,17 @@ class HttpShell:
         return raw_mode
 
     async def handle(self, event: dict[str, Any], request_payload: dict[str, Any], is_http_event: bool) -> dict[str, Any]:
+        metrics = self._ctx.deps.get("metrics_client")
+        logger = self._ctx.deps.get("structured_logger")
+        started_at = perf_counter()
+        response: dict[str, Any] | None = None
+        result_label = "success"
+        operation = "http"
+        if is_http_event:
+            operation = normalize_path(http_path(event))
         requested_mode = self._requested_mode(event, request_payload, is_http_event)
         if is_legacy_mode(requested_mode):
-            return to_gateway_response(
+            response = to_gateway_response(
                 error_response(
                     400,
                     code="unsupported_mode",
@@ -47,6 +56,11 @@ class HttpShell:
                     details={"mode": requested_mode},
                 )
             )
+            result_label = "unsupported_mode"
+            if metrics is not None:
+                metrics.counter("dtm.api.requests_total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
+                metrics.timing("dtm.api.duration_ms", (perf_counter() - started_at) * 1000.0, labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
+            return response
 
         if requested_mode in STANDARD_RUN_MODES:
             force_refresh = extract_force_refresh(
@@ -67,7 +81,14 @@ class HttpShell:
                 ),
                 is_http_event=True,
             )
-            return to_gateway_response(runtime_response)
+            response = to_gateway_response(runtime_response)
+            result_label = "runtime"
+            if metrics is not None:
+                metrics.counter("dtm.api.requests_total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
+                metrics.timing("dtm.api.duration_ms", (perf_counter() - started_at) * 1000.0, labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
+            if logger is not None:
+                logger.info("api_request_finished", operation=operation, result=result_label, status_code=response.get("statusCode"))
+            return response
 
         req = HttpRequest(
             method=http_method(event) or "GET",
@@ -82,7 +103,7 @@ class HttpShell:
             http_response = await self._router.dispatch(req)
         except Exception as error:
             print(f"http_dispatch_error={error}")
-            return to_gateway_response(
+            response = to_gateway_response(
                 error_response(
                     503,
                     code="http_dispatch_failed",
@@ -90,8 +111,24 @@ class HttpShell:
                     details={"errorType": type(error).__name__},
                 )
             )
+            result_label = "failed"
+            if metrics is not None:
+                metrics.counter("dtm.api.requests_total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
+                metrics.timing("dtm.api.duration_ms", (perf_counter() - started_at) * 1000.0, labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
+            if logger is not None:
+                logger.error("api_request_finished", operation=operation, result=result_label, error_type=type(error).__name__)
+            return response
         if http_response is not None:
-            return to_gateway_response(http_response)
+            response = to_gateway_response(http_response)
+            result_label = "routed"
+            if metrics is not None:
+                metrics.counter("dtm.api.requests_total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
+                metrics.timing("dtm.api.duration_ms", (perf_counter() - started_at) * 1000.0, labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
+                body = response.get("body", "")
+                metrics.gauge("dtm.api.response_size_bytes", float(len(str(body or "").encode("utf-8"))), labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
+            if logger is not None:
+                logger.info("api_request_finished", operation=operation, result=result_label, status_code=response.get("statusCode"))
+            return response
 
         debug_http_shape(
             event,
@@ -110,7 +147,7 @@ class HttpShell:
             query_params=query_params,
         )
         if not run_mode:
-            return to_gateway_response(
+            response = to_gateway_response(
                 json_response(
                     200,
                     {
@@ -120,6 +157,13 @@ class HttpShell:
                     },
                 )
             )
+            result_label = "noop"
+            if metrics is not None:
+                metrics.counter("dtm.api.requests_total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
+                metrics.timing("dtm.api.duration_ms", (perf_counter() - started_at) * 1000.0, labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
+            if logger is not None:
+                logger.info("api_request_finished", operation=operation, result=result_label, status_code=response.get("statusCode"))
+            return response
 
         force_refresh = extract_force_refresh(
             event,
@@ -139,4 +183,11 @@ class HttpShell:
             ),
             is_http_event=True,
         )
-        return to_gateway_response(runtime_response)
+        response = to_gateway_response(runtime_response)
+        result_label = "runtime"
+        if metrics is not None:
+            metrics.counter("dtm.api.requests_total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
+            metrics.timing("dtm.api.duration_ms", (perf_counter() - started_at) * 1000.0, labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
+        if logger is not None:
+            logger.info("api_request_finished", operation=operation, result=result_label, status_code=response.get("statusCode"))
+        return response

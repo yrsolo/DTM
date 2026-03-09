@@ -52,7 +52,7 @@ class JobStatusStoreHistoryTestCase(unittest.TestCase):
         recent = store.get_recent()
         self.assertEqual(len(recent), 1)
         self.assertEqual(recent[0].job_id, "job-1")
-        self.assertEqual(recent[0].status, "succeeded")
+        self.assertEqual(recent[0].status, "success")
 
     def test_history_is_trimmed_newest_first(self) -> None:
         store = _MemoryStatusStore()
@@ -66,7 +66,11 @@ class JobStatusStoreHistoryTestCase(unittest.TestCase):
             )
             store.put_finished(
                 cmd,
-                JobResult(success=(idx % 2 == 0), details={"idx": idx}),
+                JobResult(
+                    success=(idx % 2 == 0),
+                    retryable=(idx % 2 == 1),
+                    details={"idx": idx},
+                ),
             )
 
         recent = store.get_recent()
@@ -86,6 +90,32 @@ class JobStatusStoreHistoryTestCase(unittest.TestCase):
 
         by_command = store.get_recent_by_command("render_timeline_sheet")
         self.assertEqual([item.job_id for item in by_command], ["render-2", "render-1"])
+
+    def test_failed_retryable_is_persisted_with_retryable_flag(self) -> None:
+        store = _MemoryStatusStore()
+        cmd = Command(
+            job_id="job-retryable",
+            type="send_reminders",
+            created_at_utc=datetime(2026, 3, 9, 10, 0, tzinfo=timezone.utc),
+            requested_by=RequestedBy(source="trigger"),
+        )
+
+        store.put_finished(
+            cmd,
+            JobResult(
+                success=False,
+                retryable=True,
+                failure_kind="retryable",
+                error_code="telegram_timeout",
+                details={"artifact": "send_reminders"},
+                error={"code": "telegram_timeout"},
+            ),
+        )
+
+        stored = store.get("job-retryable")
+        self.assertIsNotNone(stored)
+        self.assertEqual(stored.status, "failed_retryable")
+        self.assertTrue(stored.retryable)
 
 
 if __name__ == "__main__":

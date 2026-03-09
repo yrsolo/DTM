@@ -14,6 +14,26 @@ class RuntimeSection:
 
 
 @dataclass(slots=True)
+class MonitoringSection:
+    enabled: bool = False
+    backend: str = "yandex_monitoring"
+    folder_id: str = ""
+    endpoint_write: str = "https://monitoring.api.cloud.yandex.net/monitoring/v2/data/write"
+    service: str = "custom"
+    namespace: str = "dtm"
+    dashboard_name_test: str = "DTM Test Observability"
+    dashboard_name_prod: str = "DTM Prod Observability"
+    dashboard_id_test: str = ""
+    dashboard_id_prod: str = ""
+    emit_queue_metrics: bool = True
+    emit_api_metrics: bool = True
+    emit_snapshot_metrics: bool = True
+    emit_render_metrics: bool = True
+    emit_notify_metrics: bool = True
+    emit_telegram_metrics: bool = True
+
+
+@dataclass(slots=True)
 class PipelineSection:
     readmodel_ttl_minutes: int = 9
     preflight_top_rows: int = 50
@@ -79,6 +99,7 @@ class TimingSection:
 @dataclass(slots=True)
 class RuntimeConfig:
     runtime: RuntimeSection = field(default_factory=RuntimeSection)
+    monitoring: MonitoringSection = field(default_factory=MonitoringSection)
     web: dict[str, Any] = field(default_factory=dict)
     api: dict[str, Any] = field(default_factory=dict)
     pipeline: PipelineSection = field(default_factory=PipelineSection)

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from src.app.context import AppContext
+from src.observability import timed
 from src.render import DesignersRenderUseCase, GoogleSheetsPlanWriter, RenderJob, RenderRequest, SheetTarget
 from src.render.target_guard import RenderTarget, validate_render_target
 from src.snapshot_engine import build_snapshot_engine
@@ -12,6 +13,8 @@ class RenderDesignersJob:
         self._ctx = ctx
 
     def run(self, cmd):
+        metrics = self._ctx.deps.get("metrics_client")
+        logger = self._ctx.deps.get("structured_logger")
         from utils.service import GoogleSheetInfo, GoogleSheetsService
 
         snapshot_engine = build_snapshot_engine(self._ctx)
@@ -46,12 +49,25 @@ class RenderDesignersJob:
             GoogleSheetsService(str(self._ctx.deps.get("key_json", "")), dry_run=bool(cmd.payload.get("dry_run", False))),
             SheetTarget(spreadsheet_name=sheet_info.spreadsheet_name, worksheet_name=target_worksheet),
         )
-        result = RenderJob(usecase, writer).run(
-            RenderRequest(
-                window=Window(start=None, end=None, mode="intersects"),
-                statuses=list(cmd.payload.get("statuses", ["work", "pre_done"])),
+        with timed(metrics, "dtm.render.duration_ms", {"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "render", "operation": "designers", "result": "finished"}):
+            result = RenderJob(usecase, writer).run(
+                RenderRequest(
+                    window=Window(start=None, end=None, mode="intersects"),
+                    statuses=list(cmd.payload.get("statuses", ["work", "pre_done"])),
+                )
             )
-        )
+        if metrics is not None:
+            metrics.counter("dtm.render.total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "render", "operation": "designers", "result": "success"})
+        if logger is not None:
+            logger.info(
+                "render_finished",
+                render_type="designers",
+                target_spreadsheet=str(result.target_spreadsheet),
+                target_worksheet=str(result.target_worksheet),
+                render_applied=bool(result.applied),
+                rows_written=int(result.rows_written),
+                cells_written=int(result.cells_written),
+            )
         return {
             "artifact": "render_designers_sheet",
             "status": "ok",
