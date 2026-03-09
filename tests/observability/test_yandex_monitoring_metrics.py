@@ -29,7 +29,7 @@ class YandexMonitoringMetricsClientTestCase(unittest.TestCase):
             namespace="dtm",
         )
         self.assertEqual(point.labels["env"], "test")
-        self.assertEqual(point.labels["service"], "dtm")
+        self.assertEqual(point.labels["service_name"], "dtm")
         self.assertEqual(point.labels["namespace"], "dtm")
         self.assertTrue(point.ts)
 

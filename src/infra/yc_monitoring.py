@@ -50,7 +50,7 @@ def build_metric_point(
     ts: str | None = None,
 ) -> MetricPoint:
     merged_labels = normalize_metric_labels(labels)
-    merged_labels.setdefault("service", str(service_label).strip())
+    merged_labels.setdefault("service_name", str(service_label).strip())
     merged_labels.setdefault("namespace", str(namespace).strip())
     return MetricPoint(
         name=str(name).strip(),
