@@ -1,9 +1,11 @@
 # Active Tasks
 
-- CAM-SNAPSHOT-RENDER-TIMINGS-V1 P01: add detailed snapshot timings for fetch/normalize/build_prep/write_raw/write_prep and surface them through metrics and job result
-- CAM-SNAPSHOT-RENDER-TIMINGS-V1 P02: add detailed render timings for build_plan/write_sheet/total and surface them through metrics and job result
+- none
 
 ## Done
+
+- CAM-SNAPSHOT-RENDER-TIMINGS-V1 P01: add detailed snapshot timings for fetch/normalize/build_prep/write_raw/write_prep and surface them through metrics and job result
+- CAM-SNAPSHOT-RENDER-TIMINGS-V1 P02: add detailed render timings for build_plan/write_sheet/total and surface them through metrics and job result
 
 - CAM-2026-03-09-QUEUE-RETRY-SEMANTICS-V1 P01: extend worker result/status vocabulary to retryable vs terminal failures
 - CAM-2026-03-09-QUEUE-RETRY-SEMANTICS-V1 P02: update dispatcher/worker/worker-shell semantics and add retry-focused tests
