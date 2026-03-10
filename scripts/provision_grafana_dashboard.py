@@ -34,7 +34,7 @@ def _load_env_value(name: str) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Create/update the Grafana dashboard from repo spec.")
-    parser.add_argument("--base-url", default="http://style-app.solofarm.ru:3000")
+    parser.add_argument("--base-url", default="https://grafana.solofarm.ru")
     parser.add_argument("--env", default="test")
     parser.add_argument("--folder-title", default="DTM Test")
     parser.add_argument("--token-env", default="GRAFANA_TOKEN")

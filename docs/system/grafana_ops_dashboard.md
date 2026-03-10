@@ -92,11 +92,11 @@ Repo-side Grafana foundation is implemented.
 
 Current live test state:
 
-- Grafana base URL: `http://style-app.solofarm.ru:3000`
+- Grafana base URL: `https://grafana.solofarm.ru`
 - test folder: `DTM Test`
 - imported dashboard UID: `dtm-test-ops`
-- public dashboard URL: `http://style-app.solofarm.ru:3000/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
-- embed URL: `http://style-app.solofarm.ru:3000/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
+- public dashboard URL: `https://grafana.solofarm.ru/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
+- embed URL: `https://grafana.solofarm.ru/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
 
 What is already done:
 
