@@ -13,6 +13,7 @@ from src.infra.grafana_api import (  # noqa: E402
     ensure_folder,
     grafana_dashboard_url,
     grafana_embed_url,
+    get_datasource_by_name,
     upsert_dashboard,
 )
 from src.infra.grafana_specs import build_test_grafana_dashboard  # noqa: E402
@@ -37,6 +38,7 @@ def main() -> int:
     parser.add_argument("--env", default="test")
     parser.add_argument("--folder-title", default="DTM Test")
     parser.add_argument("--token-env", default="GRAFANA_TOKEN")
+    parser.add_argument("--datasource-name", default="")
     args = parser.parse_args()
 
     token = _load_env_value(str(args.token_env)) or _load_env_value("GRAFANA_API_TOKEN")
@@ -48,7 +50,19 @@ def main() -> int:
         api_token=token,
         title=str(args.folder_title),
     )
-    dashboard = build_test_grafana_dashboard(env_name=str(args.env))
+    datasource_name = str(args.datasource_name or "").strip() or (
+        "DTM YMP Prod" if str(args.env).strip().lower() == "prod" else "DTM YMP Test"
+    )
+    datasource = get_datasource_by_name(
+        base_url=str(args.base_url),
+        api_token=token,
+        name=datasource_name,
+    )
+    dashboard = build_test_grafana_dashboard(
+        env_name=str(args.env),
+        datasource_uid=str((datasource or {}).get("uid", "")).strip(),
+        datasource_name=datasource_name,
+    )
     result = upsert_dashboard(
         base_url=str(args.base_url),
         api_token=token,
@@ -58,6 +72,7 @@ def main() -> int:
     )
     uid = str(result.get("uid", "")).strip() or str(dashboard.get("uid", "")).strip()
     print(f"folder_uid={folder.get('uid','')}")
+    print(f"datasource_uid={(datasource or {}).get('uid', '')}")
     print(f"dashboard_uid={uid}")
     print(f"dashboard_url={grafana_dashboard_url(str(args.base_url), uid)}")
     print(f"embed_url={grafana_embed_url(str(args.base_url), uid)}")

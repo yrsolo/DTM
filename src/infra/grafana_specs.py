@@ -15,13 +15,30 @@ def _expr(metric_name: str, env_name: str, extra_selector: str = "") -> str:
     return f"{_prom_metric(metric_name)}{base}"
 
 
-def build_test_grafana_dashboard(env_name: str = "test") -> dict[str, Any]:
+def _datasource_ref(*, datasource_uid: str = "", datasource_name: str = "") -> dict[str, str] | str | None:
+    uid_value = str(datasource_uid or "").strip()
+    if uid_value:
+        return {"type": "prometheus", "uid": uid_value}
+    name_value = str(datasource_name or "").strip()
+    if name_value:
+        return name_value
+    return None
+
+
+def build_test_grafana_dashboard(
+    env_name: str = "test",
+    *,
+    datasource_uid: str = "",
+    datasource_name: str = "",
+) -> dict[str, Any]:
+    datasource = _datasource_ref(datasource_uid=datasource_uid, datasource_name=datasource_name)
     panels = [
         {
             "id": 1,
             "title": "Snapshot Stage Timings",
             "type": "timeseries",
             "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+            "datasource": datasource,
             "targets": [
                 {"expr": _expr("dtm.snapshot.fetch_sheet_ms", env_name), "legendFormat": "fetch_sheet_ms"},
                 {"expr": _expr("dtm.snapshot.normalize_ms", env_name), "legendFormat": "normalize_ms"},
@@ -35,6 +52,7 @@ def build_test_grafana_dashboard(env_name: str = "test") -> dict[str, Any]:
             "title": "Snapshot Total Duration",
             "type": "timeseries",
             "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+            "datasource": datasource,
             "targets": [{"expr": _expr("dtm.snapshot.update_duration_ms", env_name), "legendFormat": "total"}],
         },
         {
@@ -42,6 +60,7 @@ def build_test_grafana_dashboard(env_name: str = "test") -> dict[str, Any]:
             "title": "Snapshot Outcomes",
             "type": "timeseries",
             "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+            "datasource": datasource,
             "targets": [
                 {"expr": _expr("dtm.snapshot.update_total", env_name), "legendFormat": "update_total"},
                 {"expr": _expr("dtm.snapshot.changed_total", env_name), "legendFormat": "changed_total"},
@@ -53,6 +72,7 @@ def build_test_grafana_dashboard(env_name: str = "test") -> dict[str, Any]:
             "title": "Render Stage Timings",
             "type": "timeseries",
             "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
+            "datasource": datasource,
             "targets": [
                 {
                     "expr": _expr("dtm.render.build_plan_ms", env_name, 'operation=~".+"'),
@@ -69,6 +89,7 @@ def build_test_grafana_dashboard(env_name: str = "test") -> dict[str, Any]:
             "title": "Render Total Duration",
             "type": "timeseries",
             "gridPos": {"x": 0, "y": 16, "w": 12, "h": 8},
+            "datasource": datasource,
             "targets": [
                 {
                     "expr": _expr("dtm.render.duration_ms", env_name, 'operation=~".+"'),
@@ -81,6 +102,7 @@ def build_test_grafana_dashboard(env_name: str = "test") -> dict[str, Any]:
             "title": "Render Volume",
             "type": "timeseries",
             "gridPos": {"x": 12, "y": 16, "w": 12, "h": 8},
+            "datasource": datasource,
             "targets": [
                 {
                     "expr": _expr("dtm.render.rows_rendered", env_name, 'operation=~".+"'),
@@ -97,6 +119,7 @@ def build_test_grafana_dashboard(env_name: str = "test") -> dict[str, Any]:
             "title": "API Latency",
             "type": "timeseries",
             "gridPos": {"x": 0, "y": 24, "w": 12, "h": 8},
+            "datasource": datasource,
             "targets": [{"expr": _expr("dtm.api.duration_ms", env_name), "legendFormat": "{{operation}}"}],
         },
         {
@@ -104,6 +127,7 @@ def build_test_grafana_dashboard(env_name: str = "test") -> dict[str, Any]:
             "title": "API Throughput",
             "type": "timeseries",
             "gridPos": {"x": 12, "y": 24, "w": 12, "h": 8},
+            "datasource": datasource,
             "targets": [{"expr": _expr("dtm.api.requests_total", env_name), "legendFormat": "{{operation}}"}],
         },
         {
@@ -111,6 +135,7 @@ def build_test_grafana_dashboard(env_name: str = "test") -> dict[str, Any]:
             "title": "Worker Reliability",
             "type": "timeseries",
             "gridPos": {"x": 0, "y": 32, "w": 12, "h": 8},
+            "datasource": datasource,
             "targets": [
                 {"expr": _expr("dtm.worker.commands_total", env_name), "legendFormat": "commands_total"},
                 {"expr": _expr("dtm.worker.command_duration_ms", env_name), "legendFormat": "command_duration_ms"},
@@ -123,6 +148,7 @@ def build_test_grafana_dashboard(env_name: str = "test") -> dict[str, Any]:
             "title": "Notify Runtime",
             "type": "timeseries",
             "gridPos": {"x": 12, "y": 32, "w": 12, "h": 8},
+            "datasource": datasource,
             "targets": [
                 {"expr": _expr("dtm.notify.duration_ms", env_name), "legendFormat": "duration_ms"},
                 {"expr": _expr("dtm.notify.messages_sent", env_name), "legendFormat": "messages_sent"},
@@ -134,6 +160,7 @@ def build_test_grafana_dashboard(env_name: str = "test") -> dict[str, Any]:
             "title": "Telegram Intake",
             "type": "timeseries",
             "gridPos": {"x": 0, "y": 40, "w": 12, "h": 8},
+            "datasource": datasource,
             "targets": [
                 {"expr": _expr("dtm.telegram.accepted_total", env_name), "legendFormat": "accepted_total"},
                 {"expr": _expr("dtm.telegram.rejected_total", env_name), "legendFormat": "rejected_total"},
@@ -150,6 +177,19 @@ def build_test_grafana_dashboard(env_name: str = "test") -> dict[str, Any]:
         "version": 1,
         "refresh": "30s",
         "panels": panels,
+        "annotations": {
+            "list": [
+                {
+                    "builtIn": 1,
+                    "datasource": {"type": "grafana", "uid": "-- Grafana --"},
+                    "enable": True,
+                    "hide": True,
+                    "iconColor": "rgba(0, 211, 255, 1)",
+                    "name": "Annotations & Alerts",
+                    "type": "dashboard",
+                }
+            ]
+        },
         "time": {"from": "now-24h", "to": "now"},
         "templating": {"list": []},
         "tags": ["dtm", "ops", env_name],

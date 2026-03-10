@@ -80,6 +80,24 @@ def upsert_prometheus_datasource(
     return dict(create_response.json() or {})
 
 
+def get_datasource_by_name(
+    *,
+    base_url: str,
+    api_token: str,
+    name: str,
+    timeout_seconds: float = 15.0,
+) -> dict[str, Any] | None:
+    response = requests.get(
+        f"{str(base_url).rstrip('/')}/api/datasources/name/{str(name or '').strip()}",
+        headers=grafana_headers(api_token),
+        timeout=timeout_seconds,
+    )
+    if response.status_code == 404:
+        return None
+    response.raise_for_status()
+    return dict(response.json() or {})
+
+
 def upsert_dashboard(
     *,
     base_url: str,
