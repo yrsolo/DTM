@@ -113,6 +113,8 @@ def _render_info_page(payload: dict[str, Any]) -> str:
     button.alt{{background:#4b5563}}
     button.small{{padding:6px 8px;font-size:12px}}
     pre{{background:#0b1220;color:#dbeafe;padding:12px;border-radius:10px;overflow:auto;max-height:280px;white-space:pre-wrap}}
+    iframe{{width:100%;height:900px;border:1px solid #cbd5e1;border-radius:10px;background:#fff}}
+    .muted{{color:#64748b;font-size:14px}}
   </style>
 </head>
 <body>
@@ -236,6 +238,15 @@ def _render_info_page(payload: dict[str, Any]) -> str:
     <pre id="infoResult">{escaped}</pre>
   </div>
 
+  <div class="card section">
+    <div class="hline">
+      <h2>Grafana Dashboard</h2>
+      <a id="grafanaLink" class="v" href="#" target="_blank" rel="noreferrer" style="display:none">open</a>
+    </div>
+    <div id="grafanaEmpty" class="muted">Grafana embed URL is not configured.</div>
+    <iframe id="grafanaFrame" src="" loading="lazy" referrerpolicy="no-referrer" style="display:none"></iframe>
+  </div>
+
   <script>
     function pretty(value){{
       if (typeof value === 'string') {{
@@ -346,6 +357,28 @@ def _render_info_page(payload: dict[str, Any]) -> str:
       document.getElementById('lastRenderJob').textContent = pretty(lastRender || {{}});
       document.getElementById('renderDebug').textContent = pretty(renderDebug);
       document.getElementById('infoResult').textContent = pretty(p);
+      const telemetry = p.telemetry || {{}};
+      const grafanaUrl = String(telemetry.grafanaDashboardUrl || '').trim();
+      const grafanaEmbedUrl = String(telemetry.grafanaEmbedUrl || '').trim();
+      const grafanaLink = document.getElementById('grafanaLink');
+      const grafanaFrame = document.getElementById('grafanaFrame');
+      const grafanaEmpty = document.getElementById('grafanaEmpty');
+      if (grafanaUrl) {{
+        grafanaLink.href = grafanaUrl;
+        grafanaLink.style.display = 'inline';
+      }} else {{
+        grafanaLink.removeAttribute('href');
+        grafanaLink.style.display = 'none';
+      }}
+      if (grafanaEmbedUrl) {{
+        grafanaFrame.src = grafanaEmbedUrl;
+        grafanaFrame.style.display = 'block';
+        grafanaEmpty.style.display = 'none';
+      }} else {{
+        grafanaFrame.removeAttribute('src');
+        grafanaFrame.style.display = 'none';
+        grafanaEmpty.style.display = 'block';
+      }}
     }}
     async function pollJob(jobId){{
       for (let attempt = 0; attempt < 60; attempt += 1) {{
