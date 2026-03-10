@@ -13,6 +13,11 @@
 - `job_status_schema.md` — current job-status vocabulary and storage shape
 - `metrics_schema.md` — observability metric names and required labels
 - `yc_monitoring_integration.md` — current Monitoring backend wiring, auth model, and rollout policy
+- `prometheus_integration.md` — Prometheus-compatible second sink and dual-write policy for Grafana
+- `grafana_ops_dashboard.md` — Grafana dashboard structure, metadata, and embed policy
+- `grafana_vps_setup.md` — hands-on VPS setup steps for Grafana, datasource, dashboard import, and iframe enablement
+- `yandex_prometheus_workspace_setup.md` — exact manual YMP workspace/API-key steps and the repo command that provisions the Grafana datasource
+- `datalens_ops_dashboard.md` — DataLens operator dashboard structure and provisioning notes
 - `command_runtime_architecture.md` — current HTTP/intake/worker runtime flow
 - `yandex_queue_setup.md` — current queue/DLQ/trigger topology
 - `telegram_webhook_setup.md` — current webhook hardening/setup rules

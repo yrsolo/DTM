@@ -72,6 +72,14 @@ ENV_ALLOWLIST = frozenset(
         "MONITORING_SERVICE",
         "MONITORING_NAMESPACE",
         "MONITORING_DASHBOARD_NAME",
+        "DATALENS_ENABLED",
+        "DATALENS_ORG_ID",
+        "PROMETHEUS_ENABLED",
+        "PROMETHEUS_BACKEND",
+        "PROMETHEUS_ENDPOINT_WRITE",
+        "PROMETHEUS_FOLDER_ID",
+        "GRAFANA_ENABLED",
+        "GRAFANA_PUBLIC_BASE_URL",
     }
 )
 
@@ -152,6 +160,22 @@ def _merge_runtime_env_overrides(runtime_cfg: RuntimeConfig) -> RuntimeConfig:
             runtime_cfg.monitoring.dashboard_name_prod = dashboard_name
         else:
             runtime_cfg.monitoring.dashboard_name_test = dashboard_name
+    if "DATALENS_ENABLED" in os.environ:
+        runtime_cfg.datalens.enabled = _parse_bool(os.environ["DATALENS_ENABLED"])
+    if "DATALENS_ORG_ID" in os.environ:
+        runtime_cfg.datalens.org_id = os.environ["DATALENS_ORG_ID"].strip()
+    if "PROMETHEUS_ENABLED" in os.environ:
+        runtime_cfg.prometheus.enabled = _parse_bool(os.environ["PROMETHEUS_ENABLED"])
+    if "PROMETHEUS_BACKEND" in os.environ:
+        runtime_cfg.prometheus.backend = os.environ["PROMETHEUS_BACKEND"].strip().lower()
+    if "PROMETHEUS_ENDPOINT_WRITE" in os.environ:
+        runtime_cfg.prometheus.endpoint_write = os.environ["PROMETHEUS_ENDPOINT_WRITE"].strip()
+    if "PROMETHEUS_FOLDER_ID" in os.environ:
+        runtime_cfg.prometheus.folder_id = os.environ["PROMETHEUS_FOLDER_ID"].strip()
+    if "GRAFANA_ENABLED" in os.environ:
+        runtime_cfg.grafana.enabled = _parse_bool(os.environ["GRAFANA_ENABLED"])
+    if "GRAFANA_PUBLIC_BASE_URL" in os.environ:
+        runtime_cfg.grafana.public_base_url = os.environ["GRAFANA_PUBLIC_BASE_URL"].strip()
 
     return runtime_cfg
 
@@ -168,6 +192,9 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
         else {}
     )
     monitoring_raw = data.get("monitoring", {}) if isinstance(data.get("monitoring", {}), dict) else {}
+    datalens_raw = data.get("datalens", {}) if isinstance(data.get("datalens", {}), dict) else {}
+    prometheus_raw = data.get("prometheus", {}) if isinstance(data.get("prometheus", {}), dict) else {}
+    grafana_raw = data.get("grafana", {}) if isinstance(data.get("grafana", {}), dict) else {}
     telegram_raw = data.get("telegram", {}) if isinstance(data.get("telegram", {}), dict) else {}
     notify_raw = data.get("notify", {}) if isinstance(data.get("notify", {}), dict) else {}
     queue_raw = data.get("queue", {}) if isinstance(data.get("queue", {}), dict) else {}
@@ -218,6 +245,94 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
     )
     defaults.monitoring.emit_telegram_metrics = bool(
         monitoring_raw.get("emit_telegram_metrics", defaults.monitoring.emit_telegram_metrics)
+    )
+    defaults.datalens.enabled = bool(datalens_raw.get("enabled", defaults.datalens.enabled))
+    defaults.datalens.org_id = str(datalens_raw.get("org_id", defaults.datalens.org_id))
+    defaults.datalens.workbook_name = str(
+        datalens_raw.get("workbook_name", defaults.datalens.workbook_name)
+    )
+    defaults.datalens.workbook_id_test = str(
+        datalens_raw.get("workbook_id_test", defaults.datalens.workbook_id_test)
+    )
+    defaults.datalens.workbook_id_prod = str(
+        datalens_raw.get("workbook_id_prod", defaults.datalens.workbook_id_prod)
+    )
+    defaults.datalens.connection_name_test = str(
+        datalens_raw.get("connection_name_test", defaults.datalens.connection_name_test)
+    )
+    defaults.datalens.connection_name_prod = str(
+        datalens_raw.get("connection_name_prod", defaults.datalens.connection_name_prod)
+    )
+    defaults.datalens.connection_id_test = str(
+        datalens_raw.get("connection_id_test", defaults.datalens.connection_id_test)
+    )
+    defaults.datalens.connection_id_prod = str(
+        datalens_raw.get("connection_id_prod", defaults.datalens.connection_id_prod)
+    )
+    defaults.datalens.dashboard_name_test = str(
+        datalens_raw.get("dashboard_name_test", defaults.datalens.dashboard_name_test)
+    )
+    defaults.datalens.dashboard_name_prod = str(
+        datalens_raw.get("dashboard_name_prod", defaults.datalens.dashboard_name_prod)
+    )
+    defaults.datalens.dashboard_id_test = str(
+        datalens_raw.get("dashboard_id_test", defaults.datalens.dashboard_id_test)
+    )
+    defaults.datalens.dashboard_id_prod = str(
+        datalens_raw.get("dashboard_id_prod", defaults.datalens.dashboard_id_prod)
+    )
+    defaults.datalens.dashboard_url_test = str(
+        datalens_raw.get("dashboard_url_test", defaults.datalens.dashboard_url_test)
+    )
+    defaults.datalens.dashboard_url_prod = str(
+        datalens_raw.get("dashboard_url_prod", defaults.datalens.dashboard_url_prod)
+    )
+    defaults.prometheus.enabled = bool(prometheus_raw.get("enabled", defaults.prometheus.enabled))
+    defaults.prometheus.backend = str(prometheus_raw.get("backend", defaults.prometheus.backend))
+    defaults.prometheus.endpoint_write = str(
+        prometheus_raw.get("endpoint_write", defaults.prometheus.endpoint_write)
+    )
+    defaults.prometheus.folder_id = str(prometheus_raw.get("folder_id", defaults.prometheus.folder_id))
+    defaults.prometheus.workspace_id_test = str(
+        prometheus_raw.get("workspace_id_test", defaults.prometheus.workspace_id_test)
+    )
+    defaults.prometheus.workspace_id_prod = str(
+        prometheus_raw.get("workspace_id_prod", defaults.prometheus.workspace_id_prod)
+    )
+    defaults.prometheus.service = str(prometheus_raw.get("service", defaults.prometheus.service))
+    defaults.prometheus.namespace = str(
+        prometheus_raw.get("namespace", defaults.prometheus.namespace)
+    )
+    defaults.prometheus.timeout_seconds = float(
+        prometheus_raw.get("timeout_seconds", defaults.prometheus.timeout_seconds)
+    )
+    defaults.grafana.enabled = bool(grafana_raw.get("enabled", defaults.grafana.enabled))
+    defaults.grafana.public_base_url = str(
+        grafana_raw.get("public_base_url", defaults.grafana.public_base_url)
+    )
+    defaults.grafana.dashboard_uid_test = str(
+        grafana_raw.get("dashboard_uid_test", defaults.grafana.dashboard_uid_test)
+    )
+    defaults.grafana.dashboard_uid_prod = str(
+        grafana_raw.get("dashboard_uid_prod", defaults.grafana.dashboard_uid_prod)
+    )
+    defaults.grafana.dashboard_url_test = str(
+        grafana_raw.get("dashboard_url_test", defaults.grafana.dashboard_url_test)
+    )
+    defaults.grafana.dashboard_url_prod = str(
+        grafana_raw.get("dashboard_url_prod", defaults.grafana.dashboard_url_prod)
+    )
+    defaults.grafana.embed_url_test = str(
+        grafana_raw.get("embed_url_test", defaults.grafana.embed_url_test)
+    )
+    defaults.grafana.embed_url_prod = str(
+        grafana_raw.get("embed_url_prod", defaults.grafana.embed_url_prod)
+    )
+    defaults.grafana.folder_name_test = str(
+        grafana_raw.get("folder_name_test", defaults.grafana.folder_name_test)
+    )
+    defaults.grafana.folder_name_prod = str(
+        grafana_raw.get("folder_name_prod", defaults.grafana.folder_name_prod)
     )
     defaults.web = {str(k): v for k, v in web_raw.items()}
     defaults.api = {str(k): v for k, v in api_raw.items()}
@@ -381,6 +496,38 @@ def load_config(config_dir: Path = CONFIG_DIR) -> AppConfig:
             raise ValueError("monitoring.endpoint_write is required when monitoring.enabled=true")
         if str(monitoring_cfg.service).strip().lower() != "custom":
             raise ValueError("monitoring.service must be 'custom' for Yandex custom metrics")
+    datalens_cfg = runtime_cfg.datalens
+    if bool(datalens_cfg.enabled):
+        if not str(datalens_cfg.org_id).strip():
+            raise ValueError("datalens.org_id is required when datalens.enabled=true")
+        if not str(datalens_cfg.workbook_name).strip():
+            raise ValueError("datalens.workbook_name is required when datalens.enabled=true")
+        if not str(datalens_cfg.connection_name_test).strip():
+            raise ValueError("datalens.connection_name_test is required when datalens.enabled=true")
+        if not str(datalens_cfg.connection_name_prod).strip():
+            raise ValueError("datalens.connection_name_prod is required when datalens.enabled=true")
+        if not str(datalens_cfg.dashboard_name_test).strip():
+            raise ValueError("datalens.dashboard_name_test is required when datalens.enabled=true")
+        if not str(datalens_cfg.dashboard_name_prod).strip():
+            raise ValueError("datalens.dashboard_name_prod is required when datalens.enabled=true")
+    prometheus_cfg = runtime_cfg.prometheus
+    if bool(prometheus_cfg.enabled):
+        if not str(prometheus_cfg.backend).strip():
+            raise ValueError("prometheus.backend is required when prometheus.enabled=true")
+        if not str(prometheus_cfg.endpoint_write).strip():
+            raise ValueError("prometheus.endpoint_write is required when prometheus.enabled=true")
+        if not str(prometheus_cfg.service).strip():
+            raise ValueError("prometheus.service is required when prometheus.enabled=true")
+        if not str(prometheus_cfg.namespace).strip():
+            raise ValueError("prometheus.namespace is required when prometheus.enabled=true")
+    grafana_cfg = runtime_cfg.grafana
+    if bool(grafana_cfg.enabled):
+        if not str(grafana_cfg.public_base_url).strip():
+            raise ValueError("grafana.public_base_url is required when grafana.enabled=true")
+        if not str(grafana_cfg.folder_name_test).strip():
+            raise ValueError("grafana.folder_name_test is required when grafana.enabled=true")
+        if not str(grafana_cfg.folder_name_prod).strip():
+            raise ValueError("grafana.folder_name_prod is required when grafana.enabled=true")
 
     tables_cfg = TablesConfig(
         google_sheets=tables_data.get("google_sheets", {}),

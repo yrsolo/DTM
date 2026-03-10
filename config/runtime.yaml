@@ -21,6 +21,46 @@ monitoring:
   emit_notify_metrics: true
   emit_telegram_metrics: true
 
+datalens:
+  enabled: true
+  org_id: bpf5f34jd486mus03s8i
+  workbook_name: DTM Observability
+  workbook_id_test: ppzr9qy22doe9
+  workbook_id_prod: ""
+  connection_name_test: DTM Monitoring Test
+  connection_name_prod: DTM Monitoring Prod
+  connection_id_test: iisk41ymvyb02
+  connection_id_prod: ""
+  dashboard_name_test: DTM Test Ops
+  dashboard_name_prod: DTM Prod Ops
+  dashboard_id_test: ""
+  dashboard_id_prod: ""
+  dashboard_url_test: ""
+  dashboard_url_prod: ""
+
+prometheus:
+  enabled: true
+  backend: yandex_managed_prometheus
+  endpoint_write: https://monitoring.api.cloud.yandex.net/prometheus/workspaces/mon73oiiclfbmmqbjejn/api/v1/write
+  folder_id: b1g42qj26s1u7gv7bufm
+  workspace_id_test: mon73oiiclfbmmqbjejn
+  workspace_id_prod: mon73oiiclfbmmqbjejn
+  service: dtm
+  namespace: dtm
+  timeout_seconds: 2.0
+
+grafana:
+  enabled: true
+  public_base_url: http://style-app.solofarm.ru:3000
+  dashboard_uid_test: dtm-test-ops
+  dashboard_uid_prod: ""
+  dashboard_url_test: http://style-app.solofarm.ru:3000/d/dtm-test-ops/dtm-test-ops
+  dashboard_url_prod: ""
+  embed_url_test: http://style-app.solofarm.ru:3000/d/dtm-test-ops/dtm-test-ops?kiosk&theme=light
+  embed_url_prod: ""
+  folder_name_test: DTM Test
+  folder_name_prod: DTM Prod
+
 web:
   domain: solofarm.ru
   api_domain_test: dtm-api-test.solofarm.ru

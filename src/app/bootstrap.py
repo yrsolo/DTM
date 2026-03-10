@@ -22,7 +22,13 @@ from config import (
 from src.app.context import AppContext
 from src.config.loader import load_config
 from src.infra.yc_iam import get_iam_token
-from src.observability import NoopMetricsClient, StdoutJsonLogger, YandexMonitoringMetricsClient
+from src.observability import (
+    CompositeMetricsClient,
+    NoopMetricsClient,
+    StdoutJsonLogger,
+    YandexManagedPrometheusRemoteWriteClient,
+    YandexMonitoringMetricsClient,
+)
 from src.services.mappers.task_payload_mapper import TaskPayloadMapper
 
 
@@ -73,29 +79,61 @@ def build_app_context() -> AppContext:
         "google_llm_api_key": os.getenv("GOOGLE_LLM_API_KEY", "").strip(),
         "yandex_llm_api_key": os.getenv("YANDEX_LLM_API_KEY", "").strip(),
         "tg_webhook_secret_token": os.getenv("TG_WEBHOOK_SECRET_TOKEN", "").strip(),
+        "grafana_api_token": os.getenv("GRAFANA_API_TOKEN", "").strip() or os.getenv("GRAFANA_TOKEN", "").strip(),
+        "yandex_prometheus_api_key": os.getenv("YANDEX_PROMETHEUS_API_KEY", "").strip()
+        or os.getenv("YMP_API_KEY", "").strip(),
         "metrics_client": NoopMetricsClient(),
         "structured_logger": structured_logger,
     }
     ctx = AppContext(cfg=cfg, deps=deps)
     monitoring_cfg = cfg.runtime.monitoring
+    prometheus_cfg = cfg.runtime.prometheus
+
+    def _iam_token_provider() -> str:
+        return get_iam_token(
+            deps.get("ydb_sa_json_credentials"),
+            deps.get("ydb_sa_key_file"),
+            timeout_seconds=4.0,
+        )
+
+    metrics_clients = []
     if bool(monitoring_cfg.enabled) and str(monitoring_cfg.backend).strip().lower() == "yandex_monitoring":
         folder_id = str(monitoring_cfg.folder_id).strip() or str(cfg.deploy.yandex_cloud.folder_id).strip()
-
-        def _iam_token_provider() -> str:
-            return get_iam_token(
-                deps.get("ydb_sa_json_credentials"),
-                deps.get("ydb_sa_key_file"),
-                timeout_seconds=4.0,
+        metrics_clients.append(
+            YandexMonitoringMetricsClient(
+                folder_id=folder_id,
+                iam_token_provider=_iam_token_provider,
+                logger=structured_logger,
+                endpoint_write=str(monitoring_cfg.endpoint_write).strip(),
+                service_label=str(monitoring_cfg.service).strip() or "dtm",
+                namespace=str(monitoring_cfg.namespace).strip() or "dtm",
             )
-
-        deps["metrics_client"] = YandexMonitoringMetricsClient(
-            folder_id=folder_id,
-            iam_token_provider=_iam_token_provider,
-            logger=structured_logger,
-            endpoint_write=str(monitoring_cfg.endpoint_write).strip(),
-            service_label=str(monitoring_cfg.service).strip() or "dtm",
-            namespace=str(monitoring_cfg.namespace).strip() or "dtm",
         )
+    if bool(prometheus_cfg.enabled):
+        backend_name = str(prometheus_cfg.backend or "").strip().lower()
+        if backend_name == "yandex_managed_prometheus":
+            prometheus_api_key = str(deps.get("yandex_prometheus_api_key") or "").strip()
+            if not prometheus_api_key:
+                raise ValueError(
+                    "YANDEX_PROMETHEUS_API_KEY or YMP_API_KEY is required "
+                    "when prometheus.backend=yandex_managed_prometheus and prometheus.enabled=true"
+                )
+            metrics_clients.append(
+                YandexManagedPrometheusRemoteWriteClient(
+                    endpoint_write=str(prometheus_cfg.endpoint_write).strip(),
+                    api_key=prometheus_api_key,
+                    logger=structured_logger,
+                    service_label=str(prometheus_cfg.service).strip() or "dtm",
+                    namespace=str(prometheus_cfg.namespace).strip() or "dtm",
+                    timeout_seconds=float(prometheus_cfg.timeout_seconds),
+                )
+            )
+        else:
+            raise ValueError(f"Unsupported prometheus backend: {backend_name}")
+    if len(metrics_clients) == 1:
+        deps["metrics_client"] = metrics_clients[0]
+    elif len(metrics_clients) > 1:
+        deps["metrics_client"] = CompositeMetricsClient(metrics_clients)
     queue_cfg = cfg.runtime.queue
     if bool(queue_cfg.enabled):
         from src.commands.yandex_mq import YandexMessageQueueProducer

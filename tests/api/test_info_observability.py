@@ -125,6 +125,40 @@ class InfoObservabilityTestCase(unittest.TestCase):
                         dashboard_id_test="dashboard-test-1",
                         dashboard_id_prod="",
                     ),
+                    datalens=SimpleNamespace(
+                        enabled=True,
+                        org_id="org-test",
+                        workbook_name="DTM Observability",
+                        workbook_id_test="workbook-test-1",
+                        workbook_id_prod="",
+                        connection_name_test="DTM Monitoring Test",
+                        connection_name_prod="",
+                        connection_id_test="connection-test-1",
+                        connection_id_prod="",
+                        dashboard_name_test="DTM Test Ops",
+                        dashboard_name_prod="",
+                        dashboard_id_test="datalens-dashboard-test-1",
+                        dashboard_id_prod="",
+                        dashboard_url_test="https://datalens.yandex/org-test/datalens-dashboard-test-1",
+                        dashboard_url_prod="",
+                    ),
+                    prometheus=SimpleNamespace(
+                        enabled=True,
+                        backend="yandex_managed_prometheus",
+                        endpoint_write="https://prometheus-write.test/api/v1/import/prometheus",
+                        workspace_id_test="prom-workspace-test-1",
+                        workspace_id_prod="",
+                    ),
+                    grafana=SimpleNamespace(
+                        enabled=True,
+                        public_base_url="https://grafana-test.example",
+                        dashboard_uid_test="dtm-test-ops",
+                        dashboard_uid_prod="",
+                        dashboard_url_test="https://grafana-test.example/d/dtm-test-ops",
+                        dashboard_url_prod="",
+                        embed_url_test="https://grafana-test.example/d/dtm-test-ops?kiosk",
+                        embed_url_prod="",
+                    ),
                     snapshot_engine=SimpleNamespace(
                         bucket="dtm",
                         prefix_raw="snapshots/{env}/raw/default.json",
@@ -193,6 +227,20 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertEqual(payload["telemetry"]["monitoringBackend"], "yandex_monitoring")
         self.assertEqual(payload["telemetry"]["dashboardName"], "DTM Test Observability")
         self.assertEqual(payload["telemetry"]["dashboardId"], "dashboard-test-1")
+        self.assertTrue(payload["telemetry"]["datalensEnabled"])
+        self.assertEqual(payload["telemetry"]["datalensOrgId"], "org-test")
+        self.assertEqual(payload["telemetry"]["datalensWorkbookId"], "workbook-test-1")
+        self.assertEqual(payload["telemetry"]["datalensConnectionId"], "connection-test-1")
+        self.assertEqual(payload["telemetry"]["datalensDashboardId"], "datalens-dashboard-test-1")
+        self.assertTrue(payload["telemetry"]["prometheusEnabled"])
+        self.assertEqual(payload["telemetry"]["prometheusBackend"], "yandex_managed_prometheus")
+        self.assertEqual(payload["telemetry"]["prometheusWorkspaceId"], "prom-workspace-test-1")
+        self.assertTrue(payload["telemetry"]["grafanaEnabled"])
+        self.assertEqual(payload["telemetry"]["grafanaDashboardUid"], "dtm-test-ops")
+        self.assertEqual(
+            payload["telemetry"]["grafanaDashboardUrl"],
+            "https://grafana-test.example/d/dtm-test-ops",
+        )
         self.assertEqual(len(payload["jobs"]["recent"]), 2)
 
     def test_info_html_contains_new_operational_sections(self) -> None:

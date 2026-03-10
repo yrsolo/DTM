@@ -701,6 +701,8 @@ class InfoHandler:
         build_payload = self._build_payload(env_name)
         latest_render = None
         latest_by_command = dict(jobs_payload.get("latestByCommand", {}) or {})
+        prometheus_cfg = getattr(self._ctx.cfg.runtime, "prometheus", None)
+        grafana_cfg = getattr(self._ctx.cfg.runtime, "grafana", None)
         if isinstance(latest_by_command, dict):
             candidate = latest_by_command.get("render_timeline_sheet")
             if isinstance(candidate, dict):
@@ -743,6 +745,69 @@ class InfoHandler:
                 self._ctx.cfg.runtime.monitoring.dashboard_id_prod
                 if env_name == "prod"
                 else self._ctx.cfg.runtime.monitoring.dashboard_id_test
+            ).strip(),
+            "datalensEnabled": bool(
+                getattr(self._ctx.cfg.runtime, "datalens", None)
+                and self._ctx.cfg.runtime.datalens.enabled
+            ),
+            "datalensOrgId": str(getattr(self._ctx.cfg.runtime.datalens, "org_id", "") or "").strip(),
+            "datalensWorkbookName": str(
+                getattr(self._ctx.cfg.runtime.datalens, "workbook_name", "") or ""
+            ).strip(),
+            "datalensWorkbookId": str(
+                self._ctx.cfg.runtime.datalens.workbook_id_prod
+                if env_name == "prod"
+                else self._ctx.cfg.runtime.datalens.workbook_id_test
+            ).strip(),
+            "datalensConnectionName": str(
+                self._ctx.cfg.runtime.datalens.connection_name_prod
+                if env_name == "prod"
+                else self._ctx.cfg.runtime.datalens.connection_name_test
+            ).strip(),
+            "datalensConnectionId": str(
+                self._ctx.cfg.runtime.datalens.connection_id_prod
+                if env_name == "prod"
+                else self._ctx.cfg.runtime.datalens.connection_id_test
+            ).strip(),
+            "datalensDashboardName": str(
+                self._ctx.cfg.runtime.datalens.dashboard_name_prod
+                if env_name == "prod"
+                else self._ctx.cfg.runtime.datalens.dashboard_name_test
+            ).strip(),
+            "datalensDashboardId": str(
+                self._ctx.cfg.runtime.datalens.dashboard_id_prod
+                if env_name == "prod"
+                else self._ctx.cfg.runtime.datalens.dashboard_id_test
+            ).strip(),
+            "datalensDashboardUrl": str(
+                self._ctx.cfg.runtime.datalens.dashboard_url_prod
+                if env_name == "prod"
+                else self._ctx.cfg.runtime.datalens.dashboard_url_test
+            ).strip(),
+            "prometheusEnabled": bool(prometheus_cfg and getattr(prometheus_cfg, "enabled", False)),
+            "prometheusBackend": str(getattr(prometheus_cfg, "backend", "") or "").strip(),
+            "prometheusEndpointWrite": str(getattr(prometheus_cfg, "endpoint_write", "") or "").strip(),
+            "prometheusWorkspaceId": str(
+                getattr(prometheus_cfg, "workspace_id_prod", "")
+                if env_name == "prod"
+                else getattr(prometheus_cfg, "workspace_id_test", "")
+            ).strip(),
+            "grafanaEnabled": bool(grafana_cfg and getattr(grafana_cfg, "enabled", False)),
+            "grafanaBaseUrl": str(getattr(grafana_cfg, "public_base_url", "") or "").strip(),
+            "grafanaDashboardUid": str(
+                getattr(grafana_cfg, "dashboard_uid_prod", "")
+                if env_name == "prod"
+                else getattr(grafana_cfg, "dashboard_uid_test", "")
+            ).strip(),
+            "grafanaDashboardUrl": str(
+                getattr(grafana_cfg, "dashboard_url_prod", "")
+                if env_name == "prod"
+                else getattr(grafana_cfg, "dashboard_url_test", "")
+            ).strip(),
+            "grafanaEmbedUrl": str(
+                getattr(grafana_cfg, "embed_url_prod", "")
+                if env_name == "prod"
+                else getattr(grafana_cfg, "embed_url_test", "")
             ).strip(),
             "structuredLoggerEnabled": self._ctx.deps.get("structured_logger") is not None,
             "structuredLogger": type(self._ctx.deps.get("structured_logger")).__name__,

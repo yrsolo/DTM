@@ -118,6 +118,26 @@ Current status:
 - test contour emits real metrics with `env=test`
 - test dashboard id: `fbe6m08jl1vj212t5v0c`
 - dashboard automation is verified from local YC session via DashboardService gRPC
+- DataLens workbook and Monitoring connection are provisioned separately from Monitoring dashboard automation
+
+## DataLens visualization layer
+
+DataLens is an additive visualization layer over the same custom metrics:
+
+- connection type: `monitoring`
+- workbook: `DTM Observability`
+- dashboard policy: one ops dashboard per environment
+- provisioning mode: DataLens Public API first, UI fallback only if automation is blocked
+
+Current state of the DataLens CAM must be tracked separately from Monitoring ingestion evidence.
+
+Current DataLens blocker:
+
+- workbook and Monitoring connection creation are proven
+- `createQLChart` via DataLens Public API currently fails with `500 Access service error`
+- this persists even after granting the real API caller folder `viewer` and `monitoring.viewer`
+- this does not block Monitoring metric ingestion itself
+- until this is resolved, DataLens chart/dashboard provisioning remains partial
 
 Dashboard automation is not allowed to block metric ingestion itself.
 

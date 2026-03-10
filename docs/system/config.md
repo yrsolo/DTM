@@ -21,6 +21,9 @@ Primary config files:
 - `runtime.queue.*`: Yandex Message Queue settings
 - `runtime.telegram.*`: webhook and sender settings
 - `runtime.notify.*`: reminder retry/enhancer/test-chat policy
+- `runtime.monitoring.*`: Yandex Monitoring backend settings
+- `runtime.prometheus.*`: Prometheus-compatible sink settings
+- `runtime.grafana.*`: Grafana dashboard/embed metadata
 
 ## Secrets
 Secrets stay outside repo config files:
@@ -29,6 +32,8 @@ Secrets stay outside repo config files:
 - Telegram token
 - LLM provider tokens
 - Yandex Cloud auth/service secrets
+- `YANDEX_PROMETHEUS_API_KEY` / `YMP_API_KEY`
+- `GRAFANA_TOKEN`
 
 They are resolved through secret storage / env in loader/bootstrap only.
 

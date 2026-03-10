@@ -212,3 +212,38 @@ If metrics are missing:
 4. inspect logs for `monitoring_metric_emit_failed`
 5. verify dashboard separately; dashboard automation is allowed to lag behind ingestion
 6. verify payload does not use reserved Monitoring label `service`; runtime must emit `service_name`
+
+## 14) Prometheus / Grafana dashboard path
+
+Current selected visualization path for a richer human-facing dashboard:
+
+- keep Monitoring as the existing baseline sink
+- dual-write to a Prometheus-compatible sink
+- use Grafana on the owner's VPS
+- expose dashboard/embed metadata through `/info`
+
+Current repo-side status:
+
+- `YandexManagedPrometheusRemoteWriteClient` exists
+- `CompositeMetricsClient` can dual-write Monitoring + Prometheus
+- `/info` telemetry includes Prometheus/Grafana metadata
+- Grafana dashboard spec exists in `src/infra/grafana_specs.py`
+
+Current rollout prerequisites:
+
+1. create or confirm a real YMP `workspace_id`
+2. set `prometheus.endpoint_write` to the workspace remote-write endpoint
+3. provide `YANDEX_PROMETHEUS_API_KEY` (or fallback `YMP_API_KEY`) through secret storage / `.env`
+4. point Grafana datasource at the real YMP query endpoint
+
+Exact manual step and the repo-side datasource command:
+
+- [yandex_prometheus_workspace_setup.md](n:\PROJECTS\python\SCRIPT\DTM\docs\system\yandex_prometheus_workspace_setup.md)
+
+Operational next checks after those prerequisites are met:
+
+1. verify one live metric reaches Prometheus sink
+2. configure Grafana datasource
+3. provision dashboard from repo spec
+4. verify iframe/dashboard URL
+5. add dashboard UID/URL to deployed config

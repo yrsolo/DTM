@@ -1,9 +1,26 @@
 # Active Tasks
 
-- none
+- CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P01: register campaign, trust gate, and typed `prometheus`/`grafana` config for dual-write and iframe metadata
+- CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P02: add Prometheus metrics backend, composite dual-write client, and additive `/info` Grafana/Prometheus telemetry fields
+- CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P03: add Grafana dashboard spec/API helpers and record infra blockers for Yandex Prometheus workspace discovery and VPS SSH access
+- CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P04: replace generic Prometheus text push with real Yandex Managed Prometheus remote write and keep remaining blocker limited to workspace/API key + datasource rollout
+- CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P05: add self-service workspace/datasource runbook and one-command Grafana datasource provisioning from repo
+- CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P06: record shared YMP workspace id, create Grafana datasource `DTM YMP Test`, and switch remaining blocker to live sample emission only
+
+## Notes
+
+- `CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1`: workbook and Monitoring connection are provisioned; `createQLChart` is currently blocked by live DataLens API `500 Access service error` on the Monitoring connection.
+- `CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1`: caller permissions were raised for `yrsolo` (`viewer` + `monitoring.viewer`) and the same `createQLChart` error persists, so the blocker is now classified as external to repo code.
+- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: repo-side dual-write/Grafana foundation is being added first; active code path now uses real Yandex Managed Prometheus remote write and the remaining blocker is external infra only: workspace/API key + Grafana datasource endpoint wiring.
+- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: Grafana API token path is proven; folder `DTM Test` and dashboard `dtm-test-ops` are created on `http://style-app.solofarm.ru:3000`, but datasource wiring is still pending.
+- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: before datasource rollout, the repo must stop pretending that text exposition push is YMP-compatible; current execution slice replaces it with actual remote write semantics.
+- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: workspace creation remains a UI-only Yandex-side step; repo now provides `scripts/provision_grafana_datasource.py` so the only missing operator input is the final `workspace_id`.
+- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: shared workspace `mon73oiiclfbmmqbjejn` is now known and Grafana datasource `DTM YMP Test` is created; the next blocker is only live sample emission from deployed test runtime.
 
 ## Done
 
+- CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1 P01: register DataLens dashboard campaign, typed config, API/spec modules, and additive `/info` metadata
+- CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1 P02: provision DataLens workbook/Monitoring connection and exhaust caller-permission hypothesis for `createQLChart`
 - CAM-SNAPSHOT-RENDER-TIMINGS-V1 P01: add detailed snapshot timings for fetch/normalize/build_prep/write_raw/write_prep and surface them through metrics and job result
 - CAM-SNAPSHOT-RENDER-TIMINGS-V1 P02: add detailed render timings for build_plan/write_sheet/total and surface them through metrics and job result
 

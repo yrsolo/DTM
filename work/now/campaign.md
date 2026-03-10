@@ -3,12 +3,13 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
-- none
+- CAM-GRAFANA-PROM-OPS-DASHBOARD-V1
 
 ## Planned
 - none
 
 ## Done
+- CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1 (repo/DataLens foundation done; API chart provisioning blocked externally)
 - CAM-SNAPSHOT-RENDER-TIMINGS-V1
 - CAM-2026-03-09-YC-MONITORING-INTEGRATION-V1
 - CAM-2026-03-09-TELEGRAM-COMMAND-ROUTER-V1

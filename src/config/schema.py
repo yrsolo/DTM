@@ -34,6 +34,52 @@ class MonitoringSection:
 
 
 @dataclass(slots=True)
+class DataLensSection:
+    enabled: bool = False
+    org_id: str = ""
+    workbook_name: str = "DTM Observability"
+    workbook_id_test: str = ""
+    workbook_id_prod: str = ""
+    connection_name_test: str = "DTM Monitoring Test"
+    connection_name_prod: str = "DTM Monitoring Prod"
+    connection_id_test: str = ""
+    connection_id_prod: str = ""
+    dashboard_name_test: str = "DTM Test Ops"
+    dashboard_name_prod: str = "DTM Prod Ops"
+    dashboard_id_test: str = ""
+    dashboard_id_prod: str = ""
+    dashboard_url_test: str = ""
+    dashboard_url_prod: str = ""
+
+
+@dataclass(slots=True)
+class PrometheusSection:
+    enabled: bool = False
+    backend: str = "yandex_managed_prometheus"
+    endpoint_write: str = ""
+    folder_id: str = ""
+    workspace_id_test: str = ""
+    workspace_id_prod: str = ""
+    service: str = "dtm"
+    namespace: str = "dtm"
+    timeout_seconds: float = 2.0
+
+
+@dataclass(slots=True)
+class GrafanaSection:
+    enabled: bool = False
+    public_base_url: str = ""
+    dashboard_uid_test: str = ""
+    dashboard_uid_prod: str = ""
+    dashboard_url_test: str = ""
+    dashboard_url_prod: str = ""
+    embed_url_test: str = ""
+    embed_url_prod: str = ""
+    folder_name_test: str = "DTM Test"
+    folder_name_prod: str = "DTM Prod"
+
+
+@dataclass(slots=True)
 class PipelineSection:
     readmodel_ttl_minutes: int = 9
     preflight_top_rows: int = 50
@@ -100,6 +146,9 @@ class TimingSection:
 class RuntimeConfig:
     runtime: RuntimeSection = field(default_factory=RuntimeSection)
     monitoring: MonitoringSection = field(default_factory=MonitoringSection)
+    datalens: DataLensSection = field(default_factory=DataLensSection)
+    prometheus: PrometheusSection = field(default_factory=PrometheusSection)
+    grafana: GrafanaSection = field(default_factory=GrafanaSection)
     web: dict[str, Any] = field(default_factory=dict)
     api: dict[str, Any] = field(default_factory=dict)
     pipeline: PipelineSection = field(default_factory=PipelineSection)

@@ -1,12 +1,13 @@
 # Backlog
 
 ## In Progress
-- none
+- CAM-GRAFANA-PROM-OPS-DASHBOARD-V1
 
 ## Planned
 - none
 
 ## Done
+- CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1 (repo/DataLens foundation complete; API chart provisioning blocked externally)
 - CAM-SNAPSHOT-RENDER-TIMINGS-V1
 - CAM-2026-03-09-YC-MONITORING-INTEGRATION-V1
 - CAM-2026-03-09-TELEGRAM-COMMAND-ROUTER-V1
@@ -30,6 +31,9 @@
 - `/info` remains the operator dashboard and job-status store remains the source of truth for recent command execution state.
 - YC Monitoring integration is complete for the selected test-first scope: test contour emits real custom metrics and the test dashboard exists.
 - Current active hardening slice adds operation-level timing visibility for snapshot update and render.
+- Current DataLens ops-dashboard slice is partially delivered and now parked as an external platform blocker: repo support, workbook, and Monitoring connection are created; chart/dashboard automation is blocked by live DataLens API `createQLChart` failures against the Monitoring connection.
+- The folder-access hypothesis for DataLens has been tested and exhausted: the real API caller now has folder `viewer` and `monitoring.viewer`, but `createQLChart` still fails with the same backend error.
+- Current active dashboard path is Grafana-over-Prometheus: repo-side dual-write/Grafana foundation now includes a real Yandex Managed Prometheus remote-write client; shared workspace `mon73oiiclfbmmqbjejn` and Grafana datasource are now in place, and the remaining rollout work is live sample emission smoke on `test`.
 - Separate follow-ups remain outside this CAM:
   - `/info` build metadata 404 in `yc_function_info.py`
   - notify enqueue path inconsistency on test
