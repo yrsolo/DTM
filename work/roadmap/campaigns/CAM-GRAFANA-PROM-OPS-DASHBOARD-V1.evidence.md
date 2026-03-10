@@ -142,15 +142,20 @@
   - dashboard uid: `dtm-test-ops`
   - public dashboard uid: `effmku80r2800d`
 - public dashboard endpoints verified:
-  - `GET /public-dashboards/effmku80r2800d`
+  - `GET /public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
   - result: `200`
   - no `/login` redirect
+- public dashboard token verification:
+  - `GET /api/public/dashboards/effmku80r2800d`
+  - result: `400 Invalid access token`
+  - `GET /api/public/dashboards/af7606b66c8d4ca9b069ea1913577e45`
+  - result: `200`
 - conclusion:
   - authentication problem is solved without enabling Grafana-wide anonymous access
   - canonical public dashboard URL for `test` is:
-    - `http://style-app.solofarm.ru:3000/public-dashboards/effmku80r2800d`
+    - `http://style-app.solofarm.ru:3000/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
   - canonical embed URL for `test` is:
-    - `http://style-app.solofarm.ru:3000/public-dashboards/effmku80r2800d?kiosk&theme=light`
+    - `http://style-app.solofarm.ru:3000/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
 - remaining blocker is narrowed to one server-side header/config issue:
   - `X-Frame-Options: deny`
   - required fix on VPS:

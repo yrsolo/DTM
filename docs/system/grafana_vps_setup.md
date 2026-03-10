@@ -380,8 +380,8 @@ Current test values already recorded in repo:
 
 - `public_base_url = http://style-app.solofarm.ru:3000`
 - `dashboard_uid_test = dtm-test-ops`
-- `dashboard_url_test = http://style-app.solofarm.ru:3000/public-dashboards/effmku80r2800d`
-- `embed_url_test = http://style-app.solofarm.ru:3000/public-dashboards/effmku80r2800d?kiosk&theme=light`
+- `dashboard_url_test = http://style-app.solofarm.ru:3000/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
+- `embed_url_test = http://style-app.solofarm.ru:3000/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
 
 ---
 
