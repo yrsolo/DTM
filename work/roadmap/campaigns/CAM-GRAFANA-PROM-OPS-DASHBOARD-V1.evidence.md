@@ -160,3 +160,25 @@
   - `X-Frame-Options: deny`
   - required fix on VPS:
     - `[security] allow_embedding = true`
+
+## Public panel rendering fix
+
+- public dashboard failures were reproduced with:
+  - panel error: `Multiple queries using the same RefId is not allowed`
+- live dashboard JSON inspection confirmed that multi-query panels had no explicit `refId` fields
+- repo spec fixed:
+  - `src/infra/grafana_specs.py`
+  - multi-target panels now assign deterministic `refId` values (`A`, `B`, `C`, ...)
+- dashboard reprovisioned through:
+  - `python scripts/provision_grafana_dashboard.py --env test`
+- verification after reprovision:
+  - `GET /api/public/dashboards/af7606b66c8d4ca9b069ea1913577e45`
+  - panel `Snapshot Stage Timings` targets now contain:
+    - `A` `fetch_sheet_ms`
+    - `B` `normalize_ms`
+    - `C` `build_prep_ms`
+    - `D` `write_raw_ms`
+    - `E` `write_prep_ms`
+- conclusion:
+  - the public-dashboard rendering defect was a repo-side dashboard spec bug, not a Grafana/YMP platform issue
+  - remaining embed blocker is still only server-side `allow_embedding`

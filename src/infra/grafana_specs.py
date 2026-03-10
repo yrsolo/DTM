@@ -3,6 +3,15 @@ from __future__ import annotations
 from typing import Any
 
 
+def _with_ref_ids(targets: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    result: list[dict[str, Any]] = []
+    for index, target in enumerate(targets):
+        target_copy = dict(target)
+        target_copy["refId"] = chr(ord("A") + index)
+        result.append(target_copy)
+    return result
+
+
 def _prom_metric(metric_name: str) -> str:
     return str(metric_name or "").strip().lower().replace(".", "_")
 
@@ -39,13 +48,13 @@ def build_test_grafana_dashboard(
             "type": "timeseries",
             "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
             "datasource": datasource,
-            "targets": [
+            "targets": _with_ref_ids([
                 {"expr": _expr("dtm.snapshot.fetch_sheet_ms", env_name), "legendFormat": "fetch_sheet_ms"},
                 {"expr": _expr("dtm.snapshot.normalize_ms", env_name), "legendFormat": "normalize_ms"},
                 {"expr": _expr("dtm.snapshot.build_prep_ms", env_name), "legendFormat": "build_prep_ms"},
                 {"expr": _expr("dtm.snapshot.write_raw_ms", env_name), "legendFormat": "write_raw_ms"},
                 {"expr": _expr("dtm.snapshot.write_prep_ms", env_name), "legendFormat": "write_prep_ms"},
-            ],
+            ]),
         },
         {
             "id": 2,
@@ -53,7 +62,9 @@ def build_test_grafana_dashboard(
             "type": "timeseries",
             "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
             "datasource": datasource,
-            "targets": [{"expr": _expr("dtm.snapshot.update_duration_ms", env_name), "legendFormat": "total"}],
+            "targets": _with_ref_ids(
+                [{"expr": _expr("dtm.snapshot.update_duration_ms", env_name), "legendFormat": "total"}]
+            ),
         },
         {
             "id": 3,
@@ -61,11 +72,11 @@ def build_test_grafana_dashboard(
             "type": "timeseries",
             "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
             "datasource": datasource,
-            "targets": [
+            "targets": _with_ref_ids([
                 {"expr": _expr("dtm.snapshot.update_total", env_name), "legendFormat": "update_total"},
                 {"expr": _expr("dtm.snapshot.changed_total", env_name), "legendFormat": "changed_total"},
                 {"expr": _expr("dtm.snapshot.nochange_total", env_name), "legendFormat": "nochange_total"},
-            ],
+            ]),
         },
         {
             "id": 4,
@@ -73,7 +84,7 @@ def build_test_grafana_dashboard(
             "type": "timeseries",
             "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
             "datasource": datasource,
-            "targets": [
+            "targets": _with_ref_ids([
                 {
                     "expr": _expr("dtm.render.build_plan_ms", env_name, 'operation=~".+"'),
                     "legendFormat": "{{operation}} build_plan_ms",
@@ -82,7 +93,7 @@ def build_test_grafana_dashboard(
                     "expr": _expr("dtm.render.write_sheet_ms", env_name, 'operation=~".+"'),
                     "legendFormat": "{{operation}} write_sheet_ms",
                 },
-            ],
+            ]),
         },
         {
             "id": 5,
@@ -90,12 +101,12 @@ def build_test_grafana_dashboard(
             "type": "timeseries",
             "gridPos": {"x": 0, "y": 16, "w": 12, "h": 8},
             "datasource": datasource,
-            "targets": [
+            "targets": _with_ref_ids([
                 {
                     "expr": _expr("dtm.render.duration_ms", env_name, 'operation=~".+"'),
                     "legendFormat": "{{operation}} total",
                 }
-            ],
+            ]),
         },
         {
             "id": 6,
@@ -103,7 +114,7 @@ def build_test_grafana_dashboard(
             "type": "timeseries",
             "gridPos": {"x": 12, "y": 16, "w": 12, "h": 8},
             "datasource": datasource,
-            "targets": [
+            "targets": _with_ref_ids([
                 {
                     "expr": _expr("dtm.render.rows_rendered", env_name, 'operation=~".+"'),
                     "legendFormat": "{{operation}} rows_rendered",
@@ -112,7 +123,7 @@ def build_test_grafana_dashboard(
                     "expr": _expr("dtm.render.cells_written", env_name, 'operation=~".+"'),
                     "legendFormat": "{{operation}} cells_written",
                 },
-            ],
+            ]),
         },
         {
             "id": 7,
@@ -120,7 +131,7 @@ def build_test_grafana_dashboard(
             "type": "timeseries",
             "gridPos": {"x": 0, "y": 24, "w": 12, "h": 8},
             "datasource": datasource,
-            "targets": [{"expr": _expr("dtm.api.duration_ms", env_name), "legendFormat": "{{operation}}"}],
+            "targets": _with_ref_ids([{"expr": _expr("dtm.api.duration_ms", env_name), "legendFormat": "{{operation}}"}]),
         },
         {
             "id": 8,
@@ -128,7 +139,7 @@ def build_test_grafana_dashboard(
             "type": "timeseries",
             "gridPos": {"x": 12, "y": 24, "w": 12, "h": 8},
             "datasource": datasource,
-            "targets": [{"expr": _expr("dtm.api.requests_total", env_name), "legendFormat": "{{operation}}"}],
+            "targets": _with_ref_ids([{"expr": _expr("dtm.api.requests_total", env_name), "legendFormat": "{{operation}}"}]),
         },
         {
             "id": 9,
@@ -136,12 +147,12 @@ def build_test_grafana_dashboard(
             "type": "timeseries",
             "gridPos": {"x": 0, "y": 32, "w": 12, "h": 8},
             "datasource": datasource,
-            "targets": [
+            "targets": _with_ref_ids([
                 {"expr": _expr("dtm.worker.commands_total", env_name), "legendFormat": "commands_total"},
                 {"expr": _expr("dtm.worker.command_duration_ms", env_name), "legendFormat": "command_duration_ms"},
                 {"expr": _expr("dtm.worker.command_failures_total", env_name), "legendFormat": "command_failures_total"},
                 {"expr": _expr("dtm.worker.command_retries_total", env_name), "legendFormat": "command_retries_total"},
-            ],
+            ]),
         },
         {
             "id": 10,
@@ -149,11 +160,11 @@ def build_test_grafana_dashboard(
             "type": "timeseries",
             "gridPos": {"x": 12, "y": 32, "w": 12, "h": 8},
             "datasource": datasource,
-            "targets": [
+            "targets": _with_ref_ids([
                 {"expr": _expr("dtm.notify.duration_ms", env_name), "legendFormat": "duration_ms"},
                 {"expr": _expr("dtm.notify.messages_sent", env_name), "legendFormat": "messages_sent"},
                 {"expr": _expr("dtm.notify.tasks_selected", env_name), "legendFormat": "tasks_selected"},
-            ],
+            ]),
         },
         {
             "id": 11,
@@ -161,12 +172,12 @@ def build_test_grafana_dashboard(
             "type": "timeseries",
             "gridPos": {"x": 0, "y": 40, "w": 12, "h": 8},
             "datasource": datasource,
-            "targets": [
+            "targets": _with_ref_ids([
                 {"expr": _expr("dtm.telegram.accepted_total", env_name), "legendFormat": "accepted_total"},
                 {"expr": _expr("dtm.telegram.rejected_total", env_name), "legendFormat": "rejected_total"},
                 {"expr": _expr("dtm.telegram.enqueue_ms", env_name), "legendFormat": "enqueue_ms"},
                 {"expr": _expr("dtm.telegram.command_total", env_name), "legendFormat": "command_total"},
-            ],
+            ]),
         },
     ]
     return {

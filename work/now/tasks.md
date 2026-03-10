@@ -18,6 +18,7 @@
 - `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: shared workspace `mon73oiiclfbmmqbjejn` is now known and Grafana datasource `DTM YMP Test` is created; the next blocker is only live sample emission from deployed test runtime.
 - `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: Grafana datasource query path is now proven against YMP and imported dashboard panels are bound to datasource uid `effm65zf51xc0b`.
 - `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: public dashboard `effmku80r2800d` is created and works without login; the remaining blocker for webpage embed is only Grafana server-side `allow_embedding = true` because current responses still send `X-Frame-Options: deny`.
+- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: public dashboard panel failures were caused by missing `refId` fields in multi-query panels; dashboard spec now assigns explicit `A..E` refIds and the public dashboard JSON is valid again.
 
 ## Done
 
