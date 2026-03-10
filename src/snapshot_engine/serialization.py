@@ -8,6 +8,7 @@ from typing import Any
 
 from src.snapshot_engine.model import (
     AttachmentMeta,
+    ExtraSnapshot,
     Milestone,
     PeopleSnapshot,
     PersonView,
@@ -266,6 +267,32 @@ def extra_from_dict(payload: dict[str, Any]) -> TaskExtra:
         links=[str(item) for item in list(payload.get("links", []))],
         notes=str(payload.get("notes", "")),
         artifacts=[dict(item) for item in list(payload.get("artifacts", [])) if isinstance(item, dict)],
+    )
+
+
+def extra_snapshot_to_dict(snapshot: ExtraSnapshot) -> dict[str, Any]:
+    return {
+        "version": int(snapshot.version),
+        "updated_at_utc": _dt(snapshot.updated_at_utc),
+        "items_by_task_id": {
+            str(task_id): extra_to_dict(extra)
+            for task_id, extra in sorted(snapshot.items_by_task_id.items())
+        },
+    }
+
+
+def extra_snapshot_from_dict(payload: dict[str, Any]) -> ExtraSnapshot:
+    raw_items = payload.get("items_by_task_id", {})
+    items_by_task_id: dict[str, TaskExtra] = {}
+    if isinstance(raw_items, dict):
+        for task_id, extra_payload in raw_items.items():
+            if not isinstance(extra_payload, dict):
+                continue
+            items_by_task_id[str(task_id)] = extra_from_dict(extra_payload)
+    return ExtraSnapshot(
+        version=max(int(payload.get("version", 2) or 2), 1),
+        updated_at_utc=_parse_dt(payload.get("updated_at_utc")) or datetime.now(timezone.utc),
+        items_by_task_id=items_by_task_id,
     )
 
 

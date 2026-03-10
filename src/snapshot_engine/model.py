@@ -64,6 +64,13 @@ class TaskExtra:
 
 
 @dataclass(slots=True, frozen=True)
+class ExtraSnapshot:
+    version: int
+    updated_at_utc: datetime
+    items_by_task_id: dict[str, TaskExtra] = field(default_factory=dict)
+
+
+@dataclass(slots=True, frozen=True)
 class TaskView:
     sheet: TaskSheet
     extra: TaskExtra | None = None
@@ -99,6 +106,13 @@ class PrepSnapshot:
     built_at_utc: datetime
     tasks_by_id: dict[str, TaskView]
     indexes: PrepIndexes = field(default_factory=PrepIndexes)
+
+
+@dataclass(slots=True, frozen=True)
+class PrepBuildResult:
+    prep: PrepSnapshot
+    timings_ms: dict[str, float] = field(default_factory=dict)
+    extra_snapshot_changed: bool = False
 
 
 @dataclass(slots=True, frozen=True)

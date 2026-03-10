@@ -32,9 +32,23 @@ People routing snapshot:
 
 Attachment metadata contour:
 - binary payloads are uploaded directly to Object Storage under `attachments/{env}/{task_id}/...`
-- metadata is persisted in snapshot extra-store under `snapshots/{env}/extra/{task_id}.json`
+- metadata is persisted in snapshot extra-store under canonical bulk key `snapshots/{env}/extra/default.json`
+- runtime no longer reads per-task extra objects from the hot path
 - worker command `attach_task_file` updates extra-store and rebuilds prep from current raw snapshot
 - API v2 exposes attachment metadata through `tasks[].attachments` without exposing storage keys
+
+Prep-build hot path:
+- load one bulk extra snapshot
+- reconcile orphan flags in memory
+- write bulk extra snapshot once only if orphan state changed
+- build `tasks_by_id`
+- build prep indexes
+
+Prep timing metrics:
+- `dtm.snapshot.extra_load_ms`
+- `dtm.snapshot.orphan_reconcile_ms`
+- `dtm.snapshot.task_view_build_ms`
+- `dtm.snapshot.prep_index_build_ms`
 
 ## Render v2 safety and target policy
 - `render_v2` reads only snapshot prep data.

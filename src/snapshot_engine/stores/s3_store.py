@@ -6,11 +6,12 @@ from datetime import datetime, timezone
 from typing import Any
 
 from src.services.errors import PermanentError, TransientError
-from src.snapshot_engine.model import PeopleSnapshot, PrepSnapshot, RawSnapshot, TaskExtra
+from src.snapshot_engine.model import ExtraSnapshot, PeopleSnapshot, PrepSnapshot, RawSnapshot, TaskExtra
 from src.snapshot_engine.serialization import (
     dumps_json,
     extra_from_dict,
-    extra_to_dict,
+    extra_snapshot_from_dict,
+    extra_snapshot_to_dict,
     loads_json,
     people_from_dict,
     people_to_dict,
@@ -83,6 +84,28 @@ class _S3JsonStore:
         except Exception as error:
             raise TransientError(str(error), code="s3_put_failed") from error
 
+    def list_prefix(self, prefix: str) -> list[str]:
+        keys: list[str] = []
+        token: str | None = None
+        try:
+            while True:
+                kwargs: dict[str, Any] = {"Bucket": self.bucket, "Prefix": prefix}
+                if token:
+                    kwargs["ContinuationToken"] = token
+                response = self.client.list_objects_v2(**kwargs)
+                for item in list(response.get("Contents", [])):
+                    key = str(item.get("Key", "")).strip()
+                    if key:
+                        keys.append(key)
+                if not bool(response.get("IsTruncated")):
+                    break
+                token = str(response.get("NextContinuationToken", "")).strip() or None
+                if token is None:
+                    break
+        except Exception as error:
+            raise TransientError(str(error), code="s3_list_failed") from error
+        return keys
+
 
 class S3RawCache:
     def __init__(self, store: _S3JsonStore, key: str) -> None:
@@ -118,28 +141,29 @@ class S3ExtraStore:
     def __init__(self, store: _S3JsonStore, prefix: str) -> None:
         self._store = store
         self._prefix = str(prefix).rstrip("/") + "/"
+        self._key = f"{self._prefix}default.json"
 
-    def _key(self, task_id: str) -> str:
-        return f"{self._prefix}{task_id}.json"
+    def get_snapshot(self) -> ExtraSnapshot:
+        payload = self._store.get(self._key)
+        if payload is None:
+            return ExtraSnapshot(
+                version=2,
+                updated_at_utc=datetime.now(timezone.utc),
+                items_by_task_id={},
+            )
+        return extra_snapshot_from_dict(payload)
 
-    def get_many(self, task_ids: list[str]) -> dict[str, TaskExtra]:
-        result: dict[str, TaskExtra] = {}
-        for task_id in task_ids:
-            key = self._key(task_id)
-            payload = self._store.get(key)
-            if payload is None:
-                continue
-            result[task_id] = extra_from_dict(payload)
-        return result
+    def put_snapshot(self, snapshot: ExtraSnapshot) -> None:
+        self._store.put(self._key, extra_snapshot_to_dict(snapshot))
 
-    def upsert(self, extra: TaskExtra) -> None:
-        self._store.put(self._key(extra.task_id), extra_to_dict(extra))
+    def list_legacy_keys(self) -> list[str]:
+        return [key for key in self._store.list_prefix(self._prefix) if key != self._key]
 
-    def mark_orphaned(self, task_id: str, orphaned: bool = True) -> None:
-        payload = self._store.get(self._key(task_id)) or {"task_id": task_id}
-        payload["orphaned"] = bool(orphaned)
-        payload["updated_at_utc"] = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-        self._store.put(self._key(task_id), payload)
+    def get_legacy_task_extra(self, key: str) -> TaskExtra | None:
+        payload = self._store.get(key)
+        if payload is None:
+            return None
+        return extra_from_dict(payload)
 
 
 class S3PeopleStore:

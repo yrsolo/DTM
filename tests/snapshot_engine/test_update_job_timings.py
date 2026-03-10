@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 from datetime import datetime, timezone
 
-from src.snapshot_engine.model import PrepIndexes, PrepSnapshot, RawSnapshot, SheetSnapshot, TaskSheet
+from src.snapshot_engine.model import PrepBuildResult, PrepIndexes, PrepSnapshot, RawSnapshot, SheetSnapshot, TaskSheet
 from src.snapshot_engine.update_job import UpdateJob
 
 
@@ -72,12 +72,20 @@ class _PrepCache:
 
 class _PrepBuilder:
     def build(self, raw) -> object:  # noqa: ARG002
-        return PrepSnapshot(
-            source_id="sheet:test",
-            raw_source_hash="hash-1",
-            built_at_utc=datetime.now(timezone.utc),
-            tasks_by_id={},
-            indexes=PrepIndexes(),
+        return PrepBuildResult(
+            prep=PrepSnapshot(
+                source_id="sheet:test",
+                raw_source_hash="hash-1",
+                built_at_utc=datetime.now(timezone.utc),
+                tasks_by_id={},
+                indexes=PrepIndexes(),
+            ),
+            timings_ms={
+                "extra_load_ms": 1.0,
+                "orphan_reconcile_ms": 2.0,
+                "task_view_build_ms": 3.0,
+                "prep_index_build_ms": 4.0,
+            },
         )
 
 
@@ -101,6 +109,10 @@ class UpdateJobTimingsTestCase(unittest.TestCase):
             "fetch_sheet_ms",
             "normalize_ms",
             "build_prep_ms",
+            "extra_load_ms",
+            "orphan_reconcile_ms",
+            "task_view_build_ms",
+            "prep_index_build_ms",
             "write_raw_ms",
             "write_prep_ms",
             "total_duration_ms",

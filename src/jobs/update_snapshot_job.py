@@ -35,6 +35,10 @@ class UpdateSnapshotJob:
                 "dtm.snapshot.fetch_sheet_ms",
                 "dtm.snapshot.normalize_ms",
                 "dtm.snapshot.build_prep_ms",
+                "dtm.snapshot.extra_load_ms",
+                "dtm.snapshot.orphan_reconcile_ms",
+                "dtm.snapshot.task_view_build_ms",
+                "dtm.snapshot.prep_index_build_ms",
                 "dtm.snapshot.write_raw_ms",
                 "dtm.snapshot.write_prep_ms",
             ):

@@ -19,6 +19,25 @@ Current canonical flow:
 - merge extra -> prep snapshot
 - write raw/prep snapshots to Object Storage
 
+Current extra-store layout:
+
+- canonical key: `snapshots/{env}/extra/default.json`
+- runtime no longer reads per-task extra objects on the hot path
+
+One-time migration before `test` cutover:
+
+- `python scripts/migrate_extra_store_to_bulk.py --env test`
+- script reads legacy `snapshots/{env}/extra/*.json` objects (except `default.json`)
+- script writes canonical bulk snapshot to `snapshots/{env}/extra/default.json`
+- old per-task objects may remain in storage temporarily; runtime ignores them after deploy
+
+Current prep-build stage metrics:
+
+- `dtm.snapshot.extra_load_ms`
+- `dtm.snapshot.orphan_reconcile_ms`
+- `dtm.snapshot.task_view_build_ms`
+- `dtm.snapshot.prep_index_build_ms`
+
 API v2 reads prep snapshot, not YDB readmodel.
 
 ## 3) Reminder v2
@@ -86,7 +105,7 @@ Current policy:
 - request upload contract via hidden admin endpoint
 - upload binary directly to Object Storage
 - enqueue `attach_task_file`
-- worker updates extra-store and rebuilds prep from current raw snapshot
+- worker updates the bulk extra snapshot and rebuilds prep from current raw snapshot
 
 Frontend API exposes metadata only, not raw storage keys.
 
@@ -195,7 +214,11 @@ Detailed operator reading for heavy paths:
 - snapshot:
   - Google read: `dtm.snapshot.fetch_sheet_ms`
   - normalize/build tasks: `dtm.snapshot.normalize_ms`
-  - prep build: `dtm.snapshot.build_prep_ms`
+  - prep build total: `dtm.snapshot.build_prep_ms`
+  - extra bulk load: `dtm.snapshot.extra_load_ms`
+  - orphan reconciliation: `dtm.snapshot.orphan_reconcile_ms`
+  - task view build: `dtm.snapshot.task_view_build_ms`
+  - prep index build: `dtm.snapshot.prep_index_build_ms`
   - raw snapshot write: `dtm.snapshot.write_raw_ms`
   - prep snapshot write: `dtm.snapshot.write_prep_ms`
   - end-to-end: `dtm.snapshot.update_duration_ms`

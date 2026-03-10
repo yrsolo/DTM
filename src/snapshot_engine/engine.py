@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import Any
 
 from src.app.context import AppContext
 from src.services.errors import UserError
-from src.snapshot_engine.model import AttachmentMeta, TaskExtra
+
+from src.snapshot_engine.model import AttachmentMeta, ExtraSnapshot, TaskExtra
 from src.snapshot_engine.prep_builder import PrepBuilder
 from src.snapshot_engine.query_engine import FrontendV2Query, SnapshotQueryEngine
 from src.snapshot_engine.update_job import (
@@ -95,8 +96,9 @@ class SnapshotEngine:
         task_key = str(task_id or "").strip()
         if not task_key or task_key not in raw.tasks_by_id:
             raise UserError("Task was not found in current snapshot.", code="task_not_found")
-        extras = self._extra_store.get_many([task_key])
-        current = extras.get(task_key) or TaskExtra(task_id=task_key)
+        extra_snapshot = self._extra_store.get_snapshot()
+        items_by_task_id = dict(extra_snapshot.items_by_task_id)
+        current = items_by_task_id.get(task_key) or TaskExtra(task_id=task_key)
         attachments = [item for item in list(current.attachments or []) if str(item.id) != str(attachment.id)]
         attachments.append(attachment)
         attachments.sort(key=lambda item: (item.uploaded_at_utc.isoformat(), item.id))
@@ -110,9 +112,16 @@ class SnapshotEngine:
             notes=str(current.notes),
             artifacts=list(current.artifacts),
         )
-        self._extra_store.upsert(updated)
-        prep = self._prep_builder.build(raw)
-        self._prep_cache.put(prep)
+        items_by_task_id[task_key] = updated
+        self._extra_store.put_snapshot(
+            ExtraSnapshot(
+                version=max(int(extra_snapshot.version or 2), 1),
+                updated_at_utc=datetime.now(timezone.utc),
+                items_by_task_id=items_by_task_id,
+            )
+        )
+        prep_result = self._prep_builder.build(raw)
+        self._prep_cache.put(prep_result.prep)
         return {
             "artifact": "attach_task_file",
             "status": "ok",
