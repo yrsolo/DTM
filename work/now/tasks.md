@@ -6,9 +6,6 @@
 - CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P04: replace generic Prometheus text push with real Yandex Managed Prometheus remote write and keep remaining blocker limited to workspace/API key + datasource rollout
 - CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P05: add self-service workspace/datasource runbook and one-command Grafana datasource provisioning from repo
 - CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P06: record shared YMP workspace id, create Grafana datasource `DTM YMP Test`, and switch remaining blocker to live sample emission only
-- CAM-SNAPSHOT-PREP-BULK-REFORM-V1 P01: register trust gate, add prep-build sub-metrics, and switch snapshot builder contract to timing-aware bulk-extra path
-- CAM-SNAPSHOT-PREP-BULK-REFORM-V1 P02: replace per-task S3 extra layout with one bulk extra snapshot and remove orphan N+1 writes from hot path
-- CAM-SNAPSHOT-PREP-BULK-REFORM-V1 P03: add one-time migration script, update attachment mutation flow, and prove no public contract drift through snapshot-engine regression tests
 
 ## Notes
 
@@ -22,6 +19,10 @@
 - `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: Grafana datasource query path is now proven against YMP and imported dashboard panels are bound to datasource uid `effm65zf51xc0b`; the remaining blocker for webpage embed is Grafana server-side anonymous/iframe config (`/login` redirect, `X-Frame-Options: deny`).
 
 ## Done
+
+- CAM-SNAPSHOT-PREP-BULK-REFORM-V1 P01: register trust gate, add prep-build sub-metrics, and switch snapshot builder contract to timing-aware bulk-extra path
+- CAM-SNAPSHOT-PREP-BULK-REFORM-V1 P02: replace per-task S3 extra layout with one bulk extra snapshot and remove orphan N+1 writes from hot path
+- CAM-SNAPSHOT-PREP-BULK-REFORM-V1 P03: add one-time migration script, update attachment mutation flow, migrate/verify `test`, and prove live `build_prep_ms` drop without public contract drift
 
 - CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1 P01: register DataLens dashboard campaign, typed config, API/spec modules, and additive `/info` metadata
 - CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1 P02: provision DataLens workbook/Monitoring connection and exhaust caller-permission hypothesis for `createQLChart`

@@ -104,3 +104,38 @@
 - interpretation:
   - `test` contour had no legacy per-task extra objects to migrate
   - hard-switch rollout on `test` is not blocked by existing attachment metadata in old layout
+
+## Live test rollout evidence
+
+- deployed commit on `test`:
+  - `92be1bb` `refactor(snapshot): switch prep extras to bulk S3 snapshot and add prep stage timings`
+- live endpoints checked:
+  - `GET https://dtm-api-test.solofarm.ru/info?format=json`
+  - `GET https://dtm-api-test.solofarm.ru/api/v2/frontend?limit=1`
+  - `POST https://dtm-api-test.solofarm.ru/admin/commands/update-snapshot`
+  - `GET https://dtm-api-test.solofarm.ru/admin/jobs/07ddca664f624d78bad89f9cdc05be24`
+- observed live telemetry:
+  - `/info?format=json` telemetry block shows current post-hard-switch runtime:
+    - `metricsClient=CompositeMetricsClient`
+    - `prometheusEnabled=true`
+    - `grafanaEnabled=true`
+  - `/api/v2/frontend?limit=1` still returns `tasks[].attachments` in the contract
+- latest successful `update_snapshot` job timings:
+  - `fetch_sheet_ms = 2701.5758450000008`
+  - `normalize_ms = 1853.593087000002`
+  - `build_prep_ms = 58.85680000000093`
+  - `extra_load_ms = 57.29412700000225`
+  - `orphan_reconcile_ms = 0.07505100000315679`
+  - `task_view_build_ms = 0.8027750000003664`
+  - `prep_index_build_ms = 0.3760350000021617`
+  - `write_raw_ms = 551.484103`
+  - `write_prep_ms = 472.32493399999953`
+  - `total_duration_ms = 5761.976256000001`
+- before/after conclusion:
+  - previous observed `build_prep_ms` on `test` was approximately `12117 ms`
+  - post-cutover live `build_prep_ms` is approximately `58.86 ms`
+  - the dominant prep cost is no longer N+1 S3 reads; the remaining prep time is almost entirely one bulk `extra_load_ms`
+- rollout interpretation:
+  - hard-switch runtime works on `test`
+  - no public API drift was observed on `/api/v2/frontend`
+  - the N+1 extra-store hot path is removed from live runtime behavior
