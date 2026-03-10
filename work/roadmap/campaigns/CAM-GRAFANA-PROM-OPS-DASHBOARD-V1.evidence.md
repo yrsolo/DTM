@@ -98,8 +98,60 @@
 ## Current conclusion
 
 - repo-side Grafana/YMP remote-write foundation is deliverable and implemented
-- live infra rollout is now blocked only by deployed runtime emission on `test`, not by datasource/workspace discovery
+- live infra rollout is now blocked only by:
+  - deployed runtime emission visibility on public `test` surfaces, and
+  - Grafana server-side public embed settings
 - accepted rollout path remains:
   1. deploy `test` with `prometheus.enabled=true`
   2. trigger API/snapshot/render flows
   3. verify populated Grafana panels and iframe on `test`
+
+## Additional live verification
+
+- Grafana datasource health for `DTM YMP Test`:
+  - endpoint: `GET /api/datasources/uid/effm65zf51xc0b/health`
+  - result: `200`, `Successfully queried the Prometheus API.`
+- Grafana datasource proxy for metric discovery:
+  - endpoint: `GET /api/datasources/proxy/uid/effm65zf51xc0b/api/v1/label/__name__/values`
+  - result: `200`
+  - confirmed metrics include:
+    - `dtm_snapshot_update_duration_ms`
+    - `dtm_snapshot_fetch_sheet_ms`
+    - `dtm_render_duration_ms`
+    - `dtm_render_build_plan_ms`
+    - `dtm_api_duration_ms`
+    - `dtm_worker_commands_total`
+- Grafana dashboard `dtm-test-ops` panels are now explicitly bound to datasource uid:
+  - `effm65zf51xc0b`
+  - verification via `GET /api/dashboards/uid/dtm-test-ops`
+- Grafana query API returns real timeseries from YMP:
+  - query: `dtm_snapshot_update_duration_ms{env="test",namespace="dtm",service="dtm"}`
+  - result: non-empty `timeseries-multi` frame
+- Public iframe path is still blocked by Grafana server config:
+  - request: `GET /d/dtm-test-ops/dtm-test-ops?kiosk&theme=light`
+  - result: `302 /login`
+  - headers include:
+    - `X-Frame-Options: deny`
+  - implication:
+    - datasource/dashboard path is healthy
+    - iframe embedding still requires VPS-side Grafana config (`allow_embedding`, anonymous viewer or other embed auth model)
+
+## Public dashboard verification
+
+- externally shared/public dashboard created through Grafana API:
+  - dashboard uid: `dtm-test-ops`
+  - public dashboard uid: `effmku80r2800d`
+- public dashboard endpoints verified:
+  - `GET /public-dashboards/effmku80r2800d`
+  - result: `200`
+  - no `/login` redirect
+- conclusion:
+  - authentication problem is solved without enabling Grafana-wide anonymous access
+  - canonical public dashboard URL for `test` is:
+    - `http://style-app.solofarm.ru:3000/public-dashboards/effmku80r2800d`
+  - canonical embed URL for `test` is:
+    - `http://style-app.solofarm.ru:3000/public-dashboards/effmku80r2800d?kiosk&theme=light`
+- remaining blocker is narrowed to one server-side header/config issue:
+  - `X-Frame-Options: deny`
+  - required fix on VPS:
+    - `[security] allow_embedding = true`

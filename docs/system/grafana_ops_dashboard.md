@@ -95,19 +95,21 @@ Current live test state:
 - Grafana base URL: `http://style-app.solofarm.ru:3000`
 - test folder: `DTM Test`
 - imported dashboard UID: `dtm-test-ops`
-- dashboard URL: `http://style-app.solofarm.ru:3000/d/dtm-test-ops/dtm-test-ops`
-- embed URL: `http://style-app.solofarm.ru:3000/d/dtm-test-ops/dtm-test-ops?kiosk&theme=light`
+- public dashboard URL: `http://style-app.solofarm.ru:3000/public-dashboards/effmku80r2800d`
+- embed URL: `http://style-app.solofarm.ru:3000/public-dashboards/effmku80r2800d?kiosk&theme=light`
 
 What is already done:
 
 - API token auth works
 - folder creation works
 - dashboard import from repo spec works
+- externally shared/public dashboard is created by API
 
 What is still pending:
 
 - datasource `DTM YMP Test` is created against workspace `mon73oiiclfbmmqbjejn`
 - panel data will remain empty until the updated runtime emits samples into YMP
+- Grafana server still returns `X-Frame-Options: deny`, so iframe embed remains blocked until `allow_embedding = true` is enabled on the VPS
 - final workspace setup and datasource command are documented in:
   - [yandex_prometheus_workspace_setup.md](n:\PROJECTS\python\SCRIPT\DTM\docs\system\yandex_prometheus_workspace_setup.md)
 
@@ -135,6 +137,8 @@ Selected presentation:
 
 Recommended for `test`:
 
-- read-only dashboard
+- externally shared/public dashboard URL
+- no anonymous Grafana-wide access required
 - no public admin surface
-- keep direct dashboard URL as fallback if iframe auth/policy becomes awkward
+- `allow_embedding = true` still required on the Grafana server
+- keep direct public dashboard URL as fallback until iframe headers are fixed

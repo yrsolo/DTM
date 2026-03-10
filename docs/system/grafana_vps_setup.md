@@ -302,15 +302,16 @@ root_url = https://YOUR_GRAFANA_HOST
 allow_embedding = true
 
 [auth.anonymous]
-enabled = true
+enabled = false
 org_role = Viewer
 ```
 
 Notes:
 
-- for `test`, anonymous `Viewer` is acceptable if the VPS is otherwise controlled
-- do not expose admin access anonymously
-- later for `prod`, move to stricter auth if needed
+- for the current repo path, prefer Grafana **externally shared/public dashboard** instead of Grafana-wide anonymous access
+- keep admin access authenticated
+- for iframe embed, the critical server-side toggle is `allow_embedding = true`
+- later for `prod`, keep using a tighter share model rather than broad anonymous instance access
 
 Then restart:
 
@@ -363,8 +364,8 @@ grafana:
   enabled: true
   public_base_url: https://YOUR_GRAFANA_HOST
   dashboard_uid_test: dtm-test-ops
-  dashboard_url_test: https://YOUR_GRAFANA_HOST/d/dtm-test-ops/dtm-test-ops
-  embed_url_test: https://YOUR_GRAFANA_HOST/d-solo/dtm-test-ops/dtm-test-ops
+  dashboard_url_test: https://YOUR_GRAFANA_HOST/public-dashboards/<public_uid>
+  embed_url_test: https://YOUR_GRAFANA_HOST/public-dashboards/<public_uid>?kiosk&theme=light
 ```
 
 Also set Prometheus section values that match your chosen datasource path.
@@ -379,8 +380,8 @@ Current test values already recorded in repo:
 
 - `public_base_url = http://style-app.solofarm.ru:3000`
 - `dashboard_uid_test = dtm-test-ops`
-- `dashboard_url_test = http://style-app.solofarm.ru:3000/d/dtm-test-ops/dtm-test-ops`
-- `embed_url_test = http://style-app.solofarm.ru:3000/d/dtm-test-ops/dtm-test-ops?kiosk&theme=light`
+- `dashboard_url_test = http://style-app.solofarm.ru:3000/public-dashboards/effmku80r2800d`
+- `embed_url_test = http://style-app.solofarm.ru:3000/public-dashboards/effmku80r2800d?kiosk&theme=light`
 
 ---
 
@@ -413,7 +414,22 @@ Then verify dashboard panels are non-empty for:
 
 ### C. Embed
 
-Open the `embed_url_test` in iframe or browser and verify it renders.
+Open the `dashboard_url_test` in a browser and verify it renders without login.
+
+Then open the `embed_url_test` in iframe or browser and verify it renders.
+
+If iframe still fails and response headers contain `X-Frame-Options: deny`, set:
+
+```ini
+[security]
+allow_embedding = true
+```
+
+and restart Grafana:
+
+```bash
+sudo systemctl restart grafana-server
+```
 
 ---
 

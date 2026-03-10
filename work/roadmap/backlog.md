@@ -34,7 +34,7 @@
 - Current active hardening slice adds operation-level timing visibility for snapshot update and render.
 - Current DataLens ops-dashboard slice is partially delivered and now parked as an external platform blocker: repo support, workbook, and Monitoring connection are created; chart/dashboard automation is blocked by live DataLens API `createQLChart` failures against the Monitoring connection.
 - The folder-access hypothesis for DataLens has been tested and exhausted: the real API caller now has folder `viewer` and `monitoring.viewer`, but `createQLChart` still fails with the same backend error.
-- Current active dashboard path is Grafana-over-Prometheus: repo-side dual-write/Grafana foundation now includes a real Yandex Managed Prometheus remote-write client; shared workspace `mon73oiiclfbmmqbjejn` and Grafana datasource are now in place, and the remaining rollout work is iframe/public-read enablement plus broader live sample coverage on `test`.
+- Current active dashboard path is Grafana-over-Prometheus: repo-side dual-write/Grafana foundation now includes a real Yandex Managed Prometheus remote-write client; shared workspace `mon73oiiclfbmmqbjejn`, Grafana datasource, and public dashboard are now in place, and the remaining rollout work is limited to server-side `allow_embedding = true` plus broader live sample coverage on `test`.
 - Snapshot prep bulk reform is complete on `test`: hard-switch runtime is live, migration on `test` was a no-op, and observed `build_prep_ms` dropped from about `12117 ms` to about `58.86 ms`.
 - Separate follow-ups remain outside this CAM:
   - `/info` build metadata 404 in `yc_function_info.py`
