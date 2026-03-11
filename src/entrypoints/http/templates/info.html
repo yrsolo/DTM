@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DTM Info</title>
+    <style>
+__INFO_CSS__
+  </style>
+</head>
+<body>
+  <h1>DTM Info Dashboard</h1>
+  <div class="grid">
+    <div class="card">
+      <h2>Snapshot Meta</h2>
+      <div class="row"><span class="k">Env:</span> <span class="v" id="env"></span></div>
+      <div class="row"><span class="k">Bucket:</span> <span class="v" id="bucket"></span></div>
+      <div class="row"><span class="k">SourceId:</span> <span class="v" id="sourceId"></span></div>
+      <div class="row"><span class="k">SourceHash:</span> <span class="v" id="sourceHash"></span></div>
+      <div class="row"><span class="k">Raw fetched:</span> <span class="v" id="rawFetchedAt"></span></div>
+      <div class="row"><span class="k">Prep built:</span> <span class="v" id="prepBuiltAt"></span></div>
+    </div>
+    <div class="card">
+      <h2>Records</h2>
+      <div class="row"><span class="k">Total tasks:</span> <span class="v" id="tasksTotal"></span></div>
+      <div class="row"><span class="k">By status:</span> <span class="v" id="statusCounts"></span></div>
+    </div>
+    <div class="card">
+      <h2>Storage</h2>
+      <div class="row"><span class="k">Objects:</span> <span class="v" id="objectsTotal"></span></div>
+      <div class="row"><span class="k">Size bytes:</span> <span class="v" id="bytesTotal"></span></div>
+      <div class="row"><span class="k">Size human:</span> <span class="v" id="bytesHuman"></span></div>
+      <div class="row"><span class="k">Breakdown:</span> <span class="v" id="sizeBreakdown"></span></div>
+    </div>
+    <div class="card">
+      <h2>Function Build</h2>
+      <div class="row"><span class="k">Function:</span> <span class="v" id="buildFunctionName"></span></div>
+      <div class="row"><span class="k">Version:</span> <span class="v" id="buildVersionId"></span></div>
+      <div class="row"><span class="k">Deployed:</span> <span class="v" id="buildDeployedAt"></span></div>
+      <div class="row"><span class="k">Runtime:</span> <span class="v" id="buildRuntime"></span></div>
+      <div class="row"><span class="k">Memory/timeout:</span> <span class="v" id="buildResources"></span></div>
+      <div class="row"><span class="k">Entrypoint:</span> <span class="v" id="buildEntrypoint"></span></div>
+    </div>
+    <div class="card">
+      <h2>Queue State</h2>
+      <div class="row"><span class="k">Name:</span> <span class="v" id="queueName"></span></div>
+      <div class="row"><span class="k">Visible:</span> <span class="v" id="queueVisible"></span></div>
+      <div class="row"><span class="k">In flight:</span> <span class="v" id="queueInflight"></span></div>
+      <div class="row"><span class="k">Delayed:</span> <span class="v" id="queueDelayed"></span></div>
+      <div class="row"><span class="k">DLQ:</span> <span class="v" id="queueDlq"></span></div>
+      <div class="row"><span class="k">Error:</span> <span class="v" id="queueError"></span></div>
+    </div>
+  </div>
+
+  <div class="grid section">
+    <div class="card">
+      <h2>Recent Jobs</h2>
+      <pre id="recentJobs">[]</pre>
+    </div>
+    <div class="card">
+      <h2>Last Errors</h2>
+      <pre id="recentErrors">[]</pre>
+    </div>
+    <div class="card">
+      <h2>Last Render Job</h2>
+      <pre id="lastRenderJob">{{}}</pre>
+    </div>
+    <div class="card">
+      <h2>Render Debug</h2>
+      <pre id="renderDebug">{{}}</pre>
+    </div>
+  </div>
+
+  <div class="card section">
+    <div class="hline">
+      <h2>Admin Actions</h2>
+      <span class="timer" id="adminTimer">00:00.0</span>
+    </div>
+    <button onclick="enqueueAdminCommand('/admin/commands/update-snapshot', {{force_refresh:true,dry_run:false}})">Force snapshot refresh</button>
+    <button onclick="enqueueAdminCommand('/admin/commands/render-timeline', {{statuses:['work','pre_done'],dry_run:false}})">Force render table</button>
+    <button onclick="enqueueAdminCommand('/admin/commands/send-reminders', {{mode:'test',statuses:['work','pre_done'],include_today:true,include_next_workday:true,force_test_chat:true,mock_external:false}})">Notify test chat</button>
+    <button onclick="enqueueAdminCommand('/admin/commands/send-reminders', {{mode:'morning',statuses:['work','pre_done'],include_today:true,include_next_workday:true,force_test_chat:false,mock_external:false}})">Notify designer chats</button>
+    <pre id="adminResult">Готово к запуску действий.</pre>
+  </div>
+
+  <div class="card section">
+    <div class="hline">
+      <h2>API Request Builder</h2>
+      <span class="timer" id="apiTimer">00:00.0</span>
+    </div>
+    <div class="controls">
+      <label><input id="includePeople" type="checkbox" checked /> include_people</label>
+    </div>
+    <div class="controls">
+      <label>limit <input id="limitValue" type="number" min="1" max="2000" value="200" /></label>
+      <button class="alt small" onclick="setLimit(20)">20</button>
+      <button class="alt small" onclick="setLimit(100)">100</button>
+      <button class="alt small" onclick="setLimit(200)">200</button>
+      <button class="alt small" onclick="setLimit(500)">500</button>
+    </div>
+    <div class="controls">
+      <span class="k">statuses:</span>
+      <label><input id="stWork" type="checkbox" checked /> work</label>
+      <label><input id="stPreDone" type="checkbox" checked /> pre_done</label>
+      <label><input id="stWait" type="checkbox" /> wait</label>
+      <label><input id="stDone" type="checkbox" /> done</label>
+    </div>
+    <div class="controls">
+      <label>window start <input id="windowStart" type="date" /></label>
+      <label>window end <input id="windowEnd" type="date" /></label>
+      <button class="alt small" onclick="setWindowPreset(7)">next 7d</button>
+      <button class="alt small" onclick="setWindowPreset(14)">next 14d</button>
+      <button class="alt small" onclick="clearWindow()">clear window</button>
+    </div>
+    <div class="controls">
+      <button onclick="sendApiBuilder()">Send</button>
+      <button class="alt" onclick="applyApiPreset('active20')">Preset: Active 20</button>
+      <button class="alt" onclick="applyApiPreset('done20')">Preset: Done 20</button>
+      <button class="alt" onclick="applyApiPreset('all100')">Preset: All 100</button>
+      <button class="alt" onclick="applyApiPreset('window14')">Preset: Window 14d</button>
+    </div>
+    <div class="row"><span class="k">Request URL:</span></div>
+    <pre id="apiRequestUrl"></pre>
+    <pre id="apiResult">Соберите параметры и нажмите Send.</pre>
+  </div>
+
+  <div class="card section">
+    <h2>Info JSON</h2>
+    <pre id="infoResult">__INFO_PAYLOAD_JSON__</pre>
+  </div>
+
+  <div class="card section">
+    <div class="hline">
+      <h2>Grafana Dashboard</h2>
+      <a id="grafanaLink" class="v" href="#" target="_blank" rel="noreferrer" style="display:none">open</a>
+    </div>
+    <div id="grafanaEmpty" class="muted">Grafana embed URL is not configured.</div>
+    <iframe id="grafanaFrame" src="" allowfullscreen style="display:none"></iframe>
+  </div>
+
+  <script>
+    function pretty(value){{
+      if (typeof value === 'string') {{
+        try {{
+          return JSON.stringify(JSON.parse(value), null, 2);
+        }} catch (_e) {{
+          return value;
+        }}
+      }}
+      return JSON.stringify(value, null, 2);
+    }}
+    function formatUtcAndMsk(value){{
+      const text = String(value || '').trim();
+      if (!text) return '';
+      const date = new Date(text);
+      if (Number.isNaN(date.getTime())) return text;
+      const utc = date.toISOString();
+      const msk = new Intl.DateTimeFormat('ru-RU', {{
+        timeZone: 'Europe/Moscow',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }}).format(date);
+      return utc + ' / MSK ' + msk;
+    }}
+    function createTimer(elementId){{
+      const el = document.getElementById(elementId);
+      let startAt = 0;
+      let intervalId = null;
+      function format(ms){{
+        const totalSec = ms / 1000.0;
+        const mm = Math.floor(totalSec / 60);
+        const ss = totalSec - mm * 60;
+        const mmStr = String(mm).padStart(2, '0');
+        const ssStr = ss.toFixed(1).padStart(4, '0');
+        return mmStr + ':' + ssStr;
+      }}
+      return {{
+        start(){{
+          startAt = Date.now();
+  <script>
+__INFO_JS__
+  </script>
