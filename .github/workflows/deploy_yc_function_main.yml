@@ -136,6 +136,9 @@ jobs:
             YANDEX_PROMETHEUS_API_KEY=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/YANDEX_PROMETHEUS_API_KEY
           include: |
             **/*.py
+            src/**/*.html
+            src/**/*.css
+            src/**/*.js
             config/**/*.yaml
             requirements.txt
             run_timer.cmd
