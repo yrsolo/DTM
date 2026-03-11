@@ -19,6 +19,7 @@ DEFAULT_TEST_AUTH_FUNCTION_ID = "d4ebtgp4dhnbu1476gfu"
 DEFAULT_PROD_AUTH_FUNCTION_ID = "d4ecpcsedh5k7l81d3lp"
 DEFAULT_GATEWAY_NAME = "dtm-api-unified"
 DEFAULT_FRONTEND_BASE_URL = "https://dtm-front.website.yandexcloud.net"
+DEFAULT_TEST_FRONTEND_BASE_URL = "https://dtm-front-test.website.yandexcloud.net"
 DEFAULT_GRAFANA_UPSTREAM = "http://89.169.132.198:3000"
 
 
@@ -58,14 +59,16 @@ def _render_spec(
     prod_auth_function_id: str,
     service_account_id: str,
     frontend_base_url: str,
+    test_frontend_base_url: str,
     grafana_upstream: str,
 ) -> str:
     frontend_base_url = frontend_base_url.rstrip("/")
+    test_frontend_base_url = test_frontend_base_url.rstrip("/")
     grafana_upstream = grafana_upstream.rstrip("/")
     return f"""openapi: 3.0.0
 info:
   title: DTM Unified API
-  version: 1.0.0
+  version: 1.3.0
 servers:
   - url: https://d5d84fgjajg4k61vh53h.8wihnuyr.apigw.yandexcloud.net
   - url: https://{DEFAULT_DOMAIN}
@@ -84,6 +87,20 @@ paths:
         tag: $latest
         service_account_id: {service_account_id}
 
+  /ops/auth/{{proxy+}}:
+    x-yc-apigateway-any-method:
+      parameters:
+        - name: proxy
+          in: path
+          required: true
+          schema:
+            type: string
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: {prod_auth_function_id}
+        tag: $latest
+        service_account_id: {service_account_id}
+
   /test/ops/{{proxy+}}:
     x-yc-apigateway-any-method:
       parameters:
@@ -98,7 +115,36 @@ paths:
         tag: $latest
         service_account_id: {service_account_id}
 
-  /ops/grafana:
+  /ops/{{proxy+}}:
+    x-yc-apigateway-any-method:
+      parameters:
+        - name: proxy
+          in: path
+          required: true
+          schema:
+            type: string
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: {prod_function_id}
+        tag: $latest
+        service_account_id: {service_account_id}
+
+  /grafana:
+    x-yc-apigateway-any-method:
+      x-yc-apigateway-integration:
+        type: http
+        url: {grafana_upstream}/grafana
+        headers:
+          Host: {DEFAULT_DOMAIN}
+          X-Forwarded-Proto: https
+          '*': '*'
+        query:
+          '*': '*'
+        timeouts:
+          connect: 1
+          read: 30
+
+  /grafana/:
     x-yc-apigateway-any-method:
       x-yc-apigateway-integration:
         type: http
@@ -113,22 +159,7 @@ paths:
           connect: 1
           read: 30
 
-  /ops/grafana/:
-    x-yc-apigateway-any-method:
-      x-yc-apigateway-integration:
-        type: http
-        url: {grafana_upstream}/grafana/
-        headers:
-          Host: {DEFAULT_DOMAIN}
-          X-Forwarded-Proto: https
-          '*': '*'
-        query:
-          '*': '*'
-        timeouts:
-          connect: 1
-          read: 30
-
-  /ops/grafana/{{path+}}:
+  /grafana/{{path+}}:
     x-yc-apigateway-any-method:
       parameters:
         - name: path
@@ -149,67 +180,17 @@ paths:
           connect: 1
           read: 30
 
-  /ops/auth/{{proxy+}}:
-    x-yc-apigateway-any-method:
-      parameters:
-        - name: proxy
-          in: path
-          required: true
-          schema:
-            type: string
-      x-yc-apigateway-integration:
-        type: cloud_functions
-        function_id: {prod_auth_function_id}
-        tag: $latest
-        service_account_id: {service_account_id}
-
-  /ops/{{proxy+}}:
-    x-yc-apigateway-any-method:
-      parameters:
-        - name: proxy
-          in: path
-          required: true
-          schema:
-            type: string
-      x-yc-apigateway-integration:
-        type: cloud_functions
-        function_id: {prod_function_id}
-        tag: $latest
-        service_account_id: {service_account_id}
-
   /test:
-    get:
+    x-yc-apigateway-any-method:
       x-yc-apigateway-integration:
         type: http
-        url: {frontend_base_url}/index.html
+        url: {test_frontend_base_url}/index.html
 
   /test/:
-    get:
-      x-yc-apigateway-integration:
-        type: http
-        url: {frontend_base_url}/index.html
-
-  /test/admin:
     x-yc-apigateway-any-method:
       x-yc-apigateway-integration:
         type: http
-        url: {frontend_base_url}/index.html
-        query:
-          '*': '*'
-
-  /test/admin/{{path+}}:
-    x-yc-apigateway-any-method:
-      parameters:
-        - name: path
-          in: path
-          required: true
-          schema:
-            type: string
-      x-yc-apigateway-integration:
-        type: http
-        url: {frontend_base_url}/index.html
-        query:
-          '*': '*'
+        url: {test_frontend_base_url}/index.html
 
   /test/{{path+}}:
     x-yc-apigateway-any-method:
@@ -221,7 +202,7 @@ paths:
             type: string
       x-yc-apigateway-integration:
         type: http
-        url: {frontend_base_url}/test/{{path}}
+        url: {test_frontend_base_url}/{{path}}
         headers:
           '*': '*'
         query:
@@ -232,28 +213,6 @@ paths:
       x-yc-apigateway-integration:
         type: http
         url: {frontend_base_url}/
-
-  /admin:
-    x-yc-apigateway-any-method:
-      x-yc-apigateway-integration:
-        type: http
-        url: {frontend_base_url}/index.html
-        query:
-          '*': '*'
-
-  /admin/{{path+}}:
-    x-yc-apigateway-any-method:
-      parameters:
-        - name: path
-          in: path
-          required: true
-          schema:
-            type: string
-      x-yc-apigateway-integration:
-        type: http
-        url: {frontend_base_url}/index.html
-        query:
-          '*': '*'
 
   /{{path+}}:
     x-yc-apigateway-any-method:
@@ -285,6 +244,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--test-auth-function-id", default=DEFAULT_TEST_AUTH_FUNCTION_ID)
     parser.add_argument("--prod-auth-function-id", default=DEFAULT_PROD_AUTH_FUNCTION_ID)
     parser.add_argument("--frontend-base-url", default=DEFAULT_FRONTEND_BASE_URL)
+    parser.add_argument("--test-frontend-base-url", default=DEFAULT_TEST_FRONTEND_BASE_URL)
     parser.add_argument("--grafana-upstream", default=DEFAULT_GRAFANA_UPSTREAM)
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
@@ -312,6 +272,7 @@ def main() -> int:
                 prod_auth_function_id=args.prod_auth_function_id,
                 service_account_id=args.service_account_id,
                 frontend_base_url=args.frontend_base_url,
+                test_frontend_base_url=args.test_frontend_base_url,
                 grafana_upstream=args.grafana_upstream,
             )
         )

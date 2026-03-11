@@ -120,8 +120,8 @@ https://monitoring.api.cloud.yandex.net/prometheus/workspaces/mon73oiiclfbmmqbje
 
 Open Grafana:
 
-- dashboard: `https://dtm.solofarm.ru/ops/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
-- embed: `https://dtm.solofarm.ru/ops/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
+- dashboard: `https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
+- embed: `https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
 
 Check that these panels are non-empty after live actions:
 
@@ -155,8 +155,8 @@ Expected telemetry fields:
 - `prometheusWorkspaceId=mon73oiiclfbmmqbjejn`
 - `grafanaEnabled=true`
 - `grafanaDashboardUid=dtm-test-ops`
-- `grafanaDashboardUrl=https://dtm.solofarm.ru/ops/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
-- `grafanaEmbedUrl=https://dtm.solofarm.ru/ops/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
+- `grafanaDashboardUrl=https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
+- `grafanaEmbedUrl=https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
 
 ## Notes
 

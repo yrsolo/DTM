@@ -158,12 +158,12 @@ class InfoObservabilityTestCase(unittest.TestCase):
                     ),
                     grafana=SimpleNamespace(
                         enabled=True,
-                        public_base_url="https://dtm.solofarm.ru/ops/grafana",
+                        public_base_url="https://dtm.solofarm.ru/grafana",
                         dashboard_uid_test="dtm-test-ops",
                         dashboard_uid_prod="",
-                        dashboard_url_test="https://dtm.solofarm.ru/ops/grafana/public-dashboards/test-token",
+                        dashboard_url_test="https://dtm.solofarm.ru/grafana/public-dashboards/test-token",
                         dashboard_url_prod="",
-                        embed_url_test="https://dtm.solofarm.ru/ops/grafana/public-dashboards/test-token?kiosk",
+                        embed_url_test="https://dtm.solofarm.ru/grafana/public-dashboards/test-token?kiosk",
                         embed_url_prod="",
                     ),
                     snapshot_engine=SimpleNamespace(
@@ -247,7 +247,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertEqual(payload["telemetry"]["grafanaDashboardUid"], "dtm-test-ops")
         self.assertEqual(
             payload["telemetry"]["grafanaDashboardUrl"],
-            "https://dtm.solofarm.ru/ops/grafana/public-dashboards/test-token",
+            "https://dtm.solofarm.ru/grafana/public-dashboards/test-token",
         )
         self.assertEqual(len(payload["jobs"]["recent"]), 2)
 
