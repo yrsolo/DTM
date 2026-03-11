@@ -23,10 +23,19 @@ class GrafanaSpecsTestCase(unittest.TestCase):
         titles = {panel["title"] for panel in dashboard["panels"]}
         self.assertIn("Snapshot Stage Timings", titles)
         self.assertIn("Render Stage Timings", titles)
+        self.assertIn("Snapshot Fetch Last", titles)
+        self.assertIn("Snapshot Fetch Avg5", titles)
+        self.assertIn("Timeline Total Last", titles)
+        self.assertIn("Designers Total Avg5", titles)
         snapshot_panel = next(panel for panel in dashboard["panels"] if panel["title"] == "Snapshot Stage Timings")
         target_exprs = [target["expr"] for target in snapshot_panel["targets"]]
         self.assertTrue(any("dtm_snapshot_fetch_sheet_ms" in expr for expr in target_exprs))
         self.assertTrue(any('env="test"' in expr for expr in target_exprs))
+        fetch_last = next(panel for panel in dashboard["panels"] if panel["title"] == "Snapshot Fetch Last")
+        self.assertIn("last_over_time(dtm_snapshot_fetch_sheet_ms", fetch_last["targets"][0]["expr"])
+        fetch_avg5 = next(panel for panel in dashboard["panels"] if panel["title"] == "Snapshot Fetch Avg5")
+        self.assertEqual(fetch_avg5["targets"][0]["expr"], 'dtm_snapshot_fetch_sheet_ms{env="test",namespace="dtm",service="dtm"}')
+        self.assertTrue(fetch_avg5.get("transformations"))
 
 
 if __name__ == "__main__":

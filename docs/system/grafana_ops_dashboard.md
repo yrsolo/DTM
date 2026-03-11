@@ -29,19 +29,10 @@ The repo is the source of truth for:
 
 ## Dashboard structure
 
-The current dashboard spec contains 11 panels:
+The current dashboard spec contains:
 
-1. Snapshot Stage Timings
-2. Snapshot Total Duration
-3. Snapshot Outcomes
-4. Render Stage Timings
-5. Render Total Duration
-6. Render Volume
-7. API Latency
-8. API Throughput
-9. Worker Reliability
-10. Notify Runtime
-11. Telegram Intake
+- a top stat section for snapshot and render
+- raw timeseries panels for snapshot/render/API/worker/notify/telegram
 
 These panels are operator-oriented, not BI-oriented.
 
@@ -73,6 +64,32 @@ Shared workspace note:
 
 - `test` and `prod` use the same Yandex Managed Prometheus workspace
 - dashboard separation is done by label filter `env`
+
+## Stat panel aggregation policy
+
+The dashboard uses raw metrics only.
+
+### `last`
+- derived by query using `last_over_time(...[7d])`
+
+### `avg5`
+- derived in Grafana panel transformations from raw time series
+- panel flow:
+  1. query raw metric series
+  2. convert series to rows
+  3. sort by timestamp descending
+  4. limit to 5 rows
+  5. reduce with mean
+
+This keeps raw stage timings as the only canonical runtime metrics.
+
+### Render stat panels
+
+Render stat panels are explicit by operation:
+- `timeline`
+- `designers`
+
+They are not merged with `max(...)`, because that would hide which render path is slow.
 
 ## `/info` integration
 

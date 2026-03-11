@@ -1,7 +1,6 @@
 # Active Tasks
 
 - CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1 P01: reduce snapshot fetch/normalize overhead by carrying canonical `A`-column colors in `SheetSnapshot` and removing extra Google API calls / DataFrame-heavy runtime path
-- CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1 P02: emit snapshot/render `*_last_ms` and `*_last5_avg_ms` gauges and expose them through Grafana stat panels
 - CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1 P03: remove YDB from active env/deploy/runtime contour while keeping YDB adapters as non-active legacy/agent-only surface
 - CAM-UNIFIED-API-INGRESS-V1 P01: switch repo/operator URLs to path-based `/test` and `/prod` base paths and add unified API gateway rollout script
 - CAM-UNIFIED-API-INGRESS-V1 P02: create unified Yandex API Gateway on `dtm.solofarm.ru` for `/test/*` and `/prod/*`, replace Yandex DNS `dtm.solofarm.ru` CNAME to the new gateway, and keep old `dtm-api-*` domains as rollback paths during propagation
@@ -26,6 +25,7 @@
 - `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: public dashboard panel failures were caused by missing `refId` fields in multi-query panels; dashboard spec now assigns explicit `A..E` refIds and the public dashboard JSON is valid again.
 - `CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1`: focused tests prove the active snapshot source path now performs one values read and one canonical `A`-column color read only; `build_tasks_from_snapshot()` performs no Google API calls.
 - `CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1`: active deploy/runtime contour no longer uses `YDB_*` secrets; remaining YDB references are confined to adapter/tests, archived docs, and explicit agent-only migration/backfill utilities.
+- `CAM-GRAFANA-RAW-AGG-STATS-V1`: dashboard stat rows now use raw metrics only: `last` via `last_over_time(...)`, `avg5` via Grafana transformations; runtime-derived presentation gauges are removed from active jobs.
 
 ## Done
 
@@ -37,6 +37,7 @@
 - CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1 P02: provision DataLens workbook/Monitoring connection and exhaust caller-permission hypothesis for `createQLChart`
 - CAM-SNAPSHOT-RENDER-TIMINGS-V1 P01: add detailed snapshot timings for fetch/normalize/build_prep/write_raw/write_prep and surface them through metrics and job result
 - CAM-SNAPSHOT-RENDER-TIMINGS-V1 P02: add detailed render timings for build_plan/write_sheet/total and surface them through metrics and job result
+- CAM-GRAFANA-RAW-AGG-STATS-V1 P01: migrate Grafana stat panels to raw-metric `last_over_time(...)` + panel transformations and remove runtime-derived presentation gauges
 
 - CAM-2026-03-09-QUEUE-RETRY-SEMANTICS-V1 P01: extend worker result/status vocabulary to retryable vs terminal failures
 - CAM-2026-03-09-QUEUE-RETRY-SEMANTICS-V1 P02: update dispatcher/worker/worker-shell semantics and add retry-focused tests

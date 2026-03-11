@@ -11,8 +11,7 @@
 - `SheetsNormalizedTaskSource.read_snapshot()` reads worksheet values and canonical `A`-column colors only
 - `SheetsNormalizedTaskSource.build_tasks_from_snapshot()` performs no Google API calls
 - active snapshot runtime path uses direct row builders instead of DataFrame-heavy repository conversion
-- snapshot and render jobs emit `*_last_ms` and `*_last5_avg_ms` gauges
-- Grafana spec includes stat panels for snapshot/render current and rolling-average durations
+- Grafana spec derives `last` via `last_over_time(...)` and `avg5` via panel transformations over raw metrics
 - active deploy workflows no longer inject `YDB_*` secrets
 - loader allowlist no longer accepts `YDB_*`
 - bootstrap/runtime no longer exposes YDB endpoint/database deps
@@ -36,4 +35,5 @@
 
 ## Notes
 - live `test` verification of lower `fetch_sheet_ms` / `normalize_ms` and populated stat panels is still required after rollout
+- runtime-derived `*_last_ms` / `*_last5_avg_ms` gauges were intentionally removed in favor of dashboard-side aggregation
 - YDB adapter code remains in repo as non-active/agent-only legacy surface
