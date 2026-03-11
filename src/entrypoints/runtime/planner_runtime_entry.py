@@ -6,23 +6,13 @@ from dataclasses import dataclass
 from time import perf_counter
 from typing import Any
 
-from src.adapters.store_ydb import build_operational_store
 from src.adapters.telegram import TelegramNotifier
 from src.adapters.llm_google import AsyncGoogleLLMChatAgent
 from src.adapters.llm_openai import AsyncOpenAIChatAgent
 from src.adapters.llm_yandex import AsyncYandexLLMChatAgent
 from src.app.bootstrap import build_app_context
-from src.entrypoints.jobs.db_migrate_branch import run_db_migrate_if_requested
-from src.entrypoints.jobs.db_migrate_job import run_db_migrate
-from src.entrypoints.jobs.legacy_store_write_job import LegacyStoreWriteRequest, run_legacy_store_write
 from src.entrypoints.jobs.quality_report_job import print_quality_report as _print_quality_report
-from src.entrypoints.jobs.readmodel_freshness import (
-    build_readmodel_freshness_marker as _readmodel_freshness_marker,
-    safe_print as _safe_print,
-)
-from src.entrypoints.jobs.readmodel_probe_job import ReadmodelProbeRequest, run_readmodel_freshness_probe
 from src.entrypoints.jobs.runtime_context_job import RuntimeContextRequest, resolve_runtime_context
-from src.entrypoints.jobs.task_payloads import task_to_store_record as _task_to_store_record
 from src.entrypoints.jobs.timer_job import TimerJob
 from src.notify import ReminderFormatter, ReminderJob, ReminderRequest, ReminderUseCase
 from src.render import (
@@ -39,7 +29,7 @@ from src.snapshot_engine import build_snapshot_engine
 from src.snapshot_engine.model import Window
 from src.services.timer_pipeline import RunRequest as TimerRunRequest
 from src.services.timer_pipeline import TimerPipeline
-from src.services.usecases.planner_runtime import resolve_run_mode, run_planner_use_case
+from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES, is_legacy_mode
 
 APP_CONTEXT = build_app_context()
 APP_DEPS = APP_CONTEXT.deps
@@ -49,14 +39,28 @@ APP_STORE_MODE = APP_CONTEXT.cfg.runtime.sources.store_mode_default
 APP_TRIGGERS = APP_CONTEXT.cfg.runtime.triggers
 APP_KEY_JSON = str(APP_DEPS.get("key_json", ""))
 APP_SHEET_INFO = dict(APP_DEPS.get("sheet_info", {}))
-APP_YDB_ENDPOINT = str(APP_DEPS.get("ydb_endpoint", ""))
-APP_YDB_DATABASE = str(APP_DEPS.get("ydb_database", ""))
-APP_YDB_SA_JSON_CREDENTIALS = APP_DEPS.get("ydb_sa_json_credentials")
-APP_YDB_SA_KEY_FILE = APP_DEPS.get("ydb_sa_key_file")
 APP_LEGACY_BLOB_WRITE = bool(APP_DEPS.get("legacy_blob_write", False))
 APP_MIGRATION_STORE_FILE = str(APP_DEPS.get("migration_store_file", "store.json"))
-APP_YDB_MIGRATE_ON_START = bool(APP_DEPS.get("ydb_migrate_on_start", False))
 TIMER_JOB_SHELL = TimerJob()
+
+
+def _resolve_standard_run_mode(
+    mode: str | None = None,
+    event: Any = None,
+    triggers: dict[str, str] | None = None,
+) -> str:
+    if mode:
+        return str(mode).strip().lower()
+    if event == "morning":
+        return "morning"
+    if isinstance(event, dict):
+        try:
+            trigger_id = str(event["messages"][0]["details"]["trigger_id"]).strip()
+        except (TypeError, KeyError, IndexError):
+            trigger_id = ""
+        if trigger_id:
+            return str((triggers or {}).get(trigger_id, "test")).strip().lower()
+    return "test"
 
 
 def _build_notify_enhancer(mock_external: bool):
@@ -129,7 +133,7 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
             force_refresh_raw=request.force_refresh,
             triggers=APP_TRIGGERS,
             force_refresh_default=PIPELINE_CFG.force_refresh_default,
-            resolve_run_mode=resolve_run_mode,
+            resolve_run_mode=_resolve_standard_run_mode,
             timer_job_shell=TIMER_JOB_SHELL,
             app_context=APP_CONTEXT,
         )
@@ -138,17 +142,6 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
     mock_external = runtime_ctx.mock_external
     force_refresh = runtime_ctx.force_refresh
 
-    migrate_handled, migrate_result = run_db_migrate_if_requested(
-        mode=mode,
-        endpoint=APP_YDB_ENDPOINT,
-        database=APP_YDB_DATABASE,
-        sa_json_credentials=APP_YDB_SA_JSON_CREDENTIALS,
-        sa_key_file=APP_YDB_SA_KEY_FILE,
-        run_db_migrate=run_db_migrate,
-    )
-    if migrate_handled:
-        return migrate_result
-
     task_source = build_sheets_normalized_task_source(
         key_json=APP_KEY_JSON,
         sheet_info_data=APP_SHEET_INFO,
@@ -156,7 +149,13 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
         dry_run=dry_run,
     )
     normalized_mode = str(mode).strip().lower()
-    use_legacy_planner = normalized_mode.startswith("legacy_planner_")
+    if is_legacy_mode(normalized_mode) or normalized_mode not in STANDARD_RUN_MODES:
+        return {
+            "artifact": "dtm_runtime",
+            "status": "unsupported_mode",
+            "mode": normalized_mode,
+            "supported_modes": sorted(STANDARD_RUN_MODES),
+        }
     quality_report: dict[str, Any] = {"summary": {"task_row_issue_count": 0}}
 
     if normalized_mode in {"reminder_v2", "reminders-only", "morning", "test"}:
@@ -216,72 +215,6 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
                 "next_workday": reminder_result.next_workday,
             }
 
-    if use_legacy_planner:
-        legacy_notify_source = APP_CONTEXT.cfg.runtime.sources.notify_source_default
-        legacy_render_source = APP_CONTEXT.cfg.runtime.sources.render_source_default
-        from src.legacy.planner_bootstrap import build_planner_dependencies
-        from src.legacy.planner_runtime import GoogleSheetPlanner
-        from src.legacy.planner_setup import PlannerRuntimeBuildRequest, build_planner_runtime
-        from src.legacy.source_switch import apply_task_source_switches
-
-        planner, _ = build_planner_runtime(
-            PlannerRuntimeBuildRequest(
-                key_json=APP_KEY_JSON,
-                sheet_info=APP_SHEET_INFO,
-                dry_run=dry_run,
-                mock_external=mock_external,
-                cfg=APP_CONTEXT.cfg,
-                mode=mode,
-                render_source=legacy_render_source,
-                notify_source=legacy_notify_source,
-                ydb_endpoint=APP_YDB_ENDPOINT,
-                ydb_database=APP_YDB_DATABASE,
-                ydb_sa_json_credentials=APP_YDB_SA_JSON_CREDENTIALS,
-                ydb_sa_key_file=APP_YDB_SA_KEY_FILE,
-                build_planner_dependencies=build_planner_dependencies,
-                planner_cls=GoogleSheetPlanner,
-                apply_task_source_switches=apply_task_source_switches,
-                log=_safe_print,
-            )
-        )
-        quality_report = await run_planner_use_case(planner, mode, allow_sync=True)
-
-        full_snapshot = task_source.read_snapshot("A1:Z2000")
-        tasks_for_legacy_store = task_source.build_tasks_from_snapshot(full_snapshot)
-        if tasks_for_legacy_store:
-            run_legacy_store_write(
-                LegacyStoreWriteRequest(
-                    legacy_blob_write=APP_LEGACY_BLOB_WRITE,
-                    store_mode=APP_STORE_MODE,
-                    mode=mode,
-                    allow_sync=True,
-                    tasks=tasks_for_legacy_store,
-                    task_to_store_record=_task_to_store_record,
-                    runtime_env=APP_RUNTIME_ENV,
-                    ydb_endpoint=APP_YDB_ENDPOINT,
-                    ydb_database=APP_YDB_DATABASE,
-                    migration_store_file=APP_MIGRATION_STORE_FILE,
-                    sa_json_credentials=APP_YDB_SA_JSON_CREDENTIALS,
-                    sa_key_file=APP_YDB_SA_KEY_FILE,
-                    build_store=build_operational_store,
-                    safe_print=_safe_print,
-                    )
-            )
-
-        run_readmodel_freshness_probe(
-            ReadmodelProbeRequest(
-                mode=mode,
-                render_source=legacy_render_source,
-                notify_source=legacy_notify_source,
-                ydb_endpoint=APP_YDB_ENDPOINT,
-                ydb_database=APP_YDB_DATABASE,
-                ydb_sa_json_credentials=APP_YDB_SA_JSON_CREDENTIALS,
-                ydb_sa_key_file=APP_YDB_SA_KEY_FILE,
-                marker_builder=_readmodel_freshness_marker,
-                safe_print=_safe_print,
-            )
-        )
-
     TimerPipeline(APP_CONTEXT).run(
         TimerRunRequest(
             mode=mode,
@@ -293,7 +226,10 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
     if normalized_mode in {"timer", "test", "render_v2"}:
         render_started = perf_counter()
         snapshot_engine = build_snapshot_engine(APP_CONTEXT)
-        render_usecase = RenderUseCase(snapshot_engine)
+        render_usecase = RenderUseCase(
+            snapshot_engine,
+            timezone_name=str(APP_CONTEXT.cfg.runtime.runtime.timezone or "Europe/Moscow"),
+        )
         from utils.service import GoogleSheetInfo, GoogleSheetsService
 
         sheet_info = GoogleSheetInfo(**APP_SHEET_INFO)
@@ -379,7 +315,10 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
                 "duration_ms": int((perf_counter() - render_started) * 1000),
                 "summary": {"task_row_issue_count": 0},
             }
-        designers_usecase = DesignersRenderUseCase(snapshot_engine)
+        designers_usecase = DesignersRenderUseCase(
+            snapshot_engine,
+            timezone_name=str(APP_CONTEXT.cfg.runtime.runtime.timezone or "Europe/Moscow"),
+        )
         designers_writer = GoogleSheetsPlanWriter(
             GoogleSheetsService(APP_KEY_JSON, dry_run=dry_run),
             SheetTarget(

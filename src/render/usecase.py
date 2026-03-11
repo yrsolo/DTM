@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from typing import Iterable
 
+from src.app.timezone_utils import format_sheet_timestamp, now_in_timezone, today_in_timezone
 from src.snapshot_engine.engine import SnapshotEngine
 from src.snapshot_engine.model import TaskView
 from utils.func import GetColor, RGBColor
@@ -81,12 +82,13 @@ def _iter_days_half_open(start: date, end_exclusive: date) -> Iterable[date]:
 class RenderUseCase:
     """Build Gantt-like render plan from snapshot tasks."""
 
-    def __init__(self, engine: SnapshotEngine):
+    def __init__(self, engine: SnapshotEngine, timezone_name: str = "Europe/Moscow"):
         self._engine = engine
         self._color = GetColor()
+        self._timezone_name = str(timezone_name or "Europe/Moscow").strip() or "Europe/Moscow"
 
     def _window_bounds(self, req: RenderRequest) -> tuple[date, date, date]:
-        today = date.today()
+        today = today_in_timezone(self._timezone_name)
         if req.window is not None and req.window.start is not None and req.window.end is not None:
             start = req.window.start
             end = req.window.end
@@ -121,14 +123,19 @@ class RenderUseCase:
             )
 
         if not by_owner:
-            return RenderPlan(values=[], borders=[], warnings=["empty_render_plan"])
+            return RenderPlan(values=[], borders=[], warnings=["no_matching_tasks"])
 
         start, end, today = self._window_bounds(req)
         values: list[RenderCell] = []
         row = 2
+        total_selected_tasks = 0
+        total_designer_groups = 0
+        total_rendered_task_rows = 0
 
         for owner in sorted(by_owner.keys()):
             owner_tasks = sorted(by_owner[owner], key=lambda item: item.min_date)
+            total_designer_groups += 1
+            total_selected_tasks += len(owner_tasks)
             base_color = self._color()
             timeline_base = self._color("gray")
 
@@ -169,6 +176,7 @@ class RenderUseCase:
             total = max(1, len(owner_tasks))
             for index, timeline in enumerate(owner_tasks):
                 task = timeline.task
+                total_rendered_task_rows += 1
                 emphasis = 1 if total == 1 else 0.5 + 1.5 * (total - index) / total
                 task_color = base_color**emphasis
                 note = (
@@ -222,7 +230,7 @@ class RenderUseCase:
             RenderCell(
                 row=1,
                 col=1,
-                value=datetime.now().strftime("%H:%M %B %d"),
+                value=format_sheet_timestamp(now_in_timezone(self._timezone_name)),
                 bold=True,
             )
         )
@@ -234,4 +242,11 @@ class RenderUseCase:
                 color="#5FAD56",
             )
         ]
-        return RenderPlan(values=values, borders=borders, warnings=[])
+        return RenderPlan(
+            values=values,
+            borders=borders,
+            warnings=[],
+            selected_tasks=total_selected_tasks,
+            designer_groups=total_designer_groups,
+            rendered_task_rows=total_rendered_task_rows,
+        )

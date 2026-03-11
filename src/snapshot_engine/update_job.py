@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from time import perf_counter
 from datetime import date, datetime, timezone
 from typing import Any
 
@@ -16,7 +17,7 @@ class SheetSnapshotHasher:
     def hash_sheet_snapshot(self, snapshot: SheetSnapshot) -> str:
         payload = {
             "values": snapshot.values,
-            "colors": snapshot.colors,
+            "status_colors": snapshot.status_colors or snapshot.colors,
         }
         serialized = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
@@ -120,10 +121,12 @@ class TaskSourceSheetsAdapter:
         data = self._task_source.read_snapshot(worksheet_range)
         values = data.get("values", []) if isinstance(data, dict) else []
         colors = data.get("colors", []) if isinstance(data, dict) else []
+        status_colors = data.get("status_colors", colors) if isinstance(data, dict) else colors
         return SheetSnapshot(
             worksheet_range=worksheet_range,
             values=list(values) if isinstance(values, list) else [],
             colors=list(colors) if isinstance(colors, list) else [],
+            status_colors=list(status_colors) if isinstance(status_colors, list) else [],
         )
 
     def build_tasks(self, full_snapshot: SheetSnapshot) -> list[Any]:
@@ -131,6 +134,7 @@ class TaskSourceSheetsAdapter:
             "range": full_snapshot.worksheet_range,
             "values": full_snapshot.values,
             "colors": full_snapshot.colors,
+            "status_colors": full_snapshot.status_colors,
         }
         return list(self._task_source.build_tasks_from_snapshot(payload))
 
@@ -234,7 +238,11 @@ class UpdateJob:
         self._prep_builder = prep_builder
 
     def run(self, force: bool = False) -> UpdateResult:
+        started_at = perf_counter()
+
+        fetch_started = perf_counter()
         full_snapshot = self._source.fetch_snapshot("A1:Z2000")
+        fetch_sheet_ms = (perf_counter() - fetch_started) * 1000.0
         source_hash = self._hasher.hash_sheet_snapshot(full_snapshot)
         try:
             previous_raw = self._raw_cache.get()
@@ -247,8 +255,19 @@ class UpdateJob:
             except Exception:
                 existing_prep = None
             if existing_prep is None or existing_prep.raw_source_hash != source_hash:
-                repaired_prep = self._prep_builder.build(previous_raw)
-                self._prep_cache.put(repaired_prep)
+                build_prep_started = perf_counter()
+                repaired_prep_result = self._prep_builder.build(previous_raw)
+                build_prep_ms = (perf_counter() - build_prep_started) * 1000.0
+                write_prep_started = perf_counter()
+                self._prep_cache.put(repaired_prep_result.prep)
+                write_prep_ms = (perf_counter() - write_prep_started) * 1000.0
+                timings_ms = {
+                    "fetch_sheet_ms": fetch_sheet_ms,
+                    "build_prep_ms": build_prep_ms,
+                    "write_prep_ms": write_prep_ms,
+                    "total_duration_ms": (perf_counter() - started_at) * 1000.0,
+                }
+                timings_ms.update(dict(repaired_prep_result.timings_ms))
                 return UpdateResult(
                     source_id=self._source.source_id,
                     source_hash=source_hash,
@@ -256,6 +275,7 @@ class UpdateJob:
                     fetched_at_utc=previous_raw.fetched_at_utc,
                     raw_written=False,
                     prep_written=True,
+                    timings_ms=timings_ms,
                 )
             return UpdateResult(
                 source_id=self._source.source_id,
@@ -264,7 +284,12 @@ class UpdateJob:
                 fetched_at_utc=previous_raw.fetched_at_utc,
                 raw_written=False,
                 prep_written=False,
+                timings_ms={
+                    "fetch_sheet_ms": fetch_sheet_ms,
+                    "total_duration_ms": (perf_counter() - started_at) * 1000.0,
+                },
             )
+        normalize_started = perf_counter()
         tasks = self._source.build_tasks(full_snapshot)
         raw = self._normalizer.normalize(
             source_id=self._source.source_id,
@@ -272,9 +297,25 @@ class UpdateJob:
             snapshot=full_snapshot,
             tasks=tasks,
         )
-        prep = self._prep_builder.build(raw)
+        normalize_ms = (perf_counter() - normalize_started) * 1000.0
+        build_prep_started = perf_counter()
+        prep_result = self._prep_builder.build(raw)
+        build_prep_ms = (perf_counter() - build_prep_started) * 1000.0
+        write_raw_started = perf_counter()
         self._raw_cache.put(raw)
-        self._prep_cache.put(prep)
+        write_raw_ms = (perf_counter() - write_raw_started) * 1000.0
+        write_prep_started = perf_counter()
+        self._prep_cache.put(prep_result.prep)
+        write_prep_ms = (perf_counter() - write_prep_started) * 1000.0
+        timings_ms = {
+            "fetch_sheet_ms": fetch_sheet_ms,
+            "normalize_ms": normalize_ms,
+            "build_prep_ms": build_prep_ms,
+            "write_raw_ms": write_raw_ms,
+            "write_prep_ms": write_prep_ms,
+            "total_duration_ms": (perf_counter() - started_at) * 1000.0,
+        }
+        timings_ms.update(dict(prep_result.timings_ms))
         return UpdateResult(
             source_id=self._source.source_id,
             source_hash=source_hash,
@@ -282,4 +323,5 @@ class UpdateJob:
             fetched_at_utc=raw.fetched_at_utc,
             raw_written=True,
             prep_written=True,
+            timings_ms=timings_ms,
         )

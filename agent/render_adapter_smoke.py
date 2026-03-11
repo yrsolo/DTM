@@ -14,8 +14,8 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from core.sheet_renderer import ServiceSheetRenderAdapter
-from src.services.calendar_runtime import CalendarManager
-from src.services.render.task_table_runtime import TaskManager
+from src.legacy.services.calendar_runtime import CalendarManager
+from src.legacy.services.render.task_table_runtime import TaskManager
 
 
 class FakeService:

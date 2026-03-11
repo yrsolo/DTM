@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from core.bootstrap import _build_chat_adapter
-import core.bootstrap as bootstrap
+from src.legacy.core.bootstrap import _build_chat_adapter
+import src.legacy.core.bootstrap as bootstrap
 
 
 def _assert_provider(

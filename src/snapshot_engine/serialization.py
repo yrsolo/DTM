@@ -7,6 +7,8 @@ from datetime import date, datetime, timezone
 from typing import Any
 
 from src.snapshot_engine.model import (
+    AttachmentMeta,
+    ExtraSnapshot,
     Milestone,
     PeopleSnapshot,
     PersonView,
@@ -61,6 +63,32 @@ def _milestone_from_dict(item: dict[str, Any]) -> Milestone:
         planned=_parse_date(item.get("planned")),
         actual=_parse_date(item.get("actual")),
         status=str(item.get("status", "planned")).strip() or "planned",
+    )
+
+
+def _attachment_to_dict(item: AttachmentMeta) -> dict[str, Any]:
+    return {
+        "id": str(item.id),
+        "key": str(item.key),
+        "filename": str(item.filename),
+        "mime": str(item.mime),
+        "size": int(item.size),
+        "uploaded_at": _dt(item.uploaded_at_utc),
+        "uploaded_by": str(item.uploaded_by),
+        "preview": str(item.preview),
+    }
+
+
+def _attachment_from_dict(item: dict[str, Any]) -> AttachmentMeta:
+    return AttachmentMeta(
+        id=str(item.get("id", "")).strip(),
+        key=str(item.get("key", "")).strip(),
+        filename=str(item.get("filename", "")).strip(),
+        mime=str(item.get("mime", "")).strip(),
+        size=max(int(item.get("size", 0) or 0), 0),
+        uploaded_at_utc=_parse_dt(item.get("uploaded_at")) or datetime.now(timezone.utc),
+        uploaded_by=str(item.get("uploaded_by", "")).strip(),
+        preview=str(item.get("preview", "")).strip(),
     )
 
 
@@ -221,6 +249,7 @@ def extra_to_dict(extra: TaskExtra) -> dict[str, Any]:
         "task_id": extra.task_id,
         "orphaned": bool(extra.orphaned),
         "updated_at_utc": _dt(extra.updated_at_utc),
+        "attachments": [_attachment_to_dict(item) for item in list(extra.attachments or [])],
         "docs": list(extra.docs),
         "links": list(extra.links),
         "notes": extra.notes,
@@ -233,10 +262,37 @@ def extra_from_dict(payload: dict[str, Any]) -> TaskExtra:
         task_id=str(payload.get("task_id", "")).strip(),
         orphaned=bool(payload.get("orphaned", False)),
         updated_at_utc=_parse_dt(payload.get("updated_at_utc")),
+        attachments=[_attachment_from_dict(item) for item in list(payload.get("attachments", [])) if isinstance(item, dict)],
         docs=[dict(item) for item in list(payload.get("docs", [])) if isinstance(item, dict)],
         links=[str(item) for item in list(payload.get("links", []))],
         notes=str(payload.get("notes", "")),
         artifacts=[dict(item) for item in list(payload.get("artifacts", [])) if isinstance(item, dict)],
+    )
+
+
+def extra_snapshot_to_dict(snapshot: ExtraSnapshot) -> dict[str, Any]:
+    return {
+        "version": int(snapshot.version),
+        "updated_at_utc": _dt(snapshot.updated_at_utc),
+        "items_by_task_id": {
+            str(task_id): extra_to_dict(extra)
+            for task_id, extra in sorted(snapshot.items_by_task_id.items())
+        },
+    }
+
+
+def extra_snapshot_from_dict(payload: dict[str, Any]) -> ExtraSnapshot:
+    raw_items = payload.get("items_by_task_id", {})
+    items_by_task_id: dict[str, TaskExtra] = {}
+    if isinstance(raw_items, dict):
+        for task_id, extra_payload in raw_items.items():
+            if not isinstance(extra_payload, dict):
+                continue
+            items_by_task_id[str(task_id)] = extra_from_dict(extra_payload)
+    return ExtraSnapshot(
+        version=max(int(payload.get("version", 2) or 2), 1),
+        updated_at_utc=_parse_dt(payload.get("updated_at_utc")) or datetime.now(timezone.utc),
+        items_by_task_id=items_by_task_id,
     )
 
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 from datetime import datetime, timezone
 
-from src.snapshot_engine.model import PrepSnapshot, PrepIndexes, RawSnapshot, SheetSnapshot, TaskSheet, TaskView
+from src.snapshot_engine.model import PrepBuildResult, PrepSnapshot, PrepIndexes, RawSnapshot, SheetSnapshot, TaskSheet, TaskView
 from src.snapshot_engine.update_job import UpdateJob
 
 
@@ -87,12 +87,20 @@ class _StableRawCache:
 
 class _FakePrepBuilder:
     def build(self, raw):  # noqa: ANN001
-        return PrepSnapshot(
-            source_id=raw.source_id,
-            raw_source_hash=raw.source_hash,
-            built_at_utc=datetime.now(timezone.utc),
-            tasks_by_id={},
-            indexes=PrepIndexes(),
+        return PrepBuildResult(
+            prep=PrepSnapshot(
+                source_id=raw.source_id,
+                raw_source_hash=raw.source_hash,
+                built_at_utc=datetime.now(timezone.utc),
+                tasks_by_id={},
+                indexes=PrepIndexes(),
+            ),
+            timings_ms={
+                "extra_load_ms": 1.0,
+                "orphan_reconcile_ms": 0.0,
+                "task_view_build_ms": 0.0,
+                "prep_index_build_ms": 0.0,
+            },
         )
 
 
@@ -114,6 +122,7 @@ class UpdateJobTestCase(unittest.TestCase):
         self.assertTrue(result.changed)
         self.assertTrue(raw_cache.put_called)
         self.assertTrue(prep_cache.put_called)
+        self.assertIn("extra_load_ms", result.timings_ms)
 
     def test_rebuilds_prep_when_raw_hash_unchanged_but_prep_corrupted(self) -> None:
         raw_cache = _StableRawCache()
@@ -132,6 +141,7 @@ class UpdateJobTestCase(unittest.TestCase):
         self.assertTrue(result.changed)
         self.assertFalse(raw_cache.put_called)
         self.assertTrue(prep_cache.put_called)
+        self.assertIn("extra_load_ms", result.timings_ms)
 
 
 if __name__ == "__main__":

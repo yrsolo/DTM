@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.services.usecases.planner_runtime import (  # noqa: F401
+from src.legacy.services.usecases.planner_runtime import (  # noqa: F401
     PlannerRuntimeProtocol,
     resolve_run_mode,
     run_planner_use_case,

@@ -1,321 +1,61 @@
-﻿# Active Tasks
+# Active Tasks
 
-- [x] CAM-NOTIFY-PARITY-V1-P01-T001: trust-gate freeze for notify parity against `core/reminder.py` and current `src/notify/*` runtime path.
-- [x] CAM-NOTIFY-PARITY-V1-P02-T001: add people snapshot model/interfaces/S3 store and update-job contour (`Люди` -> snapshot).
-- [x] CAM-NOTIFY-PARITY-V1-P03-T001: implement milestone-day parity selection (today + next workday, weekend-aware) with active statuses default.
-- [x] CAM-NOTIFY-PARITY-V1-P04-T001: implement legacy-like draft formatter and stage filtering parity.
-- [x] CAM-NOTIFY-PARITY-V1-P04-T002: add LLM enhancement flow with fallback counters (tests mock LLM).
-- [x] CAM-NOTIFY-PARITY-V1-P05-T001: implement delivery routing/checks (person/chat/vacation/test-chat override) + retry/backoff/classification + dedup.
-- [x] CAM-NOTIFY-PARITY-V1-P06-T001: wire reminder modes to parity job and return structured runtime counters.
-- [x] CAM-NOTIFY-PARITY-V1-P07-T001: add typed notify parity config in `config/runtime.yaml` + schema/loader.
-- [x] CAM-NOTIFY-PARITY-V1-P08-T001: add notify + snapshot people tests and update docs/evidence.
+- CAM-METRICS-BATCHING-E2E-AND-DASHBOARD-CLEANUP-V1 P02: deploy batched metrics path to `test`, capture before/after wall-clock evidence, and verify Grafana wall-clock/flush stat panels on live data
+- CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1 P01: reduce snapshot fetch/normalize overhead by carrying canonical `A`-column colors in `SheetSnapshot` and removing extra Google API calls / DataFrame-heavy runtime path
+- CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1 P03: remove YDB from active env/deploy/runtime contour while keeping YDB adapters as non-active legacy/agent-only surface
+- CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P01: register campaign, trust gate, and typed `prometheus`/`grafana` config for dual-write and iframe metadata
+- CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P02: add Prometheus metrics backend, composite dual-write client, and additive `/info` Grafana/Prometheus telemetry fields
+- CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P03: add Grafana dashboard spec/API helpers and record infra blockers for Yandex Prometheus workspace discovery and VPS SSH access
+- CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P04: replace generic Prometheus text push with real Yandex Managed Prometheus remote write and keep remaining blocker limited to workspace/API key + datasource rollout
+- CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P05: add self-service workspace/datasource runbook and one-command Grafana datasource provisioning from repo
+- CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P06: record shared YMP workspace id, create Grafana datasource `DTM YMP Test`, and switch remaining blocker to live sample emission only
 
-- [x] CAM-RENDER-INCIDENT-RCA-AND-GANTT-PARITY-V1-T001: enforce render_v2 target safety gate, switch target worksheet to `Ð—Ð°Ð´Ð°Ñ‡Ð¸`, and restore Gantt-parity render plan.
-- [x] FIX-CAM-INFO-RENDER-ACTION-V1-T001: switch `/info` force-render action to `mode=render_v2` and return structured runtime/render report instead of blind `!GOOD!`.
-- [x] LEGACY-CUT-BOOTSTRAP-T001: register new campaign pack files (`CAM-LEGACY-CUT-API-V1`, `CAM-NOTIFY-MODULE-V1`, `CAM-RENDER-MODULE-V1`, `CAM-HTTP-FALLBACK-REMOVAL-V1`, `CAM-LEGACY-PLANNER-DELETE-V1`, `CAM-GREP-GATES-V1`, `priorities_legacy_cut.md`).
-- [x] CAM-LEGACY-CUT-API-V1-P01-T001: freeze API v2 parity spec for Snapshot Engine migration and add `docs/snapshot_engine/api_v2_parity.md`.
-- [x] CAM-LEGACY-CUT-API-V1-P02-T001: integrate `src/snapshot_engine/frontend_v2_payload_builder.py` into query engine and remove legacy payload-builder coupling.
-- [x] CAM-LEGACY-CUT-API-V1-P02-T002: implement API v2 task serialization in snapshot builder (`status`, `history`, dates, milestones).
-- [x] CAM-LEGACY-CUT-API-V1-P02-T003: implement entities/enums projection from `PrepSnapshot` in snapshot builder.
-- [x] CAM-LEGACY-CUT-API-V1-P03-T001: wire builder into `SnapshotQueryEngine` and keep runtime query path snapshot-native.
-- [x] CAM-LEGACY-CUT-API-V1-P03-T002: remove legacy payload-builder and person-model imports from snapshot query contour.
-- [x] CAM-LEGACY-CUT-API-V1-P04-T001: keep parity checks for statuses/window/limit/include_people/history in snapshot query tests.
-- [x] CAM-LEGACY-CUT-API-V1-P04-T002: keep golden payload verification from fixed prep-snapshot fixtures.
-- [x] CAM-LEGACY-CUT-API-V1-P05-T001: enforce grep gate against `core.api_payload_v2`/`pandas`/`core.models.people` under `src/snapshot_engine`.
-- [x] CAM-NOTIFY-MODULE-V1-P01-T001: scaffold new notify module (`src/notify/*`) and wire runtime mode plan.
-- [x] CAM-NOTIFY-MODULE-V1-P02-T001: implement `ReminderUseCase.run(req)` over Snapshot Engine prep snapshot.
-- [x] CAM-NOTIFY-MODULE-V1-P02-T002: support active-status filtering, window filtering, owner grouping, and per-owner limit.
-- [x] CAM-NOTIFY-MODULE-V1-P03-T001: implement pure text formatter for grouped reminders.
-- [x] CAM-NOTIFY-MODULE-V1-P03-T002: implement async telegram sender adapter with default chat fallback.
-- [x] CAM-NOTIFY-MODULE-V1-P04-T001: wire `reminder_v2` runtime mode in planner runtime entrypoint.
-- [x] CAM-NOTIFY-MODULE-V1-P04-T002: disable legacy reminder flow in standard runtime path by aliasing `reminders-only` to v2 path.
-- [x] CAM-NOTIFY-MODULE-V1-P05-T001: add unit tests for selection/grouping/status/window behavior.
-- [x] CAM-NOTIFY-MODULE-V1-P05-T002: add formatter output regression checks.
-- [x] CAM-RENDER-MODULE-V1-P01-T001: scaffold new render module (`src/render/*`) and wire runtime mode plan.
-- [x] CAM-RENDER-MODULE-V1-P02-T001: implement snapshot-based task selection in `RenderUseCase.build_plan`.
-- [x] CAM-RENDER-MODULE-V1-P02-T002: produce pure `RenderPlan` values/formats without IO side effects.
-- [x] CAM-RENDER-MODULE-V1-P03-T001: implement `GoogleSheetsPlanWriter` batch write adapter for render plan values.
-- [x] CAM-RENDER-MODULE-V1-P03-T002: keep small smoke-safe write path (single bounded `updateCells` request).
-- [x] CAM-RENDER-MODULE-V1-P04-T001: wire runtime mode `render_v2` in planner runtime entrypoint.
-- [x] CAM-RENDER-MODULE-V1-P04-T002: disable legacy render flow for standard runtime modes (planner restricted to `legacy_planner_*` only).
-- [x] CAM-RENDER-MODULE-V1-P05-T001: add unit tests for `RenderUseCase.build_plan`.
-- [x] CAM-RENDER-MODULE-V1-P05-T002: add adapter tests for writer batching logic.
-- [x] CAM-HTTP-FALLBACK-REMOVAL-V1-P01-T001: remove HTTP fallback-to-legacy branches for API v2 snapshot-missing path.
-- [x] CAM-HTTP-FALLBACK-REMOVAL-V1-P01-T002: standardize unavailable response payload (`frontend_source_unavailable`) in API v2 HTTP path.
-- [x] CAM-HTTP-FALLBACK-REMOVAL-V1-P02-T001: validate cold/no-snapshot path behavior through routing tests.
-- [x] CAM-HTTP-FALLBACK-REMOVAL-V1-P02-T002: verify deterministic/quick handler response (no request-path rebuild/fallback loops).
-- [x] CAM-HTTP-FALLBACK-REMOVAL-V1-P03-T001: record handler behavior evidence and trust gate for fallback removal campaign.
-- [x] CAM-LEGACY-PLANNER-DELETE-V1-P01-T001: map planner imports/usages in runtime path and record trust/evidence.
-- [x] CAM-LEGACY-PLANNER-DELETE-V1-P02-T001: migrate `group_query` task loading helper from planner bootstrap to snapshot source.
-- [x] CAM-LEGACY-PLANNER-DELETE-V1-P02-T002: remove legacy `src.legacy.http_core_bindings` coupling from `group_query` handler parser/formatter path.
-- [ ] CAM-LEGACY-PLANNER-DELETE-V1-P03-T001: restrict planner execution to explicit `legacy_planner_*` modes only.
-- [x] CAM-LEGACY-PLANNER-DELETE-V1-P03-T001: restrict planner execution to explicit `legacy_planner_*` modes only.
-- [ ] CAM-LEGACY-PLANNER-DELETE-V1-P03-T002: isolate/move remaining planner files under explicit legacy namespace.
-- [x] CAM-LEGACY-PLANNER-DELETE-V1-P03-T002: isolate planner runtime imports under explicit `src/legacy/*` namespace wrappers.
-- [ ] CAM-LEGACY-PLANNER-DELETE-V1-P04-T001: remove planner-specific default runtime switches from non-legacy config path.
-- [x] CAM-LEGACY-PLANNER-DELETE-V1-P04-T001: remove planner-specific switches from standard runtime path and default runtime config.
-- [x] CAM-GREP-GATES-V1-P01-T001: add `scripts/check_no_legacy_imports.py` and CI enforcement gate.
-- [x] CAM-GREP-GATES-V1-P01-T002: enforce forbidden import patterns in snapshot/notify/render/entrypoint contours.
-- [x] CAM-GREP-GATES-V1-P02-T001: integrate guard check in deploy workflows (test/prod).
-- [x] CAM-GREP-GATES-V1-P02-T002: ensure guard exits non-zero on violations (CI gate).
-- [x] CAM-GREP-GATES-V1-P03-T001: sync campaign evidence with current guard policy and verification commands.
+## Notes
 
-- [x] CAM-SNAPSHOT-ENGINE-V1-P01-T001: trust-gate Ñ„Ð¸ÐºÑÐ°Ñ†Ð¸Ñ Ñ‚ÐµÐºÑƒÑ‰ÐµÐ³Ð¾ runtime source-of-truth Ð¸ policy hard-cutover Ð½Ð° S3 snapshot.
-- [x] CAM-SNAPSHOT-ENGINE-V1-P02-T001: Ñ€ÐµÐ°Ð»Ð¸Ð·Ð¾Ð²Ð°Ñ‚ÑŒ `src/snapshot_engine` (models/interfaces/serialization/prep_builder/update_job/query_engine/engine).
-- [x] CAM-SNAPSHOT-ENGINE-V1-P03-T001: Ñ€ÐµÐ°Ð»Ð¸Ð·Ð¾Ð²Ð°Ñ‚ÑŒ S3 stores (`RawCache`, `PrepCache`, `ExtraStore`) Ð½Ð° Ð±Ð°Ð·Ðµ Object Storage.
-- [x] CAM-SNAPSHOT-ENGINE-V1-P04-T001: Ð´Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ typed `snapshot_engine` ÑÐµÐºÑ†Ð¸ÑŽ Ð² config schema/loader/runtime.yaml Ð¸ fail-fast validation.
-- [x] CAM-SNAPSHOT-ENGINE-V1-P05-T001: Ð¸Ð½Ñ‚ÐµÐ³Ñ€Ð¸Ñ€Ð¾Ð²Ð°Ñ‚ÑŒ SnapshotEngine Ð² bootstrap/context Ð¸ Ð¿ÐµÑ€ÐµÐºÐ»ÑŽÑ‡Ð¸Ñ‚ÑŒ `TimerPipeline` Ð½Ð° update job.
-- [x] CAM-SNAPSHOT-ENGINE-V1-P06-T001: Ð¿ÐµÑ€ÐµÐºÐ»ÑŽÑ‡Ð¸Ñ‚ÑŒ `frontend_v2_handler` (Ð¸ group-query loader path) Ð½Ð° Ñ‡Ñ‚ÐµÐ½Ð¸Ðµ PrepSnapshot Ñ‡ÐµÑ€ÐµÐ· SnapshotEngine.
-- [x] CAM-SNAPSHOT-ENGINE-V1-P07-T001: Ð¾Ð±Ð½Ð¾Ð²Ð¸Ñ‚ÑŒ docs (`docs/snapshot_engine/*`, `docs/system/dataflow.md`, `docs/system/entrypoints_index_main.md`).
-- [x] CAM-SNAPSHOT-ENGINE-V1-P08-T001: Ð´Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ unit/api/runtime Ñ‚ÐµÑÑ‚Ñ‹ Ð¸ Ð¿Ñ€Ð¾Ð³Ð½Ð°Ñ‚ÑŒ smoke/Ñ€ÐµÐ³Ñ€ÐµÑÑÐ¸ÑŽ.
+- `CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1`: workbook and Monitoring connection are provisioned; `createQLChart` is currently blocked by live DataLens API `500 Access service error` on the Monitoring connection.
+- `CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1`: caller permissions were raised for `yrsolo` (`viewer` + `monitoring.viewer`) and the same `createQLChart` error persists, so the blocker is now classified as external to repo code.
+- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: repo-side dual-write/Grafana foundation is being added first; active code path now uses real Yandex Managed Prometheus remote write and the remaining blocker is external infra only: workspace/API key + Grafana datasource endpoint wiring.
+- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: Grafana API token path is proven; folder `DTM Test` and dashboard `dtm-test-ops` are served canonically under `https://dtm.solofarm.ru/grafana`, and datasource wiring is proven against YMP.
+- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: before datasource rollout, the repo must stop pretending that text exposition push is YMP-compatible; current execution slice replaces it with actual remote write semantics.
+- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: workspace creation remains a UI-only Yandex-side step; repo now provides `scripts/provision_grafana_datasource.py` so the only missing operator input is the final `workspace_id`.
+- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: shared workspace `mon73oiiclfbmmqbjejn` is now known and Grafana datasource `DTM YMP Test` is created; the next blocker is only live sample emission from deployed test runtime.
+- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: Grafana datasource query path is now proven against YMP and imported dashboard panels are bound to datasource uid `effm65zf51xc0b`.
+- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: public dashboard `effmku80r2800d` is created and works without login; the remaining blocker for webpage embed is only Grafana server-side `allow_embedding = true` because current responses still send `X-Frame-Options: deny`.
+- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: public dashboard panel failures were caused by missing `refId` fields in multi-query panels; dashboard spec now assigns explicit `A..E` refIds and the public dashboard JSON is valid again.
+- `CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1`: focused tests prove the active snapshot source path now performs one values read and one canonical `A`-column color read only; `build_tasks_from_snapshot()` performs no Google API calls.
+- `CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1`: active deploy/runtime contour no longer uses `YDB_*` secrets; remaining YDB references are confined to adapter/tests, archived docs, and explicit agent-only migration/backfill utilities.
+- `CAM-GRAFANA-RAW-AGG-STATS-V1`: dashboard stat rows now use raw metrics only: `last` via `last_over_time(...)`, `avg5` via Grafana transformations; runtime-derived presentation gauges are removed from active jobs.
+- `CAM-METRICS-BATCHING-E2E-AND-DASHBOARD-CLEANUP-V1`: P01 is implemented locally and covered by focused tests; next live proof on `test` must quantify how much wall-clock moved from per-metric emission into explicit `dtm.metrics.*`, `dtm.snapshot.job_wall_clock_ms`, and `dtm.worker.wall_clock_ms`.
+- `CAM-UNIFIED-API-INGRESS-V1`: canonical ingress is live on `dtm.solofarm.ru` with prod service contour on `/ops/...`, test service contour on `/test/ops/...`, same-origin Grafana on `/grafana/...`, and bucket-backed frontend ownership for `/`, `/test`, `/admin`, and `/test/admin`; old `dtm-api-*` hosts remain rollback-only.
 
-- [x] CAM-SYNC-BULK-PIPELINE-V1-P01-T001: add YDB bulk primitives for task versions (`upsert_task_versions_bulk`, `archive_task_versions_bulk`) with chunking.
-- [x] CAM-SYNC-BULK-PIPELINE-V1-P02-T001: refactor sync runtime to compute version/archive rows in memory and flush in bulk (no per-task version writes).
-- [x] CAM-SYNC-BULK-PIPELINE-V1-P03-T001: extend sync/timer observability with bulk counters and keep test stubs backward-safe.
-- [x] CAM-SYNC-BULK-PIPELINE-V1-P04-T001: add/refresh targeted tests (`sync_source_hash_gate`, `pipeline_runtime`, adapter bulk versions tests).
+## Done
 
-- [x] API-TASKID-T001: preserve source sheet `id` column as canonical `task_id` (stop overwriting with row index in Sheets loaders).
-- [x] API-LIMIT-SORT-T001: apply `limit` after descending sort by task end date so API returns latest N tasks.
-- [x] API-READMODEL-DATE-T001: harden numeric date coercion in readmodel builder to handle epoch-like large ints without overflow.
-- [x] API-FORCE-REFRESH-MILESTONES-T001: keep writing task versions and `milestones_v` for new tasks even under `force_refresh` to avoid synthetic-only readmodel dates.
+- CAM-SNAPSHOT-PREP-BULK-REFORM-V1 P01: register trust gate, add prep-build sub-metrics, and switch snapshot builder contract to timing-aware bulk-extra path
+- CAM-SNAPSHOT-PREP-BULK-REFORM-V1 P02: replace per-task S3 extra layout with one bulk extra snapshot and remove orphan N+1 writes from hot path
+- CAM-SNAPSHOT-PREP-BULK-REFORM-V1 P03: add one-time migration script, update attachment mutation flow, migrate/verify `test`, and prove live `build_prep_ms` drop without public contract drift
+- CAM-UNIFIED-API-INGRESS-V1 P01: replace legacy `/prod/*` canonical paths with root `/api`, `/info`, `/auth`, keep `/test/*` for test, and make gateway spec fully declarative in repo
+- CAM-UNIFIED-API-INGRESS-V1 P02: update unified Yandex API Gateway on `dtm.solofarm.ru` for `/api/*`, `/info`, `/auth/*`, `/test/*`, `/grafana/*`, and bucket-backed `/` + `/test`, while keeping old `dtm-api-*` domains as rollback paths
 
-- [x] API-READMODEL-STATUS-T001: include final/idle statuses (`done`, `wait`) into readmodel snapshot build so `/api/v2/frontend?statuses=done` returns data.
+- CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1 P01: register DataLens dashboard campaign, typed config, API/spec modules, and additive `/info` metadata
+- CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1 P02: provision DataLens workbook/Monitoring connection and exhaust caller-permission hypothesis for `createQLChart`
+- CAM-SNAPSHOT-RENDER-TIMINGS-V1 P01: add detailed snapshot timings for fetch/normalize/build_prep/write_raw/write_prep and surface them through metrics and job result
+- CAM-SNAPSHOT-RENDER-TIMINGS-V1 P02: add detailed render timings for build_plan/write_sheet/total and surface them through metrics and job result
+- CAM-GRAFANA-RAW-AGG-STATS-V1 P01: migrate Grafana stat panels to raw-metric `last_over_time(...)` + panel transformations and remove runtime-derived presentation gauges
 
-- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P01-T001: add first-class `history` column into YDB schema (`_ddl_tasks` + `ensure_tasks_history_column` migration hook in `ensure_tables`).
-- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P02-T001: hard-cutover operational write path to persist `history` in `dtm_tasks` upserts (main + fallback queries).
-- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P03-T001: hard-cutover read paths (`readmodel_builder`, `frontend_v2_handler`) to read `history` only from row column (no JSON parse from `raw_payload`).
-- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P04-T001: align task mappers/contracts/docs to first-class `history` column semantics.
-- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P05-T001: execute TEST reset + rebuild (`sync-only --force-refresh`) and verify API active tasks and `history` values.
-- [x] CAM-HISTORY-FIELD-NORMALIZATION-V1-P06-T001: run regression tests and record evidence/trust-gate in campaign artifacts.
+- CAM-2026-03-09-QUEUE-RETRY-SEMANTICS-V1 P01: extend worker result/status vocabulary to retryable vs terminal failures
+- CAM-2026-03-09-QUEUE-RETRY-SEMANTICS-V1 P02: update dispatcher/worker/worker-shell semantics and add retry-focused tests
+- CAM-2026-03-09-GREP-GATES-V1 P01: extend forbidden-import guard to telegram/commands/worker/observability scopes
+- CAM-2026-03-09-GREP-GATES-V1 P02: wire legacy guard scripts into test/prod deploy workflows
+- CAM-2026-03-09-OBSERVABILITY-FOUNDATION-V1 P01: add shared observability modules for metrics, timing, and structured logging
+- CAM-2026-03-09-OBSERVABILITY-FOUNDATION-V1 P02: instrument snapshot/render/notify/http boundaries and expose additive telemetry info in `/info`
+- CAM-2026-03-09-TELEGRAM-COMMAND-ROUTER-V1 P01: add typed Telegram DTOs and dedicated command router
+- CAM-2026-03-09-TELEGRAM-COMMAND-ROUTER-V1 P02: keep webhook enqueue-only while splitting parser and router responsibilities
+- CAM-2026-03-09-TELEGRAM-COMMAND-ROUTER-V1 P03: add parser/router tests and align docs/tracking with current post-legacy baseline
+- CAM-2026-03-09-YC-MONITORING-INTEGRATION-V1 P01: add typed monitoring config, YC IAM helper, and real Yandex Monitoring metrics client
+- CAM-2026-03-09-YC-MONITORING-INTEGRATION-V1 P02: wire monitoring backend in bootstrap, add docs, and create/update test Yandex Monitoring dashboard
+- CAM-2026-03-09-YC-MONITORING-INTEGRATION-V1 P03: deploy monitoring-enabled test contour and capture live metric emission evidence from `/info`, API, and render on the real test function
 
-- [x] API-HISTORY-T001: restore raw textual task status as `tasks[].history` in API v2 payload while keeping normalized `status` semantics.
-- [x] API-HISTORY-T002: include `history` in sync content-hash basis and keep backward-safe readmodel fallback (`raw_payload.history|status|""`).
-- [x] API-HISTORY-T003: align docs/tests/snapshots with new `history` field and verify full smoke suite + `check_no_monsters`.
-- [x] BRANCH-SYNC-T001: synchronize `test` branch to `dev` using reset + force-with-lease to restore linear promotion policy.
-- [x] API-STATUS-COLOR-T001: fix inflated `work` statuses by mapping from canonical column-A colors (`A2:A...`) instead of lossy wide-range snapshot colors.
-- [x] OPS-TOOLS-TIMER-T001: add Windows CMD wrapper `scripts/invoke_cloud_timer.cmd` for HTTP timer invoke (dry-run default, `--live` optional).
-- [x] RUNTIME-TIMER-T001: restore legacy planner execution for standard timer/test modes when `store_mode=legacy` to avoid no-op local/cloud timer runs.
-- [x] API-REBUILD-T001: allow canonical YDB/readmodel rebuild via `mode=sync-only` even when `store_mode=legacy`.
-- [x] API-REBUILD-T002: add cloud invoke flags `--sync-only` and `--force-refresh` (cmd + smoke utility) for deterministic API snapshot recovery.
-- [x] API-REBUILD-T003: fix legacy YDB timestamp coercion (`sync_state` and readmodel generated_at) to prevent `datetime - int` crashes before rebuild write.
+## Notes
 
-- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P01-T001: inventory functional context dataclasses/lambda wiring and record replacements in `docs/system/demonster_inventory.md`.
-- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P02-T001: normalize `AppContext` runtime deps (no callback/factory fields) and bootstrap wiring.
-- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P03-T001: stabilize HTTP DTO contour (`HttpRequest`/`HttpResponse`) for router dispatch.
-- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P03-T002: replace `HttpRouterContext` with `HttpRouter(AppContext)` and class handlers.
-- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P03-T003: remove lambda notifier/loader wiring from `index.py` and group-query flow.
-- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P04-T001: introduce canonical `TimerPipeline(AppContext)` in `src/services/timer_pipeline.py`.
-- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P04-T002: extract task payload mapping to `src/services/mappers/task_payload_mapper.py`.
-- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P04-T003: remove `SyncReadmodelPipelineContext` from runtime path and switch entry runtime to direct timer pipeline call.
-- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P05-T001: remove runtime repo-mutation injection in standard path (`_apply_task_source_switches` contour).
-- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P06-T001: run targeted API/pipeline tests after demonster refactor.
-- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P06-T002: add anti-recidive check script `scripts/check_no_monsters.py`.
-- [x] CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1-P06-T003: update docs/evidence (`entrypoints_index_main`, `dataflow`, campaign evidence).
-
-- [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T001: map runtime usage of `src/services/sync_service.py` vs `src/services/sync/sync_service.py`.
-- [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T002: confirm canonical sync module and add explicit `CANONICAL` header note.
-- [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T003: quarantine/remove duplicate sync module path from runtime imports.
-- [x] CAM-PIPELINE-STRAIGHTEN-V2-P01-T004: run local smoke for timer path and API v2 handler.
-- [x] CAM-PIPELINE-STRAIGHTEN-V2-P02-T001: verify old hash-gate artifacts are absent from standard timer path.
-- [x] CAM-PIPELINE-STRAIGHTEN-V2-P03-T001: verify preflight-first pipeline order and full snapshot skip behavior.
-- [x] CAM-PIPELINE-STRAIGHTEN-V2-P04-T001: sync `docs/system/dataflow.md` + `docs/system/entrypoints_index_main.md` with final runtime shape.
-- [x] CAM-PIPELINE-STRAIGHTEN-V2-P05-T001: record evidence logs for skipped/performed full snapshot fetch.
-- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P01-T001: verify `index.py` has no `main.main` coupling and uses direct runtime entry dispatch.
-- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P01-T002: verify `index.py` has no `import main` dependency.
-- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P02-T001: inventory legacy coupling in index/http handlers and classify removable vs legacy-isolated.
-- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P02-T002: ensure API v2 handler keeps fast readmodel path without planner rebuild.
-- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P02-T003: verify group-query isolation from API v2 path and update evidence.
-- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P03-T001: assess planner-world usage in standard timer path and define minimal safe extraction step.
-- [x] CAM-ENTRYPOINT-DEHYBRID-V2-P03-T002: implement explicit legacy-planner mode boundary so standard timer path does not build planner world by default.
-- [x] CAM-ENTRYPOINT-HYGIENE-V2-P01-T001: trust-gate check for remaining hyperfunctions/long signatures in entrypoints and pipeline runtime.
-- [x] CAM-ENTRYPOINT-HYGIENE-V2-P03-T001: replace `build_http_dispatch_handlers(...)` runtime usage with object router `HttpRouter(ctx).dispatch(req)`.
-- [x] CAM-ENTRYPOINT-HYGIENE-V2-P02-T001: introduce/align AppContext usage as single dependency carrier for runtime router/pipeline objects.
-- [x] CAM-ENTRYPOINT-HYGIENE-V2-P04-T001: replace remaining timer pipeline wrapper orchestration with explicit pipeline object (`TimerPipeline`).
-- [x] CAM-ENTRYPOINT-HYGIENE-V2-P06-T001: final evidence grep (`build_http_dispatch_handlers` runtime absence, long signatures audit) and campaign closeout.
-- [x] CAM-ENTRYPOINT-HYGIENE-V2-T901: replace legacy source-switch job hyperfunction args with `SourceSwitchRequest` DTO.
-- [x] CAM-ENTRYPOINT-HYGIENE-V2-T902: replace planner-setup/legacy-store-write helper hyperfunction args with request DTOs and update runtime wiring.
-- [x] CAM-ENTRYPOINT-HYGIENE-V2-T903: refresh affected unit tests (`source_switch_job`, `planner_setup_job`, `legacy_store_write_job`, `planner_pipeline_job`) and rerun pipeline/api smoke.
-- [x] OPS-CI-YC-T001: add canonical `agent/export_deploy_defaults.py` CLI to export deploy.yaml defaults into GitHub env+outputs with strict required-field validation.
-- [x] OPS-CI-YC-T002: switch test/prod YC workflows to shared deploy-defaults script and deterministic `steps.deploy_defaults.outputs.*` wiring for runtime/timeout/memory/entrypoint.
-- [x] OPS-CI-YC-T003: validate CLI scenarios locally (`target=test`, `target=prod`, strict negative missing `function_timeout`) and keep deploy fail-fast surface explicit.
-- [x] OPS-CI-YC-T004: incident rollback for test contour runtime (`python314 -> python311`) after API 502 post-deploy; keep timeout at `240s`.
-
-- [x] Activate `CAM-CORE-CLEANUP-V1` from priorities.
-- [x] P01-T001: inventory `core/*` modules and classify domain vs infra-coupled pieces (`docs/system/core_boundaries.md`).
-- [x] P01-T002: map first atomic moves (`core/bootstrap.py`, `core/use_cases.py`) with concrete destination modules.
-- [x] P02-T001: extract bootstrap/usecase implementation out of `core/` with compatibility shims.
-- [x] P02-T002: remove `core.manager` dependency on `core.repository.TimingParser` via dedicated `core/timing_parser.py`.
-- [x] P02-T003: de-duplicate parser implementation by routing `core/repository.py` to `core/timing_parser.TimingParser`.
-- [x] P02-T004: design next extraction target for `core/repository.py` IO logic into adapter/service boundary (without behavior change).
-- [x] P03-T001: move `GoogleSheetsTaskRepository` implementation to `src/adapters/google_sheets/task_repository.py` with compatibility shim.
-- [x] P03-T002: extract `Task` model from `core/repository.py` to `core/models/task.py` with compatibility shim and import switches.
-- [x] P03-T003: switch non-legacy imports away from `core.repository` shims where direct module imports are available.
-- [x] P04-T001: audit `core/**` for external SDK/IO imports and record next extraction candidates.
-- [x] P04-T002: extract Google Sheets loading logic from `core/people.py` into adapter/service boundary with compatibility shim.
-- [x] P04-T003: remove `utils.service.GoogleSheetInfo` dependency from `core/planner.py` via local read-only sheet view.
-- [x] P05-T001: design safe extraction path for `core/reminder.py` transport clients into adapters.
-- [x] P05-T002: extract pure reminder helper policy functions into `core/reminder_policy.py` and wire `core/reminder.py` to them.
-- [x] P05-T003: move reminder transport adapter classes from `core/reminder.py` into `src/adapters/llm_*` and `src/adapters/telegram.py` with compatibility re-exports.
-- [x] P05-T004: make optional external SDK imports lazy in adapter modules to avoid import-time failures in non-LLM/non-TG flows.
-- [x] P06-T001: design extraction plan for `core/manager.py` service/render orchestration.
-- [x] P06-T002: extract `CalendarManager`/`TaskCalendarManager` runtime implementation from `core/manager.py` into `src/services/calendar_runtime.py`.
-- [x] P06-T003: extract `TaskManager` write-path from `core/manager.py` into `src/services/render/task_table_runtime.py`.
-- [x] P07-T001: design extraction plan for `core/planner.py` orchestration facade into `src/services/*`.
-- [x] P07-T002: extract `GoogleSheetPlanner` implementation from `core/planner.py` into `src/services/planner_runtime.py` with compatibility shim.
-- [x] P07-T003: audit internal usages of `core/*` compatibility shims and prepare deprecation checklist.
-- [x] P07-T004: move `TaskTimingProcessor` from `core/manager.py` to dedicated domain module and remove non-legacy shim import.
-- [x] P07-T005: owner decision received â€” keep `old/*` and notebooks untouched; keep compatibility re-exports for legacy contour.
-- [x] P08-T001: finalize shim scope docs and run active-path import audit to ensure no non-legacy shim usage.
-- [x] CFG-P02-T001: remove direct config dependency from src/services/planner_runtime.py where it can be derived from injected dependencies.
-- [x] CFG-P02-T002: design and start migration of src/app/planner_bootstrap.py from global config imports to cfg-driven wiring.
-- [x] CFG-P02-T003: implement first cfg-driven wiring slice for planner bootstrap (non-secret defaults).
-- [x] CFG-P02-T004: migrate non-secret runtime constants in index.py to APP_CFG-driven values.
-- [x] CFG-P02-T005: remove non-secret global config reads in src/app/planner_bootstrap.py by moving defaults to cfg-resolved settings object.
-- [x] CFG-P02-T006: remove `config.COLORS` import from `src/services/calendar_runtime.py` by injecting color palette from cfg/bootstrap.
-- [x] CFG-P02-T007: remove default config read from `core/timing_parser.py` and inject timing year mode from bootstrap.
-- [x] CFG-P02-T008: remove stale `config` import from `core/reminder.py` after reminder bootstrap token wiring.
-- [x] CFG-P02-T009: remove `config` import from `src/adapters/telegram.py`; pass bot token/chat id explicitly from entrypoint wiring.
-- [x] CFG-P02-T010: remove `config` imports from Google Sheets adapters (`task_repository`, `people_manager`) via cfg-backed constructor injection.
-- [x] CFG-P02-T011: restore legacy bootstrap shim compatibility (`core/bootstrap.py` expectations for planner bootstrap mutable knobs).
-- [x] CFG-P02-T012: document owner decision to discontinue API v1 support; align active system/campaign docs to v2-only maintenance policy.
-- [x] CFG-P02-T013: remove `config.constants` imports from YDB adapters (`src/adapters/ydb/client.py`, `src/adapters/store_ydb.py`) via explicit constructor parameters.
-- [x] CFG-P02-T014: update YDB/store adapter tests for explicit credential injection and confirm backoff/store factory behavior.
-- [x] CFG-P02-T015: enforce API v2-only runtime routing in `index.py`; return `410 api_v1_discontinued` for v1 routes.
-- [x] CFG-P02-T016: align API routing unit tests with v2-only policy and current index config knobs.
-- [x] CFG-P02-T017: remove legacy `FRONTEND_API_DEFAULT_VERSION` runtime knob from active config contour (`config/constants.py`, `src/config/loader.py` allowlist).
-- [x] CFG-P02-T018: validate consolidated v2-only + config-refactor contour with extended smoke pack (api/core/services/adapters).
-- [x] CFG-P02-T019: remove dead API v1 doc builders from `index.py` after v2-only routing enforcement.
-- [x] CFG-P02-T020: rerun extended smoke pack after dead-code removal to confirm no runtime regressions.
-- [x] CFG-P02-T021: sync entrypoint system docs with enforced runtime behavior (`/api/v1/* -> 410 api_v1_discontinued`).
-- [x] CFG-P02-T022: extract API v2 documentation builders from `index.py` into `src/entrypoints/http/frontend_v2_docs.py`.
-- [x] CFG-P02-T023: verify routing and runtime smoke after `index.py` documentation extraction.
-- [x] CFG-P02-T024: extract API v2 request handler logic from `index.py` into `src/entrypoints/http/frontend_v2_handler.py`.
-- [x] CFG-P02-T025: verify full smoke contour after handler extraction (`api/core/services/adapters`).
-- [x] CFG-P02-T026: extract API root and v1-discontinued compatibility handlers from `index.py` into `src/entrypoints/http/frontend_compat_handlers.py`.
-- [x] CFG-P02-T027: verify full smoke contour after compatibility handler extraction (`api/core/services/adapters`).
-- [x] CFG-P02-T028: restore explicit YDB SA credential propagation from entrypoints/services into YDB repos/clients after adapter decoupling from `config.constants`.
-- [x] CFG-P02-T029: verify full smoke contour after YDB credential propagation updates (`api/core/services/adapters`).
-- [x] CFG-P02-T030: extract group-query request handler from `index.py` into `src/entrypoints/http/group_query_handler.py`.
-- [x] CFG-P02-T031: verify full smoke contour after group-query handler extraction (`api/core/services/adapters`).
-- [x] CFG-P02-T032: extract frontend API query parameter parsing helpers from `index.py` into `src/entrypoints/http/frontend_query_params.py`.
-- [x] CFG-P02-T033: verify full smoke contour after frontend query parser extraction (`api/core/services/adapters`).
-- [x] CFG-P02-T034: extract runtime mode/trigger/force-refresh parsing helpers from `index.py` into `src/entrypoints/http/runtime_mode.py`.
-- [x] CFG-P02-T035: verify full smoke contour after runtime mode helper extraction (`api/core/services/adapters`).
-- [x] CFG-P02-T036: extract HTTP response/path helper functions from `index.py` into `src/entrypoints/http/response_utils.py`.
-- [x] CFG-P02-T037: verify full smoke contour after response/path helper extraction (`api/core/services/adapters`).
-- [x] CFG-P02-T038: extract frontend task loading helper from `index.py` into `src/entrypoints/http/frontend_tasks_loader.py`.
-- [x] CFG-P02-T039: verify full smoke contour after frontend task loader extraction (`api/core/services/adapters`).
-- [x] CFG-P02-T040: extract HTTP debug event-shape logger from `index.py` into `src/entrypoints/http/debug_utils.py`.
-- [x] CFG-P02-T041: verify full smoke contour after HTTP debug helper extraction (`api/core/services/adapters`).
-- [x] CFG-P02-T042: restore API v1 runtime compatibility by mapping v1 frontend/read-model routes to v2 handlers.
-- [x] CFG-P02-T043: align API routing tests and system docs with v1 compatibility-alias policy.
-- [x] CFG-P02-T044: prevent API v2 hard-fail when YDB readmodel path is unavailable; add runtime fallback to legacy source path.
-- [x] CFG-P02-T045: add regression test for API v2 fallback path (`READMODEL_SOURCE=ydb` + YDB failure) and verify full smoke contour.
-- [x] CFG-P02-T046: extract group-query task loading helper from `index.py` into `src/entrypoints/http/group_query_tasks_loader.py`.
-- [x] CFG-P02-T047: verify full smoke contour after group-query task loader extraction (`api/core/services/adapters`).
-- [x] CFG-P02-T048: simplify `index.py` by inlining group-query wrapper and delegating directly to extracted HTTP handler.
-- [x] CFG-P02-T049: verify full smoke contour after group-query wrapper removal (`api/core/services/adapters`).
-- [x] CFG-P02-T050: remove redundant legacy `v1_discontinued` handler from HTTP dispatch chain after v1->v2 alias restoration.
-- [x] CFG-P02-T051: verify full smoke contour after HTTP dispatch chain simplification (`api/core/services/adapters`).
-- [x] CFG-P02-T052: extract HTTP dispatch-chain wiring for root/v2 handlers from `index.py` into `src/entrypoints/http/http_dispatch_chain.py`.
-- [x] CFG-P02-T053: verify full smoke contour after dispatch-chain wiring extraction (`api/core/services/adapters`).
-- [x] CFG-P02-T054: extract runtime execution/error-handling block from `index.py` into `src/entrypoints/http/runtime_execution.py`.
-- [x] CFG-P02-T055: verify full smoke contour after runtime execution extraction (`api/core/services/adapters`).
-- [x] CFG-P02-T056: sync system docs with current thinned `index.py` entrypoint contour and extracted HTTP modules.
-- [x] CFG-P02-T057: remove dead `v1_discontinued` compatibility handler code from `src/entrypoints/http/frontend_compat_handlers.py`.
-- [x] CFG-P02-T058: verify full smoke contour after dead compatibility code removal (`api/core/services/adapters`).
-- [x] CFG-P02-T059: extract source snapshot reader helpers from `main.py` into `src/entrypoints/jobs/source_snapshot_reader.py`.
-- [x] CFG-P02-T060: verify full smoke contour after `main.py` snapshot-reader extraction (`api/core/services/adapters`).
-- [x] CFG-P02-T061: add HTTP error boundary to prevent unhandled API handler exceptions from surfacing as gateway `502`.
-- [x] CFG-P02-T062: return structured `503 frontend_source_unavailable` when legacy frontend source path fails at runtime (`/api/v2/frontend`).
-- [x] CFG-P02-T063: add regression test for legacy source failure path and verify full smoke contour.
-- [x] CFG-P02-T064: add emergency YDB snapshot fallback when legacy frontend source fails under `READMODEL_SOURCE=legacy`.
-- [x] CFG-P02-T065: add regression coverage for emergency YDB fallback path (`legacy failure -> ydb_emergency_fallback`).
-- [x] CFG-P02-T066: verify full smoke contour after emergency fallback rollout (`api/core/services/adapters`).
-- [x] CFG-P02-T067: restore expanded HTML API docs sections (field status/query params/response fields) in `/api/v2/frontend/doc`.
-- [x] CFG-P02-T068: reduce null-heavy API payload noise in `core/api_payload_v2.py` (optional/reserved null fields and empty nullable defaults).
-- [x] CFG-P02-T069: verify full smoke contour after docs/payload cleanup (`api/core/services/adapters`).
-- [x] CFG-P02-T070: fix readmodel date normalization for YDB Date-encoded milestone values in `src/services/readmodel_builder.py` (days-since-epoch handling).
-- [x] CFG-P02-T071: add regression tests for numeric YDB milestone dates and verify no null-date regression in readmodel build path.
-- [x] CFG-P02-T072: validate fix against live test DB data locally (no deploy): builder dry-run with real operational rows yields tasks with non-null dates.
-- [x] CFG-P02-T073: switch test deploy automation to `test` branch flow (`dev -> test -> main`) and add auto PR creation workflow (`test -> main`).
-- [x] CFG-P02-T074: make `force_refresh` also force readmodel snapshot rebuild (ignore `built_from_source_hash` short-circuit) and cover with unit test.
-- [x] CFG-P02-T075: verify live test DB snapshot state locally: operational tasks contain dates; forced readmodel rebuild restores non-null API dates (11/11).
-- [x] PIPE-P01-T001: activate `CAM-PIPELINE-CLEAN-SKELETON-V1` and record first extraction sequence for `main.py` helper thinning.
-- [x] PIPE-P01-T002: extract readmodel freshness helper from `main.py` to `src/entrypoints/jobs/readmodel_freshness.py` without behavior change.
-- [x] PIPE-P02-T001: extract source hash-gate decision block from `main.py` to `src/entrypoints/jobs/hash_gate_job.py`.
-- [x] PIPE-P02-T002: extract legacy store-write block from `main.py` to `src/entrypoints/jobs/legacy_store_write_job.py`.
-- [x] PIPE-P02-T003: extract task payload conversion helpers from `main.py` to `src/entrypoints/jobs/task_payloads.py`.
-- [x] PIPE-P03-T001: extract task-source switch orchestration from `main.py` to `src/entrypoints/jobs/source_switch_job.py`.
-- [x] PIPE-P03-T002: extract readmodel freshness probe/logging block from `main.py` to `src/entrypoints/jobs/readmodel_probe_job.py`.
-- [x] PIPE-P03-T003: extract quality-report summary printer from `main.py` to `src/entrypoints/jobs/quality_report_job.py`.
-- [x] PIPE-P03-T004: extract `db_migrate` early-return branch from `main.py` to `src/entrypoints/jobs/db_migrate_branch.py`.
-- [x] PIPE-P03-T005: extract runtime context resolution block (`mode/mock_external/force_refresh` + timer shell hook) from `main.py` to `src/entrypoints/jobs/runtime_context_job.py`.
-- [x] PIPE-P03-T006: extract planner/dependencies setup block from `main.py` to `src/entrypoints/jobs/planner_setup_job.py`.
-- [x] PIPE-P03-T007: extract planner pipeline orchestration block from `main.py` to `src/entrypoints/jobs/planner_pipeline_job.py`.
-- [x] PIPE-P03-T008: sync `docs/system/entrypoints_index_main.md` with current extracted `main.py` jobs-helper contour.
-- [x] PIPE-P03-T009: verify thin-entrypoint status for `main.py` (single async entrypoint + helper delegation) and rerun extended smoke.
-- [x] DEDUP-P01-T001: inventory runtime-adjacent duplicate implementations (sync/readmodel/handlers) with usage evidence.
-- [x] DEDUP-P01-T002: document keep/remove decisions in `docs/system/dedup_plan.md`.
-- [x] DEDUP-P02-T001: remove legacy `src/handlers/sync.py` branch and related handler test from active tree (runtime-unused duplicate).
-- [x] DEDUP-P02-T002: remove unused duplicate `src/services/sync/sync_service.py` and keep only sync hash primitives in `src/services/sync/*`.
-- [x] DEDUP-P02-T003: remove legacy build-readmodels path (`src/handlers/build_readmodels.py`, `src/services/readmodels/*`) and related tests from active tree.
-- [x] DEDUP-P02-T004: remove legacy placeholder `src/handlers/api.py` and align system docs to `src/entrypoints/http/*` runtime boundary.
-- [x] DEDUP-P02-T005: remove legacy placeholder handler stubs `src/handlers/render_sheets.py` and `src/handlers/notify_morning.py`; align dedup/module docs.
-- [x] DEDUP-P02-T006: remove empty legacy `src/handlers/__init__.py` package marker; confirm no active imports of `src.handlers` namespace.
-- [x] DEDUP-P02-T007: sync `docs/system/module_map.md` after handler/sync dedup wave (remove stale "two sync implementations" conflict note).
-- [x] DEDUP-P02-T008: remove unused legacy frontend payload serializer `core/api_payload.py` (v1 artifact) and sync dedup/core-boundaries docs.
-- [x] DEDUP-P02-T009: stabilize API v2 snapshot tests (`tests.api.test_frontend_api_v2_payload`) by freezing `today()` and refreshing snapshots to current v2 payload contract.
-- [x] DEDUP-P03-T001: audit `core/*` compatibility shims for active-code imports and document keep-policy boundary (owner decision: preserve legacy shims).
-- [x] DEDUP-P03-T002: move compatibility shims from `core/*` to `old/v1/*` and add legacy-archaeology markdown notes in `old/v1`.
-- [x] OPS-CAMP-P01-T001: normalize campaign lifecycle registry (`in progress / planned / done / parked`) in `work/now/campaign.md` and align `work/roadmap/backlog.md`.
-- [x] OPS-CAMP-P01-T002: archive all current campaign files from `work/roadmap/campaigns` to `work/archive/campaigns/*` and mark them completed in status registries.
-- [x] OPS-CAMP-P01-T003: register new campaign pack (`CAM-PIPELINE-STRAIGHTEN-V1`, `CAM-ENTRYPOINT-DEHYBRID-V1`, `CAM-ENTRYPOINT-HYGIENE-V1`) with charter/evidence templates and priorities file.
-- [x] STRAIGHTEN-P01-T001: trust-gate verification for `CAM-PIPELINE-STRAIGHTEN-V1` against current runtime code paths (`main.py`, `planner_pipeline_job.py`, `pipeline_runtime.py`, `sync_service.py`).
-- [x] STRAIGHTEN-P02-T001: remove old main hash-gate coupling from runtime path (`main.py` + `planner_pipeline_job.py` + tests).
-- [x] STRAIGHTEN-P03-T001: make preflight cheap in `run_ydb_sync_readmodel_pipeline` (skip full snapshot fetch when no sync is needed).
-- [x] STRAIGHTEN-P04-T001: update `docs/system/dataflow.md` and campaign evidence with skipped/performed full-snapshot logs.
-- [x] STRAIGHTEN-P02-T002: remove dead old-gate artifacts (`hash_gate_job`, `src/services/sync/hash_*`, hash-gate constants/tests) from active contour.
-- [x] OPS-CAMP-P01-T004: archive completed `CAM-PIPELINE-STRAIGHTEN-V1` and switch active execution to `CAM-ENTRYPOINT-DEHYBRID-V1`.
-- [x] OPS-CAMP-P01-T005: archive completed `CAM-ENTRYPOINT-DEHYBRID-V1` and switch active execution to `CAM-ENTRYPOINT-HYGIENE-V1`.
-- [x] DEHYBRID-P01-T001: trust-gate verification for `CAM-ENTRYPOINT-DEHYBRID-V1` against current entrypoint/runtime imports (`index.py`, `main.py`, `src/entrypoints/http/*`, `src/entrypoints/jobs/*`).
-- [x] DEHYBRID-P01-T002: remove direct `index -> main` coupling via shared runtime entry (`src/entrypoints/runtime/planner_runtime_entry.py`).
-- [x] DEHYBRID-P03-T001: remove direct `core.*` imports from `index.py` by moving API/group-query composition behind `src/entrypoints/http/*` boundary.
-- [x] DEHYBRID-P03-T002: isolate remaining legacy composition roots (group_query/API payload bindings) behind explicit `src/legacy/*` namespace and default-modern wiring.
-- [x] DEHYBRID-P04-T001: sync entrypoint docs and campaign evidence for dehybrid state (`index` no `core.*`, no `index -> main` coupling).
-- [x] HYGIENE-P01-T001: trust-gate verification for hyperfunction signatures in current entrypoint/runtime pipeline (`index.py`, `http_dispatch_chain.py`, `runtime_execution.py`, `planner_pipeline_job.py`, `pipeline_runtime.py`).
-- [x] HYGIENE-P02-T001: replace HTTP dispatch hyperfunction args with typed context object (`build_http_dispatch_handlers` + `index.py` wiring).
-- [x] HYGIENE-P02-T002: replace runtime execution hyperfunction args with typed context object (`execute_runtime` + `index.py` wiring).
-- [x] HYGIENE-P03-T001: replace planner pipeline hyperfunction args with typed context/request DTO (`run_planner_pipeline` + `planner_runtime_entry` wiring).
-- [x] HYGIENE-P03-T002: replace sync/readmodel pipeline hyperfunction args with typed context/request DTO (`run_ydb_sync_readmodel_pipeline` + planner pipeline wiring).
-- [x] HYGIENE-P03-T003: replace group-query handler hyperfunction args with typed context/request DTO (`handle_group_query_if_requested` + `index.py` wiring).
-- [x] HYGIENE-P04-T001: final hygiene verification + docs/tracking sync and campaign closeout decision.
-- [x] WRAPPERDTO-P01-T001: trust-gate verification for remaining `**kwargs` wrappers in runtime handoff path (`main.py`, `planner_runtime_entry.py`, `runtime_execution.py`, `index.py`).
-- [x] WRAPPERDTO-P02-T001: introduce `PlannerRuntimeRequest` DTO and canonical runtime entry method without `**kwargs` in `planner_runtime_entry.py`.
-- [x] WRAPPERDTO-P02-T002: switch `main.py` and `runtime_execution/index.py` to explicit typed runtime request handoff.
-- [x] WRAPPERDTO-P03-T001: run smoke contour and sync campaign docs/tracking; close/archive campaign if DoD met.
-- [x] APICONTRACT-P01-T001: trust-gate verification for API v2 contract drift (`include_people` default, task business fields, docs examples).
-- [x] APICONTRACT-P02-T001: restore task payload fields `brand`, `format_`, `customer` in `core/api_payload_v2.py` and update snapshots/tests.
-- [x] APICONTRACT-P02-T002: restore default people in readmodel-built API payload path (`src/services/readmodel_builder.py`) without changing API contract version.
-- [x] APICONTRACT-P02-T003: add concrete query examples to API v2 docs (`src/entrypoints/http/frontend_v2_docs.py` HTML+JSON).
-- [x] APICONTRACT-P03-T001: run targeted smoke/tests and sync campaign evidence/tracking.
-- [x] APICONTRACT-P04-T001: add API v2 readmodel self-heal on stale snapshot schema (`frontend_v2_handler` rebuild from operational tables when `people/fields` are missing in cached readmodel).
-- [x] APICONTRACT-P04-T002: add fallback payload enrichment from operational rows when readmodel rebuild is unavailable (serve people + business fields from YDB operational data in API response).
-- [x] APICONTRACT-P04-T003: enforce `tasks[].ownerId` reference consistency to `entities.people[].id` in payload builder; add regression test and refresh snapshots.
-- [x] APICONTRACT-P04-T004: detect owner/people id mismatch in stale readmodel snapshots and normalize task `ownerId` from operational rows during API fallback enrichment.
-- [x] APICONTRACT-P04-T005: make `entities.people[].id` stable owner hash (not display name) and keep `tasks[].ownerId` aligned to same id in both normal and fallback paths.
-
-## Blockers
-- none
-
-## Last Update
-- 2026-03-05 (restored API v2 `tasks[].history`, aligned tests/snapshots/docs, and synced `test` branch to `dev`)
-
-
-
-
-
-- [x] CAM-RENDER-MODULE-V1-T006: extend render_v2 to render Ð”Ð¸Ð·Ð°Ð¹Ð½ÐµÑ€Ñ‹ sheet in snapshot contour with legacy-compatible layout and per-sheet render result payload.
-- [x] CAM-RENDER-MODULE-V1-T007: disable legacy ÐšÐ°Ð»ÐµÐ½Ð´Ð°Ñ€ÑŒ render (designer_task_to_calendar) in runtime flow; keep Ð—Ð°Ð´Ð°Ñ‡Ð¸ + Ð”Ð¸Ð·Ð°Ð¹Ð½ÐµÑ€Ñ‹ only.
-
-
+- `CAM-2026-03-09-RUNTIME-DEPLANNERIZE-V1` is not opened as active work because the runtime is already post-deplannerization after the legacy-cut sequence.
+- Monitoring integration is considered complete for test-first scope; notify enqueue inconsistency and `/info` build 404 remain separate follow-up issues.

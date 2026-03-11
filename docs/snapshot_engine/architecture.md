@@ -24,7 +24,7 @@
 ## Storage Layout
 - raw: `snapshot_engine.prefix_raw`
 - prep: `snapshot_engine.prefix_prep`
-- extra: `snapshot_engine.prefix_extra/{task_id}.json`
+- extra: `snapshot_engine.prefix_extra/default.json`
 
 ## Error Boundary
 - S3/transport errors -> runtime `TransientError`

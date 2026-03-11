@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from src.entrypoints.jobs.runtime_context_job import resolve_runtime_context
+from src.entrypoints.jobs.runtime_context_job import RuntimeContextRequest, resolve_runtime_context
 
 
 class _TimerShellStub:
@@ -18,16 +18,18 @@ class RuntimeContextJobTestCase(unittest.TestCase):
     def test_timer_mode_runs_shell_and_defaults_mock_external(self) -> None:
         shell = _TimerShellStub()
         ctx = resolve_runtime_context(
-            mode="timer",
-            event=None,
-            dry_run=False,
-            mock_external=None,
-            force_refresh_raw=None,
-            triggers=["timer"],
-            force_refresh_default=True,
-            resolve_run_mode=lambda **kwargs: kwargs["mode"],
-            timer_job_shell=shell,
-            app_context=object(),
+            RuntimeContextRequest(
+                mode="timer",
+                event=None,
+                dry_run=False,
+                mock_external=None,
+                force_refresh_raw=None,
+                triggers=["timer"],
+                force_refresh_default=True,
+                resolve_run_mode=lambda **kwargs: kwargs["mode"],
+                timer_job_shell=shell,
+                app_context=object(),
+            )
         )
         self.assertEqual(ctx.mode, "timer")
         self.assertFalse(ctx.mock_external)
@@ -37,16 +39,18 @@ class RuntimeContextJobTestCase(unittest.TestCase):
     def test_test_mode_defaults_mock_external_true(self) -> None:
         shell = _TimerShellStub()
         ctx = resolve_runtime_context(
-            mode="test",
-            event=None,
-            dry_run=False,
-            mock_external=None,
-            force_refresh_raw=False,
-            triggers=["timer"],
-            force_refresh_default=True,
-            resolve_run_mode=lambda **kwargs: kwargs["mode"],
-            timer_job_shell=shell,
-            app_context=object(),
+            RuntimeContextRequest(
+                mode="test",
+                event=None,
+                dry_run=False,
+                mock_external=None,
+                force_refresh_raw=False,
+                triggers=["timer"],
+                force_refresh_default=True,
+                resolve_run_mode=lambda **kwargs: kwargs["mode"],
+                timer_job_shell=shell,
+                app_context=object(),
+            )
         )
         self.assertEqual(ctx.mode, "test")
         self.assertTrue(ctx.mock_external)

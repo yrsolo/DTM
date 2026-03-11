@@ -29,7 +29,7 @@ def _path_matches(path: str, candidates: set[str]) -> bool:
 class FrontendV2Handler:
     """HTTP handler for frontend api/doc routes."""
 
-    def __init__(self, ctx: AppContext, *, frontend_readmodel_repo_cls: object = None) -> None:  # noqa: ARG002
+    def __init__(self, ctx: AppContext) -> None:
         self._ctx = ctx
 
     def handle(self, req: HttpRequest) -> HttpResponse | None:

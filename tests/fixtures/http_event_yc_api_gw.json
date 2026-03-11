@@ -31,5 +31,5 @@
     "requestTime": "02/Mar/2026:20:50:00 +0000",
     "requestTimeEpoch": 1762452600000
   },
-  "url": "https://dtm-api-test.solofarm.ru/api/v1/frontend?statuses=work,pre_done&limit=100&include_people=true"
+  "url": "https://dtm.solofarm.ru/test/ops/api/v1/frontend?statuses=work,pre_done&limit=100&include_people=true"
 }

@@ -40,6 +40,9 @@ class RenderPlan:
     values: list[RenderCell]
     borders: list[RenderBorder]
     warnings: list[str] | None = None
+    selected_tasks: int = 0
+    designer_groups: int = 0
+    rendered_task_rows: int = 0
 
 
 @dataclass(frozen=True)
@@ -50,3 +53,11 @@ class RenderApplyResult:
     target_spreadsheet: str
     target_worksheet: str
     warnings: list[str]
+    plan_cells_total: int = 0
+    plan_borders_total: int = 0
+    selected_tasks: int = 0
+    designer_groups: int = 0
+    rendered_task_rows: int = 0
+    build_plan_ms: float = 0.0
+    write_sheet_ms: float = 0.0
+    total_duration_ms: float = 0.0

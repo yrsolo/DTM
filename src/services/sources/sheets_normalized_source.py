@@ -5,50 +5,24 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Mapping
 
-import pandas as pd
-
 from src.adapters.google_sheets.task_repository import GoogleSheetsTaskRepository
+from src.services.sources.sheets_task_rows import (
+    build_row_mappings,
+    build_tasks_from_rows,
+    validate_required_columns,
+)
 
 
-def _normalize_designer_cell(value: Any) -> str:
-    if pd.isna(value):
-        return ""
-    designers = [str(item).strip() for item in str(value).split("\n") if str(item).strip()]
-    return "\n".join(sorted(designers))
-
-
-def _dataframe_from_worksheet_values(
-    worksheet_values: list[list[str]],
-    *,
-    header: bool = True,
-) -> pd.DataFrame:
-    if not worksheet_values:
-        return pd.DataFrame()
-    if not header:
-        return pd.DataFrame(worksheet_values)
-
-    raw_columns = list(worksheet_values[0] or [])
-    data_rows = [list(row or []) for row in worksheet_values[1:]]
-    if not data_rows:
-        return pd.DataFrame(columns=raw_columns)
-
-    target_width = max(len(raw_columns), max((len(row) for row in data_rows), default=0))
-    normalized_columns = list(raw_columns)
-    if len(normalized_columns) < target_width:
-        for idx in range(len(normalized_columns), target_width):
-            normalized_columns.append(f"__extra_col_{idx + 1}")
+def _normalize_status_colors(status_colors: Any, row_count: int) -> list[Any]:
+    if isinstance(status_colors, list):
+        normalized = list(status_colors)
     else:
-        normalized_columns = normalized_columns[:target_width]
-
-    normalized_rows: list[list[str]] = []
-    for row in data_rows:
-        if len(row) < target_width:
-            row = row + [""] * (target_width - len(row))
-        elif len(row) > target_width:
-            row = row[:target_width]
-        normalized_rows.append(row)
-
-    return pd.DataFrame(normalized_rows, columns=normalized_columns)
+        normalized = []
+    if len(normalized) < row_count:
+        normalized.extend([""] * (row_count - len(normalized)))
+    elif len(normalized) > row_count:
+        normalized = normalized[:row_count]
+    return normalized
 
 
 @dataclass(frozen=True)
@@ -74,74 +48,51 @@ class SheetsNormalizedTaskSource:
             worksheet_name=sheet_name,
             worksheet_range=worksheet_range,
         )
-        colors = self.task_repository.service.get_cell_colors(
+        status_colors = self.task_repository.service.get_cell_colors(
             spreadsheet_name=info.spreadsheet_name,
             worksheet_name=sheet_name,
-            worksheet_range=worksheet_range,
+            worksheet_range=f"A2:A{max(2, len(values or []))}",
         )
         return {
             "range": worksheet_range,
             "values": values,
-            "colors": colors,
+            "colors": list(status_colors or []),
+            "status_colors": list(status_colors or []),
         }
 
     def build_tasks_from_snapshot(self, full_snapshot: dict[str, object]) -> list[Any]:
         values = full_snapshot.get("values")
         if not isinstance(values, list) or not values:
-            self.task_repository.df = pd.DataFrame()
+            self.task_repository.df = None
             self.task_repository.tasks = {}
             self.task_repository.row_issues = []
             return []
 
         info = self.task_repository.source_sheet_info
         sheet_name = str(info.get_sheet_name("tasks") or "")
-        df = _dataframe_from_worksheet_values(values, header=True)
-        self.task_repository._validate_required_columns(df, info.spreadsheet_name, sheet_name)
-
-        designer_col = str(self.task_repository.task_field_map.get("designer", "ДИЗАЙНЕР"))
-        if designer_col in df.columns:
-            df[designer_col] = df[designer_col].fillna("")
-            df[designer_col] = df[designer_col].apply(_normalize_designer_cell)
-            df[designer_col] = df[designer_col].apply(lambda text: "[Не назначен]" if text == "" else text)
-
-        colors = full_snapshot.get("colors")
-        normalized_colors: list[Any]
-        if isinstance(colors, list):
-            normalized_colors = list(colors)
-        else:
-            normalized_colors = []
-        if len(normalized_colors) == len(df) + 1:
-            normalized_colors = normalized_colors[1:]
-        if len(normalized_colors) < len(df):
-            normalized_colors = normalized_colors + [""] * (len(df) - len(normalized_colors))
-        elif len(normalized_colors) > len(df):
-            normalized_colors = normalized_colors[: len(df)]
-
-        # Always fetch canonical row colors from column A. Wide-range snapshot
-        # color payloads (A1:Z*) are lossy for status mapping in Google API.
-        info = self.task_repository.source_sheet_info
-        sheet_name = str(info.get_sheet_name("tasks") or "")
-        color_range = f"A2:A{len(df) + 1}"
-        canonical_colors = self.task_repository.service.get_cell_colors(
-            spreadsheet_name=info.spreadsheet_name,
-            worksheet_name=sheet_name,
-            worksheet_range=color_range,
+        columns, rows = build_row_mappings(values)
+        validate_required_columns(
+            columns,
+            field_map=self.task_repository.task_field_map,
+            spreadsheet_name=str(info.spreadsheet_name),
+            sheet_name=sheet_name,
         )
-        if isinstance(canonical_colors, list) and canonical_colors:
-            normalized_colors = list(canonical_colors)
-            if len(normalized_colors) < len(df):
-                normalized_colors = normalized_colors + [""] * (len(df) - len(normalized_colors))
-            elif len(normalized_colors) > len(df):
-                normalized_colors = normalized_colors[: len(df)]
-
-        df["color"] = normalized_colors
-        df["color_status"] = df["color"].apply(
-            lambda color: self.task_repository.color_status_map.get(color, "work")
+        status_colors = _normalize_status_colors(
+            full_snapshot.get("status_colors", full_snapshot.get("colors")),
+            len(rows),
         )
-        df["name"] = df.apply(self.task_repository._generate_task_name, axis=1)
-
-        self.task_repository.df = df
-        return self.task_repository._df_to_task(df)
+        build_result = build_tasks_from_rows(
+            rows,
+            field_map=self.task_repository.task_field_map,
+            replace_names=self.task_repository.replace_names,
+            color_status_map=self.task_repository.color_status_map,
+            status_colors=status_colors,
+            timing_parser=self.task_repository.timing_parser,
+        )
+        self.task_repository.df = None
+        self.task_repository.tasks = {str(task.id): task for task in build_result.tasks}
+        self.task_repository.row_issues = list(build_result.row_issues)
+        return build_result.tasks
 
 
 def build_sheets_normalized_task_source(

@@ -6,7 +6,12 @@
 """
 
 from config import HELPER_CHARACTER, MODEL, OPENAI, ORG, PROXY, TG
-from core.manager import CalendarManager, TaskCalendarManager, TaskManager, TaskTimingProcessor
+from src.legacy.core.manager import (
+    CalendarManager,
+    TaskCalendarManager,
+    TaskManager,
+    TaskTimingProcessor,
+)
 from core.people import PeopleManager
 from core.reminder import AsyncOpenAIChatAgent, Reminder
 from core.repository import GoogleSheetsTaskRepository

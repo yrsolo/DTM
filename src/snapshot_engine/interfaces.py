@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from src.snapshot_engine.model import PeopleSnapshot, PrepSnapshot, RawSnapshot, SheetSnapshot, TaskExtra
+from src.snapshot_engine.model import ExtraSnapshot, PeopleSnapshot, PrepSnapshot, RawSnapshot, SheetSnapshot
 
 
 class SheetsSource(Protocol):
@@ -38,9 +38,8 @@ class PrepCache(Protocol):
 
 
 class ExtraStore(Protocol):
-    def get_many(self, task_ids: list[str]) -> dict[str, TaskExtra]: ...
-    def upsert(self, extra: TaskExtra) -> None: ...
-    def mark_orphaned(self, task_id: str, orphaned: bool = True) -> None: ...
+    def get_snapshot(self) -> ExtraSnapshot: ...
+    def put_snapshot(self, snapshot: ExtraSnapshot) -> None: ...
 
 
 class PeopleStore(Protocol):

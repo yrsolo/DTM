@@ -3,38 +3,33 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
-- CAM-RENDER-INCIDENT-RCA-AND-GANTT-PARITY-V1
-- CAM-NOTIFY-PARITY-V1
+- CAM-GRAFANA-PROM-OPS-DASHBOARD-V1
+- CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1
 
 ## Planned
 - none
 
 ## Done
-- CAM-SNAPSHOT-ENGINE-V1 (archived in `work/archive/campaigns/CAM-SNAPSHOT-ENGINE-V1/`)
-- CAM-RENDER-MODULE-V1 (archived in `work/archive/campaigns/CAM-RENDER-MODULE-V1/`)
-- CAM-LEGACY-PLANNER-DELETE-V1 (archived in `work/archive/campaigns/CAM-LEGACY-PLANNER-DELETE-V1/`)
-- CAM-GREP-GATES-V1 (archived in `work/archive/campaigns/CAM-GREP-GATES-V1/`)
-- CAM-HTTP-FALLBACK-REMOVAL-V1 (archived in `work/archive/campaigns/CAM-HTTP-FALLBACK-REMOVAL-V1/`)
-- CAM-LEGACY-CUT-API-V1 (archived in `work/archive/campaigns/CAM-LEGACY-CUT-API-V1/`)
-- CAM-NOTIFY-MODULE-V1 (archived in `work/archive/campaigns/CAM-NOTIFY-MODULE-V1/`)
-- CAM-SYNC-BULK-PIPELINE-V1 (archived in `work/archive/campaigns/CAM-SYNC-BULK-PIPELINE-V1/`)
-- CAM-HISTORY-FIELD-NORMALIZATION-V1 (archived in `work/archive/campaigns/CAM-HISTORY-FIELD-NORMALIZATION-V1/`)
-- CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-AND-PIPELINE-DEMONSTER-V1/`)
-- CAM-ENTRYPOINT-HYGIENE-V2 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-HYGIENE-V2/`)
-- CAM-ENTRYPOINT-DEHYBRID-V2 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-DEHYBRID-V2/`)
-- CAM-PIPELINE-STRAIGHTEN-V2 (archived in `work/archive/campaigns/CAM-PIPELINE-STRAIGHTEN-V2/`)
-- CAM-CONFIG-REFORM-V0 (archived in `work/archive/campaigns/CAM-CONFIG-REFORM-V0/`)
-- CAM-PIPELINE-CLEAN-SKELETON-V1 (archived in `work/archive/campaigns/CAM-PIPELINE-CLEAN-SKELETON-V1/`)
-- CAM-CORE-CLEANUP-V1 (archived in `work/archive/campaigns/CAM-CORE-CLEANUP-V1/`)
-- CAM-DEDUP-LEGACY-REMOVAL-V1 (archived in `work/archive/campaigns/CAM-DEDUP-LEGACY-REMOVAL-V1/`)
-- CAM-PIPELINE-STRAIGHTEN-V1 (archived in `work/archive/campaigns/CAM-PIPELINE-STRAIGHTEN-V1/`)
-- CAM-ENTRYPOINT-DEHYBRID-V1 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-DEHYBRID-V1/`)
-- CAM-ENTRYPOINT-HYGIENE-V1 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-HYGIENE-V1/`)
-- CAM-ENTRYPOINT-WRAPPER-DTO-V1 (archived in `work/archive/campaigns/CAM-ENTRYPOINT-WRAPPER-DTO-V1/`)
-- CAM-API-V2-CONTRACT-RESTORE-V1 (archived in `work/archive/campaigns/CAM-API-V2-CONTRACT-RESTORE-V1/`)
+- CAM-GRAFANA-RAW-AGG-STATS-V1
+- CAM-SNAPSHOT-PREP-BULK-REFORM-V1
+- CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1 (repo/DataLens foundation done; API chart provisioning blocked externally)
+- CAM-SNAPSHOT-RENDER-TIMINGS-V1
+- CAM-2026-03-09-YC-MONITORING-INTEGRATION-V1
+- CAM-2026-03-09-TELEGRAM-COMMAND-ROUTER-V1
+- CAM-2026-03-09-OBSERVABILITY-FOUNDATION-V1
+- CAM-2026-03-09-GREP-GATES-V1
+- CAM-2026-03-09-QUEUE-RETRY-SEMANTICS-V1
+- CAM-LEGACY-ARCHIVE-CLEANUP-V1
+- CAM-ENTRYPOINT-LEGACY-CUT-FINAL-V1
+- CAM-INFO-OPS-OBSERVABILITY-V1
+- CAM-FILE-ATTACHMENTS-V1
+- CAM-TELEGRAM-INTAKE-V1
+- CAM-GROUP-QUERY-UNIFY-WITH-REMINDER-V1
+- CAM-ADMIN-ACTIONS-ASYNC-V1
+- CAM-QUEUE-FOUNDATION-ON-CF-V1
 
 ## Parked
-- none
+- CAM-2026-03-09-RUNTIME-DEPLANNERIZE-V1 (obsolete / already substantially delivered)
 
 ## Rule
 - Update this file first when campaign state changes.

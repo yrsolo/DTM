@@ -2,11 +2,70 @@ runtime:
   env_default: dev
   strict_env_guard_default: false
   timezone: Europe/Moscow
+  dev_mode_metrics: true
+
+monitoring:
+  enabled: false
+  backend: yandex_monitoring
+  folder_id: ""
+  endpoint_write: https://monitoring.api.cloud.yandex.net/monitoring/v2/data/write
+  service: custom
+  namespace: dtm
+  dashboard_name_test: DTM Test Observability
+  dashboard_name_prod: DTM Prod Observability
+  dashboard_id_test: "fbe6m08jl1vj212t5v0c"
+  dashboard_id_prod: ""
+  emit_queue_metrics: true
+  emit_api_metrics: true
+  emit_snapshot_metrics: true
+  emit_render_metrics: true
+  emit_notify_metrics: true
+  emit_telegram_metrics: true
+
+datalens:
+  enabled: true
+  org_id: bpf5f34jd486mus03s8i
+  workbook_name: DTM Observability
+  workbook_id_test: ppzr9qy22doe9
+  workbook_id_prod: ""
+  connection_name_test: DTM Monitoring Test
+  connection_name_prod: DTM Monitoring Prod
+  connection_id_test: iisk41ymvyb02
+  connection_id_prod: ""
+  dashboard_name_test: DTM Test Ops
+  dashboard_name_prod: DTM Prod Ops
+  dashboard_id_test: ""
+  dashboard_id_prod: ""
+  dashboard_url_test: ""
+  dashboard_url_prod: ""
+
+prometheus:
+  enabled: true
+  backend: yandex_managed_prometheus
+  endpoint_write: https://monitoring.api.cloud.yandex.net/prometheus/workspaces/mon73oiiclfbmmqbjejn/api/v1/write
+  folder_id: b1g42qj26s1u7gv7bufm
+  workspace_id_test: mon73oiiclfbmmqbjejn
+  workspace_id_prod: mon73oiiclfbmmqbjejn
+  service: dtm
+  namespace: dtm
+  timeout_seconds: 2.0
+
+grafana:
+  enabled: true
+  public_base_url: https://dtm.solofarm.ru/grafana
+  dashboard_uid_test: dtm-test-ops
+  dashboard_uid_prod: ""
+  dashboard_url_test: https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45
+  dashboard_url_prod: ""
+  embed_url_test: https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light
+  embed_url_prod: ""
+  folder_name_test: DTM Test
+  folder_name_prod: DTM Prod
 
 web:
   domain: solofarm.ru
-  api_domain_test: dtm-api-test.solofarm.ru
-  api_domain_prod: dtm-api.solofarm.ru
+  api_domain_test: dtm.solofarm.ru/test/ops
+  api_domain_prod: dtm.solofarm.ru/ops
 
 pipeline:
   readmodel_ttl_minutes: 9
@@ -23,6 +82,23 @@ snapshot_engine:
   prefix_extra: snapshots/{env}/extra/
   prefix_people: snapshots/{env}/people/default.json
   force_refresh_default: false
+
+queue:
+  enabled: true
+  provider: yandex_message_queue
+  endpoint_url: https://message-queue.api.cloud.yandex.net
+  test_queue_url: https://message-queue.api.cloud.yandex.net/b1g6d49mf4scmtn4kjki/dj60000000h3q8v503h2/dtm-test-commands
+  prod_queue_url: https://message-queue.api.cloud.yandex.net/b1g6d49mf4scmtn4kjki/dj60000000h3q8vp03h2/dtm-prod-commands
+  status_prefix: jobs/{env}/status/
+  latest_prefix: jobs/{env}/latest/
+
+telegram:
+  webhook_path: /telegram
+  allowed_updates:
+    - message
+    - callback_query
+  max_connections: 5
+  secret_required: true
 
 notify:
   enhance_concurrency: 4
