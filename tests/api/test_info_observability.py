@@ -158,12 +158,12 @@ class InfoObservabilityTestCase(unittest.TestCase):
                     ),
                     grafana=SimpleNamespace(
                         enabled=True,
-                        public_base_url="https://grafana-test.example",
+                        public_base_url="https://dtm.solofarm.ru/ops/grafana",
                         dashboard_uid_test="dtm-test-ops",
                         dashboard_uid_prod="",
-                        dashboard_url_test="https://grafana-test.example/d/dtm-test-ops",
+                        dashboard_url_test="https://dtm.solofarm.ru/ops/grafana/public-dashboards/test-token",
                         dashboard_url_prod="",
-                        embed_url_test="https://grafana-test.example/d/dtm-test-ops?kiosk",
+                        embed_url_test="https://dtm.solofarm.ru/ops/grafana/public-dashboards/test-token?kiosk",
                         embed_url_prod="",
                     ),
                     snapshot_engine=SimpleNamespace(
@@ -185,7 +185,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
                         max_connections=5,
                         secret_required=True,
                     ),
-                    web={"api_domain_test": "dtm.solofarm.ru/test", "api_domain_prod": "dtm.solofarm.ru"},
+                    web={"api_domain_test": "dtm.solofarm.ru/test/ops", "api_domain_prod": "dtm.solofarm.ru/ops"},
                 ),
                 db=SimpleNamespace(object_storage={"endpoint_url_default": "https://storage.yandexcloud.net"}),
                 deploy=SimpleNamespace(
@@ -247,7 +247,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertEqual(payload["telemetry"]["grafanaDashboardUid"], "dtm-test-ops")
         self.assertEqual(
             payload["telemetry"]["grafanaDashboardUrl"],
-            "https://grafana-test.example/d/dtm-test-ops",
+            "https://dtm.solofarm.ru/ops/grafana/public-dashboards/test-token",
         )
         self.assertEqual(len(payload["jobs"]["recent"]), 2)
 
@@ -267,13 +267,13 @@ class InfoObservabilityTestCase(unittest.TestCase):
                 method="GET",
                 path="/info",
                 query={"format": "json"},
-                raw_event={"url": "https://dtm.solofarm.ru/test/info?format=json"},
+                raw_event={"url": "https://dtm.solofarm.ru/test/ops/info?format=json"},
                 is_http_event=True,
             )
         )
         self.assertIsNotNone(response)
         payload = json.loads(response.body)
-        self.assertEqual(payload.get("web", {}).get("uiBasePath"), "/test")
+        self.assertEqual(payload.get("web", {}).get("uiBasePath"), "/test/ops")
 
 
 if __name__ == "__main__":

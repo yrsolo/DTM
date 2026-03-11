@@ -120,11 +120,11 @@ Repo-side Grafana foundation is implemented.
 
 Current live test state:
 
-- Grafana base URL: `https://dtm.solofarm.ru/grafana`
+- Grafana base URL: `https://dtm.solofarm.ru/ops/grafana`
 - test folder: `DTM Test`
 - imported dashboard UID: `dtm-test-ops`
-- public dashboard URL: `https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
-- embed URL: `https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
+- public dashboard URL: `https://dtm.solofarm.ru/ops/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
+- embed URL: `https://dtm.solofarm.ru/ops/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
 - datasource: `DTM YMP Test`
 - shared YMP workspace: `mon73oiiclfbmmqbjejn`
 

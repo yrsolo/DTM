@@ -38,16 +38,23 @@
 - source: live canonical host verification after test path rename
   last_verified_at: 2026-03-11
   verified_by: Codex
-  evidence: `https://dtm.solofarm.ru/test/info?format=json`, `https://dtm.solofarm.ru/test/api/v2/frontend?limit=1`, `https://dtm.solofarm.ru/info?format=json`, and `https://dtm.solofarm.ru/api/v2/frontend?limit=1` all return `200`
+  evidence: `https://dtm.solofarm.ru/test/ops/info?format=json`, `https://dtm.solofarm.ru/test/ops/api/v2/frontend?limit=1`, `https://dtm.solofarm.ru/ops/info?format=json`, and `https://dtm.solofarm.ru/ops/api/v2/frontend?limit=1` all return `200`
   trust_level: high
-  notes: canonical test ingress is `/test`; canonical prod ingress is root `/api` and `/info`
+  notes: canonical test service ingress is `/test/ops/...`; canonical prod service ingress is `/ops/...`
 
 - source: live canonical frontend/grafana/auth verification after full spec normalization
   last_verified_at: 2026-03-11
   verified_by: Codex
-  evidence: `GET https://dtm.solofarm.ru/test` -> `200` with `x-serverless-gateway-path: /test`; `GET https://dtm.solofarm.ru/test/` -> `200` with `x-serverless-gateway-path: /test`; `GET https://dtm.solofarm.ru/grafana/login` -> `200` with `x-serverless-gateway-path: /grafana/{path+}`; `GET https://dtm.solofarm.ru/auth/ping` -> `502` with `x-serverless-gateway-path: /auth/{proxy+}`; `GET https://dtm.solofarm.ru/test/auth/ping` -> `404` with `x-serverless-gateway-path: /test/auth/{proxy+}`
+  evidence: `GET https://dtm.solofarm.ru/test` -> `200` with `x-serverless-gateway-path: /test`; `GET https://dtm.solofarm.ru/test/` -> `200` with `x-serverless-gateway-path: /test`; `GET https://dtm.solofarm.ru/ops/grafana/login` -> `200` with `x-serverless-gateway-path: /ops/grafana/{path+}`; `GET https://dtm.solofarm.ru/ops/auth/ping` -> `502` with `x-serverless-gateway-path: /ops/auth/{proxy+}`; `GET https://dtm.solofarm.ru/test/ops/auth/ping` -> `404` with `x-serverless-gateway-path: /test/ops/auth/{proxy+}`
   trust_level: high
   notes: routing is correct for frontend, Grafana, and both auth paths; auth function behavior is separate from gateway normalization
+
+- source: live bucket-backed admin SPA fallback under normalized ingress
+  last_verified_at: 2026-03-11
+  verified_by: Codex
+  evidence: `GET https://dtm.solofarm.ru/admin` -> `200` with `x-serverless-gateway-path: /admin`; `GET https://dtm.solofarm.ru/test/admin` -> `200` with `x-serverless-gateway-path: /test/admin`; both return bucket HTML entrypoint instead of `503`
+  trust_level: high
+  notes: admin remains frontend-owned and bucket-backed; no separate function route was introduced
 
 - source: Yandex DNS zone `solofarm.ru`
   last_verified_at: 2026-03-11

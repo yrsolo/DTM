@@ -70,29 +70,7 @@ servers:
   - url: https://d5d84fgjajg4k61vh53h.8wihnuyr.apigw.yandexcloud.net
   - url: https://{DEFAULT_DOMAIN}
 paths:
-  /test/api/{{proxy+}}:
-    x-yc-apigateway-any-method:
-      parameters:
-        - name: proxy
-          in: path
-          required: true
-          schema:
-            type: string
-      x-yc-apigateway-integration:
-        type: cloud_functions
-        function_id: {test_function_id}
-        tag: $latest
-        service_account_id: {service_account_id}
-
-  /test/info:
-    x-yc-apigateway-any-method:
-      x-yc-apigateway-integration:
-        type: cloud_functions
-        function_id: {test_function_id}
-        tag: $latest
-        service_account_id: {service_account_id}
-
-  /test/auth/{{proxy+}}:
+  /test/ops/auth/{{proxy+}}:
     x-yc-apigateway-any-method:
       parameters:
         - name: proxy
@@ -106,7 +84,7 @@ paths:
         tag: $latest
         service_account_id: {service_account_id}
 
-  /api/{{proxy+}}:
+  /test/ops/{{proxy+}}:
     x-yc-apigateway-any-method:
       parameters:
         - name: proxy
@@ -116,33 +94,11 @@ paths:
             type: string
       x-yc-apigateway-integration:
         type: cloud_functions
-        function_id: {prod_function_id}
+        function_id: {test_function_id}
         tag: $latest
         service_account_id: {service_account_id}
 
-  /info:
-    x-yc-apigateway-any-method:
-      x-yc-apigateway-integration:
-        type: cloud_functions
-        function_id: {prod_function_id}
-        tag: $latest
-        service_account_id: {service_account_id}
-
-  /auth/{{proxy+}}:
-    x-yc-apigateway-any-method:
-      parameters:
-        - name: proxy
-          in: path
-          required: true
-          schema:
-            type: string
-      x-yc-apigateway-integration:
-        type: cloud_functions
-        function_id: {prod_auth_function_id}
-        tag: $latest
-        service_account_id: {service_account_id}
-
-  /grafana:
+  /ops/grafana:
     x-yc-apigateway-any-method:
       x-yc-apigateway-integration:
         type: http
@@ -157,7 +113,7 @@ paths:
           connect: 1
           read: 30
 
-  /grafana/:
+  /ops/grafana/:
     x-yc-apigateway-any-method:
       x-yc-apigateway-integration:
         type: http
@@ -172,7 +128,7 @@ paths:
           connect: 1
           read: 30
 
-  /grafana/{{path+}}:
+  /ops/grafana/{{path+}}:
     x-yc-apigateway-any-method:
       parameters:
         - name: path
@@ -193,17 +149,67 @@ paths:
           connect: 1
           read: 30
 
+  /ops/auth/{{proxy+}}:
+    x-yc-apigateway-any-method:
+      parameters:
+        - name: proxy
+          in: path
+          required: true
+          schema:
+            type: string
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: {prod_auth_function_id}
+        tag: $latest
+        service_account_id: {service_account_id}
+
+  /ops/{{proxy+}}:
+    x-yc-apigateway-any-method:
+      parameters:
+        - name: proxy
+          in: path
+          required: true
+          schema:
+            type: string
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: {prod_function_id}
+        tag: $latest
+        service_account_id: {service_account_id}
+
   /test:
     get:
       x-yc-apigateway-integration:
         type: http
-        url: {frontend_base_url}/test/index.html
+        url: {frontend_base_url}/index.html
 
   /test/:
     get:
       x-yc-apigateway-integration:
         type: http
-        url: {frontend_base_url}/test/index.html
+        url: {frontend_base_url}/index.html
+
+  /test/admin:
+    x-yc-apigateway-any-method:
+      x-yc-apigateway-integration:
+        type: http
+        url: {frontend_base_url}/index.html
+        query:
+          '*': '*'
+
+  /test/admin/{{path+}}:
+    x-yc-apigateway-any-method:
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      x-yc-apigateway-integration:
+        type: http
+        url: {frontend_base_url}/index.html
+        query:
+          '*': '*'
 
   /test/{{path+}}:
     x-yc-apigateway-any-method:
@@ -226,6 +232,28 @@ paths:
       x-yc-apigateway-integration:
         type: http
         url: {frontend_base_url}/
+
+  /admin:
+    x-yc-apigateway-any-method:
+      x-yc-apigateway-integration:
+        type: http
+        url: {frontend_base_url}/index.html
+        query:
+          '*': '*'
+
+  /admin/{{path+}}:
+    x-yc-apigateway-any-method:
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      x-yc-apigateway-integration:
+        type: http
+        url: {frontend_base_url}/index.html
+        query:
+          '*': '*'
 
   /{{path+}}:
     x-yc-apigateway-any-method:

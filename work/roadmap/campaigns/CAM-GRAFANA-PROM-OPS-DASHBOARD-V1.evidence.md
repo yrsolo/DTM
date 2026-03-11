@@ -89,7 +89,7 @@
 ### 2) Grafana datasource is configured
 
 - Grafana itself is already live at:
-  - `https://dtm.solofarm.ru/grafana`
+  - `https://dtm.solofarm.ru/ops/grafana`
 - folder `DTM Test` and dashboard `dtm-test-ops` already exist
 - datasource `DTM YMP Test` created from repo script
 - datasource id: `3`
@@ -142,7 +142,7 @@
   - dashboard uid: `dtm-test-ops`
   - public dashboard uid: `effmku80r2800d`
 - public dashboard endpoints verified:
-  - `GET https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
+  - `GET https://dtm.solofarm.ru/ops/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
   - result: `200`
   - no `/login` redirect
 - public dashboard token verification:
@@ -153,9 +153,9 @@
 - conclusion:
   - authentication problem is solved without enabling Grafana-wide anonymous access
   - canonical public dashboard URL for `test` is:
-    - `https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
+    - `https://dtm.solofarm.ru/ops/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
   - canonical embed URL for `test` is:
-    - `https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
+    - `https://dtm.solofarm.ru/ops/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
 - current remaining issue is no longer mixed-content:
   - Grafana is now served over HTTPS
   - `/info` must be updated to emit the HTTPS public/embed URLs

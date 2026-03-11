@@ -15,7 +15,7 @@
 - `CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1`: workbook and Monitoring connection are provisioned; `createQLChart` is currently blocked by live DataLens API `500 Access service error` on the Monitoring connection.
 - `CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1`: caller permissions were raised for `yrsolo` (`viewer` + `monitoring.viewer`) and the same `createQLChart` error persists, so the blocker is now classified as external to repo code.
 - `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: repo-side dual-write/Grafana foundation is being added first; active code path now uses real Yandex Managed Prometheus remote write and the remaining blocker is external infra only: workspace/API key + Grafana datasource endpoint wiring.
-- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: Grafana API token path is proven; folder `DTM Test` and dashboard `dtm-test-ops` are served canonically under `https://dtm.solofarm.ru/grafana`, and datasource wiring is proven against YMP.
+- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: Grafana API token path is proven; folder `DTM Test` and dashboard `dtm-test-ops` are served canonically under `https://dtm.solofarm.ru/ops/grafana`, and datasource wiring is proven against YMP.
 - `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: before datasource rollout, the repo must stop pretending that text exposition push is YMP-compatible; current execution slice replaces it with actual remote write semantics.
 - `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: workspace creation remains a UI-only Yandex-side step; repo now provides `scripts/provision_grafana_datasource.py` so the only missing operator input is the final `workspace_id`.
 - `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: shared workspace `mon73oiiclfbmmqbjejn` is now known and Grafana datasource `DTM YMP Test` is created; the next blocker is only live sample emission from deployed test runtime.
@@ -26,7 +26,7 @@
 - `CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1`: active deploy/runtime contour no longer uses `YDB_*` secrets; remaining YDB references are confined to adapter/tests, archived docs, and explicit agent-only migration/backfill utilities.
 - `CAM-GRAFANA-RAW-AGG-STATS-V1`: dashboard stat rows now use raw metrics only: `last` via `last_over_time(...)`, `avg5` via Grafana transformations; runtime-derived presentation gauges are removed from active jobs.
 - `CAM-METRICS-BATCHING-E2E-AND-DASHBOARD-CLEANUP-V1`: P01 is implemented locally and covered by focused tests; next live proof on `test` must quantify how much wall-clock moved from per-metric emission into explicit `dtm.metrics.*`, `dtm.snapshot.job_wall_clock_ms`, and `dtm.worker.wall_clock_ms`.
-- `CAM-UNIFIED-API-INGRESS-V1`: canonical ingress is live on `dtm.solofarm.ru` with prod on `/api`, `/info`, `/auth`, test on `/test`, `/test/api`, `/test/info`, `/test/auth`, same-origin Grafana on `/grafana`, and bucket-backed `/` + `/test` frontends; old `dtm-api-*` hosts remain rollback-only.
+- `CAM-UNIFIED-API-INGRESS-V1`: canonical ingress is live on `dtm.solofarm.ru` with prod service contour on `/ops/...`, test service contour on `/test/ops/...`, same-origin Grafana on `/ops/grafana/...`, and bucket-backed frontend ownership for `/`, `/test`, `/admin`, and `/test/admin`; old `dtm-api-*` hosts remain rollback-only.
 
 ## Done
 
