@@ -6,7 +6,7 @@ REM Usage:
 REM   scripts\invoke_cloud_timer.cmd [FUNCTION_URL] [--live] [--sync-only] [--force-refresh]
 REM Examples:
 REM   scripts\invoke_cloud_timer.cmd
-REM   scripts\invoke_cloud_timer.cmd https://dtm-api-test.solofarm.ru --live
+REM   scripts\invoke_cloud_timer.cmd https://dtm.solofarm.ru/test --live
 REM   scripts\invoke_cloud_timer.cmd --sync-only --force-refresh --live
 
 cd /d "%~dp0\.."
@@ -22,7 +22,7 @@ if not exist ".venv\Scripts\python.exe" (
   set "PYTHON_BIN=.venv\Scripts\python.exe"
 )
 
-set "DEFAULT_FUNCTION_URL=https://dtm-api-test.solofarm.ru"
+set "DEFAULT_FUNCTION_URL=https://dtm.solofarm.ru/test"
 set "FUNCTION_URL="
 set "RUN_MODE=timer"
 set "RUN_MODE_FLAG=--dry-run"

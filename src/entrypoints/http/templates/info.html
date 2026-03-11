@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DTM Info</title>
-    <style>
+  <style>
 __INFO_CSS__
   </style>
 </head>
@@ -63,11 +63,11 @@ __INFO_CSS__
     </div>
     <div class="card">
       <h2>Last Render Job</h2>
-      <pre id="lastRenderJob">{{}}</pre>
+      <pre id="lastRenderJob">{}</pre>
     </div>
     <div class="card">
       <h2>Render Debug</h2>
-      <pre id="renderDebug">{{}}</pre>
+      <pre id="renderDebug">{}</pre>
     </div>
   </div>
 
@@ -76,10 +76,10 @@ __INFO_CSS__
       <h2>Admin Actions</h2>
       <span class="timer" id="adminTimer">00:00.0</span>
     </div>
-    <button onclick="enqueueAdminCommand('/admin/commands/update-snapshot', {{force_refresh:true,dry_run:false}})">Force snapshot refresh</button>
-    <button onclick="enqueueAdminCommand('/admin/commands/render-timeline', {{statuses:['work','pre_done'],dry_run:false}})">Force render table</button>
-    <button onclick="enqueueAdminCommand('/admin/commands/send-reminders', {{mode:'test',statuses:['work','pre_done'],include_today:true,include_next_workday:true,force_test_chat:true,mock_external:false}})">Notify test chat</button>
-    <button onclick="enqueueAdminCommand('/admin/commands/send-reminders', {{mode:'morning',statuses:['work','pre_done'],include_today:true,include_next_workday:true,force_test_chat:false,mock_external:false}})">Notify designer chats</button>
+    <button onclick="enqueueAdminCommand('/admin/commands/update-snapshot', {force_refresh:true,dry_run:false})">Force snapshot refresh</button>
+    <button onclick="enqueueAdminCommand('/admin/commands/render-timeline', {statuses:['work','pre_done'],dry_run:false})">Force render table</button>
+    <button onclick="enqueueAdminCommand('/admin/commands/send-reminders', {mode:'test',statuses:['work','pre_done'],include_today:true,include_next_workday:true,force_test_chat:true,mock_external:false})">Notify test chat</button>
+    <button onclick="enqueueAdminCommand('/admin/commands/send-reminders', {mode:'morning',statuses:['work','pre_done'],include_today:true,include_next_workday:true,force_test_chat:false,mock_external:false})">Notify designer chats</button>
     <pre id="adminResult">Готово к запуску действий.</pre>
   </div>
 
@@ -139,49 +139,7 @@ __INFO_CSS__
   </div>
 
   <script>
-    function pretty(value){{
-      if (typeof value === 'string') {{
-        try {{
-          return JSON.stringify(JSON.parse(value), null, 2);
-        }} catch (_e) {{
-          return value;
-        }}
-      }}
-      return JSON.stringify(value, null, 2);
-    }}
-    function formatUtcAndMsk(value){{
-      const text = String(value || '').trim();
-      if (!text) return '';
-      const date = new Date(text);
-      if (Number.isNaN(date.getTime())) return text;
-      const utc = date.toISOString();
-      const msk = new Intl.DateTimeFormat('ru-RU', {{
-        timeZone: 'Europe/Moscow',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      }}).format(date);
-      return utc + ' / MSK ' + msk;
-    }}
-    function createTimer(elementId){{
-      const el = document.getElementById(elementId);
-      let startAt = 0;
-      let intervalId = null;
-      function format(ms){{
-        const totalSec = ms / 1000.0;
-        const mm = Math.floor(totalSec / 60);
-        const ss = totalSec - mm * 60;
-        const mmStr = String(mm).padStart(2, '0');
-        const ssStr = ss.toFixed(1).padStart(4, '0');
-        return mmStr + ':' + ssStr;
-      }}
-      return {{
-        start(){{
-          startAt = Date.now();
-  <script>
 __INFO_JS__
   </script>
+</body>
+</html>

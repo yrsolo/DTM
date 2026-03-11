@@ -178,7 +178,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
                         max_connections=5,
                         secret_required=True,
                     ),
-                    web={"api_domain_test": "dtm-api-test.solofarm.ru", "api_domain_prod": "dtm-api.solofarm.ru"},
+                    web={"api_domain_test": "dtm.solofarm.ru/test", "api_domain_prod": "dtm.solofarm.ru/prod"},
                 ),
                 db=SimpleNamespace(object_storage={"endpoint_url_default": "https://storage.yandexcloud.net"}),
                 deploy=SimpleNamespace(
@@ -251,6 +251,21 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertIn("Queue State", response.body)
         self.assertIn("Recent Jobs", response.body)
         self.assertIn("Last Render Job", response.body)
+
+    def test_info_json_includes_ui_base_path_for_prefixed_route(self) -> None:
+        handler = InfoHandler(self.ctx)
+        response = handler.handle(
+            HttpRequest(
+                method="GET",
+                path="/info",
+                query={"format": "json"},
+                raw_event={"url": "https://dtm.solofarm.ru/test/info?format=json"},
+                is_http_event=True,
+            )
+        )
+        self.assertIsNotNone(response)
+        payload = json.loads(response.body)
+        self.assertEqual(payload.get("web", {}).get("uiBasePath"), "/test")
 
 
 if __name__ == "__main__":

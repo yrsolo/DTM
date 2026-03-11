@@ -1,5 +1,7 @@
 # Active Tasks
 
+- CAM-UNIFIED-API-INGRESS-V1 P01: switch repo/operator URLs to path-based `/test` and `/prod` base paths and add unified API gateway rollout script
+- CAM-UNIFIED-API-INGRESS-V1 P02: create unified Yandex API Gateway on `dtm.solofarm.ru` for `/test/*` and `/prod/*`, replace Yandex DNS `dtm.solofarm.ru` CNAME to the new gateway, and keep old `dtm-api-*` domains as rollback paths during propagation
 - CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P01: register campaign, trust gate, and typed `prometheus`/`grafana` config for dual-write and iframe metadata
 - CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P02: add Prometheus metrics backend, composite dual-write client, and additive `/info` Grafana/Prometheus telemetry fields
 - CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P03: add Grafana dashboard spec/API helpers and record infra blockers for Yandex Prometheus workspace discovery and VPS SSH access

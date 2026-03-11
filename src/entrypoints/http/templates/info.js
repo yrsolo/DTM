@@ -56,8 +56,19 @@
     }
     const adminTimer = createTimer('adminTimer');
     const apiTimer = createTimer('apiTimer');
+    function withBase(path){
+      const payloadNode = document.getElementById('infoResult');
+      let base = '';
+      try {
+        const parsed = JSON.parse(payloadNode.textContent || '{}');
+        base = String(((parsed.web || {}).uiBasePath) || '').trim();
+      } catch (_e) {}
+      if (!base) return path;
+      if (!path.startsWith('/')) return base + '/' + path;
+      return base + path;
+    }
     async function loadInfo(){
-      const r = await fetch('/info?format=json', {cache:'no-store'});
+      const r = await fetch(withBase('/info?format=json'), {cache:'no-store'});
       const text = await r.text();
       let p = {};
       try {
@@ -108,6 +119,8 @@
       document.getElementById('renderDebug').textContent = pretty(renderDebug);
       document.getElementById('infoResult').textContent = pretty(p);
       const telemetry = p.telemetry || {};
+      const web = p.web || {};
+      const uiBasePath = String(web.uiBasePath || '').trim();
       const grafanaUrl = String(telemetry.grafanaDashboardUrl || '').trim();
       const grafanaEmbedUrl = String(telemetry.grafanaEmbedUrl || '').trim();
       const grafanaLink = document.getElementById('grafanaLink');
@@ -132,7 +145,7 @@
     }
     async function pollJob(jobId){
       for (let attempt = 0; attempt < 60; attempt += 1) {
-        const r = await fetch('/admin/jobs/' + encodeURIComponent(jobId), {cache:'no-store'});
+        const r = await fetch(withBase('/admin/jobs/' + encodeURIComponent(jobId)), {cache:'no-store'});
         const text = await r.text();
         let payload = text;
         try {
@@ -150,7 +163,7 @@
     }
     async function enqueueAdminCommand(url, payload){
       adminTimer.start();
-      const r = await fetch(url, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const r = await fetch(withBase(url), {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
       const t = await r.text();
       let parsed = t;
       try {
@@ -207,12 +220,12 @@
     function refreshApiRequestUrl(){
       const q = buildApiQuery();
       const origin = window.location.origin || '';
-      document.getElementById('apiRequestUrl').textContent = origin + '/api/v2/frontend?' + q.toString();
+      document.getElementById('apiRequestUrl').textContent = origin + withBase('/api/v2/frontend?') + q.toString();
     }
     async function sendApiBuilder(){
       apiTimer.start();
       const q = buildApiQuery();
-      const r = await fetch('/api/v2/frontend?'+q.toString(), {cache:'no-store'});
+      const r = await fetch(withBase('/api/v2/frontend?')+q.toString(), {cache:'no-store'});
       const t = await r.text();
       document.getElementById('apiResult').textContent = 'HTTP '+r.status+'\\n'+pretty(t);
       apiTimer.stop();

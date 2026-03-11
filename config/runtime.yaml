@@ -63,8 +63,8 @@ grafana:
 
 web:
   domain: solofarm.ru
-  api_domain_test: dtm-api-test.solofarm.ru
-  api_domain_prod: dtm-api.solofarm.ru
+  api_domain_test: dtm.solofarm.ru/test
+  api_domain_prod: dtm.solofarm.ru/prod
 
 pipeline:
   readmodel_ttl_minutes: 9

@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 from src.app.context import AppContext
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
@@ -112,6 +113,33 @@ def _render_info_page(payload: dict[str, Any]) -> str:
 class InfoHandler:
     def __init__(self, ctx: AppContext) -> None:
         self._ctx = ctx
+
+    def _resolve_ui_base_path(self, req: HttpRequest) -> str:
+        raw_event = req.raw_event if isinstance(req.raw_event, dict) else {}
+        public_path = ""
+        for candidate in (
+            raw_event.get("url"),
+            raw_event.get("rawPath"),
+            raw_event.get("raw_path"),
+            raw_event.get("path"),
+        ):
+            text = str(candidate or "").strip()
+            if not text:
+                continue
+            if text.startswith(("http://", "https://")):
+                text = urlparse(text).path or "/"
+            public_path = normalize_path(text)
+            if public_path:
+                break
+        normalized_path = normalize_path(req.path)
+        if not public_path or not normalized_path:
+            return ""
+        if public_path == normalized_path:
+            return ""
+        if public_path.endswith(normalized_path):
+            prefix = public_path[: -len(normalized_path)].rstrip("/")
+            return prefix if prefix.startswith("/") else f"/{prefix}" if prefix else ""
+        return ""
 
     def _storage_stats(self, bucket: str, root_prefix: str) -> dict[str, Any]:
         try:
@@ -275,7 +303,7 @@ class InfoHandler:
             "serviceAccountId": info.service_account_id,
         }
 
-    def _info_payload(self) -> dict[str, Any]:
+    def _info_payload(self, req: HttpRequest) -> dict[str, Any]:
         prep = None
         raw = None
         snapshot_error = ""
@@ -305,6 +333,7 @@ class InfoHandler:
             self._ctx.cfg.runtime.web.get("api_domain_prod" if env_name == "prod" else "api_domain_test", "")
         ).strip()
         webhook_url = f"https://{api_domain}{webhook_path}" if api_domain else webhook_path
+        ui_base_path = self._resolve_ui_base_path(req)
         status_store = self._ctx.deps.get("job_status_store")
         jobs_payload = {
             "recent": [],
@@ -481,6 +510,10 @@ class InfoHandler:
                 "secretRequired": bool(telegram_cfg.secret_required),
                 "secretConfigured": bool(str(self._ctx.deps.get("tg_webhook_secret_token", "")).strip()),
             },
+            "web": {
+                "apiDomain": api_domain,
+                "uiBasePath": ui_base_path,
+            },
         }
 
     def handle(self, req: HttpRequest) -> HttpResponse | None:
@@ -494,7 +527,7 @@ class InfoHandler:
         path = normalize_path(req.path)
         if path not in {"/info", "/api/v2/info"}:
             return None
-        payload = self._info_payload()
+        payload = self._info_payload(req)
         as_json = str(req.query.get("format", "")).strip().lower() == "json" or path == "/api/v2/info"
         if as_json:
             return json_response(200, payload)
