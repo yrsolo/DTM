@@ -178,7 +178,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
                         max_connections=5,
                         secret_required=True,
                     ),
-                    web={"api_domain_test": "dtm.solofarm.ru/test", "api_domain_prod": "dtm.solofarm.ru/prod"},
+                    web={"api_domain_test": "dtm.solofarm.ru/test-front", "api_domain_prod": "dtm.solofarm.ru/prod"},
                 ),
                 db=SimpleNamespace(object_storage={"endpoint_url_default": "https://storage.yandexcloud.net"}),
                 deploy=SimpleNamespace(
@@ -259,13 +259,13 @@ class InfoObservabilityTestCase(unittest.TestCase):
                 method="GET",
                 path="/info",
                 query={"format": "json"},
-                raw_event={"url": "https://dtm.solofarm.ru/test/info?format=json"},
+                raw_event={"url": "https://dtm.solofarm.ru/test-front/info?format=json"},
                 is_http_event=True,
             )
         )
         self.assertIsNotNone(response)
         payload = json.loads(response.body)
-        self.assertEqual(payload.get("web", {}).get("uiBasePath"), "/test")
+        self.assertEqual(payload.get("web", {}).get("uiBasePath"), "/test-front")
 
 
 if __name__ == "__main__":

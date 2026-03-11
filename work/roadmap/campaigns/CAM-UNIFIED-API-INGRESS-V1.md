@@ -2,7 +2,7 @@
 
 ## Goal
 Перенести test/prod API c отдельных hostnames на единый host `dtm.solofarm.ru` с path-based routing:
-- `/test/...`
+- `/test-front/...`
 - `/prod/...`
 
 ## Scope
@@ -12,8 +12,8 @@
 - old `dtm-api-*` domains stay alive as rollback path until explicit cleanup
 
 ## DoD
-- `/test/api/v2/frontend` routes to test function
+- `/test-front/api/v2/frontend` routes to test function
 - `/prod/api/v2/frontend` routes to prod function
-- `/test/info` operator page works with admin/API builder URLs under `/test`
+- `/test-front/info` operator page works with admin/API builder URLs under `/test-front`
 - `/prod/info` operator page works under `/prod`
 - old domains are not removed in this CAM
