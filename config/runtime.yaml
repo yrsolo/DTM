@@ -63,7 +63,7 @@ grafana:
 
 web:
   domain: solofarm.ru
-  api_domain_test: dtm.solofarm.ru/test-front
+  api_domain_test: dtm.solofarm.ru/test
   api_domain_prod: dtm.solofarm.ru/prod
 
 pipeline:

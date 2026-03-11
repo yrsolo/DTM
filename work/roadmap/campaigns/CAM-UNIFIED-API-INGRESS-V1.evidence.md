@@ -3,7 +3,7 @@
 - source: `config/runtime.yaml`
   last_verified_at: 2026-03-11
   verified_by: Codex
-  evidence: `web.api_domain_test`, `web.api_domain_prod` still pointed to `dtm-api-test.solofarm.ru` and `dtm-api.solofarm.ru`; target canonical test path is `/test-front`
+  evidence: `web.api_domain_test`, `web.api_domain_prod` still pointed to `dtm-api-test.solofarm.ru` and `dtm-api.solofarm.ru`; target canonical test path is `/test`
   trust_level: high
   notes: repo-side generated URLs still assumed separate hosts
 
@@ -19,7 +19,7 @@
   verified_by: Codex
   evidence: fetches and admin actions used absolute-root URLs like `/info`, `/admin/jobs`, `/api/v2/frontend`
   trust_level: high
-  notes: this would break from browser-visible `/test-front/info` and `/prod/info`
+  notes: this would break from browser-visible `/test/info` and `/prod/info`
 
 - source: live Yandex API Gateway specs
   last_verified_at: 2026-03-11
@@ -31,16 +31,16 @@
 - source: live unified gateway rollout
   last_verified_at: 2026-03-11
   verified_by: Codex
-  evidence: unified gateway `d5d84fgjajg4k61vh53h` created on `dtm.solofarm.ru`; direct gateway host returns `200` for `/test-front/info?format=json`, `/test-front/api/v2/frontend?limit=1`, `/prod/info?format=json`, `/prod/api/v2/frontend?limit=1`
+  evidence: unified gateway `d5d84fgjajg4k61vh53h` created on `dtm.solofarm.ru`; direct gateway host returns `200` for `/test/info?format=json`, `/test/api/v2/frontend?limit=1`, `/prod/info?format=json`, `/prod/api/v2/frontend?limit=1`
   trust_level: high
   notes: routing works before DNS propagation/cache expiry
 
 - source: live canonical host verification after test path rename
   last_verified_at: 2026-03-11
   verified_by: Codex
-  evidence: `https://dtm.solofarm.ru/test-front/info?format=json`, `https://dtm.solofarm.ru/test-front/api/v2/frontend?limit=1`, `https://dtm.solofarm.ru/prod/info?format=json`, and `https://dtm.solofarm.ru/prod/api/v2/frontend?limit=1` all return `200`
+  evidence: `https://dtm.solofarm.ru/test/info?format=json`, `https://dtm.solofarm.ru/test/api/v2/frontend?limit=1`, `https://dtm.solofarm.ru/prod/info?format=json`, and `https://dtm.solofarm.ru/prod/api/v2/frontend?limit=1` all return `200`
   trust_level: high
-  notes: canonical test ingress is now `/test-front`; old `/test` path is intentionally superseded
+  notes: canonical test ingress is now `/test`; `/test-front` is retired
 
 - source: Yandex DNS zone `solofarm.ru`
   last_verified_at: 2026-03-11

@@ -16,7 +16,7 @@ DEFAULT_SERVICE_ACCOUNT_ID = "aje1kqd422vq2vefkbbl"
 DEFAULT_TEST_FUNCTION_ID = "d4e81vgi5vri8poe7qba"
 DEFAULT_PROD_FUNCTION_ID = "d4e2qtl9l30ockjv2hn7"
 DEFAULT_GATEWAY_NAME = "dtm-api-unified"
-DEFAULT_TEST_PATH_PREFIX = "/test-front/{proxy+}"
+DEFAULT_TEST_PATH_PREFIX = "/test/{proxy+}"
 DEFAULT_PROD_PATH_PREFIX = "/prod/{proxy+}"
 
 
