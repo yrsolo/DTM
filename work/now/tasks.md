@@ -1,5 +1,6 @@
 # Active Tasks
 
+- CAM-METRICS-BATCHING-E2E-AND-DASHBOARD-CLEANUP-V1 P02: deploy batched metrics path to `test`, capture before/after wall-clock evidence, and verify Grafana wall-clock/flush stat panels on live data
 - CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1 P01: reduce snapshot fetch/normalize overhead by carrying canonical `A`-column colors in `SheetSnapshot` and removing extra Google API calls / DataFrame-heavy runtime path
 - CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1 P03: remove YDB from active env/deploy/runtime contour while keeping YDB adapters as non-active legacy/agent-only surface
 - CAM-UNIFIED-API-INGRESS-V1 P01: switch repo/operator URLs to path-based `/test` and `/prod` base paths and add unified API gateway rollout script
@@ -26,6 +27,7 @@
 - `CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1`: focused tests prove the active snapshot source path now performs one values read and one canonical `A`-column color read only; `build_tasks_from_snapshot()` performs no Google API calls.
 - `CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1`: active deploy/runtime contour no longer uses `YDB_*` secrets; remaining YDB references are confined to adapter/tests, archived docs, and explicit agent-only migration/backfill utilities.
 - `CAM-GRAFANA-RAW-AGG-STATS-V1`: dashboard stat rows now use raw metrics only: `last` via `last_over_time(...)`, `avg5` via Grafana transformations; runtime-derived presentation gauges are removed from active jobs.
+- `CAM-METRICS-BATCHING-E2E-AND-DASHBOARD-CLEANUP-V1`: P01 is implemented locally and covered by focused tests; next live proof on `test` must quantify how much wall-clock moved from per-metric emission into explicit `dtm.metrics.*`, `dtm.snapshot.job_wall_clock_ms`, and `dtm.worker.wall_clock_ms`.
 
 ## Done
 

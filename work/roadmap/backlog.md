@@ -1,6 +1,7 @@
 # Backlog
 
 ## In Progress
+- CAM-METRICS-BATCHING-E2E-AND-DASHBOARD-CLEANUP-V1
 - CAM-UNIFIED-API-INGRESS-V1
 - CAM-GRAFANA-PROM-OPS-DASHBOARD-V1
 - CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1
@@ -35,6 +36,8 @@
 - `/info` remains the operator dashboard and job-status store remains the source of truth for recent command execution state.
 - YC Monitoring integration is complete for the selected test-first scope: test contour emits real custom metrics and the test dashboard exists.
 - Current active hardening slice adds operation-level timing visibility for snapshot update and render.
+- Current active performance slice targets metric emission granularity: per-operation batching, explicit flush/wall-clock metrics, and Grafana cleanup for sparse event panels.
+- Current batching slice is code-complete and awaiting `test` rollout evidence to prove before/after wall-clock reduction for snapshot refresh.
 - Current DataLens ops-dashboard slice is partially delivered and now parked as an external platform blocker: repo support, workbook, and Monitoring connection are created; chart/dashboard automation is blocked by live DataLens API `createQLChart` failures against the Monitoring connection.
 - The folder-access hypothesis for DataLens has been tested and exhausted: the real API caller now has folder `viewer` and `monitoring.viewer`, but `createQLChart` still fails with the same backend error.
 - Current active dashboard path is Grafana-over-Prometheus: repo-side dual-write/Grafana foundation now includes a real Yandex Managed Prometheus remote-write client; shared workspace `mon73oiiclfbmmqbjejn`, Grafana datasource, and public dashboard are now in place, and the remaining rollout work is limited to server-side `allow_embedding = true` plus broader live sample coverage on `test`.

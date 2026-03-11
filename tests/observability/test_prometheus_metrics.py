@@ -12,7 +12,7 @@ from src.infra.yc_prometheus import (
     workspace_remote_write_endpoint,
 )
 from src.observability.composite_metrics import CompositeMetricsClient
-from src.observability.metrics import NoopMetricsClient
+from src.observability.metrics import MetricEntry, NoopMetricsClient
 from src.observability.prometheus_metrics import YandexManagedPrometheusRemoteWriteClient
 
 
@@ -134,8 +134,37 @@ class PrometheusMetricsClientTestCase(unittest.TestCase):
             client.counter("dtm.api.requests_total", labels={"env": "test"})
         self.assertEqual(len(logger.events), 1)
         event, fields = logger.events[0]
-        self.assertEqual(event, "prometheus_metric_emit_failed")
-        self.assertEqual(fields["metric"], "dtm.api.requests_total")
+        self.assertEqual(event, "prometheus_metric_flush_failed")
+        self.assertEqual(fields["metric_count"], 1)
+
+    def test_prometheus_client_flush_entries_writes_one_remote_write_payload(self) -> None:
+        logger = _RecordingLogger()
+        calls: list[dict[str, object]] = []
+
+        def _fake_write(**kwargs):
+            calls.append(dict(kwargs))
+            return {"status": "ok"}
+
+        with patch("src.observability.prometheus_metrics.write_prometheus_remote_write", side_effect=_fake_write):
+            client = YandexManagedPrometheusRemoteWriteClient(
+                endpoint_write="https://monitoring.api.cloud.yandex.net/prometheus/workspaces/workspace-test/api/v1/write",
+                api_key="api-key-test",
+                logger=logger,
+                service_label="dtm",
+                namespace="dtm",
+            )
+            results = client.flush_entries(
+                [
+                    MetricEntry(kind="metric", name="dtm.snapshot.fetch_sheet_ms", value=10.5, labels={"env": "test"}),
+                    MetricEntry(kind="metric", name="dtm.snapshot.normalize_ms", value=12.5, labels={"env": "test"}),
+                ]
+            )
+
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(len(calls[0]["metrics"]), 2)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0].backend, "prometheus")
+        self.assertEqual(results[0].points_total, 2)
 
     def test_composite_metrics_client_fans_out(self) -> None:
         first = _RecordingMetrics()
@@ -144,6 +173,28 @@ class PrometheusMetricsClientTestCase(unittest.TestCase):
         client.counter("dtm.test.counter", 2)
         self.assertEqual(len(first.calls), 1)
         self.assertEqual(len(second.calls), 1)
+
+    def test_composite_metrics_client_flush_entries_fans_out(self) -> None:
+        class _BatchRecordingMetrics(NoopMetricsClient):
+            def __init__(self, backend: str) -> None:
+                self.backend = backend
+                self.flushed: list[list[MetricEntry]] = []
+
+            def flush_entries(self, entries):
+                self.flushed.append(list(entries))
+                from src.observability.metrics import BackendFlushResult
+
+                return [BackendFlushResult(backend=self.backend, duration_ms=1.0, points_total=len(entries))]
+
+        first = _BatchRecordingMetrics("first")
+        second = _BatchRecordingMetrics("second")
+        client = CompositeMetricsClient([first, second])
+        results = client.flush_entries(
+            [MetricEntry(kind="metric", name="dtm.test.counter", value=1.0, labels={"env": "test"})]
+        )
+        self.assertEqual(len(first.flushed), 1)
+        self.assertEqual(len(second.flushed), 1)
+        self.assertEqual([result.backend for result in results], ["first", "second"])
 
 
 if __name__ == "__main__":

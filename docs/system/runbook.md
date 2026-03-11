@@ -181,6 +181,8 @@ Shared abstractions:
 Current defaults:
 - metrics client: `NoopMetricsClient` locally unless monitoring is enabled
 - structured logger: `StdoutJsonLogger`
+- `runtime.dev_mode_metrics=true` on `test` is allowed for detailed substage timings
+- `runtime.dev_mode_metrics=false` is the intended steady-state default for `prod`
 
 This keeps instrumentation points stable before a full external metrics backend is enabled.
 
@@ -226,6 +228,11 @@ Current proven test metrics:
 - `dtm.render.cells_written`
 - `dtm.worker.commands_total`
 - `dtm.worker.command_duration_ms`
+- `dtm.snapshot.job_wall_clock_ms`
+- `dtm.render.job_wall_clock_ms`
+- `dtm.worker.wall_clock_ms`
+- `dtm.metrics.flush_duration_ms`
+- `dtm.metrics.flush_points_total`
 
 Detailed operator reading for heavy paths:
 
@@ -240,18 +247,25 @@ Detailed operator reading for heavy paths:
   - raw snapshot write: `dtm.snapshot.write_raw_ms`
   - prep snapshot write: `dtm.snapshot.write_prep_ms`
   - end-to-end: `dtm.snapshot.update_duration_ms`
+  - full snapshot job wall-clock including metric flush: `dtm.snapshot.job_wall_clock_ms`
 - render:
   - plan build: `dtm.render.build_plan_ms`
   - sheet write: `dtm.render.write_sheet_ms`
   - end-to-end: `dtm.render.duration_ms`
-  - current and avg5 values for snapshot/render are derived in Grafana dashboard stat panels from raw metrics, not emitted as separate runtime gauges
+  - full render job wall-clock including metric flush: `dtm.render.job_wall_clock_ms`
+ - metrics overhead:
+  - Monitoring batch flush: `dtm.metrics.flush_duration_ms{backend="monitoring"}`
+  - YMP batch flush: `dtm.metrics.flush_duration_ms{backend="prometheus"}`
+  - combined flush cost: `dtm.metrics.flush_duration_ms{backend="combined"}`
+  - emitted points count: `dtm.metrics.flush_points_total`
+- current and avg5 values for snapshot/render are derived in Grafana dashboard stat panels from raw metrics, not emitted as separate runtime gauges
 
 If metrics are missing:
 
 1. check monitoring enablement in deployed env
 2. check resolved folder id
 3. check attached runtime service account Monitoring write rights
-4. inspect logs for `monitoring_metric_emit_failed`
+4. inspect logs for `monitoring_metric_flush_failed`
 5. verify dashboard separately; dashboard automation is allowed to lag behind ingestion
 6. verify payload does not use reserved Monitoring label `service`; runtime must emit `service_name`
 
@@ -270,6 +284,7 @@ Current repo-side status:
 - `CompositeMetricsClient` can dual-write Monitoring + Prometheus
 - `/info` telemetry includes Prometheus/Grafana metadata
 - Grafana dashboard spec exists in `src/infra/grafana_specs.py`
+- active jobs batch metrics per operation and emit explicit flush-cost metrics, so operator wall-clock analysis should use dashboard stat panels before assuming queue delay
 
 Current rollout prerequisites:
 

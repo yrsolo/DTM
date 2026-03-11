@@ -102,6 +102,20 @@ def _avg5_stat_panel(
     }
 
 
+def _timeseries_field_config() -> dict[str, Any]:
+    return {
+        "defaults": {
+            "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "linear",
+                "showPoints": "never",
+                "spanNulls": False,
+            }
+        },
+        "overrides": [],
+    }
+
+
 def build_test_grafana_dashboard(
     env_name: str = "test",
     *,
@@ -138,12 +152,17 @@ def build_test_grafana_dashboard(
         _avg5_stat_panel(panel_id=125, title="Designers Write Avg5", expr=_expr("dtm.render.write_sheet_ms", env_name, 'operation="designers"'), datasource=datasource, x=12, y=16),
         _stat_panel(panel_id=126, title="Designers Total Last", expr=_last_expr("dtm.render.duration_ms", env_name, 'operation="designers"'), datasource=datasource, x=16, y=16),
         _avg5_stat_panel(panel_id=127, title="Designers Total Avg5", expr=_expr("dtm.render.duration_ms", env_name, 'operation="designers"'), datasource=datasource, x=20, y=16),
+        _stat_panel(panel_id=128, title="Snapshot Business Duration", expr=_last_expr("dtm.snapshot.update_duration_ms", env_name), datasource=datasource, x=0, y=20, w=6),
+        _stat_panel(panel_id=129, title="Snapshot Job Wall Clock", expr=_last_expr("dtm.snapshot.job_wall_clock_ms", env_name), datasource=datasource, x=6, y=20, w=6),
+        _stat_panel(panel_id=130, title="Worker Wall Clock", expr=_last_expr("dtm.worker.wall_clock_ms", env_name, 'operation="update_snapshot"'), datasource=datasource, x=12, y=20, w=6),
+        _stat_panel(panel_id=131, title="Metrics Flush Total", expr=_last_expr("dtm.metrics.flush_duration_ms", env_name, 'module="snapshot",operation="update",backend="combined"'), datasource=datasource, x=18, y=20, w=6),
         {
             "id": 1,
             "title": "Snapshot Stage Timings",
             "type": "timeseries",
-            "gridPos": {"x": 0, "y": 20, "w": 12, "h": 8},
+            "gridPos": {"x": 0, "y": 24, "w": 12, "h": 8},
             "datasource": datasource,
+            "fieldConfig": _timeseries_field_config(),
             "targets": _with_ref_ids([
                 {"expr": _expr("dtm.snapshot.fetch_sheet_ms", env_name), "legendFormat": "fetch_sheet_ms"},
                 {"expr": _expr("dtm.snapshot.normalize_ms", env_name), "legendFormat": "normalize_ms"},
@@ -156,8 +175,9 @@ def build_test_grafana_dashboard(
             "id": 2,
             "title": "Snapshot Total Duration",
             "type": "timeseries",
-            "gridPos": {"x": 12, "y": 20, "w": 12, "h": 8},
+            "gridPos": {"x": 12, "y": 24, "w": 12, "h": 8},
             "datasource": datasource,
+            "fieldConfig": _timeseries_field_config(),
             "targets": _with_ref_ids(
                 [{"expr": _expr("dtm.snapshot.update_duration_ms", env_name), "legendFormat": "total"}]
             ),
@@ -166,8 +186,9 @@ def build_test_grafana_dashboard(
             "id": 3,
             "title": "Snapshot Outcomes",
             "type": "timeseries",
-            "gridPos": {"x": 0, "y": 28, "w": 12, "h": 8},
+            "gridPos": {"x": 0, "y": 32, "w": 12, "h": 8},
             "datasource": datasource,
+            "fieldConfig": _timeseries_field_config(),
             "targets": _with_ref_ids([
                 {"expr": _expr("dtm.snapshot.update_total", env_name), "legendFormat": "update_total"},
                 {"expr": _expr("dtm.snapshot.changed_total", env_name), "legendFormat": "changed_total"},
@@ -178,8 +199,9 @@ def build_test_grafana_dashboard(
             "id": 4,
             "title": "Render Stage Timings",
             "type": "timeseries",
-            "gridPos": {"x": 12, "y": 28, "w": 12, "h": 8},
+            "gridPos": {"x": 12, "y": 32, "w": 12, "h": 8},
             "datasource": datasource,
+            "fieldConfig": _timeseries_field_config(),
             "targets": _with_ref_ids([
                 {
                     "expr": _expr("dtm.render.build_plan_ms", env_name, 'operation=~".+"'),
@@ -195,8 +217,9 @@ def build_test_grafana_dashboard(
             "id": 5,
             "title": "Render Total Duration",
             "type": "timeseries",
-            "gridPos": {"x": 0, "y": 36, "w": 12, "h": 8},
+            "gridPos": {"x": 0, "y": 40, "w": 12, "h": 8},
             "datasource": datasource,
+            "fieldConfig": _timeseries_field_config(),
             "targets": _with_ref_ids([
                 {
                     "expr": _expr("dtm.render.duration_ms", env_name, 'operation=~".+"'),
@@ -208,8 +231,9 @@ def build_test_grafana_dashboard(
             "id": 6,
             "title": "Render Volume",
             "type": "timeseries",
-            "gridPos": {"x": 12, "y": 36, "w": 12, "h": 8},
+            "gridPos": {"x": 12, "y": 40, "w": 12, "h": 8},
             "datasource": datasource,
+            "fieldConfig": _timeseries_field_config(),
             "targets": _with_ref_ids([
                 {
                     "expr": _expr("dtm.render.rows_rendered", env_name, 'operation=~".+"'),
@@ -225,24 +249,27 @@ def build_test_grafana_dashboard(
             "id": 7,
             "title": "API Latency",
             "type": "timeseries",
-            "gridPos": {"x": 0, "y": 44, "w": 12, "h": 8},
+            "gridPos": {"x": 0, "y": 48, "w": 12, "h": 8},
             "datasource": datasource,
+            "fieldConfig": _timeseries_field_config(),
             "targets": _with_ref_ids([{"expr": _expr("dtm.api.duration_ms", env_name), "legendFormat": "{{operation}}"}]),
         },
         {
             "id": 8,
             "title": "API Throughput",
             "type": "timeseries",
-            "gridPos": {"x": 12, "y": 44, "w": 12, "h": 8},
+            "gridPos": {"x": 12, "y": 48, "w": 12, "h": 8},
             "datasource": datasource,
+            "fieldConfig": _timeseries_field_config(),
             "targets": _with_ref_ids([{"expr": _expr("dtm.api.requests_total", env_name), "legendFormat": "{{operation}}"}]),
         },
         {
             "id": 9,
             "title": "Worker Reliability",
             "type": "timeseries",
-            "gridPos": {"x": 0, "y": 52, "w": 12, "h": 8},
+            "gridPos": {"x": 0, "y": 56, "w": 12, "h": 8},
             "datasource": datasource,
+            "fieldConfig": _timeseries_field_config(),
             "targets": _with_ref_ids([
                 {"expr": _expr("dtm.worker.commands_total", env_name), "legendFormat": "commands_total"},
                 {"expr": _expr("dtm.worker.command_duration_ms", env_name), "legendFormat": "command_duration_ms"},
@@ -254,8 +281,9 @@ def build_test_grafana_dashboard(
             "id": 10,
             "title": "Notify Runtime",
             "type": "timeseries",
-            "gridPos": {"x": 12, "y": 52, "w": 12, "h": 8},
+            "gridPos": {"x": 12, "y": 56, "w": 12, "h": 8},
             "datasource": datasource,
+            "fieldConfig": _timeseries_field_config(),
             "targets": _with_ref_ids([
                 {"expr": _expr("dtm.notify.duration_ms", env_name), "legendFormat": "duration_ms"},
                 {"expr": _expr("dtm.notify.messages_sent", env_name), "legendFormat": "messages_sent"},
@@ -266,8 +294,9 @@ def build_test_grafana_dashboard(
             "id": 11,
             "title": "Telegram Intake",
             "type": "timeseries",
-            "gridPos": {"x": 0, "y": 60, "w": 12, "h": 8},
+            "gridPos": {"x": 0, "y": 64, "w": 12, "h": 8},
             "datasource": datasource,
+            "fieldConfig": _timeseries_field_config(),
             "targets": _with_ref_ids([
                 {"expr": _expr("dtm.telegram.accepted_total", env_name), "legendFormat": "accepted_total"},
                 {"expr": _expr("dtm.telegram.rejected_total", env_name), "legendFormat": "rejected_total"},

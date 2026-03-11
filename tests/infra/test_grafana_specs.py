@@ -27,15 +27,22 @@ class GrafanaSpecsTestCase(unittest.TestCase):
         self.assertIn("Snapshot Fetch Avg5", titles)
         self.assertIn("Timeline Total Last", titles)
         self.assertIn("Designers Total Avg5", titles)
+        self.assertIn("Snapshot Business Duration", titles)
+        self.assertIn("Snapshot Job Wall Clock", titles)
+        self.assertIn("Worker Wall Clock", titles)
+        self.assertIn("Metrics Flush Total", titles)
         snapshot_panel = next(panel for panel in dashboard["panels"] if panel["title"] == "Snapshot Stage Timings")
         target_exprs = [target["expr"] for target in snapshot_panel["targets"]]
         self.assertTrue(any("dtm_snapshot_fetch_sheet_ms" in expr for expr in target_exprs))
         self.assertTrue(any('env="test"' in expr for expr in target_exprs))
+        self.assertEqual(snapshot_panel["fieldConfig"]["defaults"]["custom"]["showPoints"], "never")
         fetch_last = next(panel for panel in dashboard["panels"] if panel["title"] == "Snapshot Fetch Last")
         self.assertIn("last_over_time(dtm_snapshot_fetch_sheet_ms", fetch_last["targets"][0]["expr"])
         fetch_avg5 = next(panel for panel in dashboard["panels"] if panel["title"] == "Snapshot Fetch Avg5")
         self.assertEqual(fetch_avg5["targets"][0]["expr"], 'dtm_snapshot_fetch_sheet_ms{env="test",namespace="dtm",service="dtm"}')
         self.assertTrue(fetch_avg5.get("transformations"))
+        wall_clock = next(panel for panel in dashboard["panels"] if panel["title"] == "Snapshot Job Wall Clock")
+        self.assertIn("dtm_snapshot_job_wall_clock_ms", wall_clock["targets"][0]["expr"])
 
 
 if __name__ == "__main__":

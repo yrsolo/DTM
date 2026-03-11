@@ -145,6 +145,6 @@ Remaining rollout path:
 
 Prometheus emission is best-effort only:
 
-- failures log `prometheus_metric_emit_failed`
+- failures log `prometheus_metric_flush_failed`
 - Monitoring emission remains intact
 - `/info` remains the operator control page regardless of Prometheus availability

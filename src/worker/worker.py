@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from time import perf_counter
+from typing import Any
 
 from src.commands.serializer import command_from_json
+from src.observability.batching import MetricsBatchCollector, add_flush_metrics
 from src.services.errors import PermanentError, TransientError, UserError
 
 from .model import JobResult
@@ -68,6 +70,7 @@ class Worker:
                         status="duplicate_running",
                     )
                 continue
+            wall_clock_started = perf_counter()
             self._status_store.put_running(cmd)
             started_at = perf_counter()
             try:
@@ -110,18 +113,19 @@ class Worker:
                 )
             duration_ms = (perf_counter() - started_at) * 1000.0
             self._status_store.put_finished(cmd, result)
+            result_label = "success" if result.success else ("failed_retryable" if result.retryable else "failed_terminal")
+            collector = MetricsBatchCollector(self._metrics)
             if result.success:
                 succeeded += 1
-                if self._metrics is not None:
-                    self._metrics.counter(
-                        "dtm.worker.commands_total",
-                        labels={"env": self._env_name, "module": "worker", "operation": cmd.type, "result": "success"},
-                    )
-                    self._metrics.timing(
-                        "dtm.worker.command_duration_ms",
-                        duration_ms,
-                        labels={"env": self._env_name, "module": "worker", "operation": cmd.type, "result": "success"},
-                    )
+                collector.counter(
+                    "dtm.worker.commands_total",
+                    labels={"env": self._env_name, "module": "worker", "operation": cmd.type, "result": "success"},
+                )
+                collector.timing(
+                    "dtm.worker.command_duration_ms",
+                    duration_ms,
+                    labels={"env": self._env_name, "module": "worker", "operation": cmd.type, "result": "success"},
+                )
                 if self._structured_logger is not None:
                     self._structured_logger.info(
                         "worker_command_finished",
@@ -132,20 +136,19 @@ class Worker:
                     )
             elif result.retryable:
                 retryable_failed += 1
-                if self._metrics is not None:
-                    self._metrics.counter(
-                        "dtm.worker.command_failures_total",
-                        labels={"env": self._env_name, "module": "worker", "operation": cmd.type, "result": "failed_retryable"},
-                    )
-                    self._metrics.counter(
-                        "dtm.worker.command_retries_total",
-                        labels={"env": self._env_name, "module": "worker", "operation": cmd.type, "result": "retry_requested"},
-                    )
-                    self._metrics.timing(
-                        "dtm.worker.command_duration_ms",
-                        duration_ms,
-                        labels={"env": self._env_name, "module": "worker", "operation": cmd.type, "result": "failed_retryable"},
-                    )
+                collector.counter(
+                    "dtm.worker.command_failures_total",
+                    labels={"env": self._env_name, "module": "worker", "operation": cmd.type, "result": "failed_retryable"},
+                )
+                collector.counter(
+                    "dtm.worker.command_retries_total",
+                    labels={"env": self._env_name, "module": "worker", "operation": cmd.type, "result": "retry_requested"},
+                )
+                collector.timing(
+                    "dtm.worker.command_duration_ms",
+                    duration_ms,
+                    labels={"env": self._env_name, "module": "worker", "operation": cmd.type, "result": "failed_retryable"},
+                )
                 if self._structured_logger is not None:
                     self._structured_logger.warning(
                         "worker_command_finished",
@@ -157,16 +160,15 @@ class Worker:
                     )
             else:
                 terminal_failed += 1
-                if self._metrics is not None:
-                    self._metrics.counter(
-                        "dtm.worker.command_failures_total",
-                        labels={"env": self._env_name, "module": "worker", "operation": cmd.type, "result": "failed_terminal"},
-                    )
-                    self._metrics.timing(
-                        "dtm.worker.command_duration_ms",
-                        duration_ms,
-                        labels={"env": self._env_name, "module": "worker", "operation": cmd.type, "result": "failed_terminal"},
-                    )
+                collector.counter(
+                    "dtm.worker.command_failures_total",
+                    labels={"env": self._env_name, "module": "worker", "operation": cmd.type, "result": "failed_terminal"},
+                )
+                collector.timing(
+                    "dtm.worker.command_duration_ms",
+                    duration_ms,
+                    labels={"env": self._env_name, "module": "worker", "operation": cmd.type, "result": "failed_terminal"},
+                )
                 if self._structured_logger is not None:
                     self._structured_logger.error(
                         "worker_command_finished",
@@ -176,6 +178,22 @@ class Worker:
                         error_code=result.error_code or str((result.error or {}).get("code", "")),
                         duration_ms=round(duration_ms, 2),
                     )
+            flush_report = collector.flush()
+            post_collector = MetricsBatchCollector(self._metrics)
+            add_flush_metrics(
+                post_collector,
+                env_name=self._env_name,
+                module="worker",
+                operation=cmd.type,
+                report=flush_report,
+            )
+            wall_clock_ms = (perf_counter() - wall_clock_started) * 1000.0
+            post_collector.timing(
+                "dtm.worker.wall_clock_ms",
+                wall_clock_ms,
+                labels={"env": self._env_name, "module": "worker", "operation": cmd.type, "result": result_label},
+            )
+            post_collector.flush()
         return {
             "artifact": "command_worker",
             "status": "retryable_failure"

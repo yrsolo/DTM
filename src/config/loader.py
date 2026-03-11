@@ -29,6 +29,7 @@ ENV_ALLOWLIST = frozenset(
     {
         "ENV",
         "STRICT_ENV_GUARD",
+        "DEV_MODE_METRICS",
         "STORE_MODE",
         "READMODEL_SOURCE",
         "NOTIFY_SOURCE",
@@ -113,6 +114,8 @@ def _merge_runtime_env_overrides(runtime_cfg: RuntimeConfig) -> RuntimeConfig:
 
     if "STRICT_ENV_GUARD" in os.environ:
         runtime_cfg.runtime.strict_env_guard_default = _parse_bool(os.environ["STRICT_ENV_GUARD"])
+    if "DEV_MODE_METRICS" in os.environ:
+        runtime_cfg.runtime.dev_mode_metrics = _parse_bool(os.environ["DEV_MODE_METRICS"])
 
     if "READMODEL_TTL_MINUTES" in os.environ:
         runtime_cfg.pipeline.readmodel_ttl_minutes = max(1, int(os.environ["READMODEL_TTL_MINUTES"]))
@@ -200,6 +203,9 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
         runtime_raw.get("strict_env_guard_default", defaults.runtime.strict_env_guard_default)
     )
     defaults.runtime.timezone = str(runtime_raw.get("timezone", defaults.runtime.timezone))
+    defaults.runtime.dev_mode_metrics = bool(
+        runtime_raw.get("dev_mode_metrics", defaults.runtime.dev_mode_metrics)
+    )
     defaults.monitoring.enabled = bool(monitoring_raw.get("enabled", defaults.monitoring.enabled))
     defaults.monitoring.backend = str(monitoring_raw.get("backend", defaults.monitoring.backend))
     defaults.monitoring.folder_id = str(monitoring_raw.get("folder_id", defaults.monitoring.folder_id))

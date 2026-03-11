@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from src.observability.metrics import MetricsClient
+from src.observability.metrics import BackendFlushResult, MetricEntry, MetricsClient
 
 
 class CompositeMetricsClient(MetricsClient):
@@ -18,3 +18,9 @@ class CompositeMetricsClient(MetricsClient):
     def timing(self, name: str, ms: float, labels: dict[str, str] | None = None) -> None:
         for client in self._clients:
             client.timing(name, ms, labels)
+
+    def flush_entries(self, entries: list[MetricEntry]) -> list[BackendFlushResult]:
+        backend_results: list[BackendFlushResult] = []
+        for client in self._clients:
+            backend_results.extend(client.flush_entries(list(entries)))
+        return backend_results

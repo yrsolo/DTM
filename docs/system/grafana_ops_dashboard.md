@@ -31,7 +31,7 @@ The repo is the source of truth for:
 
 The current dashboard spec contains:
 
-- a top stat section for snapshot and render
+- a top stat section for snapshot, render, and wall-clock/flush diagnostics
 - raw timeseries panels for snapshot/render/API/worker/notify/telegram
 
 These panels are operator-oriented, not BI-oriented.
@@ -83,6 +83,17 @@ The dashboard uses raw metrics only.
 
 This keeps raw stage timings as the only canonical runtime metrics.
 
+### Wall-clock and flush stats
+
+The dashboard also shows raw-metric stat panels for:
+
+- `Snapshot Business Duration`
+- `Snapshot Job Wall Clock`
+- `Worker Wall Clock`
+- `Metrics Flush Total`
+
+This is intentional: operator questions about "why button wall-clock is larger than business stage timings" should be answered on the dashboard, not inferred manually from logs.
+
 ### Render stat panels
 
 Render stat panels are explicit by operation:
@@ -114,6 +125,8 @@ Current live test state:
 - imported dashboard UID: `dtm-test-ops`
 - public dashboard URL: `https://grafana.solofarm.ru/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
 - embed URL: `https://grafana.solofarm.ru/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
+- datasource: `DTM YMP Test`
+- shared YMP workspace: `mon73oiiclfbmmqbjejn`
 
 What is already done:
 
@@ -129,6 +142,12 @@ What is still pending:
 - Grafana server still returns `X-Frame-Options: deny`, so iframe embed remains blocked until `allow_embedding = true` is enabled on the VPS
 - final workspace setup and datasource command are documented in:
   - [yandex_prometheus_workspace_setup.md](n:\PROJECTS\python\SCRIPT\DTM\docs\system\yandex_prometheus_workspace_setup.md)
+
+Sparse metric visualization policy:
+
+- timeseries panels use lines only (`showPoints = never`)
+- stat panels are preferred for "current" and "avg5" operator reading
+- render stat panels are separated by `timeline` and `designers`; they are not merged
 
 ## Export path
 

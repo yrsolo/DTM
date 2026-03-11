@@ -184,7 +184,7 @@ If metrics do not appear:
 2. verify folder id is resolved correctly
 3. verify attached runtime service account has Monitoring write permission
 4. inspect structured warning logs for:
-   - `monitoring_metric_emit_failed`
+   - `monitoring_metric_flush_failed`
 5. verify endpoint and network access
 6. verify metric payload does not use reserved label `service`; use `service_name`
 

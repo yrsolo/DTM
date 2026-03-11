@@ -19,6 +19,7 @@
 
 - `dtm.snapshot.update_total`
 - `dtm.snapshot.update_duration_ms`
+- `dtm.snapshot.job_wall_clock_ms`
 - `dtm.snapshot.fetch_sheet_ms`
 - `dtm.snapshot.normalize_ms`
 - `dtm.snapshot.build_prep_ms`
@@ -42,6 +43,7 @@
 
 - `dtm.render.total`
 - `dtm.render.duration_ms`
+- `dtm.render.job_wall_clock_ms`
 - `dtm.render.build_plan_ms`
 - `dtm.render.write_sheet_ms`
 - `dtm.render.rows_rendered`
@@ -69,9 +71,16 @@
 
 - `dtm.worker.commands_total`
 - `dtm.worker.command_duration_ms`
+- `dtm.worker.wall_clock_ms`
 - `dtm.worker.command_failures_total`
 - `dtm.worker.command_retries_total`
 - `dtm.worker.dlq_total`
+
+### Metrics Flush
+
+- `dtm.metrics.flush_duration_ms`
+- `dtm.metrics.flush_points_total`
+- `dtm.metrics.flush_failures_total`
 
 ## Current implementation notes
 
@@ -81,7 +90,15 @@ Snapshot runtime notes:
 
 - `fetch_sheet_ms` now covers one values read plus one canonical `A`-column color read only.
 - `normalize_ms` no longer includes a second Google color fetch.
+- `job_wall_clock_ms` captures full snapshot job wall-clock including metric flush overhead.
+- detailed snapshot substage metrics are gated by `runtime.dev_mode_metrics`.
 - Grafana derives `last` and `avg5` operator stats from raw metrics at dashboard level; runtime no longer emits presentation-only `*_last_ms` / `*_last5_avg_ms` gauges.
+
+Metrics batching notes:
+
+- active jobs now batch metrics per operation and flush once per backend instead of one HTTP request per metric point
+- `dtm.metrics.flush_duration_ms` and `dtm.metrics.flush_points_total` measure backend flush cost directly
+- `dtm.worker.wall_clock_ms` captures worker-side wall-clock including status-store writes and metric flush
 
 Current runtime default:
 

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from time import perf_counter
 from typing import Any
 
 from src.infra.yc_prometheus import (
     build_prometheus_metric_sample,
     write_prometheus_remote_write,
 )
-from src.observability.metrics import MetricsClient
+from src.observability.metrics import BackendFlushResult, MetricEntry, MetricsClient
 
 
 class YandexManagedPrometheusRemoteWriteClient(MetricsClient):
@@ -29,31 +30,55 @@ class YandexManagedPrometheusRemoteWriteClient(MetricsClient):
         self._namespace = str(namespace or "").strip() or "dtm"
         self._timeout_seconds = max(0.1, float(timeout_seconds))
 
-    def _emit(self, name: str, value: float, labels: dict[str, str] | None = None) -> None:
-        metric_name = str(name or "").strip()
-        if not metric_name or not self._endpoint_write or not self._api_key:
-            return
+    def flush_entries(self, entries: list[MetricEntry]) -> list[BackendFlushResult]:
+        batch = [entry for entry in list(entries or []) if str(entry.name or "").strip()]
+        if not batch or not self._endpoint_write or not self._api_key:
+            return []
+        started_at = perf_counter()
         try:
-            sample = build_prometheus_metric_sample(
-                name=metric_name,
-                value=float(value),
-                labels=labels,
-                service_label=self._service_label,
-                namespace=self._namespace,
-            )
+            samples = [
+                build_prometheus_metric_sample(
+                    name=str(entry.name).strip(),
+                    value=float(entry.value),
+                    labels=entry.labels,
+                    service_label=self._service_label,
+                    namespace=self._namespace,
+                )
+                for entry in batch
+            ]
             write_prometheus_remote_write(
                 endpoint_write=self._endpoint_write,
-                metrics=[sample],
+                metrics=samples,
                 bearer_token=self._api_key,
                 timeout_seconds=self._timeout_seconds,
             )
+            return [
+                BackendFlushResult(
+                    backend="prometheus",
+                    duration_ms=(perf_counter() - started_at) * 1000.0,
+                    points_total=len(samples),
+                    failed=False,
+                )
+            ]
         except Exception as exc:
             if self._logger is not None and hasattr(self._logger, "warning"):
                 self._logger.warning(
-                    "prometheus_metric_emit_failed",
-                    metric=metric_name,
+                    "prometheus_metric_flush_failed",
+                    metric_count=len(batch),
                     error=str(exc),
                 )
+            return [
+                BackendFlushResult(
+                    backend="prometheus",
+                    duration_ms=(perf_counter() - started_at) * 1000.0,
+                    points_total=len(batch),
+                    failed=True,
+                    error=str(exc),
+                )
+            ]
+
+    def _emit(self, name: str, value: float, labels: dict[str, str] | None = None) -> None:
+        self.flush_entries([MetricEntry(kind="metric", name=name, value=float(value), labels=labels)])
 
     def counter(self, name: str, value: int = 1, labels: dict[str, str] | None = None) -> None:
         self._emit(name, float(value), labels)
