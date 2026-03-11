@@ -378,10 +378,10 @@ Then `/info` will be able to expose:
 
 Current test values already recorded in repo:
 
-- `public_base_url = https://grafana.solofarm.ru`
+- `public_base_url = https://dtm.solofarm.ru/grafana`
 - `dashboard_uid_test = dtm-test-ops`
-- `dashboard_url_test = https://grafana.solofarm.ru/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
-- `embed_url_test = https://grafana.solofarm.ru/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
+- `dashboard_url_test = https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
+- `embed_url_test = https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
 
 ---
 
@@ -449,3 +449,4 @@ the fastest practical path after SSH is restored is:
 5. verify iframe
 
 Later, if Yandex Managed Prometheus becomes straightforward, you can switch only the datasource and sink endpoint without redesigning the dashboard.
+

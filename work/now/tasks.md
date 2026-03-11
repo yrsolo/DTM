@@ -3,8 +3,6 @@
 - CAM-METRICS-BATCHING-E2E-AND-DASHBOARD-CLEANUP-V1 P02: deploy batched metrics path to `test`, capture before/after wall-clock evidence, and verify Grafana wall-clock/flush stat panels on live data
 - CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1 P01: reduce snapshot fetch/normalize overhead by carrying canonical `A`-column colors in `SheetSnapshot` and removing extra Google API calls / DataFrame-heavy runtime path
 - CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1 P03: remove YDB from active env/deploy/runtime contour while keeping YDB adapters as non-active legacy/agent-only surface
-- CAM-UNIFIED-API-INGRESS-V1 P01: switch repo/operator URLs to path-based `/test` and `/prod` base paths and add unified API gateway rollout script
-- CAM-UNIFIED-API-INGRESS-V1 P02: create unified Yandex API Gateway on `dtm.solofarm.ru` for `/test/*` and `/prod/*`, replace Yandex DNS `dtm.solofarm.ru` CNAME to the new gateway, and keep old `dtm-api-*` domains as rollback paths during propagation
 - CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P01: register campaign, trust gate, and typed `prometheus`/`grafana` config for dual-write and iframe metadata
 - CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P02: add Prometheus metrics backend, composite dual-write client, and additive `/info` Grafana/Prometheus telemetry fields
 - CAM-GRAFANA-PROM-OPS-DASHBOARD-V1 P03: add Grafana dashboard spec/API helpers and record infra blockers for Yandex Prometheus workspace discovery and VPS SSH access
@@ -17,7 +15,7 @@
 - `CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1`: workbook and Monitoring connection are provisioned; `createQLChart` is currently blocked by live DataLens API `500 Access service error` on the Monitoring connection.
 - `CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1`: caller permissions were raised for `yrsolo` (`viewer` + `monitoring.viewer`) and the same `createQLChart` error persists, so the blocker is now classified as external to repo code.
 - `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: repo-side dual-write/Grafana foundation is being added first; active code path now uses real Yandex Managed Prometheus remote write and the remaining blocker is external infra only: workspace/API key + Grafana datasource endpoint wiring.
-- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: Grafana API token path is proven; folder `DTM Test` and dashboard `dtm-test-ops` are created on `https://grafana.solofarm.ru`, and datasource wiring is proven against YMP.
+- `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: Grafana API token path is proven; folder `DTM Test` and dashboard `dtm-test-ops` are served canonically under `https://dtm.solofarm.ru/grafana`, and datasource wiring is proven against YMP.
 - `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: before datasource rollout, the repo must stop pretending that text exposition push is YMP-compatible; current execution slice replaces it with actual remote write semantics.
 - `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: workspace creation remains a UI-only Yandex-side step; repo now provides `scripts/provision_grafana_datasource.py` so the only missing operator input is the final `workspace_id`.
 - `CAM-GRAFANA-PROM-OPS-DASHBOARD-V1`: shared workspace `mon73oiiclfbmmqbjejn` is now known and Grafana datasource `DTM YMP Test` is created; the next blocker is only live sample emission from deployed test runtime.
@@ -28,12 +26,15 @@
 - `CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1`: active deploy/runtime contour no longer uses `YDB_*` secrets; remaining YDB references are confined to adapter/tests, archived docs, and explicit agent-only migration/backfill utilities.
 - `CAM-GRAFANA-RAW-AGG-STATS-V1`: dashboard stat rows now use raw metrics only: `last` via `last_over_time(...)`, `avg5` via Grafana transformations; runtime-derived presentation gauges are removed from active jobs.
 - `CAM-METRICS-BATCHING-E2E-AND-DASHBOARD-CLEANUP-V1`: P01 is implemented locally and covered by focused tests; next live proof on `test` must quantify how much wall-clock moved from per-metric emission into explicit `dtm.metrics.*`, `dtm.snapshot.job_wall_clock_ms`, and `dtm.worker.wall_clock_ms`.
+- `CAM-UNIFIED-API-INGRESS-V1`: canonical ingress is live on `dtm.solofarm.ru` with prod on `/api`, `/info`, `/auth`, test on `/test`, `/test/api`, `/test/info`, `/test/auth`, same-origin Grafana on `/grafana`, and bucket-backed `/` + `/test` frontends; old `dtm-api-*` hosts remain rollback-only.
 
 ## Done
 
 - CAM-SNAPSHOT-PREP-BULK-REFORM-V1 P01: register trust gate, add prep-build sub-metrics, and switch snapshot builder contract to timing-aware bulk-extra path
 - CAM-SNAPSHOT-PREP-BULK-REFORM-V1 P02: replace per-task S3 extra layout with one bulk extra snapshot and remove orphan N+1 writes from hot path
 - CAM-SNAPSHOT-PREP-BULK-REFORM-V1 P03: add one-time migration script, update attachment mutation flow, migrate/verify `test`, and prove live `build_prep_ms` drop without public contract drift
+- CAM-UNIFIED-API-INGRESS-V1 P01: replace legacy `/prod/*` canonical paths with root `/api`, `/info`, `/auth`, keep `/test/*` for test, and make gateway spec fully declarative in repo
+- CAM-UNIFIED-API-INGRESS-V1 P02: update unified Yandex API Gateway on `dtm.solofarm.ru` for `/api/*`, `/info`, `/auth/*`, `/test/*`, `/grafana/*`, and bucket-backed `/` + `/test`, while keeping old `dtm-api-*` domains as rollback paths
 
 - CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1 P01: register DataLens dashboard campaign, typed config, API/spec modules, and additive `/info` metadata
 - CAM-2026-03-10-DATALENS-OPS-DASHBOARD-V1 P02: provision DataLens workbook/Monitoring connection and exhaust caller-permission hypothesis for `createQLChart`

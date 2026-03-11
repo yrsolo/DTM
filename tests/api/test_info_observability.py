@@ -185,7 +185,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
                         max_connections=5,
                         secret_required=True,
                     ),
-                    web={"api_domain_test": "dtm.solofarm.ru/test", "api_domain_prod": "dtm.solofarm.ru/prod"},
+                    web={"api_domain_test": "dtm.solofarm.ru/test", "api_domain_prod": "dtm.solofarm.ru"},
                 ),
                 db=SimpleNamespace(object_storage={"endpoint_url_default": "https://storage.yandexcloud.net"}),
                 deploy=SimpleNamespace(

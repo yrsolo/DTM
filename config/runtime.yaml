@@ -52,12 +52,12 @@ prometheus:
 
 grafana:
   enabled: true
-  public_base_url: https://grafana.solofarm.ru
+  public_base_url: https://dtm.solofarm.ru/grafana
   dashboard_uid_test: dtm-test-ops
   dashboard_uid_prod: ""
-  dashboard_url_test: https://grafana.solofarm.ru/public-dashboards/af7606b66c8d4ca9b069ea1913577e45
+  dashboard_url_test: https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45
   dashboard_url_prod: ""
-  embed_url_test: https://grafana.solofarm.ru/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light
+  embed_url_test: https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light
   embed_url_prod: ""
   folder_name_test: DTM Test
   folder_name_prod: DTM Prod
@@ -65,7 +65,7 @@ grafana:
 web:
   domain: solofarm.ru
   api_domain_test: dtm.solofarm.ru/test
-  api_domain_prod: dtm.solofarm.ru/prod
+  api_domain_prod: dtm.solofarm.ru
 
 pipeline:
   readmodel_ttl_minutes: 9

@@ -52,7 +52,7 @@ def _extract_v2_task_ids(payload: dict[str, object]) -> list[str]:
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Stage 23 cloud tri-block smoke")
     parser.add_argument("--function-url", default="", help="Cloud function URL (fallback: YC_FUNCTION_URL env)")
-    parser.add_argument("--api-base", default="", help="API base URL (for example https://dtm-api-test.solofarm.ru)")
+    parser.add_argument("--api-base", default="", help="API base URL (for example https://dtm.solofarm.ru/test)")
     parser.add_argument("--timeout", type=int, default=60)
     parser.add_argument(
         "--output-file",

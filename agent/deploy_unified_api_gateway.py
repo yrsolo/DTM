@@ -15,9 +15,11 @@ DEFAULT_CERTIFICATE_ID = "fpqsk82473vprlt5fv8p"
 DEFAULT_SERVICE_ACCOUNT_ID = "aje1kqd422vq2vefkbbl"
 DEFAULT_TEST_FUNCTION_ID = "d4e81vgi5vri8poe7qba"
 DEFAULT_PROD_FUNCTION_ID = "d4e2qtl9l30ockjv2hn7"
+DEFAULT_TEST_AUTH_FUNCTION_ID = "d4ebtgp4dhnbu1476gfu"
+DEFAULT_PROD_AUTH_FUNCTION_ID = "d4ecpcsedh5k7l81d3lp"
 DEFAULT_GATEWAY_NAME = "dtm-api-unified"
-DEFAULT_TEST_PATH_PREFIX = "/test/{proxy+}"
-DEFAULT_PROD_PATH_PREFIX = "/prod/{proxy+}"
+DEFAULT_FRONTEND_BASE_URL = "https://dtm-front.website.yandexcloud.net"
+DEFAULT_GRAFANA_UPSTREAM = "http://89.169.132.198:3000"
 
 
 def _run(command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -52,16 +54,23 @@ def _render_spec(
     *,
     test_function_id: str,
     prod_function_id: str,
+    test_auth_function_id: str,
+    prod_auth_function_id: str,
     service_account_id: str,
-    test_path_prefix: str,
-    prod_path_prefix: str,
+    frontend_base_url: str,
+    grafana_upstream: str,
 ) -> str:
+    frontend_base_url = frontend_base_url.rstrip("/")
+    grafana_upstream = grafana_upstream.rstrip("/")
     return f"""openapi: 3.0.0
 info:
   title: DTM Unified API
   version: 1.0.0
+servers:
+  - url: https://d5d84fgjajg4k61vh53h.8wihnuyr.apigw.yandexcloud.net
+  - url: https://{DEFAULT_DOMAIN}
 paths:
-  {test_path_prefix}:
+  /test/api/{{proxy+}}:
     x-yc-apigateway-any-method:
       parameters:
         - name: proxy
@@ -74,7 +83,30 @@ paths:
         function_id: {test_function_id}
         tag: $latest
         service_account_id: {service_account_id}
-  {prod_path_prefix}:
+
+  /test/info:
+    x-yc-apigateway-any-method:
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: {test_function_id}
+        tag: $latest
+        service_account_id: {service_account_id}
+
+  /test/auth/{{proxy+}}:
+    x-yc-apigateway-any-method:
+      parameters:
+        - name: proxy
+          in: path
+          required: true
+          schema:
+            type: string
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: {test_auth_function_id}
+        tag: $latest
+        service_account_id: {service_account_id}
+
+  /api/{{proxy+}}:
     x-yc-apigateway-any-method:
       parameters:
         - name: proxy
@@ -87,11 +119,134 @@ paths:
         function_id: {prod_function_id}
         tag: $latest
         service_account_id: {service_account_id}
+
+  /info:
+    x-yc-apigateway-any-method:
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: {prod_function_id}
+        tag: $latest
+        service_account_id: {service_account_id}
+
+  /auth/{{proxy+}}:
+    x-yc-apigateway-any-method:
+      parameters:
+        - name: proxy
+          in: path
+          required: true
+          schema:
+            type: string
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id: {prod_auth_function_id}
+        tag: $latest
+        service_account_id: {service_account_id}
+
+  /grafana:
+    x-yc-apigateway-any-method:
+      x-yc-apigateway-integration:
+        type: http
+        url: {grafana_upstream}/grafana/
+        headers:
+          Host: {DEFAULT_DOMAIN}
+          X-Forwarded-Proto: https
+          '*': '*'
+        query:
+          '*': '*'
+        timeouts:
+          connect: 1
+          read: 30
+
+  /grafana/:
+    x-yc-apigateway-any-method:
+      x-yc-apigateway-integration:
+        type: http
+        url: {grafana_upstream}/grafana/
+        headers:
+          Host: {DEFAULT_DOMAIN}
+          X-Forwarded-Proto: https
+          '*': '*'
+        query:
+          '*': '*'
+        timeouts:
+          connect: 1
+          read: 30
+
+  /grafana/{{path+}}:
+    x-yc-apigateway-any-method:
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      x-yc-apigateway-integration:
+        type: http
+        url: {grafana_upstream}/grafana/{{path}}
+        headers:
+          Host: {DEFAULT_DOMAIN}
+          X-Forwarded-Proto: https
+          '*': '*'
+        query:
+          '*': '*'
+        timeouts:
+          connect: 1
+          read: 30
+
+  /test:
+    get:
+      x-yc-apigateway-integration:
+        type: http
+        url: {frontend_base_url}/test/index.html
+
+  /test/:
+    get:
+      x-yc-apigateway-integration:
+        type: http
+        url: {frontend_base_url}/test/index.html
+
+  /test/{{path+}}:
+    x-yc-apigateway-any-method:
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      x-yc-apigateway-integration:
+        type: http
+        url: {frontend_base_url}/test/{{path}}
+        headers:
+          '*': '*'
+        query:
+          '*': '*'
+
+  /:
+    get:
+      x-yc-apigateway-integration:
+        type: http
+        url: {frontend_base_url}/
+
+  /{{path+}}:
+    x-yc-apigateway-any-method:
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      x-yc-apigateway-integration:
+        type: http
+        url: {frontend_base_url}/{{path}}
+        headers:
+          '*': '*'
+        query:
+          '*': '*'
 """
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Create or update unified API gateway for /test and /prod paths.")
+    parser = argparse.ArgumentParser(description="Create or update unified API gateway for canonical prod/test ingress.")
     parser.add_argument("--yc-binary", type=Path, default=DEFAULT_YC)
     parser.add_argument("--gateway-name", default=DEFAULT_GATEWAY_NAME)
     parser.add_argument("--domain", default=DEFAULT_DOMAIN)
@@ -99,8 +254,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--service-account-id", default=DEFAULT_SERVICE_ACCOUNT_ID)
     parser.add_argument("--test-function-id", default=DEFAULT_TEST_FUNCTION_ID)
     parser.add_argument("--prod-function-id", default=DEFAULT_PROD_FUNCTION_ID)
-    parser.add_argument("--test-path-prefix", default=DEFAULT_TEST_PATH_PREFIX)
-    parser.add_argument("--prod-path-prefix", default=DEFAULT_PROD_PATH_PREFIX)
+    parser.add_argument("--test-auth-function-id", default=DEFAULT_TEST_AUTH_FUNCTION_ID)
+    parser.add_argument("--prod-auth-function-id", default=DEFAULT_PROD_AUTH_FUNCTION_ID)
+    parser.add_argument("--frontend-base-url", default=DEFAULT_FRONTEND_BASE_URL)
+    parser.add_argument("--grafana-upstream", default=DEFAULT_GRAFANA_UPSTREAM)
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 
@@ -123,9 +280,11 @@ def main() -> int:
             _render_spec(
                 test_function_id=args.test_function_id,
                 prod_function_id=args.prod_function_id,
+                test_auth_function_id=args.test_auth_function_id,
+                prod_auth_function_id=args.prod_auth_function_id,
                 service_account_id=args.service_account_id,
-                test_path_prefix=args.test_path_prefix,
-                prod_path_prefix=args.prod_path_prefix,
+                frontend_base_url=args.frontend_base_url,
+                grafana_upstream=args.grafana_upstream,
             )
         )
         spec_path = tmp.name

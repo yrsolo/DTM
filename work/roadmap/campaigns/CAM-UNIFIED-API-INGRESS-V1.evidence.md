@@ -1,4 +1,4 @@
-﻿# CAM-UNIFIED-API-INGRESS-V1 Evidence
+# CAM-UNIFIED-API-INGRESS-V1 Evidence
 
 - source: `config/runtime.yaml`
   last_verified_at: 2026-03-11
@@ -19,7 +19,7 @@
   verified_by: Codex
   evidence: fetches and admin actions used absolute-root URLs like `/info`, `/admin/jobs`, `/api/v2/frontend`
   trust_level: high
-  notes: this would break from browser-visible `/test/info` and `/prod/info`
+  notes: this would break from browser-visible `/test/info` and root `/info`
 
 - source: live Yandex API Gateway specs
   last_verified_at: 2026-03-11
@@ -31,16 +31,23 @@
 - source: live unified gateway rollout
   last_verified_at: 2026-03-11
   verified_by: Codex
-  evidence: unified gateway `d5d84fgjajg4k61vh53h` created on `dtm.solofarm.ru`; direct gateway host returns `200` for `/test/info?format=json`, `/test/api/v2/frontend?limit=1`, `/prod/info?format=json`, `/prod/api/v2/frontend?limit=1`
+  evidence: unified gateway `d5d84fgjajg4k61vh53h` created on `dtm.solofarm.ru`; direct gateway host returns `200` for `/test/info?format=json`, `/test/api/v2/frontend?limit=1`, `/info?format=json`, and `/api/v2/frontend?limit=1`
   trust_level: high
   notes: routing works before DNS propagation/cache expiry
 
 - source: live canonical host verification after test path rename
   last_verified_at: 2026-03-11
   verified_by: Codex
-  evidence: `https://dtm.solofarm.ru/test/info?format=json`, `https://dtm.solofarm.ru/test/api/v2/frontend?limit=1`, `https://dtm.solofarm.ru/prod/info?format=json`, and `https://dtm.solofarm.ru/prod/api/v2/frontend?limit=1` all return `200`
+  evidence: `https://dtm.solofarm.ru/test/info?format=json`, `https://dtm.solofarm.ru/test/api/v2/frontend?limit=1`, `https://dtm.solofarm.ru/info?format=json`, and `https://dtm.solofarm.ru/api/v2/frontend?limit=1` all return `200`
   trust_level: high
-  notes: canonical test ingress is now `/test`; `/test-front` is retired
+  notes: canonical test ingress is `/test`; canonical prod ingress is root `/api` and `/info`
+
+- source: live canonical frontend/grafana/auth verification after full spec normalization
+  last_verified_at: 2026-03-11
+  verified_by: Codex
+  evidence: `GET https://dtm.solofarm.ru/test` -> `200` with `x-serverless-gateway-path: /test`; `GET https://dtm.solofarm.ru/test/` -> `200` with `x-serverless-gateway-path: /test`; `GET https://dtm.solofarm.ru/grafana/login` -> `200` with `x-serverless-gateway-path: /grafana/{path+}`; `GET https://dtm.solofarm.ru/auth/ping` -> `502` with `x-serverless-gateway-path: /auth/{proxy+}`; `GET https://dtm.solofarm.ru/test/auth/ping` -> `404` with `x-serverless-gateway-path: /test/auth/{proxy+}`
+  trust_level: high
+  notes: routing is correct for frontend, Grafana, and both auth paths; auth function behavior is separate from gateway normalization
 
 - source: Yandex DNS zone `solofarm.ru`
   last_verified_at: 2026-03-11
@@ -48,3 +55,4 @@
   evidence: record `dtm.solofarm.ru.` replaced from `3e811a7d807cad98.topology.gslb.yccdn.ru.` to `d5d84fgjajg4k61vh53h.8wihnuyr.apigw.yandexcloud.net.`
   trust_level: high
   notes: local resolver may continue serving cached old target until TTL expiry
+

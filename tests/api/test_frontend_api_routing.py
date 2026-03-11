@@ -173,7 +173,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         event = _fixture_event()
         event["pathParams"]["proxy"] = "api/v2/frontend"
         event["params"]["proxy"] = "api/v2/frontend"
-        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend?statuses=work"
+        event["url"] = "https://dtm.solofarm.ru/test/api/v2/frontend?statuses=work"
         response = asyncio.run(index.handler(event, None))
         payload = json.loads(response["body"])
         self.assertEqual(response["statusCode"], 200)
@@ -185,7 +185,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         event["pathParams"]["proxy"] = ""
         event["params"]["proxy"] = ""
         event["path"] = "/"
-        event["url"] = "https://dtm-api-test.solofarm.ru/"
+        event["url"] = "https://dtm.solofarm.ru/"
         response = asyncio.run(index.handler(event, None))
         self.assertEqual(response["statusCode"], 200)
         self.assertIn("DTM Frontend API v2", response.get("body", ""))
@@ -194,7 +194,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         event = _fixture_event()
         event["pathParams"]["proxy"] = "info"
         event["params"]["proxy"] = "info"
-        event["url"] = "https://dtm-api-test.solofarm.ru/info"
+        event["url"] = "https://dtm.solofarm.ru/info"
         response = asyncio.run(index.handler(event, None))
         self.assertEqual(response["statusCode"], 200)
         self.assertIn("DTM Info Dashboard", response.get("body", ""))
@@ -207,7 +207,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         event = _fixture_event()
         event["pathParams"]["proxy"] = "info"
         event["params"]["proxy"] = "info"
-        event["url"] = "https://dtm-api-test.solofarm.ru/info?format=json"
+        event["url"] = "https://dtm.solofarm.ru/info?format=json"
         event["queryStringParameters"] = {"format": "json"}
         response = asyncio.run(index.handler(event, None))
         payload = json.loads(response.get("body", "{}"))
@@ -223,7 +223,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         event = _fixture_event()
         event["pathParams"]["proxy"] = "api/v2/frontend/doc"
         event["params"]["proxy"] = "api/v2/frontend/doc"
-        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend/doc"
+        event["url"] = "https://dtm.solofarm.ru/test/api/v2/frontend/doc"
         response = asyncio.run(index.handler(event, None))
         body = response.get("body", "")
         self.assertEqual(response["statusCode"], 200)
@@ -241,7 +241,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         event = _fixture_event()
         event["pathParams"]["proxy"] = "api/v2/frontend/doc"
         event["params"]["proxy"] = "api/v2/frontend/doc"
-        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend/doc?format=json"
+        event["url"] = "https://dtm.solofarm.ru/test/api/v2/frontend/doc?format=json"
         event["queryStringParameters"] = {"format": "json"}
         response = asyncio.run(index.handler(event, None))
         payload = json.loads(response.get("body", "{}"))
@@ -259,7 +259,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         event = _fixture_event()
         event["pathParams"]["proxy"] = "api/v2/frontend"
         event["params"]["proxy"] = "api/v2/frontend"
-        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend?window_start=2026-03-01"
+        event["url"] = "https://dtm.solofarm.ru/test/api/v2/frontend?window_start=2026-03-01"
         event["queryStringParameters"] = {"window_start": "2026-03-01"}
         response = asyncio.run(index.handler(event, None))
         payload = json.loads(response.get("body", "{}"))
@@ -271,7 +271,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         event["pathParams"]["proxy"] = "api/v2/frontend"
         event["params"]["proxy"] = "api/v2/frontend"
         event["url"] = (
-            "https://dtm-api-test.solofarm.ru/api/v2/frontend?"
+            "https://dtm.solofarm.ru/test/api/v2/frontend?"
             "window_start=2026-04-01&window_end=2026-03-01"
         )
         event["queryStringParameters"] = {
@@ -287,7 +287,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         event = _fixture_event()
         event["pathParams"]["proxy"] = "api/v2/frontend"
         event["params"]["proxy"] = "api/v2/frontend"
-        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend?statuses=work&limit=1"
+        event["url"] = "https://dtm.solofarm.ru/test/api/v2/frontend?statuses=work&limit=1"
         event["queryStringParameters"] = {"statuses": "work", "limit": "1"}
         response = asyncio.run(index.handler(event, None))
 
@@ -352,7 +352,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         event = _fixture_event()
         event["pathParams"]["proxy"] = "api/v2/frontend"
         event["params"]["proxy"] = "api/v2/frontend"
-        event["url"] = "https://dtm-api-test.solofarm.ru/api/v2/frontend?statuses=work"
+        event["url"] = "https://dtm.solofarm.ru/test/api/v2/frontend?statuses=work"
         event["queryStringParameters"] = {"statuses": "work"}
         response = asyncio.run(index.handler(event, None))
         payload = json.loads(response.get("body", "{}"))

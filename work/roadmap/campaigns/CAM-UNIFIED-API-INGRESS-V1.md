@@ -1,19 +1,43 @@
 ﻿# CAM-UNIFIED-API-INGRESS-V1
 
 ## Goal
-Перенести test/prod API c отдельных hostnames на единый host `dtm.solofarm.ru` с path-based routing:
-- `/test/...`
-- `/prod/...`
+Нормализовать ingress на единый host `dtm.solofarm.ru`:
+- prod frontend on `/`
+- prod API/admin on `/api/...` and `/info`
+- prod auth on `/auth/...`
+- test frontend on `/test`
+- test API/admin on `/test/api/...` and `/test/info`
+- test auth on `/test/auth/...`
+- shared Grafana on `/grafana/...`
 
 ## Scope
-- repo-side base-path support for `/info`
-- config URLs for test/prod path routing
-- unified Yandex API Gateway on `dtm.solofarm.ru`
+- full repo-owned unified gateway spec
+- config normalization for prod/test canonical URLs
+- same-origin Grafana path under `/grafana/...`
 - old `dtm-api-*` domains stay alive as rollback path until explicit cleanup
 
 ## DoD
+- `/api/v2/frontend` routes to prod function
+- `/info` routes to prod info/admin page
+- `/auth/...` routes to prod auth function
 - `/test/api/v2/frontend` routes to test function
-- `/prod/api/v2/frontend` routes to prod function
-- `/test/info` operator page works with admin/API builder URLs under `/test`
-- `/prod/info` operator page works under `/prod`
+- `/test/info` routes to test info/admin page
+- `/test/auth/...` routes to test auth function
+- `/grafana/...` proxies Grafana upstream
+- root `/` serves prod frontend bucket and `/test` serves test frontend folder
 - old domains are not removed in this CAM
+
+## Result
+- live gateway `d5d84fgjajg4k61vh53h` owns the canonical ingress on `dtm.solofarm.ru`
+- prod canonical paths are:
+  - `/`
+  - `/api/...`
+  - `/info`
+  - `/auth/...`
+- test canonical paths are:
+  - `/test`
+  - `/test/api/...`
+  - `/test/info`
+  - `/test/auth/...`
+- same-origin Grafana is canonical under `/grafana/...`
+- old `dtm-api-test.solofarm.ru` and `dtm-api.solofarm.ru` remain rollback-only hosts

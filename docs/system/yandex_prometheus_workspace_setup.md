@@ -120,8 +120,8 @@ https://monitoring.api.cloud.yandex.net/prometheus/workspaces/mon73oiiclfbmmqbje
 
 Open Grafana:
 
-- dashboard: `https://grafana.solofarm.ru/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
-- embed: `https://grafana.solofarm.ru/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
+- dashboard: `https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
+- embed: `https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
 
 Check that these panels are non-empty after live actions:
 
@@ -155,11 +155,12 @@ Expected telemetry fields:
 - `prometheusWorkspaceId=mon73oiiclfbmmqbjejn`
 - `grafanaEnabled=true`
 - `grafanaDashboardUid=dtm-test-ops`
-- `grafanaDashboardUrl=https://grafana.solofarm.ru/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
-- `grafanaEmbedUrl=https://grafana.solofarm.ru/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
+- `grafanaDashboardUrl=https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45`
+- `grafanaEmbedUrl=https://dtm.solofarm.ru/grafana/public-dashboards/af7606b66c8d4ca9b069ea1913577e45?kiosk&theme=light`
 
 ## Notes
 
 - Yandex Monitoring remains the baseline sink; Prometheus is the second sink.
 - Workspace is shared; separation between `test` and `prod` is done by metric label `env`.
 - Do not place Prometheus API keys into YAML.
+
