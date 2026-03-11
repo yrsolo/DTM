@@ -19,6 +19,12 @@ Current canonical flow:
 - merge extra -> prep snapshot
 - write raw/prep snapshots to Object Storage
 
+Current Sheets runtime shape:
+
+- fetch reads worksheet values plus canonical `A`-column status colors only
+- normalize consumes `status_colors` from the snapshot and performs no extra Google API calls
+- active snapshot build path no longer depends on DataFrame-heavy repository conversion
+
 Current extra-store layout:
 
 - canonical key: `snapshots/{env}/extra/default.json`
@@ -37,6 +43,26 @@ Current prep-build stage metrics:
 - `dtm.snapshot.orphan_reconcile_ms`
 - `dtm.snapshot.task_view_build_ms`
 - `dtm.snapshot.prep_index_build_ms`
+
+Current operator summary gauges:
+
+- `dtm.snapshot.fetch_sheet_last_ms`
+- `dtm.snapshot.fetch_sheet_last5_avg_ms`
+- `dtm.snapshot.normalize_last_ms`
+- `dtm.snapshot.normalize_last5_avg_ms`
+- `dtm.snapshot.build_prep_last_ms`
+- `dtm.snapshot.build_prep_last5_avg_ms`
+- `dtm.snapshot.write_raw_last_ms`
+- `dtm.snapshot.write_raw_last5_avg_ms`
+- `dtm.snapshot.write_prep_last_ms`
+- `dtm.snapshot.write_prep_last5_avg_ms`
+
+Prep internals also expose `last` / `last5_avg` gauges for:
+
+- `extra_load`
+- `orphan_reconcile`
+- `task_view_build`
+- `prep_index_build`
 
 API v2 reads prep snapshot, not YDB readmodel.
 
@@ -213,8 +239,14 @@ Detailed operator reading for heavy paths:
 
 - snapshot:
   - Google read: `dtm.snapshot.fetch_sheet_ms`
+  - Google read current: `dtm.snapshot.fetch_sheet_last_ms`
+  - Google read rolling avg: `dtm.snapshot.fetch_sheet_last5_avg_ms`
   - normalize/build tasks: `dtm.snapshot.normalize_ms`
+  - normalize current: `dtm.snapshot.normalize_last_ms`
+  - normalize rolling avg: `dtm.snapshot.normalize_last5_avg_ms`
   - prep build total: `dtm.snapshot.build_prep_ms`
+  - prep build current: `dtm.snapshot.build_prep_last_ms`
+  - prep build rolling avg: `dtm.snapshot.build_prep_last5_avg_ms`
   - extra bulk load: `dtm.snapshot.extra_load_ms`
   - orphan reconciliation: `dtm.snapshot.orphan_reconcile_ms`
   - task view build: `dtm.snapshot.task_view_build_ms`
@@ -224,8 +256,14 @@ Detailed operator reading for heavy paths:
   - end-to-end: `dtm.snapshot.update_duration_ms`
 - render:
   - plan build: `dtm.render.build_plan_ms`
+  - plan build current: `dtm.render.build_plan_last_ms`
+  - plan build rolling avg: `dtm.render.build_plan_last5_avg_ms`
   - sheet write: `dtm.render.write_sheet_ms`
+  - sheet write current: `dtm.render.write_sheet_last_ms`
+  - sheet write rolling avg: `dtm.render.write_sheet_last5_avg_ms`
   - end-to-end: `dtm.render.duration_ms`
+  - end-to-end current: `dtm.render.duration_last_ms`
+  - end-to-end rolling avg: `dtm.render.duration_last5_avg_ms`
 
 If metrics are missing:
 

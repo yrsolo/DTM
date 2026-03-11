@@ -13,9 +13,6 @@ from sync_lockbox_from_env import _build_payload_entries, _default_yc_binary, _p
 REQUIRED_PROD_KEYS = (
     "YC_CLOUD_FUNCTION_PROD_NAME",
     "YC_CLOUD_FUNCTION_PROD_ID",
-    "YDB_ID_PROD",
-    "YDB_ENDPOINT_PROD",
-    "YDB_DATABASE_PROD",
 )
 
 

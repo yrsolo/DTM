@@ -24,6 +24,10 @@ def _expr(metric_name: str, env_name: str, extra_selector: str = "") -> str:
     return f"{_prom_metric(metric_name)}{base}"
 
 
+def _max_expr(metric_name: str, env_name: str, extra_selector: str = "") -> str:
+    return f"max({_expr(metric_name, env_name, extra_selector)})"
+
+
 def _datasource_ref(*, datasource_uid: str = "", datasource_name: str = "") -> dict[str, str] | str | None:
     uid_value = str(datasource_uid or "").strip()
     if uid_value:
@@ -34,6 +38,35 @@ def _datasource_ref(*, datasource_uid: str = "", datasource_name: str = "") -> d
     return None
 
 
+def _stat_panel(
+    *,
+    panel_id: int,
+    title: str,
+    expr: str,
+    datasource: dict[str, str] | str | None,
+    x: int,
+    y: int,
+    w: int = 4,
+    h: int = 4,
+) -> dict[str, Any]:
+    return {
+        "id": panel_id,
+        "title": title,
+        "type": "stat",
+        "gridPos": {"x": x, "y": y, "w": w, "h": h},
+        "datasource": datasource,
+        "targets": _with_ref_ids([{"expr": expr, "legendFormat": title}]),
+        "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
+            "orientation": "auto",
+            "textMode": "value",
+            "colorMode": "none",
+            "graphMode": "none",
+            "justifyMode": "auto",
+        },
+    }
+
+
 def build_test_grafana_dashboard(
     env_name: str = "test",
     *,
@@ -42,11 +75,23 @@ def build_test_grafana_dashboard(
 ) -> dict[str, Any]:
     datasource = _datasource_ref(datasource_uid=datasource_uid, datasource_name=datasource_name)
     panels = [
+        _stat_panel(panel_id=100, title="Snapshot Fetch Last", expr=_expr("dtm.snapshot.fetch_sheet_last_ms", env_name), datasource=datasource, x=0, y=0),
+        _stat_panel(panel_id=101, title="Snapshot Fetch Avg5", expr=_expr("dtm.snapshot.fetch_sheet_last5_avg_ms", env_name), datasource=datasource, x=4, y=0),
+        _stat_panel(panel_id=102, title="Normalize Last", expr=_expr("dtm.snapshot.normalize_last_ms", env_name), datasource=datasource, x=8, y=0),
+        _stat_panel(panel_id=103, title="Normalize Avg5", expr=_expr("dtm.snapshot.normalize_last5_avg_ms", env_name), datasource=datasource, x=12, y=0),
+        _stat_panel(panel_id=104, title="Build Prep Last", expr=_expr("dtm.snapshot.build_prep_last_ms", env_name), datasource=datasource, x=16, y=0),
+        _stat_panel(panel_id=105, title="Build Prep Avg5", expr=_expr("dtm.snapshot.build_prep_last5_avg_ms", env_name), datasource=datasource, x=20, y=0),
+        _stat_panel(panel_id=106, title="Render Plan Last", expr=_max_expr("dtm.render.build_plan_last_ms", env_name, 'operation=~".+"'), datasource=datasource, x=0, y=4),
+        _stat_panel(panel_id=107, title="Render Plan Avg5", expr=_max_expr("dtm.render.build_plan_last5_avg_ms", env_name, 'operation=~".+"'), datasource=datasource, x=4, y=4),
+        _stat_panel(panel_id=108, title="Write Sheet Last", expr=_max_expr("dtm.render.write_sheet_last_ms", env_name, 'operation=~".+"'), datasource=datasource, x=8, y=4),
+        _stat_panel(panel_id=109, title="Write Sheet Avg5", expr=_max_expr("dtm.render.write_sheet_last5_avg_ms", env_name, 'operation=~".+"'), datasource=datasource, x=12, y=4),
+        _stat_panel(panel_id=110, title="Render Total Last", expr=_max_expr("dtm.render.duration_last_ms", env_name, 'operation=~".+"'), datasource=datasource, x=16, y=4),
+        _stat_panel(panel_id=111, title="Render Total Avg5", expr=_max_expr("dtm.render.duration_last5_avg_ms", env_name, 'operation=~".+"'), datasource=datasource, x=20, y=4),
         {
             "id": 1,
             "title": "Snapshot Stage Timings",
             "type": "timeseries",
-            "gridPos": {"x": 0, "y": 0, "w": 12, "h": 8},
+            "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
             "datasource": datasource,
             "targets": _with_ref_ids([
                 {"expr": _expr("dtm.snapshot.fetch_sheet_ms", env_name), "legendFormat": "fetch_sheet_ms"},
@@ -60,7 +105,7 @@ def build_test_grafana_dashboard(
             "id": 2,
             "title": "Snapshot Total Duration",
             "type": "timeseries",
-            "gridPos": {"x": 12, "y": 0, "w": 12, "h": 8},
+            "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
             "datasource": datasource,
             "targets": _with_ref_ids(
                 [{"expr": _expr("dtm.snapshot.update_duration_ms", env_name), "legendFormat": "total"}]
@@ -70,7 +115,7 @@ def build_test_grafana_dashboard(
             "id": 3,
             "title": "Snapshot Outcomes",
             "type": "timeseries",
-            "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+            "gridPos": {"x": 0, "y": 16, "w": 12, "h": 8},
             "datasource": datasource,
             "targets": _with_ref_ids([
                 {"expr": _expr("dtm.snapshot.update_total", env_name), "legendFormat": "update_total"},
@@ -82,7 +127,7 @@ def build_test_grafana_dashboard(
             "id": 4,
             "title": "Render Stage Timings",
             "type": "timeseries",
-            "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
+            "gridPos": {"x": 12, "y": 16, "w": 12, "h": 8},
             "datasource": datasource,
             "targets": _with_ref_ids([
                 {
@@ -99,7 +144,7 @@ def build_test_grafana_dashboard(
             "id": 5,
             "title": "Render Total Duration",
             "type": "timeseries",
-            "gridPos": {"x": 0, "y": 16, "w": 12, "h": 8},
+            "gridPos": {"x": 0, "y": 24, "w": 12, "h": 8},
             "datasource": datasource,
             "targets": _with_ref_ids([
                 {
@@ -112,7 +157,7 @@ def build_test_grafana_dashboard(
             "id": 6,
             "title": "Render Volume",
             "type": "timeseries",
-            "gridPos": {"x": 12, "y": 16, "w": 12, "h": 8},
+            "gridPos": {"x": 12, "y": 24, "w": 12, "h": 8},
             "datasource": datasource,
             "targets": _with_ref_ids([
                 {
@@ -129,7 +174,7 @@ def build_test_grafana_dashboard(
             "id": 7,
             "title": "API Latency",
             "type": "timeseries",
-            "gridPos": {"x": 0, "y": 24, "w": 12, "h": 8},
+            "gridPos": {"x": 0, "y": 32, "w": 12, "h": 8},
             "datasource": datasource,
             "targets": _with_ref_ids([{"expr": _expr("dtm.api.duration_ms", env_name), "legendFormat": "{{operation}}"}]),
         },
@@ -137,7 +182,7 @@ def build_test_grafana_dashboard(
             "id": 8,
             "title": "API Throughput",
             "type": "timeseries",
-            "gridPos": {"x": 12, "y": 24, "w": 12, "h": 8},
+            "gridPos": {"x": 12, "y": 32, "w": 12, "h": 8},
             "datasource": datasource,
             "targets": _with_ref_ids([{"expr": _expr("dtm.api.requests_total", env_name), "legendFormat": "{{operation}}"}]),
         },
@@ -145,7 +190,7 @@ def build_test_grafana_dashboard(
             "id": 9,
             "title": "Worker Reliability",
             "type": "timeseries",
-            "gridPos": {"x": 0, "y": 32, "w": 12, "h": 8},
+            "gridPos": {"x": 0, "y": 40, "w": 12, "h": 8},
             "datasource": datasource,
             "targets": _with_ref_ids([
                 {"expr": _expr("dtm.worker.commands_total", env_name), "legendFormat": "commands_total"},
@@ -158,7 +203,7 @@ def build_test_grafana_dashboard(
             "id": 10,
             "title": "Notify Runtime",
             "type": "timeseries",
-            "gridPos": {"x": 12, "y": 32, "w": 12, "h": 8},
+            "gridPos": {"x": 12, "y": 40, "w": 12, "h": 8},
             "datasource": datasource,
             "targets": _with_ref_ids([
                 {"expr": _expr("dtm.notify.duration_ms", env_name), "legendFormat": "duration_ms"},
@@ -170,7 +215,7 @@ def build_test_grafana_dashboard(
             "id": 11,
             "title": "Telegram Intake",
             "type": "timeseries",
-            "gridPos": {"x": 0, "y": 40, "w": 12, "h": 8},
+            "gridPos": {"x": 0, "y": 48, "w": 12, "h": 8},
             "datasource": datasource,
             "targets": _with_ref_ids([
                 {"expr": _expr("dtm.telegram.accepted_total", env_name), "legendFormat": "accepted_total"},

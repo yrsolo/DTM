@@ -127,6 +127,7 @@ class SheetSnapshot:
     worksheet_range: str
     values: list[list[Any]]
     colors: list[Any]
+    status_colors: list[Any] = field(default_factory=list)
 
 
 @dataclass(slots=True, frozen=True)

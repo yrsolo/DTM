@@ -11,8 +11,6 @@ from src.adapters.llm_google import AsyncGoogleLLMChatAgent
 from src.adapters.llm_openai import AsyncOpenAIChatAgent
 from src.adapters.llm_yandex import AsyncYandexLLMChatAgent
 from src.app.bootstrap import build_app_context
-from src.entrypoints.jobs.db_migrate_branch import run_db_migrate_if_requested
-from src.entrypoints.jobs.db_migrate_job import run_db_migrate
 from src.entrypoints.jobs.quality_report_job import print_quality_report as _print_quality_report
 from src.entrypoints.jobs.runtime_context_job import RuntimeContextRequest, resolve_runtime_context
 from src.entrypoints.jobs.timer_job import TimerJob
@@ -41,13 +39,8 @@ APP_STORE_MODE = APP_CONTEXT.cfg.runtime.sources.store_mode_default
 APP_TRIGGERS = APP_CONTEXT.cfg.runtime.triggers
 APP_KEY_JSON = str(APP_DEPS.get("key_json", ""))
 APP_SHEET_INFO = dict(APP_DEPS.get("sheet_info", {}))
-APP_YDB_ENDPOINT = str(APP_DEPS.get("ydb_endpoint", ""))
-APP_YDB_DATABASE = str(APP_DEPS.get("ydb_database", ""))
-APP_YDB_SA_JSON_CREDENTIALS = APP_DEPS.get("ydb_sa_json_credentials")
-APP_YDB_SA_KEY_FILE = APP_DEPS.get("ydb_sa_key_file")
 APP_LEGACY_BLOB_WRITE = bool(APP_DEPS.get("legacy_blob_write", False))
 APP_MIGRATION_STORE_FILE = str(APP_DEPS.get("migration_store_file", "store.json"))
-APP_YDB_MIGRATE_ON_START = bool(APP_DEPS.get("ydb_migrate_on_start", False))
 TIMER_JOB_SHELL = TimerJob()
 
 
@@ -148,17 +141,6 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
     mode = runtime_ctx.mode
     mock_external = runtime_ctx.mock_external
     force_refresh = runtime_ctx.force_refresh
-
-    migrate_handled, migrate_result = run_db_migrate_if_requested(
-        mode=mode,
-        endpoint=APP_YDB_ENDPOINT,
-        database=APP_YDB_DATABASE,
-        sa_json_credentials=APP_YDB_SA_JSON_CREDENTIALS,
-        sa_key_file=APP_YDB_SA_KEY_FILE,
-        run_db_migrate=run_db_migrate,
-    )
-    if migrate_handled:
-        return migrate_result
 
     task_source = build_sheets_normalized_task_source(
         key_json=APP_KEY_JSON,

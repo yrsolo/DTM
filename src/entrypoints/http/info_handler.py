@@ -287,8 +287,8 @@ class InfoHandler:
             info = get_function_build_info(
                 folder_id=str(self._ctx.cfg.deploy.yandex_cloud.folder_id).strip(),
                 function_name=function_name,
-                sa_json_credentials=self._ctx.deps.get("ydb_sa_json_credentials"),
-                sa_key_file=self._ctx.deps.get("ydb_sa_key_file"),
+                sa_json_credentials=self._ctx.deps.get("yc_sa_json_credentials"),
+                sa_key_file=self._ctx.deps.get("yc_sa_key_file"),
             )
         except Exception as exc:
             return {"functionName": function_name, "error": str(exc)}

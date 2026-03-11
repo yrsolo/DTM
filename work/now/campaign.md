@@ -4,6 +4,7 @@ Single source of truth for campaign lifecycle state.
 
 ## In Progress
 - CAM-GRAFANA-PROM-OPS-DASHBOARD-V1
+- CAM-SHEETS-PERF-STATS-AND-YDB-ENV-CUT-V1
 
 ## Planned
 - none

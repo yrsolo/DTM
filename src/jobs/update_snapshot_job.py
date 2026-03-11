@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from src.app.context import AppContext
-from src.observability import timed
+from src.observability import emit_last_and_avg5_gauges, extract_recent_success_values, timed
 from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
 from src.snapshot_engine import build_snapshot_engine
 
@@ -45,6 +45,32 @@ class UpdateSnapshotJob:
                 timing_value = result.timings_ms.get(metric_name.removeprefix("dtm.snapshot."))
                 if timing_value is not None:
                     metrics.timing(metric_name, float(timing_value), labels=labels)
+            status_store = self._ctx.deps.get("job_status_store")
+            recent_records = status_store.get_recent_by_command("update_snapshot", limit=10) if status_store is not None else []
+            stage_map = {
+                "fetch_sheet": "fetch_sheet_ms",
+                "normalize": "normalize_ms",
+                "build_prep": "build_prep_ms",
+                "write_raw": "write_raw_ms",
+                "write_prep": "write_prep_ms",
+                "extra_load": "extra_load_ms",
+                "orphan_reconcile": "orphan_reconcile_ms",
+                "task_view_build": "task_view_build_ms",
+                "prep_index_build": "prep_index_build_ms",
+            }
+            for logical_name, timing_key in stage_map.items():
+                timing_value = result.timings_ms.get(timing_key)
+                if timing_value is None:
+                    continue
+                previous_values = extract_recent_success_values(recent_records, timing_key=timing_key, limit=4)
+                emit_last_and_avg5_gauges(
+                    metrics,
+                    metric_prefix="dtm.snapshot",
+                    logical_name=logical_name,
+                    current_value_ms=timing_value,
+                    previous_values_ms=previous_values,
+                    labels=labels,
+                )
         if logger is not None:
             logger.info(
                 "snapshot_update_finished",

@@ -127,48 +127,14 @@ RENDER_SOURCE = _env("RENDER_SOURCE", _render_default).lower()
 if RENDER_SOURCE not in ALLOWED_READ_SOURCES:
     raise ValueError(f"Unsupported RENDER_SOURCE={RENDER_SOURCE!r}. Allowed values: legacy, ydb.")
 
-YDB_ID = _contour_env("YDB_ID")
-YDB_ENDPOINT = _contour_env("YDB_ENDPOINT")
-YDB_DATABASE = _contour_env("YDB_DATABASE")
 YC_SA_JSON_CREDENTIALS = _env("YC_SA_JSON_CREDENTIALS")
 YC_SA_KEY_FILE = _env("YC_SA_KEY_FILE")
-YDB_MIGRATE_ON_START = _env_flag(
-    "YDB_MIGRATE_ON_START", "1" if _DB_CFG.ydb.get("migrate_on_start_default", False) else "0"
-)
 LEGACY_BLOB_WRITE = _env_flag(
     "LEGACY_BLOB_WRITE", "1" if _DB_CFG.compat.get("legacy_blob_write_default", False) else "0"
 )
 WRITE_LEGACY_MILESTONES = _env_flag(
     "WRITE_LEGACY_MILESTONES",
     "1" if _DB_CFG.compat.get("write_legacy_milestones_default", False) else "0",
-)
-YDB_EXHAUSTED_MAX_ATTEMPTS = max(
-    1, int(_env("YDB_EXHAUSTED_MAX_ATTEMPTS", str(_DB_CFG.retry.get("exhausted_max_attempts", 6))))
-)
-YDB_EXHAUSTED_BASE_BACKOFF_SECONDS = max(
-    0.05,
-    float(
-        _env(
-            "YDB_EXHAUSTED_BASE_BACKOFF_SECONDS",
-            str(_DB_CFG.retry.get("exhausted_base_backoff_seconds", 0.2)),
-        )
-    ),
-)
-YDB_EXHAUSTED_MAX_BACKOFF_SECONDS = max(
-    YDB_EXHAUSTED_BASE_BACKOFF_SECONDS,
-    float(
-        _env(
-            "YDB_EXHAUSTED_MAX_BACKOFF_SECONDS",
-            str(_DB_CFG.retry.get("exhausted_max_backoff_seconds", 4.0)),
-        )
-    ),
-)
-YDB_EXHAUSTED_JITTER_RATIO = min(
-    1.0,
-    max(
-        0.0,
-        float(_env("YDB_EXHAUSTED_JITTER_RATIO", str(_DB_CFG.retry.get("exhausted_jitter_ratio", 0.3)))),
-    ),
 )
 FORCE_REFRESH = _env_flag(
     "FORCE_REFRESH", "1" if _RUNTIME_CFG.pipeline.force_refresh_default else "0"

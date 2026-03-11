@@ -17,7 +17,7 @@ class SheetSnapshotHasher:
     def hash_sheet_snapshot(self, snapshot: SheetSnapshot) -> str:
         payload = {
             "values": snapshot.values,
-            "colors": snapshot.colors,
+            "status_colors": snapshot.status_colors or snapshot.colors,
         }
         serialized = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
@@ -121,10 +121,12 @@ class TaskSourceSheetsAdapter:
         data = self._task_source.read_snapshot(worksheet_range)
         values = data.get("values", []) if isinstance(data, dict) else []
         colors = data.get("colors", []) if isinstance(data, dict) else []
+        status_colors = data.get("status_colors", colors) if isinstance(data, dict) else colors
         return SheetSnapshot(
             worksheet_range=worksheet_range,
             values=list(values) if isinstance(values, list) else [],
             colors=list(colors) if isinstance(colors, list) else [],
+            status_colors=list(status_colors) if isinstance(status_colors, list) else [],
         )
 
     def build_tasks(self, full_snapshot: SheetSnapshot) -> list[Any]:
@@ -132,6 +134,7 @@ class TaskSourceSheetsAdapter:
             "range": full_snapshot.worksheet_range,
             "values": full_snapshot.values,
             "colors": full_snapshot.colors,
+            "status_colors": full_snapshot.status_colors,
         }
         return list(self._task_source.build_tasks_from_snapshot(payload))
 

@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any
 
-from config.constants import YDB_DATABASE, YDB_ENDPOINT
+from dotenv import load_dotenv
 from src.adapters.ydb.operational_repo import OperationalTaskRepo
 
 
@@ -73,8 +74,17 @@ def _extract_from_raw_payload(raw_payload_text: str) -> list[dict[str, Any]]:
     return normalized
 
 
-def run(*, apply: bool) -> MigrationStats:
-    repo = OperationalTaskRepo(endpoint=YDB_ENDPOINT, database=YDB_DATABASE, ensure_schema=False)
+def _resolve_ydb_args(endpoint: str, database: str) -> tuple[str, str]:
+    load_dotenv()
+    resolved_endpoint = str(endpoint or os.getenv("YDB_ENDPOINT", "")).strip()
+    resolved_database = str(database or os.getenv("YDB_DATABASE", "")).strip()
+    if not resolved_endpoint or not resolved_database:
+        raise ValueError("YDB endpoint/database must be provided via args or local env for this agent script")
+    return resolved_endpoint, resolved_database
+
+
+def run(*, endpoint: str, database: str, apply: bool) -> MigrationStats:
+    repo = OperationalTaskRepo(endpoint=endpoint, database=database, ensure_schema=False)
     tasks = repo.list_tasks()
     tasks_with_versions = {
         str(item.get("task_id", "")).strip(): int(item.get("current_version", item.get("task_revision", 0)) or 0)
@@ -148,10 +158,13 @@ def run(*, apply: bool) -> MigrationStats:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Migrate milestones to versioned YDB table")
+    parser.add_argument("--endpoint", default="", help="YDB endpoint override")
+    parser.add_argument("--database", default="", help="YDB database override")
     parser.add_argument("--apply", action="store_true", help="Write migrated rows into dtm_task_milestones_v")
     args = parser.parse_args()
 
-    stats = run(apply=args.apply)
+    endpoint, database = _resolve_ydb_args(args.endpoint, args.database)
+    stats = run(endpoint=endpoint, database=database, apply=args.apply)
     print(f"tasks_total={stats.tasks_total}")
     print(f"tasks_with_current_version={stats.tasks_with_current_version}")
     print(f"tasks_from_legacy_table={stats.tasks_from_legacy_table}")

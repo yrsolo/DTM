@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import timezone
 
 from src.app.context import AppContext
+from src.observability import emit_last_and_avg5_gauges, extract_recent_success_values
 from src.render import GoogleSheetsPlanWriter, RenderJob, RenderRequest, RenderUseCase, SheetTarget
 from src.render.target_guard import RenderTarget, validate_render_target
 from src.snapshot_engine import build_snapshot_engine
@@ -78,6 +79,24 @@ class RenderTimelineJob:
             metrics.timing("dtm.render.write_sheet_ms", float(result.write_sheet_ms), labels=labels)
             metrics.gauge("dtm.render.rows_rendered", float(result.rendered_task_rows), labels=labels)
             metrics.gauge("dtm.render.cells_written", float(result.cells_written), labels=labels)
+            status_store = self._ctx.deps.get("job_status_store")
+            recent_records = status_store.get_recent_by_command("render_timeline_sheet", limit=10) if status_store is not None else []
+            for logical_name, timing_key in {
+                "build_plan": "build_plan_ms",
+                "write_sheet": "write_sheet_ms",
+                "duration": "total_duration_ms",
+            }.items():
+                previous_values = extract_recent_success_values(recent_records, timing_key=timing_key, limit=4)
+                emit_last_and_avg5_gauges(
+                    metrics,
+                    metric_prefix="dtm.render",
+                    logical_name=logical_name,
+                    current_value_ms=result.build_plan_ms if timing_key == "build_plan_ms" else (
+                        result.write_sheet_ms if timing_key == "write_sheet_ms" else result.total_duration_ms
+                    ),
+                    previous_values_ms=previous_values,
+                    labels=labels,
+                )
         if logger is not None:
             logger.info(
                 "render_finished",

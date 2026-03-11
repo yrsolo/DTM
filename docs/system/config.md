@@ -37,6 +37,13 @@ Secrets stay outside repo config files:
 
 They are resolved through secret storage / env in loader/bootstrap only.
 
+Current active runtime no longer requires YDB contour secrets:
+- no `YDB_ID_*`
+- no `YDB_ENDPOINT_*`
+- no `YDB_DATABASE_*`
+
+If old migration/backfill utilities still need YDB, they must receive endpoint/database explicitly via their own args or local tooling env, not through active deploy/runtime wiring.
+
 ## Object Storage
 Used for:
 - raw snapshot

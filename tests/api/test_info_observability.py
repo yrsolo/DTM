@@ -92,6 +92,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.original_build_snapshot_engine = module.build_snapshot_engine
         self.original_get_queue_live_stats = module.get_queue_live_stats
         self.original_get_function_build_info = module.get_function_build_info
+        self.original_storage_stats = module.InfoHandler._storage_stats
         module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
         module.get_queue_live_stats = lambda **_kwargs: SimpleNamespace(  # type: ignore[assignment]
             to_dict=lambda: {
@@ -112,6 +113,12 @@ class InfoObservabilityTestCase(unittest.TestCase):
             entrypoint="index.handler",
             service_account_id="aje-test",
         )
+        module.InfoHandler._storage_stats = lambda *_args, **_kwargs: {  # type: ignore[assignment]
+            "objectsTotal": 3,
+            "bytesTotal": 1024,
+            "bytesHuman": "1.00 KB",
+            "byPrefix": {"raw": 256, "prep": 256, "extra": 256, "attachments": 256, "jobs": 0},
+        }
         self.ctx = SimpleNamespace(
             cfg=SimpleNamespace(
                 runtime=SimpleNamespace(
@@ -194,8 +201,8 @@ class InfoObservabilityTestCase(unittest.TestCase):
                 "tg_webhook_secret_token": "secret",
                 "aws_access_key_id": "ak",
                 "aws_secret_access_key": "sk",
-                "ydb_sa_json_credentials": "{}",
-                "ydb_sa_key_file": "",
+                "yc_sa_json_credentials": "{}",
+                "yc_sa_key_file": "",
                 "metrics_client": NoopMetricsClient(),
                 "structured_logger": StdoutJsonLogger(),
             },
@@ -205,6 +212,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.module.build_snapshot_engine = self.original_build_snapshot_engine  # type: ignore[assignment]
         self.module.get_queue_live_stats = self.original_get_queue_live_stats  # type: ignore[assignment]
         self.module.get_function_build_info = self.original_get_function_build_info  # type: ignore[assignment]
+        self.module.InfoHandler._storage_stats = self.original_storage_stats  # type: ignore[assignment]
 
     def test_info_json_includes_build_queue_jobs_and_render_debug(self) -> None:
         handler = InfoHandler(self.ctx)

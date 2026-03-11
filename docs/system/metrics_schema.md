@@ -20,14 +20,32 @@
 - `dtm.snapshot.update_total`
 - `dtm.snapshot.update_duration_ms`
 - `dtm.snapshot.fetch_sheet_ms`
+- `dtm.snapshot.fetch_sheet_last_ms`
+- `dtm.snapshot.fetch_sheet_last5_avg_ms`
 - `dtm.snapshot.normalize_ms`
+- `dtm.snapshot.normalize_last_ms`
+- `dtm.snapshot.normalize_last5_avg_ms`
 - `dtm.snapshot.build_prep_ms`
+- `dtm.snapshot.build_prep_last_ms`
+- `dtm.snapshot.build_prep_last5_avg_ms`
 - `dtm.snapshot.extra_load_ms`
+- `dtm.snapshot.extra_load_last_ms`
+- `dtm.snapshot.extra_load_last5_avg_ms`
 - `dtm.snapshot.orphan_reconcile_ms`
+- `dtm.snapshot.orphan_reconcile_last_ms`
+- `dtm.snapshot.orphan_reconcile_last5_avg_ms`
 - `dtm.snapshot.task_view_build_ms`
+- `dtm.snapshot.task_view_build_last_ms`
+- `dtm.snapshot.task_view_build_last5_avg_ms`
 - `dtm.snapshot.prep_index_build_ms`
+- `dtm.snapshot.prep_index_build_last_ms`
+- `dtm.snapshot.prep_index_build_last5_avg_ms`
 - `dtm.snapshot.write_raw_ms`
+- `dtm.snapshot.write_raw_last_ms`
+- `dtm.snapshot.write_raw_last5_avg_ms`
 - `dtm.snapshot.write_prep_ms`
+- `dtm.snapshot.write_prep_last_ms`
+- `dtm.snapshot.write_prep_last5_avg_ms`
 - `dtm.snapshot.changed_total`
 - `dtm.snapshot.nochange_total`
 
@@ -42,8 +60,14 @@
 
 - `dtm.render.total`
 - `dtm.render.duration_ms`
+- `dtm.render.duration_last_ms`
+- `dtm.render.duration_last5_avg_ms`
 - `dtm.render.build_plan_ms`
+- `dtm.render.build_plan_last_ms`
+- `dtm.render.build_plan_last5_avg_ms`
 - `dtm.render.write_sheet_ms`
+- `dtm.render.write_sheet_last_ms`
+- `dtm.render.write_sheet_last5_avg_ms`
 - `dtm.render.rows_rendered`
 - `dtm.render.cells_written`
 
@@ -76,6 +100,12 @@
 ## Current implementation notes
 
 `src/observability/*` is the shared abstraction layer for metrics and timing wrappers.
+
+Snapshot runtime notes:
+
+- `fetch_sheet_ms` now covers one values read plus one canonical `A`-column color read only.
+- `normalize_ms` no longer includes a second Google color fetch.
+- `*_last_ms` and `*_last5_avg_ms` gauges are emitted from recent successful job history, not approximated in Grafana queries.
 
 Current runtime default:
 

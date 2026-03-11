@@ -1,9 +1,3 @@
-ydb:
-  migrate_on_start_default: false
-  endpoint_env_key_base: YDB_ENDPOINT
-  database_env_key_base: YDB_DATABASE
-  id_env_key_base: YDB_ID
-
 object_storage:
   endpoint_url_default: https://storage.yandexcloud.net
   bucket_default: dtm
