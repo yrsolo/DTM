@@ -269,8 +269,8 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(payload.get("meta", {}).get("access", {}).get("mode"), "masked")
         self.assertEqual(payload.get("meta", {}).get("access", {}).get("fallbackReason"), "untrusted_ingress")
         self.assertIn("Server-Timing", response.get("headers", {}))
-        self.assertIn("X-DTM-Trace-Id", response.get("headers", {}))
-        self.assertIn("X-DTM-Frontend-Inner-Ms", response.get("headers", {}))
+        self.assertNotIn("X-DTM-Trace-Id", response.get("headers", {}))
+        self.assertNotIn("X-DTM-Frontend-Inner-Ms", response.get("headers", {}))
 
     def test_root_returns_v2_doc(self) -> None:
         event = _fixture_event()

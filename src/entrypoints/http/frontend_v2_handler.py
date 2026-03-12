@@ -164,7 +164,7 @@ class FrontendV2Handler:
             cache_result: str,
             result: str = "success",
             debug_fields: dict[str, object] | None = None,
-        ) -> None:
+        ) -> float:
             for stage, duration_ms in stage_samples:
                 record_api_stage(
                     self._ctx,
@@ -178,18 +178,20 @@ class FrontendV2Handler:
                     cache_result=cache_result,
                     debug_fields=debug_fields,
                 )
+            handler_total_ms = (time.perf_counter() - started) * 1000.0
             record_api_stage(
                 self._ctx,
                 trace_id=trace_id,
                 operation="frontend_access",
                 stage="handler_total",
-                duration_ms=(time.perf_counter() - started) * 1000.0,
+                duration_ms=handler_total_ms,
                 result=result,
                 route=route_class,
                 access_mode=access_mode,
                 cache_result=cache_result,
                 debug_fields=debug_fields,
             )
+            return handler_total_ms
 
         def _inner_total_ms() -> float:
             return float(sum(duration_ms for _, duration_ms in stage_samples))
@@ -306,19 +308,7 @@ class FrontendV2Handler:
                 response_started = time.perf_counter()
                 http_response = json_response(200, payload)
                 _record_stage("response_build", response_started)
-                http_response = self._with_headers(
-                    http_response,
-                    self._frontend_debug_headers(
-                        req=req,
-                        trace_id=trace_id,
-                        route_class=route_class,
-                        access_mode=access.mode,
-                        cache_result="hit",
-                        handler_total_ms=(time.perf_counter() - started) * 1000.0,
-                        inner_total_ms=_inner_total_ms(),
-                    ),
-                )
-                _emit_stages(
+                handler_total_ms = _emit_stages(
                     route_class=route_class,
                     access_mode=access.mode,
                     cache_result="hit",
@@ -330,6 +320,18 @@ class FrontendV2Handler:
                         "queryEligible": cache_eligible,
                         "cacheKey": cache_key,
                     },
+                )
+                http_response = self._with_headers(
+                    http_response,
+                    self._frontend_debug_headers(
+                        req=req,
+                        trace_id=trace_id,
+                        route_class=route_class,
+                        access_mode=access.mode,
+                        cache_result="hit",
+                        handler_total_ms=handler_total_ms,
+                        inner_total_ms=_inner_total_ms(),
+                    ),
                 )
                 duration_ms = int((time.perf_counter() - started) * 1000)
                 print(
@@ -416,6 +418,20 @@ class FrontendV2Handler:
         response_started = time.perf_counter()
         http_response = json_response(200, payload)
         _record_stage("response_build", response_started)
+        cache_result = "miss" if cache_eligible and cache_store is not None else "bypass"
+        handler_total_ms = _emit_stages(
+            route_class=route_class,
+            access_mode=access.mode,
+            cache_result=cache_result,
+            debug_fields={
+                "path": normalize_path(req.path),
+                "statuses": list(statuses),
+                "limit": limit,
+                "includePeople": include_people,
+                "queryEligible": cache_eligible,
+                "cacheKey": default_frontend_cache_key(route_class=route_class, access_mode=access.mode) if cache_eligible and cache_store is not None else "",
+            },
+        )
         http_response = self._with_headers(
             http_response,
             self._frontend_debug_headers(
@@ -423,25 +439,10 @@ class FrontendV2Handler:
                 trace_id=trace_id,
                 route_class=route_class,
                 access_mode=access.mode,
-                cache_result="miss" if cache_eligible and cache_store is not None else "bypass",
-                handler_total_ms=(time.perf_counter() - started) * 1000.0,
+                cache_result=cache_result,
+                handler_total_ms=handler_total_ms,
                 inner_total_ms=_inner_total_ms(),
             ),
-        )
-        _emit_stages(
-            route_class=route_class,
-            access_mode=access.mode,
-            cache_result="miss" if cache_eligible and cache_store is not None else "bypass",
-            debug_fields={
-                "path": normalize_path(req.path),
-                "statuses": list(statuses),
-                "limit": limit,
-                "includePeople": include_people,
-                "queryEligible": cache_eligible,
-                "cacheKey": default_frontend_cache_key(route_class=route_class, access_mode=access.mode)
-                if cache_eligible and cache_store is not None
-                else "",
-            },
         )
         duration_ms = int((time.perf_counter() - started) * 1000)
         print(

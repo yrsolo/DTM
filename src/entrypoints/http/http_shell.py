@@ -53,6 +53,13 @@ class HttpShell:
         except Exception:
             return 0.0
 
+    @staticmethod
+    def _pop_response_headers(headers: dict[str, str], *keys: str) -> dict[str, str]:
+        cleaned = dict(headers or {})
+        for key in keys:
+            cleaned.pop(key, None)
+        return cleaned
+
     def _should_trace_direct_frontend(self, operation: str) -> bool:
         return is_stage_metrics_enabled(self._ctx) and normalize_path(operation) == "/api/v2/frontend"
 
@@ -213,6 +220,19 @@ class HttpShell:
                 route = str(response_headers.get("X-DTM-Frontend-Route", "")).strip() or "api"
                 access_mode = str(response_headers.get("X-DTM-Frontend-Access-Mode", "")).strip() or "masked"
                 cache_result = str(response_headers.get("X-DTM-Frontend-Cache-Result", "")).strip() or "unknown"
+                response_headers = self._pop_response_headers(
+                    response_headers,
+                    "X-DTM-Router-Handler-Name",
+                    "X-DTM-Router-Precheck-Ms",
+                    "X-DTM-Router-Handler-Ms",
+                    "X-DTM-Router-Total-Ms",
+                    "X-DTM-Trace-Id",
+                    "X-DTM-Frontend-Handler-Ms",
+                    "X-DTM-Frontend-Inner-Ms",
+                    "X-DTM-Frontend-Route",
+                    "X-DTM-Frontend-Access-Mode",
+                    "X-DTM-Frontend-Cache-Result",
+                )
                 response_headers = append_response_headers(
                     response_headers,
                     {
