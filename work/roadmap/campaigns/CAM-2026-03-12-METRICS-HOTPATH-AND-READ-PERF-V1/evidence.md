@@ -85,6 +85,35 @@
   - current public Grafana dashboard token exposes dashboard JSON, but the published panel set does not expose flush-duration panels or raw query results for them
   - repo code confirms flush metrics are emitted, but active contour evidence cannot isolate their live value without monitoring/Grafana query access
 
+## Grafana dashboard rebuild (2026-03-12)
+- repo spec in `src/infra/grafana_specs.py` was rebuilt to cover all currently emitted runtime metrics from active code paths:
+  - snapshot stages including `orphan_reconcile`
+  - snapshot duration, wall clock, and flush duration
+  - render duration, wall clock, total, rows, and cells
+  - API duration and response size
+  - `dtm.info.summary.ms` and `dtm.info.detail.ms`
+  - notify totals and runtime metrics
+  - telegram updates/accepted/rejected/enqueue/command metrics
+  - worker totals, failures, retries, command duration, wall clock
+  - flush duration, points, and failures
+- compact layout change:
+  - single-value stat panels reduced from `4x4` to `2x2`
+  - time-series panels reduced from `12` columns wide to `6` columns wide
+- live republish performed with:
+  - `python scripts/provision_grafana_dashboard.py --env test`
+- live public dashboard verification through `GET /grafana/api/public/dashboards/af7606b66c8d4ca9b069ea1913577e45` confirms:
+  - `Snapshot Fetch Last` is now `2x2`
+  - new compact stat panels are present for `Orphan Reconcile Last`, `Timeline Wall Clock Last`, `Designers Wall Clock Last`, `Info Summary Last`, `Info Detail Last`
+  - new compact charts are present for `API and Info Latency` and `Metrics Flush Volume`
+
+## Info page compact controls (2026-03-12)
+- `/test/ops/info` now renders these sections as collapsed by default:
+  - `Recent Jobs`
+  - `Admin Actions`
+  - `API Request Builder`
+  - `Info JSON`
+- live HTML verification confirms four collapsed `details.card.section.collapsible` sections are present on the test contour
+
 ## Required evidence during execution
 - call graph of metric backend writes
 - before/after refresh timings by stage
