@@ -120,6 +120,7 @@ jobs:
             ENV=${{ vars.ENV || 'test' }}
             MONITORING_ENABLED=true
             MONITORING_BACKEND=yandex_monitoring
+            PROMETHEUS_ENABLED=false
             MONITORING_DASHBOARD_NAME=DTM Test Observability
           secrets: |
             TG_TOKEN=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/TG_TOKEN

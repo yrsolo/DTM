@@ -4,6 +4,7 @@
 
 ## Done
 
+- CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P03: opened test-only A/B experiment for direct `/api` latency by disabling Prometheus remote-write on the `test` deploy workflow
 - CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1 P01: split direct `/api` latency into `router_precheck_total`, `router_handler_total`, `router_total`, `http_shell_post_router`, and `function_total`
 - CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1 P02: aligned `FrontendV2Handler` totals with router timing ownership, added `query_parse` and `handler_total`, and removed leaked internal timing headers from public `stages` responses
 - CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1 P03: republished `test`, captured live `Server-Timing` and `/info` detail evidence, and localized direct `/api` latency into `inside_handler` and `after_handler` segments

@@ -142,6 +142,18 @@
   - current public Grafana dashboard token exposes dashboard JSON, but the published panel set does not expose flush-duration panels or raw query results for them
   - repo code confirms flush metrics are emitted, but active contour evidence cannot isolate their live value without monitoring/Grafana query access
 
+## Test-only Prometheus A/B follow-up (2026-03-13)
+- local A/B verification on the same direct `/api/v2/frontend` request shows that synchronous Prometheus remote-write can dominate latency:
+  - `PROMETHEUS_ENABLED=0` local average: about `2812 ms`
+  - `PROMETHEUS_ENABLED=1` local average: about `37190 ms`
+- live `test` direct `/api` requests before override also showed the same shape:
+  - wall clock about `25-33s`
+  - `frontend_inner` stayed sub-second to low-second
+  - `frontend_handler`, `function_total`, `unexplained_inside_handler`, and `unexplained_after_handler` ballooned into multi-second ranges
+- follow-up decision:
+  - override `PROMETHEUS_ENABLED=false` only in `.github/workflows/deploy_yc_function_main.yml`
+  - keep this as a test-contour experiment to prove or falsify Prometheus remote-write as the dominant bottleneck without changing prod behavior
+
 ## Grafana dashboard rebuild (2026-03-12)
 - repo spec in `src/infra/grafana_specs.py` was rebuilt to cover all currently emitted runtime metrics from active code paths:
   - snapshot stages including `orphan_reconcile`
