@@ -73,6 +73,7 @@ def build_app_context() -> AppContext:
         "google_llm_api_key": os.getenv("GOOGLE_LLM_API_KEY", "").strip(),
         "yandex_llm_api_key": os.getenv("YANDEX_LLM_API_KEY", "").strip(),
         "tg_webhook_secret_token": os.getenv("TG_WEBHOOK_SECRET_TOKEN", "").strip(),
+        "browser_auth_proxy_secret": os.getenv("BROWSER_AUTH_PROXY_SECRET", "").strip(),
         "grafana_api_token": os.getenv("GRAFANA_API_TOKEN", "").strip() or os.getenv("GRAFANA_TOKEN", "").strip(),
         "yandex_prometheus_api_key": os.getenv("YANDEX_PROMETHEUS_API_KEY", "").strip()
         or os.getenv("YMP_API_KEY", "").strip(),

@@ -90,6 +90,32 @@ class _FakeInfoStatusStore:
         return None
 
 
+class _MetricsRecorder:
+    def __init__(self) -> None:
+        self.timings = []
+        self.counters = []
+        self.gauges = []
+
+    def counter(self, name: str, value: int = 1, labels=None) -> None:
+        self.counters.append((name, int(value), dict(labels or {})))
+
+    def gauge(self, name: str, value: float, labels=None) -> None:
+        self.gauges.append((name, float(value), dict(labels or {})))
+
+    def timing(self, name: str, ms: float, labels=None) -> None:
+        self.timings.append((name, float(ms), dict(labels or {})))
+
+
+def _shape_signature(value):  # noqa: ANN001
+    if isinstance(value, dict):
+        return {key: _shape_signature(val) for key, val in sorted(value.items())}
+    if isinstance(value, list):
+        if not value:
+            return []
+        return [_shape_signature(value[0])]
+    return type(value).__name__
+
+
 class FrontendApiRoutingTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self._orig_build_snapshot_engine = frontend_v2_module.build_snapshot_engine
@@ -98,6 +124,9 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self._orig_info_get_function_build_info = info_handler_module.get_function_build_info
         self._orig_info_storage_stats = info_handler_module.InfoHandler._storage_stats
         self._orig_job_status_store = index.APP_DEPS.get("job_status_store")
+        self._orig_metrics_client = index.APP_DEPS.get("metrics_client")
+        self._orig_browser_auth_proxy_secret = index.APP_DEPS.get("browser_auth_proxy_secret")
+        self._metrics = _MetricsRecorder()
         self._engine = _FakeSnapshotEngine(
             payload={
                 "meta": {
@@ -108,9 +137,34 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
                     "readmodelSource": "s3_snapshot",
                 },
                 "summary": {"tasksReturned": 1},
-                "filters": {},
-                "entities": {"people": [], "groups": [], "tags": [], "enums": {}},
-                "tasks": [{"id": "101", "history": "raw"}],
+                "filters": {"designer": "Designer One"},
+                "entities": {
+                    "people": [{"id": "person-1", "name": "Designer One", "position": "designer", "links": {"self": "/api/v2/frontend/entities/people/person-1"}}],
+                    "groups": [{"id": "group-1", "name": "Project X", "links": {"self": "/api/v2/frontend/entities/groups/group-1"}}],
+                    "tags": [],
+                    "enums": {},
+                },
+                "tasks": [
+                    {
+                        "id": "101",
+                        "title": "Task Alpha",
+                        "brand": "BrandA",
+                        "format_": "Banner",
+                        "customer": "CustomerA",
+                        "history": "raw",
+                        "attachments": [
+                            {
+                                "id": "att-1",
+                                "filename": "brief-alpha.pdf",
+                                "mime": "application/pdf",
+                                "size": 123,
+                                "uploadedAt": "2026-03-02T00:00:00Z",
+                                "uploadedBy": "Designer One",
+                                "preview": "https://storage/brief-alpha.pdf",
+                            }
+                        ],
+                    }
+                ],
             }
         )
         frontend_v2_module.build_snapshot_engine = lambda _ctx: self._engine  # type: ignore[assignment]
@@ -141,6 +195,8 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
             "byPrefix": {"raw": 100, "prep": 200, "extra": 300, "attachments": 400, "jobs": 24},
         }
         index.APP_DEPS["job_status_store"] = _FakeInfoStatusStore()
+        index.APP_DEPS["metrics_client"] = self._metrics
+        index.APP_DEPS["browser_auth_proxy_secret"] = "proxy-secret-test"
 
     def tearDown(self) -> None:
         frontend_v2_module.build_snapshot_engine = self._orig_build_snapshot_engine  # type: ignore[assignment]
@@ -149,6 +205,8 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         info_handler_module.get_function_build_info = self._orig_info_get_function_build_info  # type: ignore[assignment]
         info_handler_module.InfoHandler._storage_stats = self._orig_info_storage_stats  # type: ignore[assignment]
         index.APP_DEPS["job_status_store"] = self._orig_job_status_store
+        index.APP_DEPS["metrics_client"] = self._orig_metrics_client
+        index.APP_DEPS["browser_auth_proxy_secret"] = self._orig_browser_auth_proxy_secret
 
     def test_http_path_from_proxy_template(self) -> None:
         event = _fixture_event()
@@ -179,6 +237,8 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 200)
         self.assertEqual(payload.get("meta", {}).get("artifact"), "dtm_frontend_api_v2")
         self.assertEqual(payload.get("meta", {}).get("readmodelSource"), "s3_snapshot")
+        self.assertEqual(payload.get("meta", {}).get("access", {}).get("mode"), "masked")
+        self.assertEqual(payload.get("meta", {}).get("access", {}).get("fallbackReason"), "untrusted_ingress")
 
     def test_root_returns_v2_doc(self) -> None:
         event = _fixture_event()
@@ -360,6 +420,96 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 503)
         self.assertEqual(payload.get("error", {}).get("code"), "frontend_source_unavailable")
         self.assertEqual(payload.get("error", {}).get("details", {}).get("source"), "snapshot")
+
+    def test_untrusted_direct_call_forces_masked_mode_and_masks_sensitive_fields(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend"
+        event["headers"] = {
+            "x-dtm-access-mode": "full",
+            "x-dtm-authenticated": "1",
+            "x-dtm-contour": "test",
+            "x-dtm-user-id": "user-1",
+            "x-dtm-user-role": "admin",
+            "x-dtm-user-status": "approved",
+        }
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response["body"])
+        task = payload["tasks"][0]
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(payload["meta"]["access"]["mode"], "masked")
+        self.assertEqual(payload["meta"]["access"]["fallbackReason"], "untrusted_ingress")
+        self.assertNotEqual(task["title"], "Task Alpha")
+        self.assertNotEqual(task["brand"], "BrandA")
+        self.assertNotEqual(task["customer"], "CustomerA")
+        self.assertNotEqual(task["history"], "raw")
+        self.assertNotEqual(payload["entities"]["people"][0]["name"], "Designer One")
+        self.assertTrue(any(name == "dtm.api.masking_ms" for name, _, _ in self._metrics.timings))
+
+    def test_trusted_proxy_secret_allows_full_mode(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend"
+        event["headers"] = {
+            "X-DTM-Proxy-Secret": "proxy-secret-test",
+            "x-dtm-access-mode": "full",
+            "x-dtm-authenticated": "1",
+            "x-dtm-contour": "test",
+            "x-dtm-user-id": "user-1",
+            "x-dtm-user-role": "admin",
+            "x-dtm-user-status": "approved",
+        }
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response["body"])
+        task = payload["tasks"][0]
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(payload["meta"]["access"]["mode"], "full")
+        self.assertEqual(payload["meta"]["access"]["userRole"], "admin")
+        self.assertEqual(task["title"], "Task Alpha")
+        self.assertEqual(task["brand"], "BrandA")
+        self.assertEqual(task["customer"], "CustomerA")
+        self.assertEqual(task["history"], "raw")
+
+    def test_masked_mode_is_deterministic_and_preserves_payload_shape(self) -> None:
+        masked_event = _fixture_event()
+        masked_event["pathParams"]["proxy"] = "api/v2/frontend"
+        masked_event["params"]["proxy"] = "api/v2/frontend"
+        masked_event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend"
+        masked_event["headers"] = {
+            "X-DTM-Proxy-Secret": "proxy-secret-test",
+            "x-dtm-access-mode": "masked",
+            "x-dtm-authenticated": "1",
+            "x-dtm-contour": "test",
+            "x-dtm-user-id": "user-1",
+            "x-dtm-user-role": "admin",
+            "x-dtm-user-status": "approved",
+        }
+        full_event = _fixture_event()
+        full_event["pathParams"]["proxy"] = "api/v2/frontend"
+        full_event["params"]["proxy"] = "api/v2/frontend"
+        full_event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend"
+        full_event["headers"] = {
+            "X-DTM-Proxy-Secret": "proxy-secret-test",
+            "x-dtm-access-mode": "full",
+            "x-dtm-authenticated": "1",
+            "x-dtm-contour": "test",
+            "x-dtm-user-id": "user-1",
+            "x-dtm-user-role": "admin",
+            "x-dtm-user-status": "approved",
+        }
+
+        masked_payload_a = json.loads(asyncio.run(index.handler(masked_event, None))["body"])
+        masked_payload_b = json.loads(asyncio.run(index.handler(masked_event, None))["body"])
+        full_payload = json.loads(asyncio.run(index.handler(full_event, None))["body"])
+
+        self.assertEqual(masked_payload_a["meta"]["access"]["mode"], "masked")
+        self.assertEqual(masked_payload_a["tasks"][0]["title"], masked_payload_b["tasks"][0]["title"])
+        self.assertEqual(masked_payload_a["entities"]["people"][0]["name"], masked_payload_b["entities"]["people"][0]["name"])
+        self.assertEqual(_shape_signature(masked_payload_a), _shape_signature(full_payload))
+        self.assertNotEqual(masked_payload_a["tasks"][0]["title"], full_payload["tasks"][0]["title"])
+        self.assertNotEqual(masked_payload_a["entities"]["groups"][0]["name"], full_payload["entities"]["groups"][0]["name"])
 
 
 if __name__ == "__main__":

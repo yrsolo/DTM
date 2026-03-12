@@ -15,9 +15,17 @@ Flow: `Sheets -> Raw Snapshot -> Prep Snapshot -> Read/API/Render/Notify + Queue
 The project is actively removing planner-centric runtime assumptions and import-time bootstrap side effects.
 Deploy target is Yandex Cloud Function with test/prod contours.
 
+Current runtime defaults:
+- `index.py` and `planner_runtime_entry.py` are import-safe and build `AppContext` only at explicit runtime boundaries.
+- `/info` is summary-first by default; heavy diagnostics are exposed only through explicit detail mode.
+- Telegram/reminder/group-query stays frozen for this wave unless break/fix work is required.
+
 Current architecture policy and wave guidance:
 - [docs/system/architecture_values.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/architecture_values.md)
 - [docs/system/architecture.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/architecture.md)
+- [docs/system/module_map.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/module_map.md)
+- [docs/system/browser_auth_contract.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/browser_auth_contract.md)
+- [docs/system/auth_trust_boundary.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/auth_trust_boundary.md)
 - [work/roadmap/MASTER_EXECUTION_BRIEF_2026-03-12.md](/n:/PROJECTS/python/SCRIPT/DTM/work/roadmap/MASTER_EXECUTION_BRIEF_2026-03-12.md)
 
 ## Context

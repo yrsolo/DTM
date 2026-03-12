@@ -39,7 +39,9 @@ Current architectural direction for the 2026-03-12 wave:
 - remove import-time production bootstrap from active runtime modules,
 - reduce planner runtime to a transitional adapter rather than the conceptual center,
 - keep browser auth and masking at the access boundary,
+- validate browser-facing trusted ingress with an internal proxy secret before honoring `x-dtm-*` auth headers,
 - keep read endpoints cache-first and side-effect free by default.
+- keep `/info` summary-first by default and expose heavy diagnostics only through explicit detail mode.
 - treat Telegram/reminder/group-query as frozen unless break/fix work is required.
 
 ## Async mutation contour
@@ -71,6 +73,7 @@ Unsupported legacy planner modes are intentionally rejected.
 
 ## Entry boundary rules
 - `index.py` must remain thin.
+- `index.py` and `src/entrypoints/runtime/planner_runtime_entry.py` must stay import-safe and construct `AppContext` only inside explicit runtime/factory calls.
 - `src/entrypoints/**` owns transport parsing/translation only.
 - domain logic lives in `src/core/**` and focused service/use-case modules.
 - archived planner/bootstrap/render/reference code lives under `src/legacy/**` and must not be imported by standard runtime.

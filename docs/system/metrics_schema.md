@@ -36,8 +36,14 @@
 
 - `dtm.api.requests_total`
 - `dtm.api.duration_ms`
+- `dtm.api.masking_ms`
 - `dtm.api.response_size_bytes`
 - `dtm.api.prep_age_seconds`
+
+### Info
+
+- `dtm.info.summary.ms`
+- `dtm.info.detail.ms`
 
 ### Render
 
@@ -99,6 +105,8 @@ Metrics batching notes:
 - active jobs now batch metrics per operation and flush once per backend instead of one HTTP request per metric point
 - `dtm.metrics.flush_duration_ms` and `dtm.metrics.flush_points_total` measure backend flush cost directly
 - `dtm.worker.wall_clock_ms` captures worker-side wall-clock including status-store writes and metric flush
+- `/info` summary/detail timing is emitted separately so default operator reads can be compared against heavy diagnostics explicitly
+- browser-facing masked mode emits `dtm.api.masking_ms` so masking overhead stays measurable without forking the canonical query path
 
 Current runtime default:
 

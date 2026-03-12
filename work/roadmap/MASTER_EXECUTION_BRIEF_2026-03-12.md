@@ -15,8 +15,12 @@ Rule:
 1. `agent/OPERATING_CONTRACT.md`
 2. `AGENTS.md`
 3. `docs/system/architecture_values.md`
-4. active main campaign docs in `work/roadmap/campaigns/*`
-5. verified code paths
+4. `docs/system/architecture.md`
+5. `docs/system/module_map.md`
+6. `docs/system/browser_auth_contract.md`
+7. `docs/system/auth_trust_boundary.md`
+8. active main campaign docs in `work/roadmap/campaigns/*`
+9. verified code paths
 
 ## Execution order
 1. `CAM-2026-03-12-RUNTIME-DEPLANNERIZE-AND-BOOTSTRAP-HARDENING-V1`

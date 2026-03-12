@@ -31,10 +31,16 @@ The repo is the source of truth for:
 
 The current dashboard spec contains:
 
-- a top stat section for snapshot, render, and wall-clock/flush diagnostics
-- raw timeseries panels for snapshot/render/API/worker/notify/telegram
+- a dense top stat section for snapshot, render, info, and wall-clock/flush diagnostics
+- compact timeseries panels for snapshot/render/API/info/worker/notify/telegram/flush activity
 
 These panels are operator-oriented, not BI-oriented.
+
+Current layout policy:
+
+- single-value stat panels use compact `2x2` cards so more current-state diagnostics fit on screen
+- timeseries panels use `6` grid columns instead of full-width `12` where possible
+- the repo dashboard spec is expected to stay denser than the default Grafana layout
 
 ## Query conventions
 
@@ -91,6 +97,9 @@ The dashboard also shows raw-metric stat panels for:
 - `Snapshot Job Wall Clock`
 - `Worker Wall Clock`
 - `Metrics Flush Total`
+- `Info Summary Last`
+- `Info Detail Last`
+- `Orphan Reconcile Last`
 
 This is intentional: operator questions about "why button wall-clock is larger than business stage timings" should be answered on the dashboard, not inferred manually from logs.
 
@@ -104,6 +113,8 @@ They are not merged with `max(...)`, because that would hide which render path i
 
 ## `/info` integration
 
+`/info` remains the operator control surface and summary view.
+
 `/info?format=json` exposes additive Grafana metadata:
 
 - `grafanaEnabled`
@@ -114,11 +125,17 @@ They are not merged with `max(...)`, because that would hide which render path i
 
 This is for link-out and embed metadata only. `/info` is not being replaced by Grafana.
 
+Current `/info` UI policy:
+
+- default operator view is summary-first
+- heavy JSON/detail inspection is explicit
+- `Recent Jobs`, `Admin Actions`, `API Request Builder`, and `Info JSON` stay collapsible and default-closed so dashboard-level information fits on one screen more easily
+
 ## Current rollout state
 
 Repo-side Grafana foundation is implemented.
 
-Current live test state:
+Current verified test state:
 
 - Grafana base URL: `https://dtm.solofarm.ru/grafana`
 - test folder: `DTM Test`
@@ -134,12 +151,13 @@ What is already done:
 - folder creation works
 - dashboard import from repo spec works
 - externally shared/public dashboard is created by API
+- dashboard layout is republished from `src/infra/grafana_specs.py`, not hand-edited in Grafana
+- current public dashboard includes compact stat cards and separate info/flush panels
 
-What is still pending:
+Current operational caveats:
 
-- datasource `DTM YMP Test` is created against workspace `mon73oiiclfbmmqbjejn`
-- panel data will remain empty until the updated runtime emits samples into YMP
-- Grafana server still returns `X-Frame-Options: deny`, so iframe embed remains blocked until `allow_embedding = true` is enabled on the VPS
+- iframe embed still depends on Grafana server-side `allow_embedding = true`
+- raw metric samples still require datasource/query access; the public dashboard is not a substitute for direct Monitoring queries
 - final workspace setup and datasource command are documented in:
   - [yandex_prometheus_workspace_setup.md](n:\PROJECTS\python\SCRIPT\DTM\docs\system\yandex_prometheus_workspace_setup.md)
 

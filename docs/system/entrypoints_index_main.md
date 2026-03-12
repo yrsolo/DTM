@@ -16,8 +16,9 @@ Archived wrapper code now lives under:
 
 Canonical runtime flow:
 1. resolve mode/context
-2. build sheets task source
-3. call `TimerPipeline(AppContext).run(...)`
+2. build `AppContext` inside explicit runtime execution only
+3. build sheets task source
+4. call `TimerPipeline(AppContext).run(...)`
 
 Timer pipeline now updates snapshot engine storage (S3 raw/prep) and does not build/read YDB readmodel for API v2 runtime path.
 
@@ -35,8 +36,8 @@ Legacy planner modes are no longer supported in standard runtime and return expl
 ## `index.py`
 
 `index.py` is now a true thin shell:
-- build `AppContext`
-- build `IndexDispatcher`
+- keep module import side-effect free
+- lazily resolve `AppContext` and `IndexDispatcher` on first runtime access
 - delegate `handler(event, ctx)` to dispatcher
 
 Transport-specific branching lives outside `index.py`:
@@ -97,6 +98,8 @@ Render v2 policy:
 
 Info observability policy:
 - `/info` stays synchronous and read-only
+- default `/info` and `/info?format=json` return lightweight summary payload only
+- heavy diagnostics are exposed only through explicit detail mode (`/info/detail` or `view=detail`)
 - it may call live Yandex APIs for queue depth and active function build metadata
 - async admin actions report through queue-backed job status and recent-history blocks
 - render RCA should use `jobs.latestByCommand.render_timeline_sheet` and `renderDebug`, not raw enqueue HTTP status

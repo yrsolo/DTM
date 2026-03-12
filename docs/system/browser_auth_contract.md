@@ -24,6 +24,11 @@ Shared infra path:
 
 Browser traffic must be interpreted through trusted proxy/gateway chain only.
 
+Chosen trusted-ingress mechanism for the current wave:
+- auth proxy must send an internal service-secret header
+- backend validates that header before trusting any `x-dtm-*` access headers
+- browser requests without that secret are treated as untrusted direct calls
+
 Trusted proxy headers:
 - `x-dtm-access-mode: full | masked`
 - `x-dtm-authenticated: 1 | 0`
@@ -49,6 +54,7 @@ Full access:
 Masked access:
 - unauthenticated request, or
 - trusted access mode is `masked`
+- trusted ingress validation fails and backend downgrades to masked fallback
 - payload shape stays the same, but sensitive display fields are deterministically rewritten
 
 ## Masking rules
@@ -72,6 +78,11 @@ Mask sensitive business display fields:
 
 Preferred backend pipeline:
 - HTTP -> AccessContext -> canonical payload build -> optional MaskingTransformer -> response
+
+Current repo implementation:
+- trusted ingress is resolved in `src/entrypoints/http/access_context.py`
+- masking transform lives in `src/services/access/masking.py`
+- frontend handler keeps one canonical payload build path in `src/entrypoints/http/frontend_v2_handler.py`
 
 Forbidden direction:
 - separate masked query engine

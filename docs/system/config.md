@@ -24,6 +24,9 @@ Primary config files:
 - `runtime.monitoring.*`: Yandex Monitoring backend settings
 - `runtime.prometheus.*`: Prometheus-compatible sink settings
 - `runtime.grafana.*`: Grafana dashboard/embed metadata
+- `runtime.api.auth_trusted_secret_header`: trusted proxy secret header name for browser-facing auth
+- `runtime.api.auth_trusted_fallback`: direct/untrusted browser fallback mode (`masked`)
+- `runtime.api.auth_mask_dictionary_version`: deterministic masking dictionary version
 
 ## Secrets
 Secrets stay outside repo config files:
@@ -34,6 +37,7 @@ Secrets stay outside repo config files:
 - Yandex Cloud auth/service secrets
 - `YANDEX_PROMETHEUS_API_KEY` / `YMP_API_KEY`
 - `GRAFANA_TOKEN`
+- `BROWSER_AUTH_PROXY_SECRET`
 
 They are resolved through secret storage / env in loader/bootstrap only.
 

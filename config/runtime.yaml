@@ -121,6 +121,9 @@ timing:
 
 api:
   debug_http_event_default: false
+  auth_trusted_secret_header: X-DTM-Proxy-Secret
+  auth_trusted_fallback: masked
+  auth_mask_dictionary_version: v1
 
 triggers:
   a1sldapc8v2pha7dichv: timer
