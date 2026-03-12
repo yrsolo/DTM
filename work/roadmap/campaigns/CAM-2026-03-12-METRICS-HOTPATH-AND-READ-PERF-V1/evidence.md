@@ -61,6 +61,30 @@
   - detail payload is materially heavier by payload size and slower in the worst sampled request
   - dedicated live timing metrics exist in code path, but flush-overhead and refresh-gap evidence still need separate monitoring correlation
 
+## Live refresh evidence (2026-03-12)
+- triggered live test refresh through `POST https://dtm.solofarm.ru/test/ops/admin/commands/update-snapshot`
+- observed job:
+  - `job_id`: `d30be4de462343faa7ba2f09d2ff1c8b`
+  - `status`: `success`
+  - `requested_at_utc`: `2026-03-12T07:36:17+00:00`
+  - `started_at_utc`: `2026-03-12T07:36:22+00:00`
+  - `finished_at_utc`: `2026-03-12T07:36:29+00:00`
+- reported live timings from job summary:
+  - `job_wall_clock_ms`: `5889.699`
+  - `timings_ms.total_duration_ms`: `4225.613`
+  - dominant stage: `fetch_sheet_ms` about `2601.367`
+  - write stages: `write_raw_ms` about `358.008`, `write_prep_ms` about `292.423`
+- derived interpretation:
+  - queue/start delay from request to worker start: about `5000 ms`
+  - in-worker gap between `job_wall_clock_ms` and `total_duration_ms`: about `1664 ms`
+  - this gap is consistent with wrapper overhead outside core snapshot update, including task-source setup and metrics flush path, but public surfaces still do not isolate flush-only duration
+
+## Current blocker
+- separate live quantification of `dtm.metrics.flush_duration_ms` is blocked by missing read access to monitoring data:
+  - `/info` exposes config and dashboard links, not raw metric samples
+  - current public Grafana dashboard token exposes dashboard JSON, but the published panel set does not expose flush-duration panels or raw query results for them
+  - repo code confirms flush metrics are emitted, but active contour evidence cannot isolate their live value without monitoring/Grafana query access
+
 ## Required evidence during execution
 - call graph of metric backend writes
 - before/after refresh timings by stage
