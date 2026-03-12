@@ -34,6 +34,7 @@ The current dashboard spec contains:
 - a dense top stat section for snapshot, render, info, and wall-clock/flush diagnostics
 - compact timeseries panels for snapshot/render/API/info/worker/notify/telegram/flush activity
 - dedicated frontend bottleneck panels for stage breakdown, route comparison, and cache hit/miss/bypass comparison
+- dedicated direct `/api` outer-latency panels for function/shell/dispatch timing versus inner frontend stages
 
 These panels are operator-oriented, not BI-oriented.
 
@@ -132,6 +133,7 @@ Current `/info` UI policy:
 - heavy JSON/detail inspection is explicit
 - `Recent Jobs`, `Admin Actions`, `API Request Builder`, and `Info JSON` stay collapsible and default-closed so dashboard-level information fits on one screen more easily
 - `/info` detail also exposes recent in-process frontend stage traces and current profiling level as a secondary diagnostics surface
+- `/info` detail also exposes recent direct `/api` outer traces so operator checks can compare `function total`, `http shell total`, `frontend handler total`, `frontend inner total`, and the unexplained in-function gap without changing payload contracts
 
 ## Current rollout state
 
@@ -155,6 +157,7 @@ What is already done:
 - externally shared/public dashboard is created by API
 - dashboard layout is republished from `src/infra/grafana_specs.py`, not hand-edited in Grafana
 - current public dashboard includes compact stat cards and separate info/flush panels
+- current repo dashboard spec also includes direct `/api` outer breakdown and outer-vs-inner comparison panels for latency decomposition work
 
 Current operational caveats:
 

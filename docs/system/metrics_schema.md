@@ -36,6 +36,9 @@
 
 - `dtm.api.requests_total`
 - `dtm.api.duration_ms`
+- `dtm.api.outer.duration_ms`
+- `dtm.api.outer.total`
+- `dtm.api.outer.failures_total`
 - `dtm.api.stage.duration_ms`
 - `dtm.api.stage.total`
 - `dtm.api.stage.failures_total`
@@ -117,6 +120,7 @@ Metrics batching notes:
 - browser-facing masked mode emits `dtm.api.masking_ms` so masking overhead stays measurable without forking the canonical query path
 - exact default frontend query may now use Object Storage response cache for `full` and `masked` variants; cache read/write path emits dedicated `dtm.api.response_cache.*` metrics
 - bottleneck analytics can emit `dtm.api.stage.*` for frontend read-path stages such as access resolution, prep access, cache read/freshness, payload build, masking, cache write, and response build
+- direct `/api/v2/frontend` now also emits `dtm.api.outer.*` for outer function/request-build/router-dispatch/response-build timing so operator diagnostics can separate inner handler work from wrapper/runtime overhead
 
 Bottleneck profiling policy:
 
@@ -124,6 +128,7 @@ Bottleneck profiling policy:
 - `runtime.bottleneck_metrics_level=stages` enables stage timings/counters
 - `runtime.bottleneck_metrics_level=debug` keeps stage timings/counters and adds debug trace details to operator diagnostics/logs
 - legacy `runtime.dev_mode_metrics=true` still enables stage-level emission as backward-compatible `stages`
+- in `stages/debug`, direct `/api` responses may also expose `Server-Timing` outer latency headers; `debug` additionally exposes short `X-DTM-Outer-*` response headers for investigations
 
 Current runtime default:
 

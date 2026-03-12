@@ -1,6 +1,8 @@
 # Active Tasks
 
-- none
+- CAM-2026-03-12-DIRECT-API-OUTER-LATENCY-DECOMPOSITION-V1 P01: instrument direct `/api` outer timing at function/shell/dispatch/response boundaries
+- CAM-2026-03-12-DIRECT-API-OUTER-LATENCY-DECOMPOSITION-V1 P02: expose direct `/api` debug timing through `Server-Timing` headers and `/info` detail
+- CAM-2026-03-12-DIRECT-API-OUTER-LATENCY-DECOMPOSITION-V1 P03: republish Grafana and capture live `test` evidence for direct `/api`
 
 ## Done
 

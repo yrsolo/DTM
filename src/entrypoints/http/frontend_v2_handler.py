@@ -26,7 +26,12 @@ from src.entrypoints.http.frontend_query_params import (
 from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_api_v2_doc_html
 from src.entrypoints.http.response_utils import error_response, html_response, json_response
 from src.entrypoints_adapters.api_v2_adapter import build_frontend_query
-from src.observability.bottlenecks import new_stage_trace_id, record_api_stage
+from src.observability.bottlenecks import (
+    append_response_headers,
+    is_stage_metrics_enabled,
+    new_stage_trace_id,
+    record_api_stage,
+)
 from src.services.access import mask_frontend_payload
 from src.services.access.masking import masking_version_for_hour
 from src.snapshot_engine import build_snapshot_engine
@@ -63,6 +68,40 @@ class FrontendV2Handler:
             "userRole": access.user_role,
             "userStatus": access.user_status,
             "fallbackReason": access.fallback_reason,
+        }
+
+    @staticmethod
+    def _with_headers(response: HttpResponse, extra_headers: dict[str, str]) -> HttpResponse:
+        return HttpResponse(
+            status=response.status,
+            body=response.body,
+            headers=append_response_headers(response.headers, extra_headers),
+        )
+
+    def _frontend_debug_headers(
+        self,
+        *,
+        req: HttpRequest,
+        trace_id: str,
+        route_class: str,
+        access_mode: str,
+        cache_result: str,
+        handler_total_ms: float,
+        inner_total_ms: float,
+    ) -> dict[str, str]:
+        if not is_stage_metrics_enabled(self._ctx):
+            return {}
+        if normalize_path(req.path) != "/api/v2/frontend":
+            return {}
+        if route_class != "api":
+            return {}
+        return {
+            "X-DTM-Trace-Id": trace_id,
+            "X-DTM-Frontend-Handler-Ms": f"{round(float(handler_total_ms), 3):.3f}",
+            "X-DTM-Frontend-Inner-Ms": f"{round(float(inner_total_ms), 3):.3f}",
+            "X-DTM-Frontend-Route": route_class,
+            "X-DTM-Frontend-Access-Mode": access_mode,
+            "X-DTM-Frontend-Cache-Result": cache_result,
         }
 
     def handle(self, req: HttpRequest) -> HttpResponse | None:
@@ -136,6 +175,8 @@ class FrontendV2Handler:
                     cache_result=cache_result,
                     debug_fields=debug_fields,
                 )
+        def _inner_total_ms() -> float:
+            return float(sum(duration_ms for _, duration_ms in stage_samples))
 
         access_started = time.perf_counter()
         access = resolve_access_context(self._ctx, req)
@@ -249,6 +290,18 @@ class FrontendV2Handler:
                 response_started = time.perf_counter()
                 http_response = json_response(200, payload)
                 _record_stage("response_build", response_started)
+                http_response = self._with_headers(
+                    http_response,
+                    self._frontend_debug_headers(
+                        req=req,
+                        trace_id=trace_id,
+                        route_class=route_class,
+                        access_mode=access.mode,
+                        cache_result="hit",
+                        handler_total_ms=(time.perf_counter() - started) * 1000.0,
+                        inner_total_ms=_inner_total_ms(),
+                    ),
+                )
                 _emit_stages(
                     route_class=route_class,
                     access_mode=access.mode,
@@ -347,6 +400,18 @@ class FrontendV2Handler:
         response_started = time.perf_counter()
         http_response = json_response(200, payload)
         _record_stage("response_build", response_started)
+        http_response = self._with_headers(
+            http_response,
+            self._frontend_debug_headers(
+                req=req,
+                trace_id=trace_id,
+                route_class=route_class,
+                access_mode=access.mode,
+                cache_result="miss" if cache_eligible and cache_store is not None else "bypass",
+                handler_total_ms=(time.perf_counter() - started) * 1000.0,
+                inner_total_ms=_inner_total_ms(),
+            ),
+        )
         _emit_stages(
             route_class=route_class,
             access_mode=access.mode,

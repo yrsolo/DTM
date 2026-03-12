@@ -327,6 +327,38 @@ def build_test_grafana_dashboard(
         ),
         (
             10,
+            "Direct API Outer Breakdown",
+            [
+                {
+                    "expr": _expr("dtm.api.outer.duration_ms", env_name, 'operation="/api/v2/frontend",stage=~".+"'),
+                    "legendFormat": "{{stage}}",
+                },
+            ],
+        ),
+        (
+            11,
+            "Direct API Outer vs Inner",
+            [
+                {
+                    "expr": _expr("dtm.api.outer.duration_ms", env_name, 'operation="/api/v2/frontend",stage="function_total"'),
+                    "legendFormat": "function_total",
+                },
+                {
+                    "expr": _expr("dtm.api.outer.duration_ms", env_name, 'operation="/api/v2/frontend",stage="http_shell_total"'),
+                    "legendFormat": "http_shell_total",
+                },
+                {
+                    "expr": _expr("dtm.api.outer.duration_ms", env_name, 'operation="/api/v2/frontend",stage="router_dispatch"'),
+                    "legendFormat": "router_dispatch",
+                },
+                {
+                    "expr": _expr("dtm.api.stage.duration_ms", env_name, 'operation="frontend_access",route="api",stage=~".+"'),
+                    "legendFormat": "inner {{stage}}",
+                },
+            ],
+        ),
+        (
+            12,
             "Frontend Route Compare",
             [
                 {
@@ -344,7 +376,7 @@ def build_test_grafana_dashboard(
             ],
         ),
         (
-            11,
+            13,
             "Frontend Cache Compare",
             [
                 {
@@ -362,7 +394,7 @@ def build_test_grafana_dashboard(
             ],
         ),
         (
-            12,
+            14,
             "Worker Reliability",
             [
                 {"expr": _expr("dtm.worker.commands_total", env_name), "legendFormat": "commands_total"},
@@ -371,7 +403,7 @@ def build_test_grafana_dashboard(
             ],
         ),
         (
-            13,
+            15,
             "Worker Timing",
             [
                 {"expr": _expr("dtm.worker.command_duration_ms", env_name), "legendFormat": "command_duration_ms"},
@@ -379,7 +411,7 @@ def build_test_grafana_dashboard(
             ],
         ),
         (
-            14,
+            16,
             "Notify Runtime",
             [
                 {"expr": _expr("dtm.notify.total", env_name), "legendFormat": "{{operation}} total"},
@@ -389,7 +421,7 @@ def build_test_grafana_dashboard(
             ],
         ),
         (
-            15,
+            17,
             "Telegram Intake",
             [
                 {"expr": _expr("dtm.telegram.updates_total", env_name), "legendFormat": "updates_total"},
@@ -400,14 +432,14 @@ def build_test_grafana_dashboard(
             ],
         ),
         (
-            16,
+            18,
             "Metrics Flush Duration",
             [
                 {"expr": _expr("dtm.metrics.flush_duration_ms", env_name, 'backend=~".+"'), "legendFormat": "{{module}} {{operation}} {{backend}} {{result}}"},
             ],
         ),
         (
-            17,
+            19,
             "Metrics Flush Volume",
             [
                 {"expr": _expr("dtm.metrics.flush_points_total", env_name, 'backend=~".+"'), "legendFormat": "{{module}} {{operation}} {{backend}} points"},

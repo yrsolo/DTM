@@ -20,6 +20,15 @@ from src.entrypoints.http.router import HttpRouter
 from src.entrypoints.http.runtime_execution import RuntimeExecutionRequest
 from src.entrypoints.http.runtime_mode import extract_force_refresh, extract_run_mode
 from src.entrypoints.http.frontend_query_params import parse_bool
+from src.observability.bottlenecks import (
+    append_response_headers,
+    build_server_timing_header,
+    is_direct_api_operation,
+    is_stage_metrics_enabled,
+    new_stage_trace_id,
+    record_api_outer_stage,
+    record_direct_api_outer_trace,
+)
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES, is_legacy_mode
 from src.entrypoints.runtime.runtime_shell import RuntimeShell
 
@@ -38,6 +47,16 @@ class HttpShell:
             raw_mode = str(query_params(event).get("mode", "")).strip().lower()
         return raw_mode
 
+    @staticmethod
+    def _header_float(headers: dict[str, str], key: str) -> float:
+        try:
+            return float(str(headers.get(key, "")).strip())
+        except Exception:
+            return 0.0
+
+    def _should_trace_direct_frontend(self, operation: str) -> bool:
+        return is_stage_metrics_enabled(self._ctx) and normalize_path(operation) == "/api/v2/frontend"
+
     async def handle(self, event: dict[str, Any], request_payload: dict[str, Any], is_http_event: bool) -> dict[str, Any]:
         metrics = self._ctx.deps.get("metrics_client")
         logger = self._ctx.deps.get("structured_logger")
@@ -47,6 +66,8 @@ class HttpShell:
         operation = "http"
         if is_http_event:
             operation = normalize_path(http_path(event))
+        trace_direct_frontend = self._should_trace_direct_frontend(operation)
+        trace_id = new_stage_trace_id() if trace_direct_frontend else ""
         requested_mode = self._requested_mode(event, request_payload, is_http_event)
         if is_legacy_mode(requested_mode):
             response = to_gateway_response(
@@ -91,15 +112,30 @@ class HttpShell:
                 logger.info("api_request_finished", operation=operation, result=result_label, status_code=response.get("statusCode"))
             return response
 
+        request_build_started = perf_counter()
+        req_headers = header_params(event)
+        if trace_direct_frontend:
+            req_headers = dict(req_headers)
+            req_headers["X-DTM-Trace-Id"] = trace_id
         req = HttpRequest(
             method=http_method(event) or "GET",
             path=http_path(event),
             query=query_params(event),
             body=request_payload,
-            headers=header_params(event),
+            headers=req_headers,
             raw_event=event,
             is_http_event=is_http_event,
         )
+        request_build_ms = (perf_counter() - request_build_started) * 1000.0
+        if trace_direct_frontend:
+            record_api_outer_stage(
+                self._ctx,
+                trace_id=trace_id,
+                operation=operation,
+                stage="request_build",
+                duration_ms=request_build_ms,
+            )
+        router_started = perf_counter()
         try:
             http_response = await self._router.dispatch(req)
         except Exception as error:
@@ -119,9 +155,93 @@ class HttpShell:
             if logger is not None:
                 logger.error("api_request_finished", operation=operation, result=result_label, error_type=type(error).__name__)
             return response
+        router_dispatch_ms = (perf_counter() - router_started) * 1000.0
+        if trace_direct_frontend:
+            record_api_outer_stage(
+                self._ctx,
+                trace_id=trace_id,
+                operation=operation,
+                stage="router_dispatch",
+                duration_ms=router_dispatch_ms,
+            )
         if http_response is not None:
+            response_build_started = perf_counter()
             response = to_gateway_response(http_response)
+            response_build_ms = (perf_counter() - response_build_started) * 1000.0
             result_label = "routed"
+            if trace_direct_frontend and is_direct_api_operation(operation):
+                record_api_outer_stage(
+                    self._ctx,
+                    trace_id=trace_id,
+                    operation=operation,
+                    stage="response_build",
+                    duration_ms=response_build_ms,
+                )
+                shell_total_ms = (perf_counter() - started_at) * 1000.0
+                record_api_outer_stage(
+                    self._ctx,
+                    trace_id=trace_id,
+                    operation=operation,
+                    stage="http_shell_total",
+                    duration_ms=shell_total_ms,
+                )
+                response_headers = dict(response.get("headers", {}) or {})
+                frontend_trace_id = str(response_headers.get("X-DTM-Trace-Id", "")).strip() or trace_id
+                frontend_handler_ms = self._header_float(response_headers, "X-DTM-Frontend-Handler-Ms")
+                frontend_inner_ms = self._header_float(response_headers, "X-DTM-Frontend-Inner-Ms")
+                route = str(response_headers.get("X-DTM-Frontend-Route", "")).strip() or "api"
+                access_mode = str(response_headers.get("X-DTM-Frontend-Access-Mode", "")).strip() or "masked"
+                cache_result = str(response_headers.get("X-DTM-Frontend-Cache-Result", "")).strip() or "unknown"
+                unexplained_ms = max(shell_total_ms - frontend_inner_ms, 0.0)
+                response_headers = append_response_headers(
+                    response_headers,
+                    {
+                        "Server-Timing": build_server_timing_header(
+                            {
+                                "function_total": shell_total_ms,
+                                "http_shell": shell_total_ms,
+                                "router_dispatch": router_dispatch_ms,
+                                "response_build": response_build_ms,
+                                "frontend_handler": frontend_handler_ms,
+                                "frontend_inner": frontend_inner_ms,
+                                "frontend_unexplained": unexplained_ms,
+                            }
+                        ),
+                    },
+                )
+                if str(self._ctx.cfg.runtime.runtime.bottleneck_metrics_level or "").strip().lower() == "debug":
+                    response_headers = append_response_headers(
+                        response_headers,
+                        {
+                            "X-DTM-Outer-Trace-Id": frontend_trace_id,
+                            "X-DTM-Outer-Function-Total-Ms": f"{shell_total_ms:.3f}",
+                            "X-DTM-Outer-Router-Dispatch-Ms": f"{router_dispatch_ms:.3f}",
+                            "X-DTM-Outer-Response-Build-Ms": f"{response_build_ms:.3f}",
+                            "X-DTM-Outer-Unexplained-Ms": f"{unexplained_ms:.3f}",
+                            "X-DTM-Outer-Access-Mode": access_mode,
+                            "X-DTM-Outer-Cache-Result": cache_result,
+                            "X-DTM-Outer-Route": route,
+                        },
+                    )
+                response["headers"] = response_headers
+                record_direct_api_outer_trace(
+                    self._ctx,
+                    trace_id=frontend_trace_id,
+                    operation=operation,
+                    result="success",
+                    function_total_ms=shell_total_ms,
+                    http_shell_total_ms=shell_total_ms,
+                    router_dispatch_ms=router_dispatch_ms,
+                    response_build_ms=response_build_ms,
+                    frontend_handler_ms=frontend_handler_ms,
+                    frontend_inner_ms=frontend_inner_ms,
+                    debug_fields={
+                        "route": route,
+                        "accessMode": access_mode,
+                        "cacheResult": cache_result,
+                        "requestBuildMs": round(request_build_ms, 3),
+                    },
+                )
             if metrics is not None:
                 metrics.counter("dtm.api.requests_total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
                 metrics.timing("dtm.api.duration_ms", (perf_counter() - started_at) * 1000.0, labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})

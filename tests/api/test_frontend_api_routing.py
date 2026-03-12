@@ -21,6 +21,7 @@ from src.entrypoints.http.event_parser import extract_payload, http_path, query_
 from src.entrypoints.http.frontend_query_params import parse_bool
 from src.entrypoints.http.runtime_mode import extract_force_refresh, extract_run_mode
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES
+from src.observability.bottlenecks import RECENT_DIRECT_API_OUTER_TRACES
 from src.services.access.masking import BRAND_DICTIONARY, DESIGNER_DICTIONARY, FORMAT_DICTIONARY, SHOW_DICTIONARY
 from src.worker.model import JobStatusRecord
 
@@ -148,6 +149,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self._orig_metrics_client = index.APP_DEPS.get("metrics_client")
         self._orig_browser_auth_proxy_secret = index.APP_DEPS.get("browser_auth_proxy_secret")
         self._orig_bottleneck_metrics_level = index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level
+        self._orig_recent_outer_traces = list(RECENT_DIRECT_API_OUTER_TRACES._events)  # type: ignore[attr-defined]
         self._metrics = _MetricsRecorder()
         self._engine = _FakeSnapshotEngine(
             payload={
@@ -220,6 +222,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         index.APP_DEPS["metrics_client"] = self._metrics
         index.APP_DEPS["browser_auth_proxy_secret"] = "proxy-secret-test"
         index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level = "stages"
+        RECENT_DIRECT_API_OUTER_TRACES._events.clear()  # type: ignore[attr-defined]
 
     def tearDown(self) -> None:
         frontend_v2_module.build_snapshot_engine = self._orig_build_snapshot_engine  # type: ignore[assignment]
@@ -231,6 +234,8 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         index.APP_DEPS["metrics_client"] = self._orig_metrics_client
         index.APP_DEPS["browser_auth_proxy_secret"] = self._orig_browser_auth_proxy_secret
         index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level = self._orig_bottleneck_metrics_level
+        RECENT_DIRECT_API_OUTER_TRACES._events.clear()  # type: ignore[attr-defined]
+        RECENT_DIRECT_API_OUTER_TRACES._events.extend(self._orig_recent_outer_traces)  # type: ignore[attr-defined]
 
     def test_http_path_from_proxy_template(self) -> None:
         event = _fixture_event()
@@ -263,6 +268,9 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(payload.get("meta", {}).get("readmodelSource"), "s3_snapshot")
         self.assertEqual(payload.get("meta", {}).get("access", {}).get("mode"), "masked")
         self.assertEqual(payload.get("meta", {}).get("access", {}).get("fallbackReason"), "untrusted_ingress")
+        self.assertIn("Server-Timing", response.get("headers", {}))
+        self.assertIn("X-DTM-Trace-Id", response.get("headers", {}))
+        self.assertIn("X-DTM-Frontend-Inner-Ms", response.get("headers", {}))
 
     def test_root_returns_v2_doc(self) -> None:
         event = _fixture_event()
@@ -643,6 +651,51 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         stage_timings = [item for item in self._metrics.timings if item[0] == "dtm.api.stage.duration_ms"]
         self.assertTrue(any(labels.get("route") == "bff" for _, _, labels in stage_timings))
         self.assertTrue(any(labels.get("access_mode") == "full" for _, _, labels in stage_timings))
+
+    def test_direct_api_outer_trace_is_recorded(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend?statuses=work"
+        event["queryStringParameters"] = {"statuses": "work"}
+
+        response = asyncio.run(index.handler(event, None))
+
+        self.assertEqual(response["statusCode"], 200)
+        traces = RECENT_DIRECT_API_OUTER_TRACES.recent_traces(limit=5)
+        self.assertTrue(traces)
+        self.assertEqual(traces[0]["operation"], "/api/v2/frontend")
+        self.assertIn("functionTotalMs", traces[0])
+        self.assertIn("frontendInnerMs", traces[0])
+
+    def test_direct_api_response_has_no_outer_debug_headers_when_profiling_off(self) -> None:
+        index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level = "off"
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend?statuses=work"
+        event["queryStringParameters"] = {"statuses": "work"}
+
+        response = asyncio.run(index.handler(event, None))
+
+        self.assertEqual(response["statusCode"], 200)
+        self.assertNotIn("Server-Timing", response.get("headers", {}))
+        self.assertNotIn("X-DTM-Trace-Id", response.get("headers", {}))
+
+    def test_direct_api_response_has_extended_outer_debug_headers_in_debug_mode(self) -> None:
+        index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level = "debug"
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend?statuses=work"
+        event["queryStringParameters"] = {"statuses": "work"}
+
+        response = asyncio.run(index.handler(event, None))
+
+        self.assertEqual(response["statusCode"], 200)
+        self.assertIn("Server-Timing", response.get("headers", {}))
+        self.assertIn("X-DTM-Outer-Function-Total-Ms", response.get("headers", {}))
+        self.assertIn("X-DTM-Outer-Unexplained-Ms", response.get("headers", {}))
 
 
 if __name__ == "__main__":

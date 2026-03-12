@@ -61,6 +61,23 @@ class StageEvent:
     debug: dict[str, Any] = field(default_factory=dict)
 
 
+@dataclass(slots=True)
+class OuterApiTrace:
+    trace_id: str
+    recorded_at: str
+    env: str
+    operation: str
+    result: str
+    function_total_ms: float
+    http_shell_total_ms: float
+    router_dispatch_ms: float
+    response_build_ms: float
+    frontend_handler_ms: float
+    frontend_inner_ms: float
+    unexplained_in_function_ms: float
+    debug: dict[str, Any] = field(default_factory=dict)
+
+
 class RecentStageRecorder:
     def __init__(self, max_events: int = 200) -> None:
         self._events: deque[StageEvent] = deque(maxlen=max_events)
@@ -107,8 +124,48 @@ class RecentStageRecorder:
 RECENT_API_STAGE_EVENTS = RecentStageRecorder()
 
 
+class RecentOuterTraceRecorder:
+    def __init__(self, max_events: int = 50) -> None:
+        self._events: deque[OuterApiTrace] = deque(maxlen=max_events)
+
+    def record(self, trace: OuterApiTrace) -> None:
+        self._events.append(trace)
+
+    def recent_traces(self, limit: int = 10) -> list[dict[str, Any]]:
+        traces: list[dict[str, Any]] = []
+        for item in reversed(list(self._events)):
+            if len(traces) >= limit:
+                break
+            traces.append(
+                {
+                    "traceId": item.trace_id,
+                    "recordedAt": item.recorded_at,
+                    "env": item.env,
+                    "operation": item.operation,
+                    "result": item.result,
+                    "functionTotalMs": round(float(item.function_total_ms), 3),
+                    "httpShellTotalMs": round(float(item.http_shell_total_ms), 3),
+                    "routerDispatchMs": round(float(item.router_dispatch_ms), 3),
+                    "responseBuildMs": round(float(item.response_build_ms), 3),
+                    "frontendHandlerMs": round(float(item.frontend_handler_ms), 3),
+                    "frontendInnerMs": round(float(item.frontend_inner_ms), 3),
+                    "unexplainedInFunctionMs": round(float(item.unexplained_in_function_ms), 3),
+                    "debug": dict(item.debug or {}),
+                }
+            )
+        return traces
+
+
+RECENT_DIRECT_API_OUTER_TRACES = RecentOuterTraceRecorder()
+
+
 def new_stage_trace_id() -> str:
     return uuid4().hex[:12]
+
+
+def is_direct_api_operation(operation: str) -> bool:
+    normalized = str(operation or "").strip().lower()
+    return normalized.startswith("/api/") and not normalized.startswith("/bff/")
 
 
 def record_api_stage(
@@ -181,6 +238,103 @@ def record_api_stage(
             result=event.result,
             debug=debug_payload,
         )
+
+
+def record_api_outer_stage(
+    ctx: Any,
+    *,
+    trace_id: str,
+    operation: str,
+    stage: str,
+    duration_ms: float,
+    result: str = "success",
+    debug_fields: dict[str, Any] | None = None,
+) -> None:
+    if not is_stage_metrics_enabled(ctx):
+        return
+    labels = {
+        "env": _env_name(ctx),
+        "module": "api",
+        "operation": str(operation or "").strip() or "unknown",
+        "stage": str(stage or "").strip() or "unknown",
+        "result": str(result or "").strip() or "success",
+    }
+    metrics = None
+    logger = None
+    try:
+        metrics = ctx.deps.get("metrics_client")
+        logger = ctx.deps.get("structured_logger")
+    except Exception:
+        metrics = None
+        logger = None
+    if metrics is not None:
+        metrics.timing("dtm.api.outer.duration_ms", float(duration_ms), labels=dict(labels))
+        metrics.counter("dtm.api.outer.total", labels=dict(labels))
+        if result != "success":
+            metrics.counter("dtm.api.outer.failures_total", labels=dict(labels))
+    if logger is not None and is_debug_metrics_enabled(ctx):
+        logger.info(
+            "api_outer_timing",
+            trace_id=str(trace_id or "").strip(),
+            operation=str(operation or "").strip(),
+            stage=str(stage or "").strip(),
+            duration_ms=round(float(duration_ms), 3),
+            result=str(result or "").strip() or "success",
+            debug=dict(debug_fields or {}),
+        )
+
+
+def record_direct_api_outer_trace(
+    ctx: Any,
+    *,
+    trace_id: str,
+    operation: str,
+    result: str,
+    function_total_ms: float,
+    http_shell_total_ms: float,
+    router_dispatch_ms: float,
+    response_build_ms: float,
+    frontend_handler_ms: float,
+    frontend_inner_ms: float,
+    debug_fields: dict[str, Any] | None = None,
+) -> None:
+    if not is_stage_metrics_enabled(ctx):
+        return
+    env_name = _env_name(ctx)
+    unexplained = max(float(function_total_ms) - float(frontend_inner_ms), 0.0)
+    RECENT_DIRECT_API_OUTER_TRACES.record(
+        OuterApiTrace(
+            trace_id=str(trace_id or "").strip() or new_stage_trace_id(),
+            recorded_at=datetime.now(timezone.utc).isoformat(),
+            env=env_name,
+            operation=str(operation or "").strip() or "unknown",
+            result=str(result or "").strip() or "success",
+            function_total_ms=float(function_total_ms),
+            http_shell_total_ms=float(http_shell_total_ms),
+            router_dispatch_ms=float(router_dispatch_ms),
+            response_build_ms=float(response_build_ms),
+            frontend_handler_ms=float(frontend_handler_ms),
+            frontend_inner_ms=float(frontend_inner_ms),
+            unexplained_in_function_ms=float(unexplained),
+            debug=dict(debug_fields or {}) if is_debug_metrics_enabled(ctx) else {},
+        )
+    )
+
+
+def build_server_timing_header(timings: dict[str, float]) -> str:
+    parts: list[str] = []
+    for key, value in timings.items():
+        parts.append(f"{str(key).strip()};dur={round(float(value), 3)}")
+    return ", ".join(parts)
+
+
+def append_response_headers(headers: dict[str, str] | None, extra: dict[str, str]) -> dict[str, str]:
+    merged = dict(headers or {})
+    for key, value in extra.items():
+        text = str(value or "").strip()
+        if text:
+            merged[str(key)] = text
+    return merged
 
 
 @contextmanager

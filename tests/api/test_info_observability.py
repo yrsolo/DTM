@@ -14,7 +14,7 @@ if str(ROOT_DIR) not in sys.path:
 from src.entrypoints.http.dto import HttpRequest
 from src.entrypoints.http.info_handler import InfoHandler
 from src.observability import StdoutJsonLogger
-from src.observability.bottlenecks import RECENT_API_STAGE_EVENTS, StageEvent
+from src.observability.bottlenecks import RECENT_API_STAGE_EVENTS, RECENT_DIRECT_API_OUTER_TRACES, OuterApiTrace, StageEvent
 from src.worker.model import JobStatusRecord
 
 
@@ -103,6 +103,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.original_get_function_build_info = module.get_function_build_info
         self.original_storage_stats = module.InfoHandler._storage_stats
         self._orig_recent_stage_events = list(RECENT_API_STAGE_EVENTS._events)  # type: ignore[attr-defined]
+        self._orig_recent_outer_traces = list(RECENT_DIRECT_API_OUTER_TRACES._events)  # type: ignore[attr-defined]
         self.build_snapshot_engine_calls = 0
         self.get_queue_live_stats_calls = 0
         self.get_function_build_info_calls = 0
@@ -255,6 +256,24 @@ class InfoObservabilityTestCase(unittest.TestCase):
                 debug={},
             )
         )
+        RECENT_DIRECT_API_OUTER_TRACES._events.clear()  # type: ignore[attr-defined]
+        RECENT_DIRECT_API_OUTER_TRACES.record(
+            OuterApiTrace(
+                trace_id="outer-trace-1",
+                recorded_at="2026-03-09T12:00:10+00:00",
+                env="test",
+                operation="/api/v2/frontend",
+                result="success",
+                function_total_ms=1200.0,
+                http_shell_total_ms=1100.0,
+                router_dispatch_ms=400.0,
+                response_build_ms=30.0,
+                frontend_handler_ms=200.0,
+                frontend_inner_ms=150.0,
+                unexplained_in_function_ms=1050.0,
+                debug={},
+            )
+        )
 
     def tearDown(self) -> None:
         self.module.build_snapshot_engine = self.original_build_snapshot_engine  # type: ignore[assignment]
@@ -263,6 +282,8 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.module.InfoHandler._storage_stats = self.original_storage_stats  # type: ignore[assignment]
         RECENT_API_STAGE_EVENTS._events.clear()  # type: ignore[attr-defined]
         RECENT_API_STAGE_EVENTS._events.extend(self._orig_recent_stage_events)  # type: ignore[attr-defined]
+        RECENT_DIRECT_API_OUTER_TRACES._events.clear()  # type: ignore[attr-defined]
+        RECENT_DIRECT_API_OUTER_TRACES._events.extend(self._orig_recent_outer_traces)  # type: ignore[attr-defined]
 
     def test_info_json_default_summary_skips_heavy_diagnostics(self) -> None:
         handler = InfoHandler(self.ctx)
@@ -278,6 +299,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertTrue(payload["build"]["detailDeferred"])
         self.assertEqual(payload["bottlenecks"]["profilingLevel"], "stages")
         self.assertTrue(payload["bottlenecks"]["recentApiTracesDeferred"])
+        self.assertTrue(payload["bottlenecks"]["recentDirectApiOuterTracesDeferred"])
         self.assertEqual(self.build_snapshot_engine_calls, 0)
         self.assertEqual(self.get_queue_live_stats_calls, 0)
         self.assertEqual(self.get_function_build_info_calls, 0)
@@ -330,6 +352,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         )
         self.assertTrue(payload["bottlenecks"]["stageMetricsEnabled"])
         self.assertEqual(payload["bottlenecks"]["recentApiTraces"][0]["traceId"], "trace-1")
+        self.assertEqual(payload["bottlenecks"]["recentDirectApiOuterTraces"][0]["traceId"], "outer-trace-1")
         self.assertEqual(len(payload["jobs"]["recent"]), 2)
         self.assertGreater(self.build_snapshot_engine_calls, 0)
         self.assertGreater(self.get_queue_live_stats_calls, 0)

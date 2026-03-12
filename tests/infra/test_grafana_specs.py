@@ -32,6 +32,8 @@ class GrafanaSpecsTestCase(unittest.TestCase):
         self.assertIn("Info Summary Last", titles)
         self.assertIn("Info Detail Last", titles)
         self.assertIn("Frontend Stage Breakdown", titles)
+        self.assertIn("Direct API Outer Breakdown", titles)
+        self.assertIn("Direct API Outer vs Inner", titles)
         self.assertIn("Frontend Route Compare", titles)
         self.assertIn("Frontend Cache Compare", titles)
         self.assertIn("Timeline Wall Clock Last", titles)
@@ -68,6 +70,10 @@ class GrafanaSpecsTestCase(unittest.TestCase):
         frontend_stage_exprs = [target["expr"] for target in frontend_stages["targets"]]
         self.assertTrue(any("dtm_api_stage_duration_ms" in expr for expr in frontend_stage_exprs))
         self.assertTrue(any('operation="frontend_access"' in expr for expr in frontend_stage_exprs))
+        outer_panel = next(panel for panel in dashboard["panels"] if panel["title"] == "Direct API Outer Breakdown")
+        outer_exprs = [target["expr"] for target in outer_panel["targets"]]
+        self.assertTrue(any("dtm_api_outer_duration_ms" in expr for expr in outer_exprs))
+        self.assertTrue(any('operation="/api/v2/frontend"' in expr for expr in outer_exprs))
         flush_volume = next(panel for panel in dashboard["panels"] if panel["title"] == "Metrics Flush Volume")
         flush_exprs = [target["expr"] for target in flush_volume["targets"]]
         self.assertTrue(any("dtm_metrics_flush_points_total" in expr for expr in flush_exprs))
