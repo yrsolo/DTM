@@ -43,6 +43,24 @@
 - hot cache decision remains open until real read-path timings are captured from the active contour
 - refresh wall-clock gap still needs evidence write-up that correlates job timings, worker wall clock, and metrics flush duration on the same run
 
+## Live verification (2026-03-12)
+- deployed commit to `origin/test`: `c1dda7cee93d7dc2f2caceb0343f380890a32922`
+- GitHub Actions test deploy:
+  - failed first run for `22abbf9541110c7bab9e1e2ad4c293c87ee05b00` because `index.py` violated entrypoint guard scripts
+  - fixed in follow-up commit `c1dda7c`
+  - successful run: `Deploy Yandex Cloud Function (test contour)` run `22990483355`
+- live contract verification against `https://dtm.solofarm.ru/test/ops/info`:
+  - `?format=json` now returns `view=summary`
+  - `?format=json&view=detail` now returns `view=detail`
+  - summary payload exposes `counts.detailDeferred=true`
+- live wall-clock spot check from shell, 3 requests each:
+  - summary: `2804` bytes, about `2581-3343 ms`
+  - detail: `31336` bytes, about `3334-4722 ms`
+- conclusion:
+  - summary/detail split is live and externally visible
+  - detail payload is materially heavier by payload size and slower in the worst sampled request
+  - dedicated live timing metrics exist in code path, but flush-overhead and refresh-gap evidence still need separate monitoring correlation
+
 ## Required evidence during execution
 - call graph of metric backend writes
 - before/after refresh timings by stage
