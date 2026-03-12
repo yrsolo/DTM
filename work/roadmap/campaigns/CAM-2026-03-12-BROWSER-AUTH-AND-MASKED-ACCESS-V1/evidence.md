@@ -72,6 +72,24 @@
   - backend and auth-proxy use the same Lockbox-backed secret source
   - live trusted-ingress requests can be rechecked for `meta.access.mode = full`
 
+## Live full-mode verification (2026-03-12)
+- deployed backend wiring fix to `origin/test`: `8538b9e`
+- repeated live trusted request to `https://dtm.solofarm.ru/test/ops/api/v2/frontend?limit=1&statuses=work` with:
+  - valid `X-DTM-Proxy-Secret`
+  - `x-dtm-access-mode=full`
+  - `x-dtm-authenticated=1`
+  - `x-dtm-contour=test`
+  - `x-dtm-user-role=admin`
+  - `x-dtm-user-status=approved`
+- rollout result after contour refresh:
+  - attempts `1-6`: still old masked response with `trustedIngress=false`
+  - attempt `7`: switched to `mode=full`, `trustedIngress=true`, `authenticated=true`, `userRole=admin`, `userStatus=approved`, `fallbackReason=null`
+  - sample task title became real business value (`Альфа банк  [СОКР ИМП] 3D`) instead of masked token
+- conclusion:
+  - backend now receives and validates the same trusted proxy secret source as auth-proxy
+  - full branch is selected correctly for approved trusted requests
+  - masked and full live paths are both verified on test contour
+
 ## Required evidence during execution
 - code pointers for route namespace and trusted ingress handling
 - code pointers for trusted-ingress validation rule

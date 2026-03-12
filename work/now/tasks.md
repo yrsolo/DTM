@@ -1,6 +1,6 @@
 # Active Tasks
 
-- CAM-2026-03-12-BROWSER-AUTH-AND-MASKED-ACCESS-V1 P01: redeploy backend test contour with Lockbox-mapped `BROWSER_AUTH_PROXY_SECRET` and re-run live full-mode verification
+- none
 
 ## Done
 
@@ -8,6 +8,7 @@
 - CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P01a: split `/info` into default summary and explicit detail mode with `dtm.info.summary.ms` and `dtm.info.detail.ms`
 - CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P01: owner accepted current Stage 2 evidence as sufficient to open Stage 4
 - CAM-2026-03-12-DOC-CODE-REALIGN-V1 P01: rebuilt active main docs around verified Stage 1/2 runtime facts, canonical architecture values, and compact Grafana/info observability story
+- CAM-2026-03-12-BROWSER-AUTH-AND-MASKED-ACCESS-V1 P01: backend test contour now maps `BROWSER_AUTH_PROXY_SECRET` from Lockbox; live `masked` and trusted `full` paths verified on `test`
 
 ## Notes
 
