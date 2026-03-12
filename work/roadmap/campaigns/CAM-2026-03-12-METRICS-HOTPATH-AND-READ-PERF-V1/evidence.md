@@ -152,7 +152,8 @@
   - `frontend_handler`, `function_total`, `unexplained_inside_handler`, and `unexplained_after_handler` ballooned into multi-second ranges
 - follow-up decision:
   - override `PROMETHEUS_ENABLED=false` only in `.github/workflows/deploy_yc_function_main.yml`
-  - keep this as a test-contour experiment to prove or falsify Prometheus remote-write as the dominant bottleneck without changing prod behavior
+  - then local follow-up showed `MONITORING_ENABLED=1` by itself can also stall the request path into `~28.9s` with repeated sync `monitoring_metric_flush_failed`
+  - final test-contour experiment disables both remote metrics backends in the test deploy workflow without changing prod behavior
 
 ## Grafana dashboard rebuild (2026-03-12)
 - repo spec in `src/infra/grafana_specs.py` was rebuilt to cover all currently emitted runtime metrics from active code paths:
