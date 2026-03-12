@@ -18,6 +18,22 @@
 - `src/entrypoints/runtime/planner_runtime_entry.py` creates global runtime context at import time
 - current runtime still treats planner runtime as an active orchestration center
 
+## Execution evidence
+- 2026-03-12: `index.py` moved runtime bootstrap behind `_get_app_context()` / `_get_dispatcher()` lazy boundaries; no module-level `AppContext` construction remains
+- 2026-03-12: `src/entrypoints/runtime/planner_runtime_entry.py` now accepts optional `app_context` via `PlannerRuntimeRequest` and builds context only inside `run_planner_runtime()`
+- 2026-03-12: `src/entrypoints/http/runtime_execution.py` now forwards the already-built HTTP app context into planner runtime requests instead of forcing a second bootstrap path
+- 2026-03-12: compatibility surface preserved via lazy `index.APP_DEPS` / `index.APP_TRIGGERS` proxies, so old tests can still mutate runtime deps without reintroducing import-time side effects
+- 2026-03-12: import smoke passed via `python -m unittest tests.entrypoints.test_import_safety`
+- 2026-03-12: compatibility smoke passed via `python -m unittest tests.api.test_runtime_execution tests.api.test_command_queue_foundation tests.api.test_frontend_api_routing`
+
+## After state
+- `index.py` imports safely under stripped env and exposes `handler` without calling `build_app_context()` on module import
+- `src/entrypoints/runtime/planner_runtime_entry.py` imports safely under stripped env and exposes `run_planner_runtime` without calling `build_app_context()` on module import
+- `build_app_context()` remains only at explicit runtime/factory boundaries:
+  - `index._get_app_context()`
+  - `run_planner_runtime(request)` when no `request.app_context` is supplied
+- active planner runtime callers still exist (`runtime_shell.py`, `local_runtime.py`, `src/legacy/main.py`), but planner runtime is now a transitional adapter and no longer a module-import bootstrap center
+
 ## Required evidence during execution
 - before/after import smoke for `index.py`
 - before/after import smoke for `planner_runtime_entry.py`

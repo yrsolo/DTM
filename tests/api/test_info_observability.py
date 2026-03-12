@@ -13,7 +13,7 @@ if str(ROOT_DIR) not in sys.path:
 
 from src.entrypoints.http.dto import HttpRequest
 from src.entrypoints.http.info_handler import InfoHandler
-from src.observability import NoopMetricsClient, StdoutJsonLogger
+from src.observability import StdoutJsonLogger
 from src.worker.model import JobStatusRecord
 
 
@@ -84,6 +84,14 @@ class _FakeStatusStore:
         return None
 
 
+class _MetricsRecorder:
+    def __init__(self) -> None:
+        self.timings: list[tuple[str, float, dict[str, str]]] = []
+
+    def timing(self, name: str, ms: float, labels=None) -> None:
+        self.timings.append((name, float(ms), dict(labels or {})))
+
+
 class InfoObservabilityTestCase(unittest.TestCase):
     def setUp(self) -> None:
         import src.entrypoints.http.info_handler as module
@@ -93,32 +101,54 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.original_get_queue_live_stats = module.get_queue_live_stats
         self.original_get_function_build_info = module.get_function_build_info
         self.original_storage_stats = module.InfoHandler._storage_stats
-        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
-        module.get_queue_live_stats = lambda **_kwargs: SimpleNamespace(  # type: ignore[assignment]
-            to_dict=lambda: {
-                "queue_name": "dtm-test-commands",
-                "messages_visible": 2,
-                "messages_in_flight": 1,
-                "messages_delayed": 0,
-                "dlq_configured": True,
+        self.build_snapshot_engine_calls = 0
+        self.get_queue_live_stats_calls = 0
+        self.get_function_build_info_calls = 0
+        self.storage_stats_calls = 0
+
+        def _build_snapshot_engine(_ctx):
+            self.build_snapshot_engine_calls += 1
+            return _FakeSnapshotEngine()
+
+        def _get_queue_live_stats(**_kwargs):
+            self.get_queue_live_stats_calls += 1
+            return SimpleNamespace(
+                to_dict=lambda: {
+                    "queue_name": "dtm-test-commands",
+                    "messages_visible": 2,
+                    "messages_in_flight": 1,
+                    "messages_delayed": 0,
+                    "dlq_configured": True,
+                }
+            )
+
+        def _get_function_build_info(**_kwargs):
+            self.get_function_build_info_calls += 1
+            return SimpleNamespace(
+                function_name="dtm",
+                active_version_id="d4etest",
+                deployed_at="2026-03-09T09:00:00Z",
+                runtime="python311",
+                memory="512MB",
+                timeout_seconds=240,
+                entrypoint="index.handler",
+                service_account_id="aje-test",
+            )
+
+        def _storage_stats(*_args, **_kwargs):
+            self.storage_stats_calls += 1
+            return {
+                "objectsTotal": 3,
+                "bytesTotal": 1024,
+                "bytesHuman": "1.00 KB",
+                "byPrefix": {"raw": 256, "prep": 256, "extra": 256, "attachments": 256, "jobs": 0},
             }
-        )
-        module.get_function_build_info = lambda **_kwargs: SimpleNamespace(  # type: ignore[assignment]
-            function_name="dtm",
-            active_version_id="d4etest",
-            deployed_at="2026-03-09T09:00:00Z",
-            runtime="python311",
-            memory="512MB",
-            timeout_seconds=240,
-            entrypoint="index.handler",
-            service_account_id="aje-test",
-        )
-        module.InfoHandler._storage_stats = lambda *_args, **_kwargs: {  # type: ignore[assignment]
-            "objectsTotal": 3,
-            "bytesTotal": 1024,
-            "bytesHuman": "1.00 KB",
-            "byPrefix": {"raw": 256, "prep": 256, "extra": 256, "attachments": 256, "jobs": 0},
-        }
+
+        module.build_snapshot_engine = _build_snapshot_engine  # type: ignore[assignment]
+        module.get_queue_live_stats = _get_queue_live_stats  # type: ignore[assignment]
+        module.get_function_build_info = _get_function_build_info  # type: ignore[assignment]
+        module.InfoHandler._storage_stats = _storage_stats  # type: ignore[assignment]
+        self.metrics = _MetricsRecorder()
         self.ctx = SimpleNamespace(
             cfg=SimpleNamespace(
                 runtime=SimpleNamespace(
@@ -203,7 +233,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
                 "aws_secret_access_key": "sk",
                 "yc_sa_json_credentials": "{}",
                 "yc_sa_key_file": "",
-                "metrics_client": NoopMetricsClient(),
+                "metrics_client": self.metrics,
                 "structured_logger": StdoutJsonLogger(),
             },
         )
@@ -214,13 +244,39 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.module.get_function_build_info = self.original_get_function_build_info  # type: ignore[assignment]
         self.module.InfoHandler._storage_stats = self.original_storage_stats  # type: ignore[assignment]
 
-    def test_info_json_includes_build_queue_jobs_and_render_debug(self) -> None:
+    def test_info_json_default_summary_skips_heavy_diagnostics(self) -> None:
         handler = InfoHandler(self.ctx)
         response = handler.handle(
             HttpRequest(method="GET", path="/info", query={"format": "json"}, is_http_event=True)
         )
         self.assertIsNotNone(response)
         payload = json.loads(response.body)
+        self.assertEqual(payload["view"], "summary")
+        self.assertTrue(payload["counts"]["detailDeferred"])
+        self.assertTrue(payload["storage"]["detailDeferred"])
+        self.assertTrue(payload["jobs"]["detailDeferred"])
+        self.assertTrue(payload["build"]["detailDeferred"])
+        self.assertEqual(self.build_snapshot_engine_calls, 0)
+        self.assertEqual(self.get_queue_live_stats_calls, 0)
+        self.assertEqual(self.get_function_build_info_calls, 0)
+        self.assertEqual(self.storage_stats_calls, 0)
+        timing_names = [item[0] for item in self.metrics.timings]
+        self.assertIn("dtm.info.summary.ms", timing_names)
+        self.assertNotIn("dtm.info.detail.ms", timing_names)
+
+    def test_info_json_detail_includes_build_queue_jobs_and_render_debug(self) -> None:
+        handler = InfoHandler(self.ctx)
+        response = handler.handle(
+            HttpRequest(
+                method="GET",
+                path="/info",
+                query={"format": "json", "view": "detail"},
+                is_http_event=True,
+            )
+        )
+        self.assertIsNotNone(response)
+        payload = json.loads(response.body)
+        self.assertEqual(payload["view"], "detail")
         self.assertIn("build", payload)
         self.assertIn("queue", payload)
         self.assertIn("live", payload["queue"])
@@ -230,7 +286,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertEqual(payload["build"]["activeVersionId"], "d4etest")
         self.assertEqual(payload["queue"]["live"]["messages_visible"], 2)
         self.assertEqual(payload["queue"]["policy"]["retryModel"], "queue_driven")
-        self.assertEqual(payload["telemetry"]["metricsClient"], "NoopMetricsClient")
+        self.assertEqual(payload["telemetry"]["metricsClient"], "_MetricsRecorder")
         self.assertTrue(payload["telemetry"]["monitoringEnabled"])
         self.assertEqual(payload["telemetry"]["monitoringBackend"], "yandex_monitoring")
         self.assertEqual(payload["telemetry"]["dashboardName"], "DTM Test Observability")
@@ -250,6 +306,13 @@ class InfoObservabilityTestCase(unittest.TestCase):
             "https://dtm.solofarm.ru/grafana/public-dashboards/test-token",
         )
         self.assertEqual(len(payload["jobs"]["recent"]), 2)
+        self.assertGreater(self.build_snapshot_engine_calls, 0)
+        self.assertGreater(self.get_queue_live_stats_calls, 0)
+        self.assertGreater(self.get_function_build_info_calls, 0)
+        self.assertGreater(self.storage_stats_calls, 0)
+        timing_names = [item[0] for item in self.metrics.timings]
+        self.assertIn("dtm.info.summary.ms", timing_names)
+        self.assertIn("dtm.info.detail.ms", timing_names)
 
     def test_info_html_contains_new_operational_sections(self) -> None:
         handler = InfoHandler(self.ctx)
@@ -259,6 +322,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertIn("Queue State", response.body)
         self.assertIn("Recent Jobs", response.body)
         self.assertIn("Last Render Job", response.body)
+        self.assertIn("/info?format=json&view=detail", response.body)
 
     def test_info_json_includes_ui_base_path_for_prefixed_route(self) -> None:
         handler = InfoHandler(self.ctx)

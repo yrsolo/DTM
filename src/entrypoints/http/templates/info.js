@@ -68,7 +68,7 @@
       return base + path;
     }
     async function loadInfo(){
-      const r = await fetch(withBase('/info?format=json'), {cache:'no-store'});
+      const r = await fetch(withBase('/info?format=json&view=detail'), {cache:'no-store'});
       const text = await r.text();
       let p = {};
       try {

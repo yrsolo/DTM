@@ -207,8 +207,8 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         event = _fixture_event()
         event["pathParams"]["proxy"] = "info"
         event["params"]["proxy"] = "info"
-        event["url"] = "https://dtm.solofarm.ru/ops/info?format=json"
-        event["queryStringParameters"] = {"format": "json"}
+        event["url"] = "https://dtm.solofarm.ru/ops/info?format=json&view=detail"
+        event["queryStringParameters"] = {"format": "json", "view": "detail"}
         response = asyncio.run(index.handler(event, None))
         payload = json.loads(response.get("body", "{}"))
         self.assertEqual(response["statusCode"], 200)

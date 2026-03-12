@@ -6,6 +6,7 @@ import json
 from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
+from time import perf_counter
 from typing import Any
 from urllib.parse import urlparse
 
@@ -303,29 +304,20 @@ class InfoHandler:
             "serviceAccountId": info.service_account_id,
         }
 
-    def _info_payload(self, req: HttpRequest) -> dict[str, Any]:
-        prep = None
-        raw = None
-        snapshot_error = ""
-        try:
-            engine = build_snapshot_engine(self._ctx)
-            prep = engine._prep_cache.get()  # noqa: SLF001
-            raw = engine._raw_cache.get()  # noqa: SLF001
-        except Exception as exc:  # pragma: no cover - safety for optional deps/runtime config
-            snapshot_error = str(exc)
-        status_counts: dict[str, int] = {}
-        if prep is not None:
-            for view in prep.tasks_by_id.values():
-                key = str(view.sheet.status or "unknown")
-                status_counts[key] = status_counts.get(key, 0) + 1
+    def _metrics_labels(self, *, env_name: str, view: str) -> dict[str, str]:
+        return {
+            "env": str(env_name or "").strip() or "unknown",
+            "module": "api",
+            "operation": f"info.{view}",
+        }
 
+    def _summary_payload(self, req: HttpRequest) -> dict[str, Any]:
         env_name = str(self._ctx.cfg.runtime.runtime.env_default).strip().lower() or "dev"
         snap_cfg = self._ctx.cfg.runtime.snapshot_engine
         queue_cfg = self._ctx.cfg.runtime.queue
         telegram_cfg = self._ctx.cfg.runtime.telegram
         raw_key = str(snap_cfg.prefix_raw).replace("{env}", env_name)
         root_prefix = self._resolve_root_prefix(raw_key)
-        storage = self._storage_stats(str(snap_cfg.bucket), root_prefix)
         queue_url = str(queue_cfg.prod_queue_url if env_name == "prod" else queue_cfg.test_queue_url).strip()
         queue_name = queue_url.rstrip("/").rsplit("/", 1)[-1] if queue_url else ""
         webhook_path = str(telegram_cfg.webhook_path or "/telegram").strip() or "/telegram"
@@ -334,50 +326,13 @@ class InfoHandler:
         ).strip()
         webhook_url = f"https://{api_domain}{webhook_path}" if api_domain else webhook_path
         ui_base_path = self._resolve_ui_base_path(req)
-        status_store = self._ctx.deps.get("job_status_store")
-        jobs_payload = {
-            "recent": [],
-            "failedRecent": [],
-            "latestByCommand": {},
-            "lastSuccessfulRender": None,
-            "lastSuccessfulUpdate": None,
-        }
-        latest_jobs: dict[str, Any] = {}
-        if status_store is not None:
-            jobs_payload = self._recent_jobs_payload(status_store)
-            latest_jobs = self._latest_jobs_payload(status_store)
-            merged_latest = dict(jobs_payload.get("latestByCommand", {}) or {})
-            merged_latest.update(latest_jobs)
-            jobs_payload["latestByCommand"] = merged_latest
-        queue_live = self._queue_live_payload(queue_url) if bool(queue_cfg.enabled) else {}
-        build_payload = self._build_payload(env_name)
-        latest_render = None
-        latest_by_command = dict(jobs_payload.get("latestByCommand", {}) or {})
         prometheus_cfg = getattr(self._ctx.cfg.runtime, "prometheus", None)
         grafana_cfg = getattr(self._ctx.cfg.runtime, "grafana", None)
-        if isinstance(latest_by_command, dict):
-            candidate = latest_by_command.get("render_timeline_sheet")
-            if isinstance(candidate, dict):
-                latest_render = JobStatusRecord(
-                    job_id=str(candidate.get("jobId", "")).strip(),
-                    command_type=str(candidate.get("commandType", "render_timeline_sheet")).strip(),
-                    status=str(candidate.get("status", "")).strip(),
-                    requested_at_utc=datetime.fromisoformat(
-                        str(candidate.get("requestedAt", "")).replace("Z", "+00:00")
-                    ) if str(candidate.get("requestedAt", "")).strip() else datetime.now(timezone.utc),
-                    started_at_utc=datetime.fromisoformat(
-                        str(candidate.get("startedAt", "")).replace("Z", "+00:00")
-                    ) if str(candidate.get("startedAt", "")).strip() else None,
-                    finished_at_utc=datetime.fromisoformat(
-                        str(candidate.get("finishedAt", "")).replace("Z", "+00:00")
-                    ) if str(candidate.get("finishedAt", "")).strip() else None,
-                    requested_by=dict(candidate.get("requestedBy", {}) or {}),
-                    summary=dict(candidate.get("summary", {}) or {}),
-                    warnings=[str(item) for item in list(candidate.get("warnings", []) or [])],
-                    retryable=bool(candidate.get("retryable", False)),
-                    error=dict(candidate.get("error", {}) or {}) or None,
-                )
-        render_debug = _render_debug_payload(latest_render)
+        function_name = str(
+            self._ctx.cfg.deploy.yandex_cloud.function_name_prod
+            if env_name == "prod"
+            else self._ctx.cfg.deploy.yandex_cloud.function_name_test
+        ).strip()
         telemetry_payload = {
             "metricsEnabled": self._ctx.deps.get("metrics_client") is not None,
             "metricsClient": type(self._ctx.deps.get("metrics_client")).__name__,
@@ -466,24 +421,32 @@ class InfoHandler:
         }
         return {
             "artifact": "dtm_info_dashboard",
+            "view": "summary",
+            "detailAvailable": {
+                "query": "view=detail",
+                "paths": ["/info/detail", "/api/v2/info/detail"],
+            },
             "snapshot": {
                 "env": env_name,
-                "error": snapshot_error,
+                "error": "",
                 "bucket": str(snap_cfg.bucket),
                 "rootPrefix": root_prefix,
                 "rawKey": raw_key,
                 "prepKey": str(snap_cfg.prefix_prep).replace("{env}", env_name),
                 "extraPrefix": str(snap_cfg.prefix_extra).replace("{env}", env_name),
-                "sourceId": "" if prep is None else str(prep.source_id),
-                "sourceHash": "" if prep is None else str(prep.raw_source_hash),
-                "rawFetchedAt": "" if raw is None else raw.fetched_at_utc.astimezone(timezone.utc).isoformat(),
-                "prepBuiltAt": "" if prep is None else prep.built_at_utc.astimezone(timezone.utc).isoformat(),
+                "sourceId": "",
+                "sourceHash": "",
+                "rawFetchedAt": "",
+                "prepBuiltAt": "",
             },
             "counts": {
-                "tasksTotal": 0 if prep is None else len(prep.tasks_by_id),
-                "byStatus": status_counts,
+                "tasksTotal": 0,
+                "byStatus": {},
+                "detailDeferred": True,
             },
-            "storage": storage,
+            "storage": {
+                "detailDeferred": True,
+            },
             "queue": {
                 "enabled": bool(queue_cfg.enabled),
                 "provider": str(queue_cfg.provider),
@@ -495,12 +458,26 @@ class InfoHandler:
                     "terminalStatuses": ["failed_terminal"],
                     "retryableStatuses": ["failed_retryable"],
                 },
-                "latest": latest_by_command,
-                "live": queue_live,
+                "latest": {},
+                "live": {"detailDeferred": True},
             },
-            "build": build_payload,
-            "jobs": jobs_payload,
-            "renderDebug": render_debug,
+            "build": {
+                "functionName": function_name,
+                "detailDeferred": True,
+            },
+            "jobs": {
+                "recent": [],
+                "failedRecent": [],
+                "latestByCommand": {},
+                "lastSuccessfulRender": None,
+                "lastSuccessfulUpdate": None,
+                "detailDeferred": True,
+            },
+            "renderDebug": {
+                "state": "detail_required",
+                "reason": "detail_view_required",
+                "details": {},
+            },
             "telemetry": telemetry_payload,
             "telegram": {
                 "webhookPath": webhook_path,
@@ -516,6 +493,113 @@ class InfoHandler:
             },
         }
 
+    def _detail_payload(self, req: HttpRequest, summary_payload: dict[str, Any]) -> dict[str, Any]:
+        payload = json.loads(json.dumps(summary_payload))
+        prep = None
+        raw = None
+        snapshot_error = ""
+        try:
+            engine = build_snapshot_engine(self._ctx)
+            prep = engine._prep_cache.get()  # noqa: SLF001
+            raw = engine._raw_cache.get()  # noqa: SLF001
+        except Exception as exc:  # pragma: no cover - safety for optional deps/runtime config
+            snapshot_error = str(exc)
+        status_counts: dict[str, int] = {}
+        if prep is not None:
+            for view in prep.tasks_by_id.values():
+                key = str(view.sheet.status or "unknown")
+                status_counts[key] = status_counts.get(key, 0) + 1
+
+        env_name = str(payload.get("snapshot", {}).get("env", "")).strip().lower() or "dev"
+        snap_cfg = self._ctx.cfg.runtime.snapshot_engine
+        queue_cfg = self._ctx.cfg.runtime.queue
+        raw_key = str(payload.get("snapshot", {}).get("rawKey", "")).strip() or str(snap_cfg.prefix_raw).replace("{env}", env_name)
+        root_prefix = str(payload.get("snapshot", {}).get("rootPrefix", "")).strip() or self._resolve_root_prefix(raw_key)
+        storage = self._storage_stats(str(snap_cfg.bucket), root_prefix)
+        queue_url = str(queue_cfg.prod_queue_url if env_name == "prod" else queue_cfg.test_queue_url).strip()
+        queue_name = queue_url.rstrip("/").rsplit("/", 1)[-1] if queue_url else ""
+        status_store = self._ctx.deps.get("job_status_store")
+        jobs_payload = {
+            "recent": [],
+            "failedRecent": [],
+            "latestByCommand": {},
+            "lastSuccessfulRender": None,
+            "lastSuccessfulUpdate": None,
+        }
+        latest_jobs: dict[str, Any] = {}
+        if status_store is not None:
+            jobs_payload = self._recent_jobs_payload(status_store)
+            latest_jobs = self._latest_jobs_payload(status_store)
+            merged_latest = dict(jobs_payload.get("latestByCommand", {}) or {})
+            merged_latest.update(latest_jobs)
+            jobs_payload["latestByCommand"] = merged_latest
+        queue_live = self._queue_live_payload(queue_url) if bool(queue_cfg.enabled) else {}
+        build_payload = self._build_payload(env_name)
+        latest_render = None
+        latest_by_command = dict(jobs_payload.get("latestByCommand", {}) or {})
+        if isinstance(latest_by_command, dict):
+            candidate = latest_by_command.get("render_timeline_sheet")
+            if isinstance(candidate, dict):
+                latest_render = JobStatusRecord(
+                    job_id=str(candidate.get("jobId", "")).strip(),
+                    command_type=str(candidate.get("commandType", "render_timeline_sheet")).strip(),
+                    status=str(candidate.get("status", "")).strip(),
+                    requested_at_utc=datetime.fromisoformat(
+                        str(candidate.get("requestedAt", "")).replace("Z", "+00:00")
+                    ) if str(candidate.get("requestedAt", "")).strip() else datetime.now(timezone.utc),
+                    started_at_utc=datetime.fromisoformat(
+                        str(candidate.get("startedAt", "")).replace("Z", "+00:00")
+                    ) if str(candidate.get("startedAt", "")).strip() else None,
+                    finished_at_utc=datetime.fromisoformat(
+                        str(candidate.get("finishedAt", "")).replace("Z", "+00:00")
+                    ) if str(candidate.get("finishedAt", "")).strip() else None,
+                    requested_by=dict(candidate.get("requestedBy", {}) or {}),
+                    summary=dict(candidate.get("summary", {}) or {}),
+                    warnings=[str(item) for item in list(candidate.get("warnings", []) or [])],
+                    retryable=bool(candidate.get("retryable", False)),
+                    error=dict(candidate.get("error", {}) or {}) or None,
+                )
+        render_debug = _render_debug_payload(latest_render)
+        payload["view"] = "detail"
+        payload["snapshot"].update(
+            {
+                "env": env_name,
+                "error": snapshot_error,
+                "bucket": str(snap_cfg.bucket),
+                "rootPrefix": root_prefix,
+                "rawKey": raw_key,
+                "prepKey": str(snap_cfg.prefix_prep).replace("{env}", env_name),
+                "extraPrefix": str(snap_cfg.prefix_extra).replace("{env}", env_name),
+                "sourceId": "" if prep is None else str(prep.source_id),
+                "sourceHash": "" if prep is None else str(prep.raw_source_hash),
+                "rawFetchedAt": "" if raw is None else raw.fetched_at_utc.astimezone(timezone.utc).isoformat(),
+                "prepBuiltAt": "" if prep is None else prep.built_at_utc.astimezone(timezone.utc).isoformat(),
+            }
+        )
+        payload["counts"] = {
+            "tasksTotal": 0 if prep is None else len(prep.tasks_by_id),
+            "byStatus": status_counts,
+        }
+        payload["storage"] = storage
+        payload["queue"] = {
+            "enabled": bool(queue_cfg.enabled),
+            "provider": str(queue_cfg.provider),
+            "queueName": queue_name,
+            "endpointUrl": str(queue_cfg.endpoint_url or ""),
+            "policy": {
+                "retryModel": "queue_driven",
+                "batchPolicy": "per_message",
+                "terminalStatuses": ["failed_terminal"],
+                "retryableStatuses": ["failed_retryable"],
+            },
+            "latest": latest_by_command,
+            "live": queue_live,
+        }
+        payload["build"] = build_payload
+        payload["jobs"] = jobs_payload
+        payload["renderDebug"] = render_debug
+        return payload
+
     def handle(self, req: HttpRequest) -> HttpResponse | None:
         if not req.is_http_event:
             return None
@@ -525,10 +609,35 @@ class InfoHandler:
         if method != "GET":
             return None
         path = normalize_path(req.path)
-        if path not in {"/info", "/api/v2/info"}:
+        detail_mode = (
+            path in {"/info/detail", "/api/v2/info/detail"}
+            or str(req.query.get("view", "")).strip().lower() == "detail"
+        )
+        if path not in {"/info", "/api/v2/info", "/info/detail", "/api/v2/info/detail"}:
             return None
-        payload = self._info_payload(req)
-        as_json = str(req.query.get("format", "")).strip().lower() == "json" or path == "/api/v2/info"
+        env_name = str(self._ctx.cfg.runtime.runtime.env_default).strip().lower() or "dev"
+        metrics = self._ctx.deps.get("metrics_client")
+        summary_started = perf_counter()
+        payload = self._summary_payload(req)
+        if metrics is not None:
+            metrics.timing(
+                "dtm.info.summary.ms",
+                (perf_counter() - summary_started) * 1000.0,
+                self._metrics_labels(env_name=env_name, view="summary"),
+            )
+        if detail_mode:
+            detail_started = perf_counter()
+            payload = self._detail_payload(req, payload)
+            if metrics is not None:
+                metrics.timing(
+                    "dtm.info.detail.ms",
+                    (perf_counter() - detail_started) * 1000.0,
+                    self._metrics_labels(env_name=env_name, view="detail"),
+                )
+        as_json = (
+            str(req.query.get("format", "")).strip().lower() == "json"
+            or path in {"/api/v2/info", "/api/v2/info/detail"}
+        )
         if as_json:
             return json_response(200, payload)
         return html_response(200, _render_info_page(payload))
