@@ -1,6 +1,6 @@
 # Active Tasks
 
-- CAM-2026-03-12-BROWSER-AUTH-AND-MASKED-ACCESS-V1 P01: blocked on test-contour proxy secret provisioning and trusted auth-proxy wiring for live full-mode verification
+- CAM-2026-03-12-BROWSER-AUTH-AND-MASKED-ACCESS-V1 P01: redeploy backend test contour with Lockbox-mapped `BROWSER_AUTH_PROXY_SECRET` and re-run live full-mode verification
 
 ## Done
 

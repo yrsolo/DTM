@@ -60,6 +60,18 @@
   - test contour secret provisioning for `BROWSER_AUTH_PROXY_SECRET`
   - auth proxy or equivalent trusted hop that injects both proxy secret and `x-dtm-*` headers
 
+## 2026-03-12 deploy wiring fix
+- repo verification found that backend runtime already reads `BROWSER_AUTH_PROXY_SECRET` from env in `src/app/bootstrap.py`
+- root cause on repo side was deploy wiring drift:
+  - `.github/workflows/deploy_yc_function_main.yml` did not map `BROWSER_AUTH_PROXY_SECRET` from Lockbox into backend function env
+  - `.github/workflows/release_yc_function_prod.yml` did not map `BROWSER_AUTH_PROXY_SECRET` from Lockbox into backend function env
+- fix applied:
+  - both workflows now inject `BROWSER_AUTH_PROXY_SECRET=${LOCKBOX_ID}/latest/BROWSER_AUTH_PROXY_SECRET`
+  - `agent/prepare_prod_release.py` now treats `BROWSER_AUTH_PROXY_SECRET` as required for release prep
+- expected outcome after next test deploy:
+  - backend and auth-proxy use the same Lockbox-backed secret source
+  - live trusted-ingress requests can be rechecked for `meta.access.mode = full`
+
 ## Required evidence during execution
 - code pointers for route namespace and trusted ingress handling
 - code pointers for trusted-ingress validation rule

@@ -40,6 +40,7 @@ Secrets stay outside repo config files:
 - `BROWSER_AUTH_PROXY_SECRET`
 
 They are resolved through secret storage / env in loader/bootstrap only.
+Current deploy workflows map `BROWSER_AUTH_PROXY_SECRET` from Lockbox into backend function env for both test and prod contours.
 
 Current active runtime no longer requires YDB contour secrets:
 - no `YDB_ID_*`

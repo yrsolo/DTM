@@ -13,6 +13,7 @@ from sync_lockbox_from_env import _build_payload_entries, _default_yc_binary, _p
 REQUIRED_PROD_KEYS = (
     "YC_CLOUD_FUNCTION_PROD_NAME",
     "YC_CLOUD_FUNCTION_PROD_ID",
+    "BROWSER_AUTH_PROXY_SECRET",
 )
 
 
