@@ -106,6 +106,11 @@ __INFO_CSS__
       <label><input id="includePeople" type="checkbox" checked /> include_people</label>
     </div>
     <div class="controls">
+      <span class="k">access mode:</span>
+      <label><input id="accessFull" type="radio" name="accessMode" checked /> full (with cookie)</label>
+      <label><input id="accessMasked" type="radio" name="accessMode" /> masked (omit cookie)</label>
+    </div>
+    <div class="controls">
       <label>limit <input id="limitValue" type="number" min="1" max="2000" value="200" /></label>
       <button class="alt small" onclick="setLimit(20)">20</button>
       <button class="alt small" onclick="setLimit(100)">100</button>
@@ -135,6 +140,7 @@ __INFO_CSS__
     </div>
     <div class="row"><span class="k">Request URL:</span></div>
     <pre id="apiRequestUrl"></pre>
+    <div class="row"><span class="k">Fetch mode:</span> <span class="v" id="apiAccessMode">full / credentials=include</span></div>
     <pre id="apiResult">Соберите параметры и нажмите Send.</pre>
   </details>
 

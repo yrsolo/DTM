@@ -201,6 +201,12 @@
       if (document.getElementById('stDone').checked) statuses.push('done');
       return statuses;
     }
+    function selectedAccessMode(){
+      return document.getElementById('accessMasked').checked ? 'masked' : 'full';
+    }
+    function selectedFetchCredentials(){
+      return selectedAccessMode() === 'masked' ? 'omit' : 'include';
+    }
     function buildApiQuery(){
       const statuses = selectedStatuses();
       const limit = document.getElementById('limitValue').value || '200';
@@ -220,14 +226,22 @@
     function refreshApiRequestUrl(){
       const q = buildApiQuery();
       const origin = window.location.origin || '';
+      const accessMode = selectedAccessMode();
+      const credentials = selectedFetchCredentials();
       document.getElementById('apiRequestUrl').textContent = origin + withBase('/api/v2/frontend?') + q.toString();
+      document.getElementById('apiAccessMode').textContent = accessMode + ' / credentials=' + credentials;
     }
     async function sendApiBuilder(){
       apiTimer.start();
       const q = buildApiQuery();
-      const r = await fetch(withBase('/api/v2/frontend?')+q.toString(), {cache:'no-store'});
+      const accessMode = selectedAccessMode();
+      const credentials = selectedFetchCredentials();
+      const r = await fetch(withBase('/api/v2/frontend?')+q.toString(), {
+        cache:'no-store',
+        credentials: credentials,
+      });
       const t = await r.text();
-      document.getElementById('apiResult').textContent = 'HTTP '+r.status+'\\n'+pretty(t);
+      document.getElementById('apiResult').textContent = 'mode=' + accessMode + ' credentials=' + credentials + '\\nHTTP '+r.status+'\\n'+pretty(t);
       apiTimer.stop();
       refreshApiRequestUrl();
     }
@@ -267,7 +281,7 @@
       }
       refreshApiRequestUrl();
     }
-    const watchIds = ['includePeople','limitValue','stWork','stPreDone','stWait','stDone','windowStart','windowEnd'];
+    const watchIds = ['includePeople','accessFull','accessMasked','limitValue','stWork','stPreDone','stWait','stDone','windowStart','windowEnd'];
     for (const id of watchIds) {
       const el = document.getElementById(id);
       if (el) el.addEventListener('change', refreshApiRequestUrl);

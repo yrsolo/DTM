@@ -323,6 +323,9 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertIn("Recent Jobs", response.body)
         self.assertIn("Last Render Job", response.body)
         self.assertIn("/info?format=json&view=detail", response.body)
+        self.assertIn("access mode:", response.body)
+        self.assertIn("full (with cookie)", response.body)
+        self.assertIn("masked (omit cookie)", response.body)
 
     def test_info_json_includes_ui_base_path_for_prefixed_route(self) -> None:
         handler = InfoHandler(self.ctx)
