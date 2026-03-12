@@ -3,6 +3,9 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
+- none
+
+## Blocked
 - CAM-2026-03-12-BROWSER-AUTH-AND-MASKED-ACCESS-V1
 
 ## Done

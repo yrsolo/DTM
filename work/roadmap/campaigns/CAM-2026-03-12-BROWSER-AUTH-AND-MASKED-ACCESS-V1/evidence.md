@@ -43,6 +43,23 @@
 - live contour verification still needs deploy to `test`
 - full trusted-ingress live verification remains dependent on test contour secret provisioning and proxy wiring
 
+## Live verification (2026-03-12)
+- deployed commit to `origin/test`: `96820f3`
+- direct browser-like request to `https://dtm.solofarm.ru/test/ops/api/v2/frontend?statuses=work&limit=1` now returns:
+  - `meta.access.mode = "masked"`
+  - `meta.access.fallbackReason = "untrusted_ingress"`
+  - masked task title like `Task-ef2f4915` instead of live business title
+- rollout lag on test contour was observable: old unmasked response persisted for several polls, then switched to masked response on attempt 6
+- conclusion:
+  - live untrusted/direct path downgrade works on test contour
+  - canonical payload remains available while browser-supplied `x-dtm-*` headers stay untrusted
+
+## Current blocker
+- accepted trusted-ingress full-mode path is implemented and covered by local tests, but not yet live-verified
+- remaining blocker is infra-side:
+  - test contour secret provisioning for `BROWSER_AUTH_PROXY_SECRET`
+  - auth proxy or equivalent trusted hop that injects both proxy secret and `x-dtm-*` headers
+
 ## Required evidence during execution
 - code pointers for route namespace and trusted ingress handling
 - code pointers for trusted-ingress validation rule

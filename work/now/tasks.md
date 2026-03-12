@@ -1,6 +1,6 @@
 # Active Tasks
 
-- CAM-2026-03-12-BROWSER-AUTH-AND-MASKED-ACCESS-V1 P01: verify test-contour masked fallback live and confirm whether trusted full-mode can be exercised with current secret/proxy wiring
+- CAM-2026-03-12-BROWSER-AUTH-AND-MASKED-ACCESS-V1 P01: blocked on test-contour proxy secret provisioning and trusted auth-proxy wiring for live full-mode verification
 
 ## Done
 
