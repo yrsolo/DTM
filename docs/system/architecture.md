@@ -9,6 +9,9 @@ DTM is a Cloud Functions runtime that:
 - sends Telegram notifications,
 - executes heavy mutations asynchronously through Message Queue workers.
 
+Governing architecture policy:
+- [architecture_values.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/architecture_values.md)
+
 ## Canonical production contour
 1. Sheets snapshot (`values + colors`)
 2. Normalize into canonical task model
@@ -31,6 +34,13 @@ Consumers:
   - queue worker events
   - scheduled triggers
   - runtime execution bridge
+
+Current architectural direction for the 2026-03-12 wave:
+- remove import-time production bootstrap from active runtime modules,
+- reduce planner runtime to a transitional adapter rather than the conceptual center,
+- keep browser auth and masking at the access boundary,
+- keep read endpoints cache-first and side-effect free by default.
+- treat Telegram/reminder/group-query as frozen unless break/fix work is required.
 
 ## Async mutation contour
 Heavy and mutating actions are queue-backed:
@@ -64,6 +74,23 @@ Unsupported legacy planner modes are intentionally rejected.
 - `src/entrypoints/**` owns transport parsing/translation only.
 - domain logic lives in `src/core/**` and focused service/use-case modules.
 - archived planner/bootstrap/render/reference code lives under `src/legacy/**` and must not be imported by standard runtime.
+- browser-facing access policy belongs at the HTTP/access boundary, not inside query engine internals.
+
+## Browser-facing access contract
+
+Canonical browser-facing data/auth namespaces:
+- prod API: `/ops/api/*`
+- test API: `/test/ops/api/*`
+- prod auth: `/ops/auth/*`
+- test auth: `/test/ops/auth/*`
+- shared infra route: `/grafana/*`
+
+The active backend direction is:
+- one canonical frontend payload path,
+- one canonical read-side query path,
+- optional masking as a post-build transform,
+- no separate masked query engine.
+- trusted `x-dtm-*` handling is constrained by [auth_trust_boundary.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/auth_trust_boundary.md).
 
 ## Storage roles
 - Object Storage/S3:
