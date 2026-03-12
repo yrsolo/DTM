@@ -1,12 +1,13 @@
 # Active Tasks
 
-- CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P02: add Object Storage response cache for exact default frontend query (`limit=60`, all default statuses, `include_people=true`) and hourly Moscow masking seed for all masked frontend responses
+- none
 
 ## Done
 
 - CAM-2026-03-12-RUNTIME-DEPLANNERIZE-AND-BOOTSTRAP-HARDENING-V1 P01: removed import-time `AppContext` bootstrap from `index.py` and `src/entrypoints/runtime/planner_runtime_entry.py`; added import-safe smoke coverage
 - CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P01a: split `/info` into default summary and explicit detail mode with `dtm.info.summary.ms` and `dtm.info.detail.ms`
 - CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P01: owner accepted current Stage 2 evidence as sufficient to open Stage 4
+- CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P02: default frontend response cache is live for exact `limit=60` all-status query in Object Storage; repeated `api` and `bff` hits on `test` contour are faster, and masked mapping now rotates by Moscow hour
 - CAM-2026-03-12-DOC-CODE-REALIGN-V1 P01: rebuilt active main docs around verified Stage 1/2 runtime facts, canonical architecture values, and compact Grafana/info observability story
 - CAM-2026-03-12-BROWSER-AUTH-AND-MASKED-ACCESS-V1 P01: backend test contour now maps `BROWSER_AUTH_PROXY_SECRET` from Lockbox; live `masked` and trusted `full` paths verified on `test`
 

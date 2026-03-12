@@ -110,6 +110,32 @@
   - in-worker gap between `job_wall_clock_ms` and `total_duration_ms`: about `1664 ms`
   - this gap is consistent with wrapper overhead outside core snapshot update, including task-source setup and metrics flush path, but public surfaces still do not isolate flush-only duration
 
+## Default frontend response cache live smoke (2026-03-12)
+- deployed commit to `origin/test`: `8cf4775`
+- default exact query under test:
+  - `statuses=work,pre_done,done,wait`
+  - `include_people=true`
+  - `limit=60`
+- live shell smoke after deploy:
+  - direct API `https://dtm.solofarm.ru/test/ops/api/v2/frontend?...`
+    - first hit: about `8.89s`, `77469` bytes
+    - second hit: about `3.33s`, `77469` bytes
+  - browser proxy `https://dtm.solofarm.ru/test/ops/bff/api/v2/frontend?...`
+    - first hit: about `4.96s`, `72299` bytes
+    - second hit: about `3.83s`, `72299` bytes
+- interpretation:
+  - exact default query cache seam is live on `test`
+  - repeated request after warm-up is materially faster on both direct and proxy contours
+  - `api` and `bff` payload sizes differ as expected because `bff` guest path remains masked while direct API still returns its own access context
+
+## Hourly masking seed verification (2026-03-12)
+- local deterministic proof:
+  - same Moscow hour -> same masking version
+  - next Moscow hour -> different masking version
+- covered by:
+  - `python -m unittest tests.services.test_masking`
+- live cross-hour contour verification is still pending a natural hour rollover or an injected controllable clock seam
+
 ## Current blocker
 - separate live quantification of `dtm.metrics.flush_duration_ms` is blocked by missing read access to monitoring data:
   - `/info` exposes config and dashboard links, not raw metric samples
