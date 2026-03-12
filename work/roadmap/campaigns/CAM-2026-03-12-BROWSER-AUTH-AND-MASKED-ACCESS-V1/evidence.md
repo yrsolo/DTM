@@ -90,6 +90,20 @@
   - full branch is selected correctly for approved trusted requests
   - masked and full live paths are both verified on test contour
 
+## Header parsing fix for gateway event shapes (2026-03-12)
+- root cause for later masked regressions was in backend request parsing, not in frontend toggle logic
+- `HttpShell` previously passed only `event["headers"]` into `HttpRequest`
+- some Yandex Cloud/API Gateway chains expose custom headers in `multiValueHeaders` and/or `params.header`
+- when `X-DTM-Proxy-Secret` arrived through those shapes, backend access resolution saw an empty header map and returned:
+  - `trustedIngress=false`
+  - `fallbackReason=untrusted_ingress`
+- fix:
+  - added shared header extraction in `src/entrypoints/http/event_parser.py`
+  - `src/entrypoints/http/http_shell.py` now merges `params.header`, `params.headers`, `multiValueParams.header`, `multiValueParams.headers`, `multiValueHeaders`, and `headers`
+- verification:
+  - added routing test proving trusted full-mode when `X-DTM-Proxy-Secret` is present only in `multiValueHeaders`
+  - focused suites passed: `tests.api.test_frontend_api_routing`, `tests.api.test_info_observability`
+
 ## Required evidence during execution
 - code pointers for route namespace and trusted ingress handling
 - code pointers for trusted-ingress validation rule

@@ -475,6 +475,29 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(task["customer"], "CustomerA")
         self.assertEqual(task["history"], "raw")
 
+    def test_trusted_proxy_secret_from_multivalue_headers_allows_full_mode(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend"
+        event["headers"] = {}
+        event["multiValueHeaders"] = {
+            "X-DTM-Proxy-Secret": ["proxy-secret-test"],
+            "x-dtm-access-mode": ["full"],
+            "x-dtm-authenticated": ["1"],
+            "x-dtm-contour": ["test"],
+            "x-dtm-user-id": ["user-1"],
+            "x-dtm-user-role": ["admin"],
+            "x-dtm-user-status": ["approved"],
+        }
+
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response["body"])
+
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(payload["meta"]["access"]["mode"], "full")
+        self.assertTrue(payload["meta"]["access"]["trustedIngress"])
+
     def test_masked_mode_is_deterministic_and_preserves_payload_shape(self) -> None:
         masked_event = _fixture_event()
         masked_event["pathParams"]["proxy"] = "api/v2/frontend"

@@ -9,6 +9,7 @@ from src.app.context import AppContext
 from src.entrypoints.http.debug_utils import debug_http_shape
 from src.entrypoints.http.dto import HttpRequest, to_gateway_response
 from src.entrypoints.http.event_parser import (
+    header_params,
     http_method,
     http_path,
     normalize_path,
@@ -95,7 +96,7 @@ class HttpShell:
             path=http_path(event),
             query=query_params(event),
             body=request_payload,
-            headers=event.get("headers", {}) if isinstance(event.get("headers"), dict) else {},
+            headers=header_params(event),
             raw_event=event,
             is_http_event=is_http_event,
         )
