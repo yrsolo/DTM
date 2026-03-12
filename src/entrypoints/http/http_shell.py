@@ -27,7 +27,6 @@ from src.observability.bottlenecks import (
     is_stage_metrics_enabled,
     new_stage_trace_id,
     record_api_outer_stage,
-    record_direct_api_outer_trace,
 )
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES, is_legacy_mode
 from src.entrypoints.runtime.runtime_shell import RuntimeShell
@@ -192,56 +191,39 @@ class HttpShell:
                 route = str(response_headers.get("X-DTM-Frontend-Route", "")).strip() or "api"
                 access_mode = str(response_headers.get("X-DTM-Frontend-Access-Mode", "")).strip() or "masked"
                 cache_result = str(response_headers.get("X-DTM-Frontend-Cache-Result", "")).strip() or "unknown"
-                unexplained_ms = max(shell_total_ms - frontend_inner_ms, 0.0)
                 response_headers = append_response_headers(
                     response_headers,
                     {
                         "Server-Timing": build_server_timing_header(
                             {
-                                "function_total": shell_total_ms,
                                 "http_shell": shell_total_ms,
                                 "router_dispatch": router_dispatch_ms,
                                 "response_build": response_build_ms,
                                 "frontend_handler": frontend_handler_ms,
                                 "frontend_inner": frontend_inner_ms,
-                                "frontend_unexplained": unexplained_ms,
                             }
                         ),
+                        "X-DTM-Outer-Trace-Id": frontend_trace_id,
+                        "X-DTM-Outer-Http-Shell-Ms": f"{shell_total_ms:.3f}",
+                        "X-DTM-Outer-Router-Dispatch-Ms": f"{router_dispatch_ms:.3f}",
+                        "X-DTM-Outer-Response-Build-Ms": f"{response_build_ms:.3f}",
+                        "X-DTM-Outer-Frontend-Handler-Ms": f"{frontend_handler_ms:.3f}",
+                        "X-DTM-Outer-Frontend-Inner-Ms": f"{frontend_inner_ms:.3f}",
+                        "X-DTM-Outer-Access-Mode": access_mode,
+                        "X-DTM-Outer-Cache-Result": cache_result,
+                        "X-DTM-Outer-Route": route,
+                        "X-DTM-Outer-Request-Build-Ms": f"{request_build_ms:.3f}",
                     },
                 )
                 if str(self._ctx.cfg.runtime.runtime.bottleneck_metrics_level or "").strip().lower() == "debug":
                     response_headers = append_response_headers(
                         response_headers,
                         {
-                            "X-DTM-Outer-Trace-Id": frontend_trace_id,
-                            "X-DTM-Outer-Function-Total-Ms": f"{shell_total_ms:.3f}",
-                            "X-DTM-Outer-Router-Dispatch-Ms": f"{router_dispatch_ms:.3f}",
-                            "X-DTM-Outer-Response-Build-Ms": f"{response_build_ms:.3f}",
-                            "X-DTM-Outer-Unexplained-Ms": f"{unexplained_ms:.3f}",
-                            "X-DTM-Outer-Access-Mode": access_mode,
-                            "X-DTM-Outer-Cache-Result": cache_result,
-                            "X-DTM-Outer-Route": route,
+                            "X-DTM-Outer-Frontend-Handler-Ms": f"{frontend_handler_ms:.3f}",
+                            "X-DTM-Outer-Frontend-Inner-Ms": f"{frontend_inner_ms:.3f}",
                         },
                     )
                 response["headers"] = response_headers
-                record_direct_api_outer_trace(
-                    self._ctx,
-                    trace_id=frontend_trace_id,
-                    operation=operation,
-                    result="success",
-                    function_total_ms=shell_total_ms,
-                    http_shell_total_ms=shell_total_ms,
-                    router_dispatch_ms=router_dispatch_ms,
-                    response_build_ms=response_build_ms,
-                    frontend_handler_ms=frontend_handler_ms,
-                    frontend_inner_ms=frontend_inner_ms,
-                    debug_fields={
-                        "route": route,
-                        "accessMode": access_mode,
-                        "cacheResult": cache_result,
-                        "requestBuildMs": round(request_build_ms, 3),
-                    },
-                )
             if metrics is not None:
                 metrics.counter("dtm.api.requests_total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
                 metrics.timing("dtm.api.duration_ms", (perf_counter() - started_at) * 1000.0, labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
