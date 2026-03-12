@@ -20,6 +20,7 @@ from src.entrypoints.http.event_parser import extract_payload, http_path, query_
 from src.entrypoints.http.frontend_query_params import parse_bool
 from src.entrypoints.http.runtime_mode import extract_force_refresh, extract_run_mode
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES
+from src.services.access.masking import BRAND_DICTIONARY, DESIGNER_DICTIONARY, FORMAT_DICTIONARY, SHOW_DICTIONARY
 from src.worker.model import JobStatusRecord
 
 
@@ -440,11 +441,13 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 200)
         self.assertEqual(payload["meta"]["access"]["mode"], "masked")
         self.assertEqual(payload["meta"]["access"]["fallbackReason"], "untrusted_ingress")
-        self.assertNotEqual(task["title"], "Task Alpha")
-        self.assertNotEqual(task["brand"], "BrandA")
-        self.assertNotEqual(task["customer"], "CustomerA")
-        self.assertNotEqual(task["history"], "raw")
-        self.assertNotEqual(payload["entities"]["people"][0]["name"], "Designer One")
+        self.assertIn(task["brand"], BRAND_DICTIONARY)
+        self.assertIn(task["format_"], FORMAT_DICTIONARY)
+        self.assertIn(payload["entities"]["people"][0]["name"], DESIGNER_DICTIONARY)
+        self.assertIn(payload["entities"]["groups"][0]["name"], SHOW_DICTIONARY)
+        self.assertIn(task["customer"], BRAND_DICTIONARY)
+        self.assertIn(" [", task["title"])
+        self.assertTrue(task["history"].startswith("Согласование по проекту «"))
         self.assertTrue(any(name == "dtm.api.masking_ms" for name, _, _ in self._metrics.timings))
 
     def test_trusted_proxy_secret_allows_full_mode(self) -> None:
@@ -510,6 +513,9 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(_shape_signature(masked_payload_a), _shape_signature(full_payload))
         self.assertNotEqual(masked_payload_a["tasks"][0]["title"], full_payload["tasks"][0]["title"])
         self.assertNotEqual(masked_payload_a["entities"]["groups"][0]["name"], full_payload["entities"]["groups"][0]["name"])
+        self.assertIn(masked_payload_a["tasks"][0]["brand"], BRAND_DICTIONARY)
+        self.assertIn(masked_payload_a["tasks"][0]["format_"], FORMAT_DICTIONARY)
+        self.assertIn(masked_payload_a["entities"]["people"][0]["name"], DESIGNER_DICTIONARY)
 
 
 if __name__ == "__main__":
