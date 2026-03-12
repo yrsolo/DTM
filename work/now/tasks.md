@@ -1,11 +1,12 @@
 # Active Tasks
 
-- CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1 P01: split direct `/api` latency into router precheck/handler/post-router/function totals
-- CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1 P02: make `FrontendV2Handler` totals decision-complete and remove conflicting trace ownership
-- CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1 P03: republish Grafana and verify live `Server-Timing` plus `/info` direct `/api` traces on `test`
+- none
 
 ## Done
 
+- CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1 P01: split direct `/api` latency into `router_precheck_total`, `router_handler_total`, `router_total`, `http_shell_post_router`, and `function_total`
+- CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1 P02: aligned `FrontendV2Handler` totals with router timing ownership, added `query_parse` and `handler_total`, and removed leaked internal timing headers from public `stages` responses
+- CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1 P03: republished `test`, captured live `Server-Timing` and `/info` detail evidence, and localized direct `/api` latency into `inside_handler` and `after_handler` segments
 - CAM-2026-03-12-BOTTLENECK-ANALYTICS-V1 P01: added config-gated profiling policy (`off|stages|debug`) with backward compatibility for legacy `dev_mode_metrics`
 - CAM-2026-03-12-BOTTLENECK-ANALYTICS-V1 P02: instrumented frontend read path with `dtm.api.stage.*` metrics and recent in-process stage trace recorder
 - CAM-2026-03-12-BOTTLENECK-ANALYTICS-V1 P03: exposed bottleneck diagnostics in `/info`, republished Grafana panels, and verified live `api`/`bff` stage traces on `test`
@@ -24,4 +25,4 @@
 - `agent/intructions/DTM-test/**` is reference-only input and must not be used as execution tracking.
 - Working plans and evidence must live only in `work/roadmap/campaigns/<CAMPAIGN>/`.
 - Telegram/reminder/group-query remains frozen for this wave unless break/fix work is required.
-- latest bottleneck finding: direct `/api` cache-hit inner frontend stages are ~`112-130 ms`, but live `function_total` is still about `19 s`; the next wave should target outer function/shell/dispatch overhead
+- latest bottleneck finding: direct `/api` router precheck is negligible and frontend inner core is sub-second, but live latency is dominated by `unexplained_inside_handler` plus `unexplained_after_handler`; the next wave should target those two segments instead of router matching or payload build
