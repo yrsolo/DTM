@@ -50,7 +50,22 @@ __INFO_CSS__
       <div class="row"><span class="k">DLQ:</span> <span class="v" id="queueDlq"></span></div>
       <div class="row"><span class="k">Error:</span> <span class="v" id="queueError"></span></div>
     </div>
+    <div class="card">
+      <h2>Bottleneck Profiling</h2>
+      <div class="row"><span class="k">Level:</span> <span class="v" id="bottleneckLevel"></span></div>
+      <div class="row"><span class="k">Stage metrics:</span> <span class="v" id="bottleneckStageEnabled"></span></div>
+      <div class="row"><span class="k">Debug metrics:</span> <span class="v" id="bottleneckDebugEnabled"></span></div>
+      <div class="row"><span class="k">Recent traces:</span> <span class="v" id="bottleneckTraceCount"></span></div>
+    </div>
   </div>
+
+  <details class="card section collapsible">
+    <summary class="section-summary">
+      <span>Bottleneck Diagnostics</span>
+      <span class="collapse-hint">show</span>
+    </summary>
+    <pre id="bottleneckDiagnostics">{"recentApiTraces":[]}</pre>
+  </details>
 
   <details class="card section collapsible">
     <summary class="section-summary">

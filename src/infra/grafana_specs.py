@@ -317,6 +317,52 @@ def build_test_grafana_dashboard(
         ),
         (
             9,
+            "Frontend Stage Breakdown",
+            [
+                {
+                    "expr": _expr("dtm.api.stage.duration_ms", env_name, 'operation="frontend_access",stage=~".+"'),
+                    "legendFormat": "{{route}} {{access_mode}} {{cache_result}} {{stage}}",
+                },
+            ],
+        ),
+        (
+            10,
+            "Frontend Route Compare",
+            [
+                {
+                    "expr": _expr("dtm.api.stage.duration_ms", env_name, 'operation="frontend_access",stage="response_build",route="api"'),
+                    "legendFormat": "api response_build",
+                },
+                {
+                    "expr": _expr("dtm.api.stage.duration_ms", env_name, 'operation="frontend_access",stage="response_build",route="bff"'),
+                    "legendFormat": "bff response_build",
+                },
+                {
+                    "expr": _expr("dtm.api.duration_ms", env_name, 'operation=~".*/api/v2/frontend"'),
+                    "legendFormat": "{{operation}} total",
+                },
+            ],
+        ),
+        (
+            11,
+            "Frontend Cache Compare",
+            [
+                {
+                    "expr": _expr("dtm.api.stage.duration_ms", env_name, 'operation="frontend_access",cache_result="hit",stage=~".+"'),
+                    "legendFormat": "hit {{route}} {{stage}}",
+                },
+                {
+                    "expr": _expr("dtm.api.stage.duration_ms", env_name, 'operation="frontend_access",cache_result="miss",stage=~".+"'),
+                    "legendFormat": "miss {{route}} {{stage}}",
+                },
+                {
+                    "expr": _expr("dtm.api.stage.duration_ms", env_name, 'operation="frontend_access",cache_result="bypass",stage=~".+"'),
+                    "legendFormat": "bypass {{route}} {{stage}}",
+                },
+            ],
+        ),
+        (
+            12,
             "Worker Reliability",
             [
                 {"expr": _expr("dtm.worker.commands_total", env_name), "legendFormat": "commands_total"},
@@ -325,7 +371,7 @@ def build_test_grafana_dashboard(
             ],
         ),
         (
-            10,
+            13,
             "Worker Timing",
             [
                 {"expr": _expr("dtm.worker.command_duration_ms", env_name), "legendFormat": "command_duration_ms"},
@@ -333,7 +379,7 @@ def build_test_grafana_dashboard(
             ],
         ),
         (
-            11,
+            14,
             "Notify Runtime",
             [
                 {"expr": _expr("dtm.notify.total", env_name), "legendFormat": "{{operation}} total"},
@@ -343,7 +389,7 @@ def build_test_grafana_dashboard(
             ],
         ),
         (
-            12,
+            15,
             "Telegram Intake",
             [
                 {"expr": _expr("dtm.telegram.updates_total", env_name), "legendFormat": "updates_total"},
@@ -354,14 +400,14 @@ def build_test_grafana_dashboard(
             ],
         ),
         (
-            13,
+            16,
             "Metrics Flush Duration",
             [
                 {"expr": _expr("dtm.metrics.flush_duration_ms", env_name, 'backend=~".+"'), "legendFormat": "{{module}} {{operation}} {{backend}} {{result}}"},
             ],
         ),
         (
-            14,
+            17,
             "Metrics Flush Volume",
             [
                 {"expr": _expr("dtm.metrics.flush_points_total", env_name, 'backend=~".+"'), "legendFormat": "{{module}} {{operation}} {{backend}} points"},

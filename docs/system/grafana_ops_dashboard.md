@@ -33,6 +33,7 @@ The current dashboard spec contains:
 
 - a dense top stat section for snapshot, render, info, and wall-clock/flush diagnostics
 - compact timeseries panels for snapshot/render/API/info/worker/notify/telegram/flush activity
+- dedicated frontend bottleneck panels for stage breakdown, route comparison, and cache hit/miss/bypass comparison
 
 These panels are operator-oriented, not BI-oriented.
 
@@ -130,6 +131,7 @@ Current `/info` UI policy:
 - default operator view is summary-first
 - heavy JSON/detail inspection is explicit
 - `Recent Jobs`, `Admin Actions`, `API Request Builder`, and `Info JSON` stay collapsible and default-closed so dashboard-level information fits on one screen more easily
+- `/info` detail also exposes recent in-process frontend stage traces and current profiling level as a secondary diagnostics surface
 
 ## Current rollout state
 

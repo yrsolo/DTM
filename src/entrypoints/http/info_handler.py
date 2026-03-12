@@ -16,6 +16,12 @@ from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import html_response, json_response
 from src.infra.yc_function_info import get_function_build_info
 from src.infra.yc_queue_info import get_queue_live_stats
+from src.observability.bottlenecks import (
+    RECENT_API_STAGE_EVENTS,
+    is_debug_metrics_enabled,
+    is_stage_metrics_enabled,
+    resolve_bottleneck_metrics_level,
+)
 from src.snapshot_engine.engine import build_snapshot_engine
 from src.worker.model import JobStatusRecord
 
@@ -416,6 +422,9 @@ class InfoHandler:
                 if env_name == "prod"
                 else getattr(grafana_cfg, "embed_url_test", "")
             ).strip(),
+            "bottleneckMetricsLevel": resolve_bottleneck_metrics_level(self._ctx),
+            "stageMetricsEnabled": is_stage_metrics_enabled(self._ctx),
+            "debugMetricsEnabled": is_debug_metrics_enabled(self._ctx),
             "structuredLoggerEnabled": self._ctx.deps.get("structured_logger") is not None,
             "structuredLogger": type(self._ctx.deps.get("structured_logger")).__name__,
         }
@@ -490,6 +499,13 @@ class InfoHandler:
             "web": {
                 "apiDomain": api_domain,
                 "uiBasePath": ui_base_path,
+            },
+            "bottlenecks": {
+                "profilingLevel": resolve_bottleneck_metrics_level(self._ctx),
+                "stageMetricsEnabled": is_stage_metrics_enabled(self._ctx),
+                "debugMetricsEnabled": is_debug_metrics_enabled(self._ctx),
+                "recentApiTracesDeferred": True,
+                "recentApiTraces": [],
             },
         }
 
@@ -598,6 +614,12 @@ class InfoHandler:
         payload["build"] = build_payload
         payload["jobs"] = jobs_payload
         payload["renderDebug"] = render_debug
+        payload["bottlenecks"] = {
+            "profilingLevel": resolve_bottleneck_metrics_level(self._ctx),
+            "stageMetricsEnabled": is_stage_metrics_enabled(self._ctx),
+            "debugMetricsEnabled": is_debug_metrics_enabled(self._ctx),
+            "recentApiTraces": RECENT_API_STAGE_EVENTS.recent_traces(limit=8),
+        }
         return payload
 
     def handle(self, req: HttpRequest) -> HttpResponse | None:

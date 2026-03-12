@@ -4,6 +4,12 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from src.observability.metrics import BackendFlushResult, MetricEntry, MetricsClient
+from src.observability.bottlenecks import (
+    is_debug_metrics_enabled,
+    is_detailed_metrics_enabled,
+    is_stage_metrics_enabled,
+    resolve_bottleneck_metrics_level,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -116,9 +122,3 @@ def emit_flush_metrics(
     )
     collector.flush()
 
-
-def is_detailed_metrics_enabled(ctx: Any) -> bool:
-    try:
-        return bool(ctx.cfg.runtime.runtime.dev_mode_metrics)
-    except Exception:
-        return False

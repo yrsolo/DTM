@@ -30,6 +30,7 @@ ENV_ALLOWLIST = frozenset(
         "ENV",
         "STRICT_ENV_GUARD",
         "DEV_MODE_METRICS",
+        "BOTTLENECK_METRICS_LEVEL",
         "STORE_MODE",
         "READMODEL_SOURCE",
         "NOTIFY_SOURCE",
@@ -116,6 +117,8 @@ def _merge_runtime_env_overrides(runtime_cfg: RuntimeConfig) -> RuntimeConfig:
         runtime_cfg.runtime.strict_env_guard_default = _parse_bool(os.environ["STRICT_ENV_GUARD"])
     if "DEV_MODE_METRICS" in os.environ:
         runtime_cfg.runtime.dev_mode_metrics = _parse_bool(os.environ["DEV_MODE_METRICS"])
+    if "BOTTLENECK_METRICS_LEVEL" in os.environ:
+        runtime_cfg.runtime.bottleneck_metrics_level = os.environ["BOTTLENECK_METRICS_LEVEL"].strip().lower()
 
     if "READMODEL_TTL_MINUTES" in os.environ:
         runtime_cfg.pipeline.readmodel_ttl_minutes = max(1, int(os.environ["READMODEL_TTL_MINUTES"]))
@@ -206,6 +209,9 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
     defaults.runtime.dev_mode_metrics = bool(
         runtime_raw.get("dev_mode_metrics", defaults.runtime.dev_mode_metrics)
     )
+    defaults.runtime.bottleneck_metrics_level = str(
+        runtime_raw.get("bottleneck_metrics_level", defaults.runtime.bottleneck_metrics_level)
+    ).strip().lower() or defaults.runtime.bottleneck_metrics_level
     defaults.monitoring.enabled = bool(monitoring_raw.get("enabled", defaults.monitoring.enabled))
     defaults.monitoring.backend = str(monitoring_raw.get("backend", defaults.monitoring.backend))
     defaults.monitoring.folder_id = str(monitoring_raw.get("folder_id", defaults.monitoring.folder_id))

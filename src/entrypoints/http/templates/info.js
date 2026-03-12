@@ -89,6 +89,7 @@
       const latestByCommand = jobs.latestByCommand || {};
       const lastRender = latestByCommand.render_timeline_sheet || null;
       const renderDebug = p.renderDebug || {};
+      const bottlenecks = p.bottlenecks || {};
       document.getElementById('env').textContent = s.env || '';
       document.getElementById('bucket').textContent = s.bucket || '';
       document.getElementById('sourceId').textContent = s.sourceId || '';
@@ -113,6 +114,11 @@
       document.getElementById('queueDelayed').textContent = String(ql.messages_delayed ?? '');
       document.getElementById('queueDlq').textContent = ql.dlq_configured === undefined ? '' : String(!!ql.dlq_configured);
       document.getElementById('queueError').textContent = ql.error || '';
+      document.getElementById('bottleneckLevel').textContent = String(bottlenecks.profilingLevel || '');
+      document.getElementById('bottleneckStageEnabled').textContent = String(!!bottlenecks.stageMetricsEnabled);
+      document.getElementById('bottleneckDebugEnabled').textContent = String(!!bottlenecks.debugMetricsEnabled);
+      document.getElementById('bottleneckTraceCount').textContent = String((bottlenecks.recentApiTraces || []).length);
+      document.getElementById('bottleneckDiagnostics').textContent = pretty(bottlenecks);
       document.getElementById('recentJobs').textContent = pretty(recent);
       document.getElementById('recentErrors').textContent = pretty(failed);
       document.getElementById('lastRenderJob').textContent = pretty(lastRender || {});

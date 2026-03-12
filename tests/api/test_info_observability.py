@@ -14,6 +14,7 @@ if str(ROOT_DIR) not in sys.path:
 from src.entrypoints.http.dto import HttpRequest
 from src.entrypoints.http.info_handler import InfoHandler
 from src.observability import StdoutJsonLogger
+from src.observability.bottlenecks import RECENT_API_STAGE_EVENTS, StageEvent
 from src.worker.model import JobStatusRecord
 
 
@@ -101,6 +102,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.original_get_queue_live_stats = module.get_queue_live_stats
         self.original_get_function_build_info = module.get_function_build_info
         self.original_storage_stats = module.InfoHandler._storage_stats
+        self._orig_recent_stage_events = list(RECENT_API_STAGE_EVENTS._events)  # type: ignore[attr-defined]
         self.build_snapshot_engine_calls = 0
         self.get_queue_live_stats_calls = 0
         self.get_function_build_info_calls = 0
@@ -152,7 +154,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.ctx = SimpleNamespace(
             cfg=SimpleNamespace(
                 runtime=SimpleNamespace(
-                    runtime=SimpleNamespace(env_default="test"),
+                    runtime=SimpleNamespace(env_default="test", bottleneck_metrics_level="stages", dev_mode_metrics=True),
                     monitoring=SimpleNamespace(
                         enabled=True,
                         backend="yandex_monitoring",
@@ -237,12 +239,30 @@ class InfoObservabilityTestCase(unittest.TestCase):
                 "structured_logger": StdoutJsonLogger(),
             },
         )
+        RECENT_API_STAGE_EVENTS._events.clear()  # type: ignore[attr-defined]
+        RECENT_API_STAGE_EVENTS.record(
+            StageEvent(
+                trace_id="trace-1",
+                recorded_at="2026-03-09T12:00:00+00:00",
+                env="test",
+                operation="frontend_access",
+                stage="response_cache_read",
+                duration_ms=3.5,
+                result="success",
+                route="api",
+                access_mode="masked",
+                cache_result="hit",
+                debug={},
+            )
+        )
 
     def tearDown(self) -> None:
         self.module.build_snapshot_engine = self.original_build_snapshot_engine  # type: ignore[assignment]
         self.module.get_queue_live_stats = self.original_get_queue_live_stats  # type: ignore[assignment]
         self.module.get_function_build_info = self.original_get_function_build_info  # type: ignore[assignment]
         self.module.InfoHandler._storage_stats = self.original_storage_stats  # type: ignore[assignment]
+        RECENT_API_STAGE_EVENTS._events.clear()  # type: ignore[attr-defined]
+        RECENT_API_STAGE_EVENTS._events.extend(self._orig_recent_stage_events)  # type: ignore[attr-defined]
 
     def test_info_json_default_summary_skips_heavy_diagnostics(self) -> None:
         handler = InfoHandler(self.ctx)
@@ -256,6 +276,8 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertTrue(payload["storage"]["detailDeferred"])
         self.assertTrue(payload["jobs"]["detailDeferred"])
         self.assertTrue(payload["build"]["detailDeferred"])
+        self.assertEqual(payload["bottlenecks"]["profilingLevel"], "stages")
+        self.assertTrue(payload["bottlenecks"]["recentApiTracesDeferred"])
         self.assertEqual(self.build_snapshot_engine_calls, 0)
         self.assertEqual(self.get_queue_live_stats_calls, 0)
         self.assertEqual(self.get_function_build_info_calls, 0)
@@ -287,6 +309,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertEqual(payload["queue"]["live"]["messages_visible"], 2)
         self.assertEqual(payload["queue"]["policy"]["retryModel"], "queue_driven")
         self.assertEqual(payload["telemetry"]["metricsClient"], "_MetricsRecorder")
+        self.assertEqual(payload["telemetry"]["bottleneckMetricsLevel"], "stages")
         self.assertTrue(payload["telemetry"]["monitoringEnabled"])
         self.assertEqual(payload["telemetry"]["monitoringBackend"], "yandex_monitoring")
         self.assertEqual(payload["telemetry"]["dashboardName"], "DTM Test Observability")
@@ -305,6 +328,8 @@ class InfoObservabilityTestCase(unittest.TestCase):
             payload["telemetry"]["grafanaDashboardUrl"],
             "https://dtm.solofarm.ru/grafana/public-dashboards/test-token",
         )
+        self.assertTrue(payload["bottlenecks"]["stageMetricsEnabled"])
+        self.assertEqual(payload["bottlenecks"]["recentApiTraces"][0]["traceId"], "trace-1")
         self.assertEqual(len(payload["jobs"]["recent"]), 2)
         self.assertGreater(self.build_snapshot_engine_calls, 0)
         self.assertGreater(self.get_queue_live_stats_calls, 0)
@@ -329,6 +354,8 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertIn("target route:", response.body)
         self.assertIn("browser proxy (/bff/api)", response.body)
         self.assertIn("direct backend (/api)", response.body)
+        self.assertIn("Bottleneck Profiling", response.body)
+        self.assertIn("Bottleneck Diagnostics", response.body)
 
     def test_info_json_includes_ui_base_path_for_prefixed_route(self) -> None:
         handler = InfoHandler(self.ctx)

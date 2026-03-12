@@ -17,6 +17,7 @@ Primary config files:
 ## Runtime contour
 - `runtime.env`: `dev|test|prod`
 - `runtime.timezone`: default `Europe/Moscow`
+- `runtime.bottleneck_metrics_level`: `off|stages|debug` profiling policy for detailed bottleneck analytics
 - `runtime.snapshot_engine.*`: snapshot/Object Storage settings
 - `runtime.queue.*`: Yandex Message Queue settings
 - `runtime.telegram.*`: webhook and sender settings
@@ -29,6 +30,14 @@ Primary config files:
 - `runtime.api.auth_mask_dictionary_version`: deterministic masking dictionary version
 - `runtime.api.frontend_response_cache_ttl_minutes`: TTL for default frontend response cache entries
 - `runtime.snapshot_engine.prefix_responses`: Object Storage prefix for cached frontend responses
+
+Current profiling policy:
+- `off` keeps only baseline runtime metrics
+- `stages` emits stage timings/counters for bottleneck analysis
+- `debug` emits stage timings plus debug trace details for short investigations
+
+Backward compatibility:
+- legacy `runtime.dev_mode_metrics=true` is still treated as `stages` until cleanup removes the old boolean
 
 ## Secrets
 Secrets stay outside repo config files:

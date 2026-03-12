@@ -3,6 +3,7 @@ runtime:
   strict_env_guard_default: false
   timezone: Europe/Moscow
   dev_mode_metrics: true
+  bottleneck_metrics_level: stages
 
 monitoring:
   enabled: false

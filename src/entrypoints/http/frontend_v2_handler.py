@@ -26,6 +26,7 @@ from src.entrypoints.http.frontend_query_params import (
 from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_api_v2_doc_html
 from src.entrypoints.http.response_utils import error_response, html_response, json_response
 from src.entrypoints_adapters.api_v2_adapter import build_frontend_query
+from src.observability.bottlenecks import new_stage_trace_id, record_api_stage
 from src.services.access import mask_frontend_payload
 from src.services.access.masking import masking_version_for_hour
 from src.snapshot_engine import build_snapshot_engine
@@ -108,9 +109,41 @@ class FrontendV2Handler:
             )
 
         started = time.perf_counter()
+        trace_id = new_stage_trace_id()
+        stage_samples: list[tuple[str, float]] = []
+
+        def _record_stage(stage: str, started_at: float) -> None:
+            stage_samples.append((stage, (time.perf_counter() - started_at) * 1000.0))
+
+        def _emit_stages(
+            *,
+            route_class: str,
+            access_mode: str,
+            cache_result: str,
+            result: str = "success",
+            debug_fields: dict[str, object] | None = None,
+        ) -> None:
+            for stage, duration_ms in stage_samples:
+                record_api_stage(
+                    self._ctx,
+                    trace_id=trace_id,
+                    operation="frontend_access",
+                    stage=stage,
+                    duration_ms=duration_ms,
+                    result=result,
+                    route=route_class,
+                    access_mode=access_mode,
+                    cache_result=cache_result,
+                    debug_fields=debug_fields,
+                )
+
+        access_started = time.perf_counter()
         access = resolve_access_context(self._ctx, req)
+        _record_stage("access_resolution", access_started)
         try:
+            engine_started = time.perf_counter()
             snapshot_engine = build_snapshot_engine(self._ctx)
+            _record_stage("snapshot_engine_build", engine_started)
             frontend_query = build_frontend_query(
                 statuses=statuses,
                 designer=designer,
@@ -119,6 +152,21 @@ class FrontendV2Handler:
                 window_data=window_data,
             )
         except Exception as error:
+            route_class = resolve_frontend_route_class(req, access)
+            _emit_stages(
+                route_class=route_class,
+                access_mode=access.mode,
+                cache_result="bypass",
+                result="failed",
+                debug_fields={
+                    "path": normalize_path(req.path),
+                    "statuses": list(statuses),
+                    "limit": limit,
+                    "includePeople": include_people,
+                    "queryEligible": False,
+                    "errorType": type(error).__name__,
+                },
+            )
             return error_response(
                 503,
                 code="frontend_source_unavailable",
@@ -141,8 +189,24 @@ class FrontendV2Handler:
         hour_bucket = masking_version.rsplit(":", 1)[-1] if access.masked else ""
         query_hash = build_default_frontend_cache_query_hash()
         payload: dict[str, object]
+        prep_started = time.perf_counter()
         prep = snapshot_engine.get_prep_snapshot()
+        _record_stage("prep_snapshot_access", prep_started)
         if prep is None:
+            _emit_stages(
+                route_class=route_class,
+                access_mode=access.mode,
+                cache_result="bypass",
+                result="failed",
+                debug_fields={
+                    "path": normalize_path(req.path),
+                    "statuses": list(statuses),
+                    "limit": limit,
+                    "includePeople": include_people,
+                    "queryEligible": cache_eligible,
+                    "errorType": "prep_snapshot_unavailable",
+                },
+            )
             return error_response(
                 503,
                 code="frontend_source_unavailable",
@@ -160,12 +224,14 @@ class FrontendV2Handler:
             }
             cache_read_started = time.perf_counter()
             cached_entry = cache_store.get(cache_key)
+            _record_stage("response_cache_read", cache_read_started)
             if metrics is not None:
                 metrics.timing(
                     "dtm.api.response_cache.read_ms",
                     (time.perf_counter() - cache_read_started) * 1000.0,
                     labels=dict(cache_labels),
                 )
+            freshness_started = time.perf_counter()
             if response_cache_entry_is_fresh(
                 cached_entry,
                 source_hash=str(prep.raw_source_hash or ""),
@@ -175,10 +241,27 @@ class FrontendV2Handler:
                 ttl_minutes=cache_ttl_minutes,
                 hour_bucket=hour_bucket,
             ):
+                _record_stage("response_cache_freshness", freshness_started)
                 if metrics is not None:
                     metrics.counter("dtm.api.response_cache.hit_total", labels=dict(cache_labels))
                 cached_payload = dict(cached_entry.get("payload", {}) or {})
                 payload = cached_payload_with_access(cached_payload, access)
+                response_started = time.perf_counter()
+                http_response = json_response(200, payload)
+                _record_stage("response_build", response_started)
+                _emit_stages(
+                    route_class=route_class,
+                    access_mode=access.mode,
+                    cache_result="hit",
+                    debug_fields={
+                        "path": normalize_path(req.path),
+                        "statuses": list(statuses),
+                        "limit": limit,
+                        "includePeople": include_people,
+                        "queryEligible": cache_eligible,
+                        "cacheKey": cache_key,
+                    },
+                )
                 duration_ms = int((time.perf_counter() - started) * 1000)
                 print(
                     "api_response "
@@ -190,13 +273,30 @@ class FrontendV2Handler:
                     f"tasksReturned={payload.get('summary', {}).get('tasksReturned', 0)} "
                     f"duration_ms={duration_ms}"
                 )
-                return json_response(200, payload)
+                return http_response
+            _record_stage("response_cache_freshness", freshness_started)
             if metrics is not None:
                 metrics.counter("dtm.api.response_cache.miss_total", labels=dict(cache_labels))
 
         try:
+            payload_build_started = time.perf_counter()
             payload = snapshot_engine.frontend_v2(frontend_query)
+            _record_stage("frontend_payload_build", payload_build_started)
         except Exception as error:
+            _emit_stages(
+                route_class=route_class,
+                access_mode=access.mode,
+                cache_result="miss" if cache_eligible and cache_store is not None else "bypass",
+                result="failed",
+                debug_fields={
+                    "path": normalize_path(req.path),
+                    "statuses": list(statuses),
+                    "limit": limit,
+                    "includePeople": include_people,
+                    "queryEligible": cache_eligible,
+                    "errorType": type(error).__name__,
+                },
+            )
             return error_response(
                 503,
                 code="frontend_source_unavailable",
@@ -206,6 +306,7 @@ class FrontendV2Handler:
         payload = dict(payload)
         payload["meta"] = dict(payload.get("meta", {}) or {})
         payload["meta"]["access"] = self._access_payload(access)
+        masking_started = time.perf_counter()
         payload = mask_frontend_payload(
             payload,
             access,
@@ -213,6 +314,7 @@ class FrontendV2Handler:
             metrics_client=metrics,
             metrics_labels=self._metrics_labels(mode=access.mode, result="success"),
         )
+        _record_stage("masking", masking_started)
         if cache_eligible and cache_store is not None:
             cache_labels = {
                 "env": str(self._ctx.cfg.runtime.runtime.env_default or "").strip().lower() or "dev",
@@ -233,6 +335,7 @@ class FrontendV2Handler:
                     hour_bucket=hour_bucket,
                 ),
             )
+            _record_stage("response_cache_write", cache_write_started)
             if metrics is not None:
                 metrics.timing(
                     "dtm.api.response_cache.write_ms",
@@ -241,6 +344,24 @@ class FrontendV2Handler:
                 )
                 metrics.counter("dtm.api.response_cache.write_total", labels=dict(cache_labels))
 
+        response_started = time.perf_counter()
+        http_response = json_response(200, payload)
+        _record_stage("response_build", response_started)
+        _emit_stages(
+            route_class=route_class,
+            access_mode=access.mode,
+            cache_result="miss" if cache_eligible and cache_store is not None else "bypass",
+            debug_fields={
+                "path": normalize_path(req.path),
+                "statuses": list(statuses),
+                "limit": limit,
+                "includePeople": include_people,
+                "queryEligible": cache_eligible,
+                "cacheKey": default_frontend_cache_key(route_class=route_class, access_mode=access.mode)
+                if cache_eligible and cache_store is not None
+                else "",
+            },
+        )
         duration_ms = int((time.perf_counter() - started) * 1000)
         print(
             "api_response "
@@ -252,4 +373,4 @@ class FrontendV2Handler:
             f"tasksReturned={payload.get('summary', {}).get('tasksReturned', 0)} "
             f"duration_ms={duration_ms}"
         )
-        return json_response(200, payload)
+        return http_response

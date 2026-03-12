@@ -3,7 +3,15 @@ from __future__ import annotations
 import unittest
 from types import SimpleNamespace
 
-from src.observability.batching import FlushReport, MetricsBatchCollector, add_flush_metrics, is_detailed_metrics_enabled
+from src.observability.batching import (
+    FlushReport,
+    MetricsBatchCollector,
+    add_flush_metrics,
+    is_debug_metrics_enabled,
+    is_detailed_metrics_enabled,
+    is_stage_metrics_enabled,
+    resolve_bottleneck_metrics_level,
+)
 from src.observability.metrics import BackendFlushResult, MetricEntry, NoopMetricsClient
 
 
@@ -58,11 +66,34 @@ class MetricsBatchingTestCase(unittest.TestCase):
         combined = [entry for entry in metrics.flushed[0] if (entry.labels or {}).get("backend") == "combined"]
         self.assertTrue(combined)
 
-    def test_is_detailed_metrics_enabled_reads_runtime_flag(self) -> None:
-        ctx = SimpleNamespace(cfg=SimpleNamespace(runtime=SimpleNamespace(runtime=SimpleNamespace(dev_mode_metrics=True))))
+    def test_bottleneck_metrics_level_reads_explicit_policy(self) -> None:
+        ctx = SimpleNamespace(
+            cfg=SimpleNamespace(
+                runtime=SimpleNamespace(runtime=SimpleNamespace(bottleneck_metrics_level="debug", dev_mode_metrics=False))
+            )
+        )
+        self.assertEqual(resolve_bottleneck_metrics_level(ctx), "debug")
+        self.assertTrue(is_stage_metrics_enabled(ctx))
+        self.assertTrue(is_debug_metrics_enabled(ctx))
+
+    def test_bottleneck_metrics_level_uses_dev_mode_backward_compat(self) -> None:
+        ctx = SimpleNamespace(
+            cfg=SimpleNamespace(
+                runtime=SimpleNamespace(runtime=SimpleNamespace(bottleneck_metrics_level="", dev_mode_metrics=True))
+            )
+        )
+        self.assertEqual(resolve_bottleneck_metrics_level(ctx), "stages")
         self.assertTrue(is_detailed_metrics_enabled(ctx))
-        ctx = SimpleNamespace(cfg=SimpleNamespace(runtime=SimpleNamespace(runtime=SimpleNamespace(dev_mode_metrics=False))))
-        self.assertFalse(is_detailed_metrics_enabled(ctx))
+        self.assertFalse(is_debug_metrics_enabled(ctx))
+
+    def test_bottleneck_metrics_level_defaults_to_off(self) -> None:
+        ctx = SimpleNamespace(
+            cfg=SimpleNamespace(
+                runtime=SimpleNamespace(runtime=SimpleNamespace(bottleneck_metrics_level="off", dev_mode_metrics=False))
+            )
+        )
+        self.assertEqual(resolve_bottleneck_metrics_level(ctx), "off")
+        self.assertFalse(is_stage_metrics_enabled(ctx))
 
 
 if __name__ == "__main__":

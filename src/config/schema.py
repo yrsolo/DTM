@@ -12,6 +12,7 @@ class RuntimeSection:
     strict_env_guard_default: bool = False
     timezone: str = "Europe/Moscow"
     dev_mode_metrics: bool = False
+    bottleneck_metrics_level: str = "off"
 
 
 @dataclass(slots=True)

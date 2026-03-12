@@ -1,6 +1,8 @@
 # Active Tasks
 
-- none
+- CAM-2026-03-12-BOTTLENECK-ANALYTICS-V1 P01: add config-gated profiling policy (`off|stages|debug`) with backward compatibility for `dev_mode_metrics`
+- CAM-2026-03-12-BOTTLENECK-ANALYTICS-V1 P02: instrument frontend read path with stage metrics and recent trace recorder
+- CAM-2026-03-12-BOTTLENECK-ANALYTICS-V1 P03: expose diagnostics in `/info` and Grafana, then verify live on `test`
 
 ## Done
 
