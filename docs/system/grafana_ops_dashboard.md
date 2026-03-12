@@ -133,7 +133,7 @@ Current `/info` UI policy:
 - heavy JSON/detail inspection is explicit
 - `Recent Jobs`, `Admin Actions`, `API Request Builder`, and `Info JSON` stay collapsible and default-closed so dashboard-level information fits on one screen more easily
 - `/info` detail also exposes recent in-process frontend stage traces and current profiling level as a secondary diagnostics surface
-- `/info` detail also exposes recent direct `/api` outer traces so operator checks can compare `function total`, `http shell total`, `frontend handler total`, `frontend inner total`, and the unexplained in-function gap without changing payload contracts
+- `/info` detail also exposes recent direct `/api` outer traces so operator checks can compare `function total`, `router precheck`, `router handler`, `frontend handler total`, `frontend inner core`, and the unexplained gaps inside/after the handler without changing payload contracts
 
 ## Current rollout state
 

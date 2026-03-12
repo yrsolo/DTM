@@ -265,12 +265,15 @@ class InfoObservabilityTestCase(unittest.TestCase):
                 operation="/api/v2/frontend",
                 result="success",
                 function_total_ms=1200.0,
-                http_shell_total_ms=1100.0,
-                router_dispatch_ms=400.0,
+                router_precheck_total_ms=100.0,
+                router_handler_total_ms=400.0,
+                router_total_ms=500.0,
+                http_shell_post_router_ms=25.0,
                 response_build_ms=30.0,
-                frontend_handler_ms=200.0,
-                frontend_inner_ms=150.0,
-                unexplained_in_function_ms=1050.0,
+                frontend_handler_total_ms=200.0,
+                frontend_inner_core_ms=150.0,
+                unexplained_inside_handler_ms=50.0,
+                unexplained_after_handler_ms=1000.0,
                 debug={},
             )
         )
@@ -353,6 +356,9 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertTrue(payload["bottlenecks"]["stageMetricsEnabled"])
         self.assertEqual(payload["bottlenecks"]["recentApiTraces"][0]["traceId"], "trace-1")
         self.assertEqual(payload["bottlenecks"]["recentDirectApiOuterTraces"][0]["traceId"], "outer-trace-1")
+        self.assertEqual(payload["bottlenecks"]["recentDirectApiOuterTraces"][0]["routerPrecheckTotalMs"], 100.0)
+        self.assertEqual(payload["bottlenecks"]["recentDirectApiOuterTraces"][0]["routerHandlerTotalMs"], 400.0)
+        self.assertEqual(payload["bottlenecks"]["recentDirectApiOuterTraces"][0]["frontendHandlerTotalMs"], 200.0)
         self.assertEqual(len(payload["jobs"]["recent"]), 2)
         self.assertGreater(self.build_snapshot_engine_calls, 0)
         self.assertGreater(self.get_queue_live_stats_calls, 0)

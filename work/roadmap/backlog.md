@@ -1,7 +1,7 @@
 # Backlog
 
 ## In Progress
-- none
+- CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1
 
 ## Blocked
 - none

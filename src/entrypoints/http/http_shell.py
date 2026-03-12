@@ -154,16 +154,17 @@ class HttpShell:
             if logger is not None:
                 logger.error("api_request_finished", operation=operation, result=result_label, error_type=type(error).__name__)
             return response
-        router_dispatch_ms = (perf_counter() - router_started) * 1000.0
+        router_total_ms = (perf_counter() - router_started) * 1000.0
         if trace_direct_frontend:
             record_api_outer_stage(
                 self._ctx,
                 trace_id=trace_id,
                 operation=operation,
-                stage="router_dispatch",
-                duration_ms=router_dispatch_ms,
+                stage="router_total",
+                duration_ms=router_total_ms,
             )
         if http_response is not None:
+            post_router_started = perf_counter()
             response_build_started = perf_counter()
             response = to_gateway_response(http_response)
             response_build_ms = (perf_counter() - response_build_started) * 1000.0
@@ -176,13 +177,34 @@ class HttpShell:
                     stage="response_build",
                     duration_ms=response_build_ms,
                 )
-                shell_total_ms = (perf_counter() - started_at) * 1000.0
+                router_headers = dict(response.get("headers", {}) or {})
+                router_precheck_ms = self._header_float(router_headers, "X-DTM-Router-Precheck-Ms")
+                router_handler_ms = self._header_float(router_headers, "X-DTM-Router-Handler-Ms")
+                router_handler_name = str(router_headers.get("X-DTM-Router-Handler-Name", "")).strip() or "unknown"
+                post_router_ms = (perf_counter() - post_router_started) * 1000.0
                 record_api_outer_stage(
                     self._ctx,
                     trace_id=trace_id,
                     operation=operation,
-                    stage="http_shell_total",
-                    duration_ms=shell_total_ms,
+                    stage="router_precheck_total",
+                    duration_ms=router_precheck_ms,
+                    debug_fields={"handler": router_handler_name},
+                )
+                record_api_outer_stage(
+                    self._ctx,
+                    trace_id=trace_id,
+                    operation=operation,
+                    stage="router_handler_total",
+                    duration_ms=router_handler_ms,
+                    debug_fields={"handler": router_handler_name},
+                )
+                record_api_outer_stage(
+                    self._ctx,
+                    trace_id=trace_id,
+                    operation=operation,
+                    stage="http_shell_post_router",
+                    duration_ms=post_router_ms,
+                    debug_fields={"handler": router_handler_name},
                 )
                 response_headers = dict(response.get("headers", {}) or {})
                 frontend_trace_id = str(response_headers.get("X-DTM-Trace-Id", "")).strip() or trace_id
@@ -196,22 +218,27 @@ class HttpShell:
                     {
                         "Server-Timing": build_server_timing_header(
                             {
-                                "http_shell": shell_total_ms,
-                                "router_dispatch": router_dispatch_ms,
+                                "router_precheck": router_precheck_ms,
+                                "router_handler": router_handler_ms,
+                                "router_total": router_total_ms,
+                                "http_shell_post_router": post_router_ms,
                                 "response_build": response_build_ms,
                                 "frontend_handler": frontend_handler_ms,
                                 "frontend_inner": frontend_inner_ms,
                             }
                         ),
                         "X-DTM-Outer-Trace-Id": frontend_trace_id,
-                        "X-DTM-Outer-Http-Shell-Ms": f"{shell_total_ms:.3f}",
-                        "X-DTM-Outer-Router-Dispatch-Ms": f"{router_dispatch_ms:.3f}",
+                        "X-DTM-Outer-Router-Precheck-Ms": f"{router_precheck_ms:.3f}",
+                        "X-DTM-Outer-Router-Handler-Ms": f"{router_handler_ms:.3f}",
+                        "X-DTM-Outer-Router-Total-Ms": f"{router_total_ms:.3f}",
+                        "X-DTM-Outer-Http-Shell-Post-Router-Ms": f"{post_router_ms:.3f}",
                         "X-DTM-Outer-Response-Build-Ms": f"{response_build_ms:.3f}",
                         "X-DTM-Outer-Frontend-Handler-Ms": f"{frontend_handler_ms:.3f}",
                         "X-DTM-Outer-Frontend-Inner-Ms": f"{frontend_inner_ms:.3f}",
                         "X-DTM-Outer-Access-Mode": access_mode,
                         "X-DTM-Outer-Cache-Result": cache_result,
                         "X-DTM-Outer-Route": route,
+                        "X-DTM-Outer-Router-Handler-Name": router_handler_name,
                         "X-DTM-Outer-Request-Build-Ms": f"{request_build_ms:.3f}",
                     },
                 )

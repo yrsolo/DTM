@@ -119,8 +119,8 @@ Metrics batching notes:
 - `/info` summary/detail timing is emitted separately so default operator reads can be compared against heavy diagnostics explicitly
 - browser-facing masked mode emits `dtm.api.masking_ms` so masking overhead stays measurable without forking the canonical query path
 - exact default frontend query may now use Object Storage response cache for `full` and `masked` variants; cache read/write path emits dedicated `dtm.api.response_cache.*` metrics
-- bottleneck analytics can emit `dtm.api.stage.*` for frontend read-path stages such as access resolution, prep access, cache read/freshness, payload build, masking, cache write, and response build
-- direct `/api/v2/frontend` now also emits `dtm.api.outer.*` for outer function/request-build/router-dispatch/response-build timing so operator diagnostics can separate inner handler work from wrapper/runtime overhead
+- bottleneck analytics can emit `dtm.api.stage.*` for frontend read-path stages such as `query_parse`, `access_resolution`, `prep_snapshot_access`, cache read/freshness, payload build, masking, cache write, `response_build`, and `handler_total`
+- direct `/api/v2/frontend` now also emits `dtm.api.outer.*` for `request_build`, `router_precheck_total`, `router_handler_total`, `router_total`, `http_shell_post_router`, `response_build`, and `function_total` so operator diagnostics can separate router/shell overhead from inner handler work
 
 Bottleneck profiling policy:
 

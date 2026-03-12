@@ -134,11 +134,13 @@ class FrontendV2Handler:
         if not _path_matches(path, data_paths):
             return None
 
+        query_parse_started = time.perf_counter()
         statuses = parse_statuses(params.get("statuses", "work,pre_done"))
         designer = str(params.get("designer", "")).strip()
         limit = parse_limit(params.get("limit", "200"), 200)
         include_people = parse_bool(params.get("include_people"), True)
         window_data, window_error = parse_window_query(params)
+        query_parse_ms = (time.perf_counter() - query_parse_started) * 1000.0
         if window_error is not None:
             return error_response(
                 400,
@@ -150,6 +152,7 @@ class FrontendV2Handler:
         started = time.perf_counter()
         trace_id = new_stage_trace_id()
         stage_samples: list[tuple[str, float]] = []
+        stage_samples.append(("query_parse", query_parse_ms))
 
         def _record_stage(stage: str, started_at: float) -> None:
             stage_samples.append((stage, (time.perf_counter() - started_at) * 1000.0))
@@ -175,6 +178,19 @@ class FrontendV2Handler:
                     cache_result=cache_result,
                     debug_fields=debug_fields,
                 )
+            record_api_stage(
+                self._ctx,
+                trace_id=trace_id,
+                operation="frontend_access",
+                stage="handler_total",
+                duration_ms=(time.perf_counter() - started) * 1000.0,
+                result=result,
+                route=route_class,
+                access_mode=access_mode,
+                cache_result=cache_result,
+                debug_fields=debug_fields,
+            )
+
         def _inner_total_ms() -> float:
             return float(sum(duration_ms for _, duration_ms in stage_samples))
 

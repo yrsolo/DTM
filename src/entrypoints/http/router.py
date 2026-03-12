@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from time import perf_counter
+
 from src.app.context import AppContext
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.admin_queue_handler import AdminQueueHandler
@@ -9,6 +11,7 @@ from src.entrypoints.http.frontend_compat_handlers import FrontendRootHandler
 from src.entrypoints.http.frontend_v2_handler import FrontendV2Handler
 from src.entrypoints.http.info_handler import InfoHandler
 from src.entrypoints.http.job_status_handler import JobStatusHandler
+from src.observability.bottlenecks import append_response_headers
 from src.telegram.webhook import TelegramWebhookHandler
 
 
@@ -23,20 +26,43 @@ class HttpRouter:
         self._frontend_root_handler = FrontendRootHandler(ctx)
         self._frontend_v2_handler = FrontendV2Handler(ctx)
 
+    @staticmethod
+    def _with_headers(response: HttpResponse, extra_headers: dict[str, str]) -> HttpResponse:
+        return HttpResponse(
+            status=response.status,
+            body=response.body,
+            headers=append_response_headers(response.headers, extra_headers),
+        )
+
     async def dispatch(self, req: HttpRequest) -> HttpResponse | None:
-        telegram_response = self._telegram_webhook_handler.handle(req)
-        if telegram_response is not None:
-            return telegram_response
-        admin_queue_response = self._admin_queue_handler.handle(req)
-        if admin_queue_response is not None:
-            return admin_queue_response
-        job_status_response = self._job_status_handler.handle(req)
-        if job_status_response is not None:
-            return job_status_response
-        info_response = self._info_handler.handle(req)
-        if info_response is not None:
-            return info_response
-        root_response = self._frontend_root_handler.handle(req)
-        if root_response is not None:
-            return root_response
-        return self._frontend_v2_handler.handle(req)
+        trace_id = str((req.headers or {}).get("X-DTM-Trace-Id", "")).strip()
+        trace_direct_api = bool(trace_id)
+        started_at = perf_counter()
+        handlers = [
+            ("telegram", self._telegram_webhook_handler.handle),
+            ("admin_queue", self._admin_queue_handler.handle),
+            ("job_status", self._job_status_handler.handle),
+            ("info", self._info_handler.handle),
+            ("frontend_root", self._frontend_root_handler.handle),
+            ("frontend_v2", self._frontend_v2_handler.handle),
+        ]
+        for name, handler in handlers:
+            precheck_ms = (perf_counter() - started_at) * 1000.0
+            handler_started = perf_counter()
+            response = handler(req)
+            handler_total_ms = (perf_counter() - handler_started) * 1000.0
+            if response is None:
+                continue
+            if not trace_direct_api:
+                return response
+            router_total_ms = precheck_ms + handler_total_ms
+            return self._with_headers(
+                response,
+                {
+                    "X-DTM-Router-Handler-Name": name,
+                    "X-DTM-Router-Precheck-Ms": f"{precheck_ms:.3f}",
+                    "X-DTM-Router-Handler-Ms": f"{handler_total_ms:.3f}",
+                    "X-DTM-Router-Total-Ms": f"{router_total_ms:.3f}",
+                },
+            )
+        return None

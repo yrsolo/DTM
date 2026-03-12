@@ -620,6 +620,8 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         stage_timings = [item for item in self._metrics.timings if item[0] == "dtm.api.stage.duration_ms"]
         self.assertTrue(any(labels.get("cache_result") == "hit" for _, _, labels in stage_timings))
         self.assertTrue(any(labels.get("stage") == "response_cache_read" for _, _, labels in stage_timings))
+        self.assertTrue(any(labels.get("stage") == "query_parse" for _, _, labels in stage_timings))
+        self.assertTrue(any(labels.get("stage") == "handler_total" for _, _, labels in stage_timings))
 
     def test_default_proxy_request_uses_separate_cache_bucket(self) -> None:
         event = _fixture_event()
@@ -666,7 +668,14 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertTrue(traces)
         self.assertEqual(traces[0]["operation"], "/api/v2/frontend")
         self.assertIn("functionTotalMs", traces[0])
-        self.assertIn("frontendInnerMs", traces[0])
+        self.assertIn("routerPrecheckTotalMs", traces[0])
+        self.assertIn("routerHandlerTotalMs", traces[0])
+        self.assertIn("routerTotalMs", traces[0])
+        self.assertIn("frontendHandlerTotalMs", traces[0])
+        self.assertIn("frontendInnerCoreMs", traces[0])
+        self.assertGreaterEqual(traces[0]["routerTotalMs"], traces[0]["routerPrecheckTotalMs"])
+        self.assertGreaterEqual(traces[0]["routerTotalMs"], traces[0]["routerHandlerTotalMs"])
+        self.assertGreaterEqual(traces[0]["functionTotalMs"], traces[0]["routerTotalMs"])
 
     def test_direct_api_response_has_no_outer_debug_headers_when_profiling_off(self) -> None:
         index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level = "off"
@@ -695,7 +704,27 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 200)
         self.assertIn("Server-Timing", response.get("headers", {}))
         self.assertIn("X-DTM-Outer-Function-Total-Ms", response.get("headers", {}))
-        self.assertIn("X-DTM-Outer-Unexplained-Ms", response.get("headers", {}))
+        self.assertIn("X-DTM-Outer-Unexplained-Inside-Handler-Ms", response.get("headers", {}))
+        self.assertIn("X-DTM-Outer-Unexplained-After-Handler-Ms", response.get("headers", {}))
+
+    def test_direct_api_server_timing_has_no_conflicting_totals(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend?statuses=work"
+        event["queryStringParameters"] = {"statuses": "work"}
+
+        response = asyncio.run(index.handler(event, None))
+
+        server_timing = response.get("headers", {}).get("Server-Timing", "")
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(server_timing.count("function_total;dur="), 1)
+        self.assertIn("router_precheck;dur=", server_timing)
+        self.assertIn("router_handler;dur=", server_timing)
+        self.assertIn("router_total;dur=", server_timing)
+        self.assertIn("http_shell_post_router;dur=", server_timing)
+        self.assertIn("unexplained_inside_handler;dur=", server_timing)
+        self.assertIn("unexplained_after_handler;dur=", server_timing)
 
 
 if __name__ == "__main__":

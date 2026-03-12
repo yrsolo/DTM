@@ -74,6 +74,13 @@ class GrafanaSpecsTestCase(unittest.TestCase):
         outer_exprs = [target["expr"] for target in outer_panel["targets"]]
         self.assertTrue(any("dtm_api_outer_duration_ms" in expr for expr in outer_exprs))
         self.assertTrue(any('operation="/api/v2/frontend"' in expr for expr in outer_exprs))
+        outer_compare = next(panel for panel in dashboard["panels"] if panel["title"] == "Direct API Outer vs Inner")
+        outer_compare_exprs = [target["expr"] for target in outer_compare["targets"]]
+        self.assertTrue(any('stage="router_precheck_total"' in expr for expr in outer_compare_exprs))
+        self.assertTrue(any('stage="router_handler_total"' in expr for expr in outer_compare_exprs))
+        self.assertTrue(any('stage="router_total"' in expr for expr in outer_compare_exprs))
+        self.assertTrue(any('stage="http_shell_post_router"' in expr for expr in outer_compare_exprs))
+        self.assertTrue(any('stage="handler_total"' in expr for expr in outer_compare_exprs))
         flush_volume = next(panel for panel in dashboard["panels"] if panel["title"] == "Metrics Flush Volume")
         flush_exprs = [target["expr"] for target in flush_volume["targets"]]
         self.assertTrue(any("dtm_metrics_flush_points_total" in expr for expr in flush_exprs))

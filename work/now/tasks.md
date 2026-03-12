@@ -1,6 +1,8 @@
 # Active Tasks
 
-- none
+- CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1 P01: split direct `/api` latency into router precheck/handler/post-router/function totals
+- CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1 P02: make `FrontendV2Handler` totals decision-complete and remove conflicting trace ownership
+- CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1 P03: republish Grafana and verify live `Server-Timing` plus `/info` direct `/api` traces on `test`
 
 ## Done
 

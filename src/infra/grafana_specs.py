@@ -344,16 +344,24 @@ def build_test_grafana_dashboard(
                     "legendFormat": "function_total",
                 },
                 {
-                    "expr": _expr("dtm.api.outer.duration_ms", env_name, 'operation="/api/v2/frontend",stage="http_shell_total"'),
-                    "legendFormat": "http_shell_total",
+                    "expr": _expr("dtm.api.outer.duration_ms", env_name, 'operation="/api/v2/frontend",stage="router_precheck_total"'),
+                    "legendFormat": "router_precheck_total",
                 },
                 {
-                    "expr": _expr("dtm.api.outer.duration_ms", env_name, 'operation="/api/v2/frontend",stage="router_dispatch"'),
-                    "legendFormat": "router_dispatch",
+                    "expr": _expr("dtm.api.outer.duration_ms", env_name, 'operation="/api/v2/frontend",stage="router_handler_total"'),
+                    "legendFormat": "router_handler_total",
                 },
                 {
-                    "expr": _expr("dtm.api.stage.duration_ms", env_name, 'operation="frontend_access",route="api",stage=~".+"'),
-                    "legendFormat": "inner {{stage}}",
+                    "expr": _expr("dtm.api.outer.duration_ms", env_name, 'operation="/api/v2/frontend",stage="router_total"'),
+                    "legendFormat": "router_total",
+                },
+                {
+                    "expr": _expr("dtm.api.outer.duration_ms", env_name, 'operation="/api/v2/frontend",stage="http_shell_post_router"'),
+                    "legendFormat": "http_shell_post_router",
+                },
+                {
+                    "expr": _expr("dtm.api.stage.duration_ms", env_name, 'operation="frontend_access",route="api",stage="handler_total"'),
+                    "legendFormat": "handler_total",
                 },
             ],
         ),
