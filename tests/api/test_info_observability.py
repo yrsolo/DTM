@@ -326,6 +326,9 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertIn("access mode:", response.body)
         self.assertIn("full (with cookie)", response.body)
         self.assertIn("masked (omit cookie)", response.body)
+        self.assertIn("target route:", response.body)
+        self.assertIn("browser proxy (/bff/api)", response.body)
+        self.assertIn("direct backend (/api)", response.body)
 
     def test_info_json_includes_ui_base_path_for_prefixed_route(self) -> None:
         handler = InfoHandler(self.ctx)

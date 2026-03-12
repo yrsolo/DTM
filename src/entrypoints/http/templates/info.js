@@ -204,6 +204,12 @@
     function selectedAccessMode(){
       return document.getElementById('accessMasked').checked ? 'masked' : 'full';
     }
+    function selectedApiRoutePath(){
+      return document.getElementById('routeDirect').checked ? '/api/v2/frontend' : '/bff/api/v2/frontend';
+    }
+    function selectedApiRouteLabel(){
+      return document.getElementById('routeDirect').checked ? 'direct backend (/api)' : 'browser proxy (/bff/api)';
+    }
     function selectedFetchCredentials(){
       return selectedAccessMode() === 'masked' ? 'omit' : 'include';
     }
@@ -228,7 +234,9 @@
       const origin = window.location.origin || '';
       const accessMode = selectedAccessMode();
       const credentials = selectedFetchCredentials();
-      document.getElementById('apiRequestUrl').textContent = origin + withBase('/api/v2/frontend?') + q.toString();
+      const routePath = selectedApiRoutePath();
+      document.getElementById('apiRequestUrl').textContent = origin + withBase(routePath + '?') + q.toString();
+      document.getElementById('apiRouteMode').textContent = selectedApiRouteLabel();
       document.getElementById('apiAccessMode').textContent = accessMode + ' / credentials=' + credentials;
     }
     async function sendApiBuilder(){
@@ -236,12 +244,14 @@
       const q = buildApiQuery();
       const accessMode = selectedAccessMode();
       const credentials = selectedFetchCredentials();
-      const r = await fetch(withBase('/api/v2/frontend?')+q.toString(), {
+      const routePath = selectedApiRoutePath();
+      const routeLabel = selectedApiRouteLabel();
+      const r = await fetch(withBase(routePath + '?')+q.toString(), {
         cache:'no-store',
         credentials: credentials,
       });
       const t = await r.text();
-      document.getElementById('apiResult').textContent = 'mode=' + accessMode + ' credentials=' + credentials + '\\nHTTP '+r.status+'\\n'+pretty(t);
+      document.getElementById('apiResult').textContent = 'route=' + routeLabel + ' mode=' + accessMode + ' credentials=' + credentials + '\\nHTTP '+r.status+'\\n'+pretty(t);
       apiTimer.stop();
       refreshApiRequestUrl();
     }
@@ -281,7 +291,7 @@
       }
       refreshApiRequestUrl();
     }
-    const watchIds = ['includePeople','accessFull','accessMasked','limitValue','stWork','stPreDone','stWait','stDone','windowStart','windowEnd'];
+    const watchIds = ['includePeople','accessFull','accessMasked','routeBff','routeDirect','limitValue','stWork','stPreDone','stWait','stDone','windowStart','windowEnd'];
     for (const id of watchIds) {
       const el = document.getElementById(id);
       if (el) el.addEventListener('change', refreshApiRequestUrl);
