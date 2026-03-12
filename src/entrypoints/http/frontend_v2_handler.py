@@ -6,6 +6,15 @@ import time
 
 from src.app.context import AppContext
 from src.entrypoints.http.access_context import resolve_access_context
+from src.entrypoints.http.frontend_response_cache import (
+    build_default_frontend_cache_query_hash,
+    build_response_cache_entry,
+    cached_payload_with_access,
+    default_frontend_cache_key,
+    is_default_frontend_cache_query,
+    resolve_frontend_route_class,
+    response_cache_entry_is_fresh,
+)
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.frontend_query_params import (
@@ -18,6 +27,7 @@ from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_
 from src.entrypoints.http.response_utils import error_response, html_response, json_response
 from src.entrypoints_adapters.api_v2_adapter import build_frontend_query
 from src.services.access import mask_frontend_payload
+from src.services.access.masking import masking_version_for_hour
 from src.snapshot_engine import build_snapshot_engine
 
 
@@ -40,6 +50,18 @@ class FrontendV2Handler:
             "module": "api",
             "operation": "frontend_access",
             "result": f"{mode}_{result}",
+        }
+
+    @staticmethod
+    def _access_payload(access) -> dict[str, object]:
+        return {
+            "mode": access.mode,
+            "trustedIngress": bool(access.trusted_ingress),
+            "authenticated": bool(access.authenticated),
+            "contour": str(access.contour or "").strip(),
+            "userRole": access.user_role,
+            "userStatus": access.user_status,
+            "fallbackReason": access.fallback_reason,
         }
 
     def handle(self, req: HttpRequest) -> HttpResponse | None:
@@ -86,16 +108,15 @@ class FrontendV2Handler:
             )
 
         started = time.perf_counter()
+        access = resolve_access_context(self._ctx, req)
         try:
             snapshot_engine = build_snapshot_engine(self._ctx)
-            payload = snapshot_engine.frontend_v2(
-                build_frontend_query(
-                    statuses=statuses,
-                    designer=designer,
-                    limit=limit,
-                    include_people=include_people,
-                    window_data=window_data,
-                )
+            frontend_query = build_frontend_query(
+                statuses=statuses,
+                designer=designer,
+                limit=limit,
+                include_people=include_people,
+                window_data=window_data,
             )
         except Exception as error:
             return error_response(
@@ -104,26 +125,121 @@ class FrontendV2Handler:
                 message="Frontend data source is temporarily unavailable.",
                 details={"source": "snapshot", "errorType": type(error).__name__},
             )
-        access = resolve_access_context(self._ctx, req)
         metrics = self._ctx.deps.get("metrics_client")
+        cache_ttl_minutes = max(int(self._ctx.cfg.runtime.api.get("frontend_response_cache_ttl_minutes", 15) or 15), 1)
+        cache_eligible = is_default_frontend_cache_query(
+            statuses=statuses,
+            designer=designer,
+            limit=limit,
+            include_people=include_people,
+            window_data=window_data,
+        )
+        route_class = resolve_frontend_route_class(req, access)
+        masking_version = masking_version_for_hour(
+            str(self._ctx.cfg.runtime.api.get("auth_mask_dictionary_version", "v1") or "v1")
+        )
+        hour_bucket = masking_version.rsplit(":", 1)[-1] if access.masked else ""
+        query_hash = build_default_frontend_cache_query_hash()
+        payload: dict[str, object]
+        prep = snapshot_engine.get_prep_snapshot()
+        if prep is None:
+            return error_response(
+                503,
+                code="frontend_source_unavailable",
+                message="Frontend data source is temporarily unavailable.",
+                details={"source": "snapshot", "errorType": "prep_snapshot_unavailable"},
+            )
+        cache_store = snapshot_engine.get_response_cache_store()
+        if cache_eligible and cache_store is not None:
+            cache_key = default_frontend_cache_key(route_class=route_class, access_mode=access.mode)
+            cache_labels = {
+                "env": str(self._ctx.cfg.runtime.runtime.env_default or "").strip().lower() or "dev",
+                "route": route_class,
+                "access_mode": access.mode,
+                "result": "success",
+            }
+            cache_read_started = time.perf_counter()
+            cached_entry = cache_store.get(cache_key)
+            if metrics is not None:
+                metrics.timing(
+                    "dtm.api.response_cache.read_ms",
+                    (time.perf_counter() - cache_read_started) * 1000.0,
+                    labels=dict(cache_labels),
+                )
+            if response_cache_entry_is_fresh(
+                cached_entry,
+                source_hash=str(prep.raw_source_hash or ""),
+                route_class=route_class,
+                access_mode=access.mode,
+                query_hash=query_hash,
+                ttl_minutes=cache_ttl_minutes,
+                hour_bucket=hour_bucket,
+            ):
+                if metrics is not None:
+                    metrics.counter("dtm.api.response_cache.hit_total", labels=dict(cache_labels))
+                cached_payload = dict(cached_entry.get("payload", {}) or {})
+                payload = cached_payload_with_access(cached_payload, access)
+                duration_ms = int((time.perf_counter() - started) * 1000)
+                print(
+                    "api_response "
+                    f"artifact={payload.get('meta', {}).get('artifact', '')} "
+                    f"contractVersion={payload.get('meta', {}).get('contractVersion', '')} "
+                    f"generatedAt={payload.get('meta', {}).get('generatedAt', '')} "
+                    f"syncedAt={payload.get('meta', {}).get('syncedAt', '')} "
+                    f"access_mode={payload.get('meta', {}).get('access', {}).get('mode', '')} "
+                    f"tasksReturned={payload.get('summary', {}).get('tasksReturned', 0)} "
+                    f"duration_ms={duration_ms}"
+                )
+                return json_response(200, payload)
+            if metrics is not None:
+                metrics.counter("dtm.api.response_cache.miss_total", labels=dict(cache_labels))
+
+        try:
+            payload = snapshot_engine.frontend_v2(frontend_query)
+        except Exception as error:
+            return error_response(
+                503,
+                code="frontend_source_unavailable",
+                message="Frontend data source is temporarily unavailable.",
+                details={"source": "snapshot", "errorType": type(error).__name__},
+            )
         payload = dict(payload)
         payload["meta"] = dict(payload.get("meta", {}) or {})
-        payload["meta"]["access"] = {
-            "mode": access.mode,
-            "trustedIngress": bool(access.trusted_ingress),
-            "authenticated": bool(access.authenticated),
-            "contour": str(access.contour or "").strip(),
-            "userRole": access.user_role,
-            "userStatus": access.user_status,
-            "fallbackReason": access.fallback_reason,
-        }
+        payload["meta"]["access"] = self._access_payload(access)
         payload = mask_frontend_payload(
             payload,
             access,
-            dictionary_version=str(self._ctx.cfg.runtime.api.get("auth_mask_dictionary_version", "v1") or "v1"),
+            dictionary_version=masking_version,
             metrics_client=metrics,
             metrics_labels=self._metrics_labels(mode=access.mode, result="success"),
         )
+        if cache_eligible and cache_store is not None:
+            cache_labels = {
+                "env": str(self._ctx.cfg.runtime.runtime.env_default or "").strip().lower() or "dev",
+                "route": route_class,
+                "access_mode": access.mode,
+                "result": "success",
+            }
+            cache_key = default_frontend_cache_key(route_class=route_class, access_mode=access.mode)
+            cache_write_started = time.perf_counter()
+            cache_store.put(
+                cache_key,
+                build_response_cache_entry(
+                    payload=payload,
+                    source_hash=str(prep.raw_source_hash or ""),
+                    route_class=route_class,
+                    access_mode=access.mode,
+                    query_hash=query_hash,
+                    hour_bucket=hour_bucket,
+                ),
+            )
+            if metrics is not None:
+                metrics.timing(
+                    "dtm.api.response_cache.write_ms",
+                    (time.perf_counter() - cache_write_started) * 1000.0,
+                    labels=dict(cache_labels),
+                )
+                metrics.counter("dtm.api.response_cache.write_total", labels=dict(cache_labels))
 
         duration_ms = int((time.perf_counter() - started) * 1000)
         print(

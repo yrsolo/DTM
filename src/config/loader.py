@@ -368,6 +368,9 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
     defaults.snapshot_engine.prefix_people = str(
         snapshot_engine_raw.get("prefix_people", defaults.snapshot_engine.prefix_people)
     )
+    defaults.snapshot_engine.prefix_responses = str(
+        snapshot_engine_raw.get("prefix_responses", defaults.snapshot_engine.prefix_responses)
+    )
     defaults.snapshot_engine.force_refresh_default = bool(
         snapshot_engine_raw.get("force_refresh_default", defaults.snapshot_engine.force_refresh_default)
     )
@@ -464,6 +467,8 @@ def load_config(config_dir: Path = CONFIG_DIR) -> AppConfig:
             raise ValueError("snapshot_engine.prefix_extra is required when snapshot_engine.enabled=true")
         if not str(snapshot_cfg.prefix_people).strip():
             raise ValueError("snapshot_engine.prefix_people is required when snapshot_engine.enabled=true")
+        if not str(snapshot_cfg.prefix_responses).strip():
+            raise ValueError("snapshot_engine.prefix_responses is required when snapshot_engine.enabled=true")
     queue_cfg = runtime_cfg.queue
     if bool(queue_cfg.enabled):
         if str(queue_cfg.provider).strip().lower() != "yandex_message_queue":

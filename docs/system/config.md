@@ -27,6 +27,8 @@ Primary config files:
 - `runtime.api.auth_trusted_secret_header`: trusted proxy secret header name for browser-facing auth
 - `runtime.api.auth_trusted_fallback`: direct/untrusted browser fallback mode (`masked`)
 - `runtime.api.auth_mask_dictionary_version`: deterministic masking dictionary version
+- `runtime.api.frontend_response_cache_ttl_minutes`: TTL for default frontend response cache entries
+- `runtime.snapshot_engine.prefix_responses`: Object Storage prefix for cached frontend responses
 
 ## Secrets
 Secrets stay outside repo config files:

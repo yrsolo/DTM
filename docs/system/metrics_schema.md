@@ -38,6 +38,11 @@
 - `dtm.api.duration_ms`
 - `dtm.api.masking_ms`
 - `dtm.api.response_size_bytes`
+- `dtm.api.response_cache.hit_total`
+- `dtm.api.response_cache.miss_total`
+- `dtm.api.response_cache.write_total`
+- `dtm.api.response_cache.read_ms`
+- `dtm.api.response_cache.write_ms`
 - `dtm.api.prep_age_seconds`
 
 ### Info
@@ -107,6 +112,7 @@ Metrics batching notes:
 - `dtm.worker.wall_clock_ms` captures worker-side wall-clock including status-store writes and metric flush
 - `/info` summary/detail timing is emitted separately so default operator reads can be compared against heavy diagnostics explicitly
 - browser-facing masked mode emits `dtm.api.masking_ms` so masking overhead stays measurable without forking the canonical query path
+- exact default frontend query may now use Object Storage response cache for `full` and `masked` variants; cache read/write path emits dedicated `dtm.api.response_cache.*` metrics
 
 Current runtime default:
 

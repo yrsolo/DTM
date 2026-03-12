@@ -97,6 +97,7 @@ class SnapshotEngineSection:
     prefix_prep: str = "snapshots/prep/default.json"
     prefix_extra: str = "snapshots/extra/"
     prefix_people: str = "snapshots/people/default.json"
+    prefix_responses: str = "snapshots/responses/"
     force_refresh_default: bool = False
 
 

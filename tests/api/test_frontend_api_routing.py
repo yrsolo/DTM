@@ -16,6 +16,7 @@ if str(ROOT_DIR) not in sys.path:
 import index
 from src.entrypoints.http import frontend_v2_handler as frontend_v2_module
 from src.entrypoints.http import info_handler as info_handler_module
+from src.entrypoints.http.frontend_response_cache import default_frontend_cache_key
 from src.entrypoints.http.event_parser import extract_payload, http_path, query_params
 from src.entrypoints.http.frontend_query_params import parse_bool
 from src.entrypoints.http.runtime_mode import extract_force_refresh, extract_run_mode
@@ -35,10 +36,18 @@ class _FakeSnapshotEngine:
     def __init__(self, payload: dict):
         self.payload = payload
         self.queries = []
+        self.response_cache_store = _FakeResponseCacheStore()
+        self.prep = type("Prep", (), {"raw_source_hash": "sha256:test"})()
 
     def frontend_v2(self, query):  # noqa: ANN001
         self.queries.append(query)
         return dict(self.payload)
+
+    def get_prep_snapshot(self):
+        return self.prep
+
+    def get_response_cache_store(self):
+        return self.response_cache_store
 
 
 class _FakeInfoSnapshotEngine:
@@ -105,6 +114,17 @@ class _MetricsRecorder:
 
     def timing(self, name: str, ms: float, labels=None) -> None:
         self.timings.append((name, float(ms), dict(labels or {})))
+
+
+class _FakeResponseCacheStore:
+    def __init__(self) -> None:
+        self.items = {}
+
+    def get(self, cache_key: str):
+        return self.items.get(cache_key)
+
+    def put(self, cache_key: str, payload):
+        self.items[cache_key] = dict(payload)
 
 
 def _shape_signature(value):  # noqa: ANN001
@@ -539,6 +559,78 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertIn(masked_payload_a["tasks"][0]["brand"], BRAND_DICTIONARY)
         self.assertIn(masked_payload_a["tasks"][0]["format_"], FORMAT_DICTIONARY)
         self.assertIn(masked_payload_a["entities"]["people"][0]["name"], DESIGNER_DICTIONARY)
+
+    def test_default_direct_request_is_written_to_response_cache(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = (
+            "https://dtm.solofarm.ru/test/ops/api/v2/frontend?"
+            "statuses=work,pre_done,done,wait&include_people=true&limit=60"
+        )
+        event["queryStringParameters"] = {
+            "statuses": "work,pre_done,done,wait",
+            "include_people": "true",
+            "limit": "60",
+        }
+
+        response = asyncio.run(index.handler(event, None))
+
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(len(self._engine.queries), 1)
+        self.assertIn(default_frontend_cache_key(route_class="api", access_mode="masked"), self._engine.response_cache_store.items)
+        self.assertTrue(any(name == "dtm.api.response_cache.miss_total" for name, _, _ in self._metrics.counters))
+        self.assertTrue(any(name == "dtm.api.response_cache.write_total" for name, _, _ in self._metrics.counters))
+
+    def test_default_direct_request_uses_cached_payload_on_second_hit(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = (
+            "https://dtm.solofarm.ru/test/ops/api/v2/frontend?"
+            "statuses=work,pre_done,done,wait&include_people=true&limit=60"
+        )
+        event["queryStringParameters"] = {
+            "statuses": "work,pre_done,done,wait",
+            "include_people": "true",
+            "limit": "60",
+        }
+
+        first = json.loads(asyncio.run(index.handler(event, None))["body"])
+        second = json.loads(asyncio.run(index.handler(event, None))["body"])
+
+        self.assertEqual(first["meta"]["access"]["mode"], "masked")
+        self.assertEqual(second["meta"]["access"]["mode"], "masked")
+        self.assertEqual(len(self._engine.queries), 1)
+        self.assertTrue(any(name == "dtm.api.response_cache.hit_total" for name, _, _ in self._metrics.counters))
+
+    def test_default_proxy_request_uses_separate_cache_bucket(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = (
+            "https://dtm.solofarm.ru/test/ops/bff/api/v2/frontend?"
+            "statuses=work,pre_done,done,wait&include_people=true&limit=60"
+        )
+        event["queryStringParameters"] = {
+            "statuses": "work,pre_done,done,wait",
+            "include_people": "true",
+            "limit": "60",
+        }
+        event["headers"] = {
+            "X-DTM-Proxy-Secret": "proxy-secret-test",
+            "x-dtm-access-mode": "full",
+            "x-dtm-authenticated": "1",
+            "x-dtm-contour": "test",
+            "x-dtm-user-id": "user-1",
+            "x-dtm-user-role": "admin",
+            "x-dtm-user-status": "approved",
+        }
+
+        response = json.loads(asyncio.run(index.handler(event, None))["body"])
+
+        self.assertEqual(response["meta"]["access"]["mode"], "full")
+        self.assertIn(default_frontend_cache_key(route_class="bff", access_mode="full"), self._engine.response_cache_store.items)
 
 
 if __name__ == "__main__":

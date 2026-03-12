@@ -1,6 +1,6 @@
 # Active Tasks
 
-- none
+- CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P02: add Object Storage response cache for exact default frontend query (`limit=60`, all default statuses, `include_people=true`) and hourly Moscow masking seed for all masked frontend responses
 
 ## Done
 

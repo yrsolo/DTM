@@ -20,6 +20,23 @@
 - `/info` default path may still include expensive diagnostics by default
 - common frontend request has no verified prebuilt hot cache
 
+## Follow-up scope opened (2026-03-12)
+- active follow-up: exact default frontend response cache in Object Storage for:
+  - browser proxy path class
+  - direct backend path class
+  - `full`
+  - `masked`
+- exact default query for cache eligibility:
+  - `statuses=work,pre_done,done,wait`
+  - `include_people=true`
+  - `limit=60`
+  - no designer filter
+  - no window filter
+- memory cache is explicitly out because runtime is serverless
+- masking follow-up:
+  - deterministic mapping remains required within one bucket
+  - masked mapping bucket will rotate by Moscow hour
+
 ## Verified execution findings
 - 2026-03-12 code scan: `src/entrypoints/http/info_handler.py` previously built snapshot/build/storage/queue/jobs payload on every `/info` request, so default `/info` was not lightweight
 - 2026-03-12 implementation: `/info` now returns cheap `view=summary` by default and uses explicit detail mode for heavy diagnostics:
@@ -35,12 +52,26 @@
   - `src/worker/worker.py` emits `dtm.worker.wall_clock_ms`
   - `src/observability/batching.py` emits `dtm.metrics.flush_duration_ms`
   - `src/entrypoints/http/http_shell.py` emits `dtm.api.duration_ms`
+- 2026-03-12 implementation follow-up: exact default frontend response cache was added in Object Storage for common frontend read path:
+  - exact query: `statuses=work,pre_done,done,wait`, `include_people=true`, `limit=60`
+  - shared cache variants: `full` and `masked`
+  - route classes: trusted ingress (`bff`) and direct backend (`api`)
+  - storage namespace: dedicated `snapshot_engine.prefix_responses`
+- 2026-03-12 implementation follow-up: masked mapping seed now rotates by Moscow hour for all masked frontend responses while staying deterministic within the same hour bucket
+- 2026-03-12 local cache/masking smoke passed:
+  - `python -m unittest tests.api.test_frontend_api_routing`
+  - `python -m unittest tests.snapshot_engine.test_s3_store`
+  - `python -m unittest tests.services.test_masking`
+  - `python -m unittest tests.api.test_info_observability`
 
 ## Remaining verification
 - live contour benchmark is still required after deploy to compare:
   - default summary `/info`
   - explicit detail `/info?view=detail`
-- hot cache decision remains open until real read-path timings are captured from the active contour
+- hot cache implementation now exists locally, but live contour verification is still required for:
+  - cache warm-up on default frontend query
+  - cache hit on repeated default frontend query
+  - masked hourly seed rollover behavior
 - refresh wall-clock gap still needs evidence write-up that correlates job timings, worker wall clock, and metrics flush duration on the same run
 
 ## Live verification (2026-03-12)

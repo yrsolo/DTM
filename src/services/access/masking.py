@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+from datetime import datetime
 from time import perf_counter
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from src.entrypoints.http.access_context import AccessContext
 
@@ -142,6 +144,8 @@ BRAND_DICTIONARY = (
     "Hooli Pictures",
 )
 
+MASKING_TIMEZONE = "Europe/Moscow"
+
 
 def _stable_token(kind: str, raw: str, *, version: str) -> str:
     payload = f"{version}:{kind}:{raw}".encode("utf-8")
@@ -192,6 +196,20 @@ def _mask_value(kind: str, raw: str, *, version: str) -> str:
         return f"{brand} [{show}] {format_name}"
     token = _stable_token(kind, value, version=version)
     return f"masked-{token}"
+
+
+def masking_version_for_hour(
+    dictionary_version: str,
+    *,
+    now: datetime | None = None,
+    timezone_name: str = MASKING_TIMEZONE,
+) -> str:
+    base = str(dictionary_version or "v1").strip() or "v1"
+    current = now or datetime.now(ZoneInfo(timezone_name))
+    if current.tzinfo is None:
+        current = current.replace(tzinfo=ZoneInfo(timezone_name))
+    localized = current.astimezone(ZoneInfo(timezone_name))
+    return f"{base}:{localized.strftime('%Y%m%d%H')}"
 
 
 def _apply_mask(payload: dict[str, Any], *, version: str) -> dict[str, Any]:

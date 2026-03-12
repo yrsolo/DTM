@@ -81,6 +81,7 @@ snapshot_engine:
   prefix_prep: snapshots/{env}/prep/default.json
   prefix_extra: snapshots/{env}/extra/
   prefix_people: snapshots/{env}/people/default.json
+  prefix_responses: snapshots/{env}/responses/
   force_refresh_default: false
 
 queue:
@@ -124,6 +125,7 @@ api:
   auth_trusted_secret_header: X-DTM-Proxy-Secret
   auth_trusted_fallback: masked
   auth_mask_dictionary_version: v1
+  frontend_response_cache_ttl_minutes: 15
 
 triggers:
   a1sldapc8v2pha7dichv: timer
