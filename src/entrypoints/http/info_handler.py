@@ -20,6 +20,7 @@ from src.observability.bottlenecks import (
     RECENT_DIRECT_API_OUTER_TRACES,
     RECENT_API_STAGE_EVENTS,
     is_debug_metrics_enabled,
+    is_api_metrics_enabled,
     is_stage_metrics_enabled,
     resolve_bottleneck_metrics_level,
 )
@@ -649,7 +650,7 @@ class InfoHandler:
         metrics = self._ctx.deps.get("metrics_client")
         summary_started = perf_counter()
         payload = self._summary_payload(req)
-        if metrics is not None:
+        if metrics is not None and is_api_metrics_enabled(self._ctx):
             metrics.timing(
                 "dtm.info.summary.ms",
                 (perf_counter() - summary_started) * 1000.0,
@@ -658,7 +659,7 @@ class InfoHandler:
         if detail_mode:
             detail_started = perf_counter()
             payload = self._detail_payload(req, payload)
-            if metrics is not None:
+            if metrics is not None and is_api_metrics_enabled(self._ctx):
                 metrics.timing(
                     "dtm.info.detail.ms",
                     (perf_counter() - detail_started) * 1000.0,

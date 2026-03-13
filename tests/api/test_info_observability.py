@@ -164,6 +164,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
                     monitoring=SimpleNamespace(
                         enabled=True,
                         backend="yandex_monitoring",
+                        emit_api_metrics=False,
                         folder_id="folder-test-monitoring",
                         dashboard_name_test="DTM Test Observability",
                         dashboard_name_prod="DTM Prod Observability",
@@ -312,9 +313,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertEqual(self.get_queue_live_stats_calls, 0)
         self.assertEqual(self.get_function_build_info_calls, 0)
         self.assertEqual(self.storage_stats_calls, 0)
-        timing_names = [item[0] for item in self.metrics.timings]
-        self.assertIn("dtm.info.summary.ms", timing_names)
-        self.assertNotIn("dtm.info.detail.ms", timing_names)
+        self.assertEqual(self.metrics.timings, [])
 
     def test_info_json_detail_includes_build_queue_jobs_and_render_debug(self) -> None:
         handler = InfoHandler(self.ctx)
@@ -372,9 +371,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertGreater(self.get_queue_live_stats_calls, 0)
         self.assertGreater(self.get_function_build_info_calls, 0)
         self.assertGreater(self.storage_stats_calls, 0)
-        timing_names = [item[0] for item in self.metrics.timings]
-        self.assertIn("dtm.info.summary.ms", timing_names)
-        self.assertIn("dtm.info.detail.ms", timing_names)
+        self.assertEqual(self.metrics.timings, [])
 
     def test_info_html_contains_new_operational_sections(self) -> None:
         handler = InfoHandler(self.ctx)

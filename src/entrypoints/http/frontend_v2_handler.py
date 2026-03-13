@@ -28,6 +28,7 @@ from src.entrypoints.http.response_utils import error_response, html_response, j
 from src.entrypoints_adapters.api_v2_adapter import build_frontend_query
 from src.observability.bottlenecks import (
     append_response_headers,
+    is_api_metrics_enabled,
     is_stage_metrics_enabled,
     new_stage_trace_id,
     record_api_stage,
@@ -284,7 +285,7 @@ class FrontendV2Handler:
             cache_read_started = time.perf_counter()
             cached_entry = cache_store.get(cache_key)
             _record_stage("response_cache_read", cache_read_started)
-            if metrics is not None:
+            if metrics is not None and is_api_metrics_enabled(self._ctx):
                 metrics.timing(
                     "dtm.api.response_cache.read_ms",
                     (time.perf_counter() - cache_read_started) * 1000.0,
@@ -301,7 +302,7 @@ class FrontendV2Handler:
                 hour_bucket=hour_bucket,
             ):
                 _record_stage("response_cache_freshness", freshness_started)
-                if metrics is not None:
+                if metrics is not None and is_api_metrics_enabled(self._ctx):
                     metrics.counter("dtm.api.response_cache.hit_total", labels=dict(cache_labels))
                 cached_payload = dict(cached_entry.get("payload", {}) or {})
                 payload = cached_payload_with_access(cached_payload, access)
@@ -346,7 +347,7 @@ class FrontendV2Handler:
                 )
                 return http_response
             _record_stage("response_cache_freshness", freshness_started)
-            if metrics is not None:
+            if metrics is not None and is_api_metrics_enabled(self._ctx):
                 metrics.counter("dtm.api.response_cache.miss_total", labels=dict(cache_labels))
 
         try:
@@ -382,7 +383,7 @@ class FrontendV2Handler:
             payload,
             access,
             dictionary_version=masking_version,
-            metrics_client=metrics,
+            metrics_client=metrics if is_api_metrics_enabled(self._ctx) else None,
             metrics_labels=self._metrics_labels(mode=access.mode, result="success"),
         )
         _record_stage("masking", masking_started)
@@ -407,7 +408,7 @@ class FrontendV2Handler:
                 ),
             )
             _record_stage("response_cache_write", cache_write_started)
-            if metrics is not None:
+            if metrics is not None and is_api_metrics_enabled(self._ctx):
                 metrics.timing(
                     "dtm.api.response_cache.write_ms",
                     (time.perf_counter() - cache_write_started) * 1000.0,

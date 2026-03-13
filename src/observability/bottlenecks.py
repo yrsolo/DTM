@@ -46,6 +46,13 @@ def is_detailed_metrics_enabled(ctx: Any) -> bool:
     return is_stage_metrics_enabled(ctx)
 
 
+def is_api_metrics_enabled(ctx: Any) -> bool:
+    try:
+        return bool(ctx.cfg.runtime.monitoring.emit_api_metrics)
+    except Exception:
+        return True
+
+
 @dataclass(slots=True)
 class StageEvent:
     trace_id: str
@@ -212,7 +219,7 @@ def record_api_stage(
     except Exception:
         metrics = None
         logger = None
-    if metrics is not None:
+    if metrics is not None and is_api_metrics_enabled(ctx):
         metrics.timing("dtm.api.stage.duration_ms", float(duration_ms), labels=dict(labels))
         metrics.counter("dtm.api.stage.total", labels=dict(labels))
         if result != "success":
@@ -274,7 +281,7 @@ def record_api_outer_stage(
     except Exception:
         metrics = None
         logger = None
-    if metrics is not None:
+    if metrics is not None and is_api_metrics_enabled(ctx):
         metrics.timing("dtm.api.outer.duration_ms", float(duration_ms), labels=dict(labels))
         metrics.counter("dtm.api.outer.total", labels=dict(labels))
         if result != "success":

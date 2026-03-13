@@ -116,6 +116,7 @@ Metrics batching notes:
 - runtime request path now uses buffered one-flush-end delivery by default via `BufferedMetricsClient`
 - active jobs now batch metrics per operation and append into the same buffered runtime delivery where a managed scope exists
 - `METRICS_DELIVERY_MODE=off` is the operator kill-switch that disables runtime metrics writes without changing instrumentation call sites
+- `runtime.monitoring.emit_api_metrics=false` suppresses `dtm.api.*` and `dtm.info.*` emission on the hot HTTP read path while keeping stage traces and `Server-Timing`
 - `dtm.metrics.flush_duration_ms` and `dtm.metrics.flush_points_total` measure backend flush cost directly
 - `dtm.worker.wall_clock_ms` captures worker-side wall-clock including status-store writes and metric flush
 - `/info` summary/detail timing is emitted separately so default operator reads can be compared against heavy diagnostics explicitly

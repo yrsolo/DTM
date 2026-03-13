@@ -24,6 +24,7 @@ from src.observability.bottlenecks import (
     append_response_headers,
     build_server_timing_header,
     is_direct_api_operation,
+    is_api_metrics_enabled,
     is_stage_metrics_enabled,
     new_stage_trace_id,
     record_api_outer_stage,
@@ -109,7 +110,7 @@ class HttpShell:
                     )
                     response = to_gateway_response(runtime_response)
                     result_label = "runtime"
-                if metrics is not None:
+                if metrics is not None and is_api_metrics_enabled(self._ctx):
                     metrics.counter("dtm.api.requests_total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
                     metrics.timing("dtm.api.duration_ms", (perf_counter() - started_at) * 1000.0, labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
                 if logger is not None:
@@ -153,7 +154,7 @@ class HttpShell:
                     )
                 )
                 result_label = "failed"
-                if metrics is not None:
+                if metrics is not None and is_api_metrics_enabled(self._ctx):
                     metrics.counter("dtm.api.requests_total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
                     metrics.timing("dtm.api.duration_ms", (perf_counter() - started_at) * 1000.0, labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
                 if logger is not None:
@@ -269,7 +270,7 @@ class HttpShell:
                             },
                         )
                     response["headers"] = response_headers
-                if metrics is not None:
+                if metrics is not None and is_api_metrics_enabled(self._ctx):
                     metrics.counter("dtm.api.requests_total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
                     metrics.timing("dtm.api.duration_ms", (perf_counter() - started_at) * 1000.0, labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
                     body = response.get("body", "")
@@ -306,7 +307,7 @@ class HttpShell:
                     )
                 )
                 result_label = "noop"
-                if metrics is not None:
+                if metrics is not None and is_api_metrics_enabled(self._ctx):
                     metrics.counter("dtm.api.requests_total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
                     metrics.timing("dtm.api.duration_ms", (perf_counter() - started_at) * 1000.0, labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
                 if logger is not None:
@@ -333,7 +334,7 @@ class HttpShell:
             )
             response = to_gateway_response(runtime_response)
             result_label = "runtime"
-            if metrics is not None:
+            if metrics is not None and is_api_metrics_enabled(self._ctx):
                 metrics.counter("dtm.api.requests_total", labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
                 metrics.timing("dtm.api.duration_ms", (perf_counter() - started_at) * 1000.0, labels={"env": str(self._ctx.cfg.runtime.runtime.env_default), "module": "api", "operation": operation, "result": result_label})
             if logger is not None:

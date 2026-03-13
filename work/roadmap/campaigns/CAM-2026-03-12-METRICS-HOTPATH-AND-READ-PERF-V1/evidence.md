@@ -214,6 +214,21 @@
   - buffered metrics delivery is sufficient to re-enable remote metrics backends on `test`
   - direct `/api` regression from synchronous per-metric flush is closed
 
+## API metrics suppression follow-up (2026-03-13)
+- owner decision: remove API-path remote metrics for now and keep metrics only on refresh/render/worker paths
+- implementation:
+  - `config/runtime.yaml` now sets `monitoring.emit_api_metrics=false`
+  - `src/observability/bottlenecks.py` suppresses `dtm.api.stage.*` and `dtm.api.outer.*` writes when API metrics are disabled, while preserving in-process trace recording
+  - `src/entrypoints/http/http_shell.py`, `src/entrypoints/http/frontend_v2_handler.py`, and `src/entrypoints/http/info_handler.py` no longer emit `dtm.api.*` / `dtm.info.*` when API metrics are disabled
+- preserved diagnostics:
+  - `Server-Timing`
+  - `RECENT_API_STAGE_EVENTS`
+  - `RECENT_DIRECT_API_OUTER_TRACES`
+  - `/info` bottleneck diagnostics
+- local contract verification passed:
+  - `.venv\Scripts\python.exe -m unittest tests.api.test_frontend_api_routing tests.api.test_info_observability`
+  - `.venv\Scripts\python.exe -m unittest tests.app.test_bootstrap_monitoring tests.config.test_runtime_loader tests.observability.test_metrics_batching tests.api.test_command_queue_foundation tests.api.test_worker_shell`
+
 ## Grafana dashboard rebuild (2026-03-12)
 - repo spec in `src/infra/grafana_specs.py` was rebuilt to cover all currently emitted runtime metrics from active code paths:
   - snapshot stages including `orphan_reconcile`

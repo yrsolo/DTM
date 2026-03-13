@@ -18,7 +18,7 @@ monitoring:
   dashboard_id_test: "fbe6m08jl1vj212t5v0c"
   dashboard_id_prod: ""
   emit_queue_metrics: true
-  emit_api_metrics: true
+  emit_api_metrics: false
   emit_snapshot_metrics: true
   emit_render_metrics: true
   emit_notify_metrics: true

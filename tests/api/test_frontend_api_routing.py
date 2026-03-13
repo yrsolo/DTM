@@ -21,7 +21,7 @@ from src.entrypoints.http.event_parser import extract_payload, http_path, query_
 from src.entrypoints.http.frontend_query_params import parse_bool
 from src.entrypoints.http.runtime_mode import extract_force_refresh, extract_run_mode
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES
-from src.observability.bottlenecks import RECENT_DIRECT_API_OUTER_TRACES
+from src.observability.bottlenecks import RECENT_API_STAGE_EVENTS, RECENT_DIRECT_API_OUTER_TRACES
 from src.services.access.masking import BRAND_DICTIONARY, DESIGNER_DICTIONARY, FORMAT_DICTIONARY, SHOW_DICTIONARY
 from src.worker.model import JobStatusRecord
 
@@ -149,6 +149,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self._orig_metrics_client = index.APP_DEPS.get("metrics_client")
         self._orig_browser_auth_proxy_secret = index.APP_DEPS.get("browser_auth_proxy_secret")
         self._orig_bottleneck_metrics_level = index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level
+        self._orig_recent_stage_traces = list(RECENT_API_STAGE_EVENTS._events)  # type: ignore[attr-defined]
         self._orig_recent_outer_traces = list(RECENT_DIRECT_API_OUTER_TRACES._events)  # type: ignore[attr-defined]
         self._metrics = _MetricsRecorder()
         self._engine = _FakeSnapshotEngine(
@@ -222,6 +223,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         index.APP_DEPS["metrics_client"] = self._metrics
         index.APP_DEPS["browser_auth_proxy_secret"] = "proxy-secret-test"
         index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level = "stages"
+        RECENT_API_STAGE_EVENTS._events.clear()  # type: ignore[attr-defined]
         RECENT_DIRECT_API_OUTER_TRACES._events.clear()  # type: ignore[attr-defined]
 
     def tearDown(self) -> None:
@@ -234,6 +236,8 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         index.APP_DEPS["metrics_client"] = self._orig_metrics_client
         index.APP_DEPS["browser_auth_proxy_secret"] = self._orig_browser_auth_proxy_secret
         index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level = self._orig_bottleneck_metrics_level
+        RECENT_API_STAGE_EVENTS._events.clear()  # type: ignore[attr-defined]
+        RECENT_API_STAGE_EVENTS._events.extend(self._orig_recent_stage_traces)  # type: ignore[attr-defined]
         RECENT_DIRECT_API_OUTER_TRACES._events.clear()  # type: ignore[attr-defined]
         RECENT_DIRECT_API_OUTER_TRACES._events.extend(self._orig_recent_outer_traces)  # type: ignore[attr-defined]
 
@@ -479,7 +483,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertIn(task["customer"], BRAND_DICTIONARY)
         self.assertIn(" [", task["title"])
         self.assertTrue(task["history"].startswith("Согласование по проекту «"))
-        self.assertTrue(any(name == "dtm.api.masking_ms" for name, _, _ in self._metrics.timings))
+        self.assertFalse(any(name == "dtm.api.masking_ms" for name, _, _ in self._metrics.timings))
 
     def test_trusted_proxy_secret_allows_full_mode(self) -> None:
         event = _fixture_event()
@@ -590,11 +594,11 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 200)
         self.assertEqual(len(self._engine.queries), 1)
         self.assertIn(default_frontend_cache_key(route_class="api", access_mode="masked"), self._engine.response_cache_store.items)
-        self.assertTrue(any(name == "dtm.api.response_cache.miss_total" for name, _, _ in self._metrics.counters))
-        self.assertTrue(any(name == "dtm.api.response_cache.write_total" for name, _, _ in self._metrics.counters))
-        stage_timings = [item for item in self._metrics.timings if item[0] == "dtm.api.stage.duration_ms"]
-        self.assertTrue(any(labels.get("stage") == "frontend_payload_build" for _, _, labels in stage_timings))
-        self.assertTrue(any(labels.get("cache_result") == "miss" for _, _, labels in stage_timings))
+        self.assertEqual(self._metrics.counters, [])
+        stage_traces = RECENT_API_STAGE_EVENTS.recent_traces(limit=5)
+        self.assertTrue(stage_traces)
+        self.assertTrue(any(item["stage"] == "frontend_payload_build" for item in stage_traces[0]["stages"]))
+        self.assertEqual(stage_traces[0]["cacheResult"], "miss")
 
     def test_default_direct_request_uses_cached_payload_on_second_hit(self) -> None:
         event = _fixture_event()
@@ -616,12 +620,13 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(first["meta"]["access"]["mode"], "masked")
         self.assertEqual(second["meta"]["access"]["mode"], "masked")
         self.assertEqual(len(self._engine.queries), 1)
-        self.assertTrue(any(name == "dtm.api.response_cache.hit_total" for name, _, _ in self._metrics.counters))
-        stage_timings = [item for item in self._metrics.timings if item[0] == "dtm.api.stage.duration_ms"]
-        self.assertTrue(any(labels.get("cache_result") == "hit" for _, _, labels in stage_timings))
-        self.assertTrue(any(labels.get("stage") == "response_cache_read" for _, _, labels in stage_timings))
-        self.assertTrue(any(labels.get("stage") == "query_parse" for _, _, labels in stage_timings))
-        self.assertTrue(any(labels.get("stage") == "handler_total" for _, _, labels in stage_timings))
+        self.assertEqual(self._metrics.counters, [])
+        stage_traces = RECENT_API_STAGE_EVENTS.recent_traces(limit=5)
+        self.assertTrue(any(trace["cacheResult"] == "hit" for trace in stage_traces))
+        hit_trace = next(trace for trace in stage_traces if trace["cacheResult"] == "hit")
+        self.assertTrue(any(item["stage"] == "response_cache_read" for item in hit_trace["stages"]))
+        self.assertTrue(any(item["stage"] == "query_parse" for item in hit_trace["stages"]))
+        self.assertTrue(any(item["stage"] == "handler_total" for item in hit_trace["stages"]))
 
     def test_default_proxy_request_uses_separate_cache_bucket(self) -> None:
         event = _fixture_event()
@@ -650,9 +655,9 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
 
         self.assertEqual(response["meta"]["access"]["mode"], "full")
         self.assertIn(default_frontend_cache_key(route_class="bff", access_mode="full"), self._engine.response_cache_store.items)
-        stage_timings = [item for item in self._metrics.timings if item[0] == "dtm.api.stage.duration_ms"]
-        self.assertTrue(any(labels.get("route") == "bff" for _, _, labels in stage_timings))
-        self.assertTrue(any(labels.get("access_mode") == "full" for _, _, labels in stage_timings))
+        stage_traces = RECENT_API_STAGE_EVENTS.recent_traces(limit=5)
+        self.assertTrue(any(trace["route"] == "bff" for trace in stage_traces))
+        self.assertTrue(any(trace["accessMode"] == "full" for trace in stage_traces))
 
     def test_direct_api_outer_trace_is_recorded(self) -> None:
         event = _fixture_event()

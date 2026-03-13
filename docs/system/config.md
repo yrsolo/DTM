@@ -41,6 +41,10 @@ Current metrics delivery policy:
 - `buffered` accumulates runtime metrics in memory per request/job and performs one best-effort flush at the end
 - `off` disables runtime metrics writes through the main `metrics_client`
 
+Current API metrics policy:
+- `runtime.monitoring.emit_api_metrics=false` disables remote/runtime metric emission for `/api` and `/info` hot paths
+- in-process traces, `Server-Timing`, and `/info` bottleneck diagnostics stay available
+
 Backward compatibility:
 - legacy `runtime.dev_mode_metrics=true` is still treated as `stages` until cleanup removes the old boolean
 - `METRICS_DELIVERY_MODE` may override YAML at runtime for quick operator disable/restore
