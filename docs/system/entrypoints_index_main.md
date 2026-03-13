@@ -55,7 +55,7 @@ Transport-specific branching lives outside `index.py`:
 - `FrontendV2Handler`: reads data from snapshot engine prep cache
 - `TelegramWebhookHandler`: validates Telegram webhook secret, parses update, maps to internal command, and enqueues it
 - `GroupQueryHandler`: compatibility wrapper aliasing Telegram webhook intake
-- `AdminQueueHandler`: hidden admin enqueue/upload-contract endpoints for async mutations (`update_snapshot`, render, reminders, attachments)
+- `AdminQueueHandler`: hidden admin enqueue/upload-contract endpoints for async mutations (`update_snapshot`, render, reminders, trigger emulation, attachments)
 - `InfoHandler`: operator dashboard for snapshot state, queue live state, build metadata, recent jobs, and render diagnostics
 
 ## API source-of-truth
@@ -116,6 +116,14 @@ Telegram command routing policy:
 - `TelegramCommandRouter` maps typed updates to internal command intents
 - webhook stays thin and enqueue-only
 - group query must continue to reuse reminder selection path on worker side
+
+Trigger queue policy:
+- when queue mode is enabled, `timer` trigger does not execute runtime inline
+- it enqueues three commands for the worker path:
+  - `update_snapshot`
+  - `render_timeline_sheet`
+  - `render_designers_sheet`
+- `morning` trigger remains enqueue-only and produces `send_reminders`
 
 Legacy reference policy:
 - archived compatibility helpers now live under `src/legacy/entrypoints/jobs/`

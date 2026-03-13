@@ -4,6 +4,8 @@
 
 ## Done
 
+- Trigger timer queue fan-out: `timer` trigger now enqueues `update_snapshot`, `render_timeline_sheet`, and `render_designers_sheet` instead of only `update_snapshot`
+- CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P05: disabled `dtm.api.*` and `dtm.info.*` remote writes on hot HTTP read path while preserving `Server-Timing`, in-process traces, and refresh/render/worker metrics
 - CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P04: shipped buffered one-flush-end metrics delivery with `METRICS_DELIVERY_MODE=off|buffered`, restored Monitoring/Prometheus on `test`, and verified direct `/api` stays near fast path
 - CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P03: opened test-only A/B experiment for direct `/api` latency by disabling Prometheus remote-write on the `test` deploy workflow
 - CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1 P01: split direct `/api` latency into `router_precheck_total`, `router_handler_total`, `router_total`, `http_shell_post_router`, and `function_total`

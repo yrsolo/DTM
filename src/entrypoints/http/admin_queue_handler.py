@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import json
 import re
 from uuid import uuid4
 
@@ -15,6 +16,7 @@ from src.commands.types import (
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response, json_response
+from src.entrypoints.triggers.trigger_plan import planned_trigger_commands, resolve_trigger_mode_by_id
 from src.snapshot_engine import build_snapshot_engine
 
 
@@ -63,6 +65,46 @@ class AdminQueueHandler:
                 "job_id": cmd.job_id,
                 "command_type": cmd.type,
                 "queued_at": record.requested_at_utc.isoformat(),
+            },
+        )
+
+    def _enqueue_batch(self, *, planned: list[tuple[str, dict]], req: HttpRequest, artifact: str) -> HttpResponse:
+        producer = self._producer()
+        status_store = self._status_store()
+        if producer is None or status_store is None:
+            return error_response(
+                503,
+                code="queue_unavailable",
+                message="Command queue is not configured for current environment.",
+            )
+        commands = []
+        for command_type, payload in planned:
+            cmd = Command(
+                job_id=uuid4().hex,
+                type=command_type,
+                created_at_utc=datetime.now(timezone.utc),
+                requested_by=self._requested_by(req),
+                payload=dict(payload),
+            )
+            producer.send(cmd)
+            record = status_store.put_queued(cmd)
+            commands.append(
+                {
+                    "job_id": cmd.job_id,
+                    "command_type": cmd.type,
+                    "queued_at": record.requested_at_utc.isoformat(),
+                    "payload": dict(cmd.payload),
+                }
+            )
+        return json_response(
+            202,
+            {
+                "artifact": artifact,
+                "status": "accepted",
+                "queued_count": len(commands),
+                "commands": commands,
+                "job_id": commands[0]["job_id"],
+                "command_type": commands[0]["command_type"],
             },
         )
 
@@ -179,6 +221,35 @@ class AdminQueueHandler:
                 },
                 req=req,
             )
+        if path == "/admin/commands/emulate-trigger":
+            trigger_id = str(body.get("trigger_id", "")).strip()
+            trigger_mode = resolve_trigger_mode_by_id(trigger_id, dict(self._ctx.cfg.runtime.triggers))
+            if not trigger_id:
+                return error_response(400, code="trigger_id_required", message="trigger_id is required.")
+            if not trigger_mode:
+                return error_response(
+                    404,
+                    code="trigger_not_found",
+                    message="Trigger id is not configured in runtime.triggers.",
+                    details={"trigger_id": trigger_id},
+                )
+            planned = planned_trigger_commands(trigger_mode)
+            if not planned:
+                return error_response(
+                    400,
+                    code="trigger_mode_unsupported",
+                    message="Configured trigger mode cannot be emulated through queue intake.",
+                    details={"trigger_id": trigger_id, "trigger_mode": trigger_mode},
+                )
+            response = self._enqueue_batch(
+                planned=planned,
+                req=req,
+                artifact="command_batch_enqueued" if len(planned) > 1 else "command_enqueued",
+            )
+            payload = json.loads(response.body)
+            payload["trigger_id"] = trigger_id
+            payload["trigger_mode"] = trigger_mode
+            return json_response(response.status, payload)
         if path == "/admin/commands/attach-task-file":
             return self._enqueue(
                 command_type=ATTACH_TASK_FILE,

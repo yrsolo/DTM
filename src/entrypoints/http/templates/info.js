@@ -182,6 +182,13 @@
       adminTimer.stop();
       setTimeout(loadInfo, 1500);
     }
+    function selectedTriggerId(){
+      return String((document.getElementById('triggerIdValue') || {}).value || '').trim();
+    }
+    async function enqueueTriggerEmulation(){
+      const triggerId = selectedTriggerId();
+      await enqueueAdminCommand('/admin/commands/emulate-trigger', {trigger_id: triggerId});
+    }
     function setIncludePeople(flag){
       document.getElementById('includePeople').checked = !!flag;
     }

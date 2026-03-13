@@ -7,6 +7,8 @@
 - none
 
 ## Done
+- Trigger timer queue fan-out to snapshot refresh + both render jobs
+- CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P05 hot-read API metrics suppression with live verification on `test`
 - CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P04 buffered metrics delivery redesign and live verification on `test`
 - CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1
 - CAM-2026-03-12-DIRECT-API-OUTER-LATENCY-DECOMPOSITION-V1

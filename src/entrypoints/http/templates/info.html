@@ -103,6 +103,10 @@ __INFO_CSS__
     </div>
     <button onclick="enqueueAdminCommand('/admin/commands/update-snapshot', {force_refresh:true,dry_run:false})">Force snapshot refresh</button>
     <button onclick="enqueueAdminCommand('/admin/commands/render-timeline', {statuses:['work','pre_done'],dry_run:false})">Force render table</button>
+    <div class="controls">
+      <label>trigger_id <input id="triggerIdValue" type="text" value="a1smsif4rc82qbj1e3hf" /></label>
+      <button class="alt" onclick="enqueueTriggerEmulation()">Emulate trigger</button>
+    </div>
     <button onclick="enqueueAdminCommand('/admin/commands/send-reminders', {mode:'test',statuses:['work','pre_done'],include_today:true,include_next_workday:true,force_test_chat:true,mock_external:false})">Notify test chat</button>
     <button onclick="enqueueAdminCommand('/admin/commands/send-reminders', {mode:'morning',statuses:['work','pre_done'],include_today:true,include_next_workday:true,force_test_chat:false,mock_external:false})">Notify designer chats</button>
     <pre id="adminResult">Готово к запуску действий.</pre>
