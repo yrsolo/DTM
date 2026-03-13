@@ -553,17 +553,6 @@ def load_config(config_dir: Path = CONFIG_DIR) -> AppConfig:
         field_maps=tables_data.get("field_maps", {}),
     )
     tables_cfg = _merge_tables_env_overrides(tables_cfg)
-    env_name = str(runtime_cfg.runtime.env_default or "").strip().lower()
-    source_sheet_name = str(tables_cfg.google_sheets.get("source_sheet_name_default", "")).strip()
-    target_sheet_name = str(tables_cfg.google_sheets.get("target_sheet_name_default", "")).strip()
-    target_sheet_name_prod = str(tables_cfg.google_sheets.get("target_sheet_name_prod_default", "")).strip()
-    if env_name == "prod":
-        effective_target = target_sheet_name_prod or target_sheet_name
-        if source_sheet_name and effective_target and source_sheet_name == effective_target:
-            raise ValueError(
-                "Unsafe render contour: source_sheet_name_default equals "
-                "target_sheet_name_prod_default in prod. Use a separate target spreadsheet."
-            )
     db_cfg = DbConfig(
         ydb=db_data.get("ydb", {}),
         object_storage=db_data.get("object_storage", {}),

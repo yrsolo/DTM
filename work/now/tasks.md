@@ -4,6 +4,7 @@
 
 ## Done
 
+- Removed false prod config-load guard that blocked same source/target spreadsheet; unsafe render protection now stays only at worksheet-level (`ТАБЛИЧКА`)
 - Trigger timer queue fan-out: `timer` trigger now enqueues `update_snapshot`, `render_timeline_sheet`, and `render_designers_sheet` instead of only `update_snapshot`
 - CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P05: disabled `dtm.api.*` and `dtm.info.*` remote writes on hot HTTP read path while preserving `Server-Timing`, in-process traces, and refresh/render/worker metrics
 - CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P04: shipped buffered one-flush-end metrics delivery with `METRICS_DELIVERY_MODE=off|buffered`, restored Monitoring/Prometheus on `test`, and verified direct `/api` stays near fast path

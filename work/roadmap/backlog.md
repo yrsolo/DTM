@@ -7,6 +7,7 @@
 - none
 
 ## Done
+- Remove false prod render-contour config guard at config-load stage
 - Trigger timer queue fan-out to snapshot refresh + both render jobs
 - CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P05 hot-read API metrics suppression with live verification on `test`
 - CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P04 buffered metrics delivery redesign and live verification on `test`
