@@ -12,6 +12,8 @@ class RuntimeSection:
     strict_env_guard_default: bool = False
     timezone: str = "Europe/Moscow"
     dev_mode_metrics: bool = False
+    bottleneck_metrics_level: str = "off"
+    metrics_delivery_mode: str = "buffered"
 
 
 @dataclass(slots=True)
@@ -97,6 +99,7 @@ class SnapshotEngineSection:
     prefix_prep: str = "snapshots/prep/default.json"
     prefix_extra: str = "snapshots/extra/"
     prefix_people: str = "snapshots/people/default.json"
+    prefix_responses: str = "snapshots/responses/"
     force_refresh_default: bool = False
 
 

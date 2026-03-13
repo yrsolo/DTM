@@ -50,46 +50,89 @@ __INFO_CSS__
       <div class="row"><span class="k">DLQ:</span> <span class="v" id="queueDlq"></span></div>
       <div class="row"><span class="k">Error:</span> <span class="v" id="queueError"></span></div>
     </div>
-  </div>
-
-  <div class="grid section">
     <div class="card">
-      <h2>Recent Jobs</h2>
-      <pre id="recentJobs">[]</pre>
-    </div>
-    <div class="card">
-      <h2>Last Errors</h2>
-      <pre id="recentErrors">[]</pre>
-    </div>
-    <div class="card">
-      <h2>Last Render Job</h2>
-      <pre id="lastRenderJob">{}</pre>
-    </div>
-    <div class="card">
-      <h2>Render Debug</h2>
-      <pre id="renderDebug">{}</pre>
+      <h2>Bottleneck Profiling</h2>
+      <div class="row"><span class="k">Level:</span> <span class="v" id="bottleneckLevel"></span></div>
+      <div class="row"><span class="k">Stage metrics:</span> <span class="v" id="bottleneckStageEnabled"></span></div>
+      <div class="row"><span class="k">Debug metrics:</span> <span class="v" id="bottleneckDebugEnabled"></span></div>
+      <div class="row"><span class="k">Recent traces:</span> <span class="v" id="bottleneckTraceCount"></span></div>
     </div>
   </div>
 
-  <div class="card section">
+  <details class="card section collapsible">
+    <summary class="section-summary">
+      <span>Bottleneck Diagnostics</span>
+      <span class="collapse-hint">show</span>
+    </summary>
+    <pre id="bottleneckDiagnostics">{"recentApiTraces":[]}</pre>
+  </details>
+
+  <details class="card section collapsible">
+    <summary class="section-summary">
+      <span>Recent Jobs</span>
+      <span class="collapse-hint">show</span>
+    </summary>
+    <div class="grid collapsible-grid">
+      <div class="subcard">
+        <h2>Recent Jobs</h2>
+        <pre id="recentJobs">[]</pre>
+      </div>
+      <div class="subcard">
+        <h2>Last Errors</h2>
+        <pre id="recentErrors">[]</pre>
+      </div>
+      <div class="subcard">
+        <h2>Last Render Job</h2>
+        <pre id="lastRenderJob">{}</pre>
+      </div>
+      <div class="subcard">
+        <h2>Render Debug</h2>
+        <pre id="renderDebug">{}</pre>
+      </div>
+    </div>
+  </details>
+
+  <details class="card section collapsible">
+    <summary class="section-summary">
+      <span>Admin Actions</span>
+      <span class="collapse-hint">show</span>
+    </summary>
     <div class="hline">
       <h2>Admin Actions</h2>
       <span class="timer" id="adminTimer">00:00.0</span>
     </div>
     <button onclick="enqueueAdminCommand('/admin/commands/update-snapshot', {force_refresh:true,dry_run:false})">Force snapshot refresh</button>
     <button onclick="enqueueAdminCommand('/admin/commands/render-timeline', {statuses:['work','pre_done'],dry_run:false})">Force render table</button>
+    <div class="controls">
+      <label>trigger_id <input id="triggerIdValue" type="text" value="a1smsif4rc82qbj1e3hf" /></label>
+      <button class="alt" onclick="enqueueTriggerEmulation()">Emulate trigger</button>
+    </div>
     <button onclick="enqueueAdminCommand('/admin/commands/send-reminders', {mode:'test',statuses:['work','pre_done'],include_today:true,include_next_workday:true,force_test_chat:true,mock_external:false})">Notify test chat</button>
     <button onclick="enqueueAdminCommand('/admin/commands/send-reminders', {mode:'morning',statuses:['work','pre_done'],include_today:true,include_next_workday:true,force_test_chat:false,mock_external:false})">Notify designer chats</button>
     <pre id="adminResult">Готово к запуску действий.</pre>
-  </div>
+  </details>
 
-  <div class="card section">
+  <details class="card section collapsible">
+    <summary class="section-summary">
+      <span>API Request Builder</span>
+      <span class="collapse-hint">show</span>
+    </summary>
     <div class="hline">
       <h2>API Request Builder</h2>
       <span class="timer" id="apiTimer">00:00.0</span>
     </div>
     <div class="controls">
       <label><input id="includePeople" type="checkbox" checked /> include_people</label>
+    </div>
+    <div class="controls">
+      <span class="k">access mode:</span>
+      <label><input id="accessFull" type="radio" name="accessMode" checked /> full (with cookie)</label>
+      <label><input id="accessMasked" type="radio" name="accessMode" /> masked (omit cookie)</label>
+    </div>
+    <div class="controls">
+      <span class="k">target route:</span>
+      <label><input id="routeBff" type="radio" name="apiRoute" checked /> browser proxy (/bff/api)</label>
+      <label><input id="routeDirect" type="radio" name="apiRoute" /> direct backend (/api)</label>
     </div>
     <div class="controls">
       <label>limit <input id="limitValue" type="number" min="1" max="2000" value="200" /></label>
@@ -121,13 +164,19 @@ __INFO_CSS__
     </div>
     <div class="row"><span class="k">Request URL:</span></div>
     <pre id="apiRequestUrl"></pre>
+    <div class="row"><span class="k">Route:</span> <span class="v" id="apiRouteMode">browser proxy (/bff/api)</span></div>
+    <div class="row"><span class="k">Fetch mode:</span> <span class="v" id="apiAccessMode">full / credentials=include</span></div>
     <pre id="apiResult">Соберите параметры и нажмите Send.</pre>
-  </div>
+  </details>
 
-  <div class="card section">
+  <details class="card section collapsible">
+    <summary class="section-summary">
+      <span>Info JSON</span>
+      <span class="collapse-hint">show</span>
+    </summary>
     <h2>Info JSON</h2>
     <pre id="infoResult">__INFO_PAYLOAD_JSON__</pre>
-  </div>
+  </details>
 
   <div class="card section">
     <div class="hline">

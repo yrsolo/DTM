@@ -16,10 +16,13 @@ if str(ROOT_DIR) not in sys.path:
 import index
 from src.entrypoints.http import frontend_v2_handler as frontend_v2_module
 from src.entrypoints.http import info_handler as info_handler_module
+from src.entrypoints.http.frontend_response_cache import default_frontend_cache_key
 from src.entrypoints.http.event_parser import extract_payload, http_path, query_params
 from src.entrypoints.http.frontend_query_params import parse_bool
 from src.entrypoints.http.runtime_mode import extract_force_refresh, extract_run_mode
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES
+from src.observability.bottlenecks import RECENT_API_STAGE_EVENTS, RECENT_DIRECT_API_OUTER_TRACES
+from src.services.access.masking import BRAND_DICTIONARY, DESIGNER_DICTIONARY, FORMAT_DICTIONARY, SHOW_DICTIONARY
 from src.worker.model import JobStatusRecord
 
 
@@ -34,10 +37,18 @@ class _FakeSnapshotEngine:
     def __init__(self, payload: dict):
         self.payload = payload
         self.queries = []
+        self.response_cache_store = _FakeResponseCacheStore()
+        self.prep = type("Prep", (), {"raw_source_hash": "sha256:test"})()
 
     def frontend_v2(self, query):  # noqa: ANN001
         self.queries.append(query)
         return dict(self.payload)
+
+    def get_prep_snapshot(self):
+        return self.prep
+
+    def get_response_cache_store(self):
+        return self.response_cache_store
 
 
 class _FakeInfoSnapshotEngine:
@@ -90,6 +101,43 @@ class _FakeInfoStatusStore:
         return None
 
 
+class _MetricsRecorder:
+    def __init__(self) -> None:
+        self.timings = []
+        self.counters = []
+        self.gauges = []
+
+    def counter(self, name: str, value: int = 1, labels=None) -> None:
+        self.counters.append((name, int(value), dict(labels or {})))
+
+    def gauge(self, name: str, value: float, labels=None) -> None:
+        self.gauges.append((name, float(value), dict(labels or {})))
+
+    def timing(self, name: str, ms: float, labels=None) -> None:
+        self.timings.append((name, float(ms), dict(labels or {})))
+
+
+class _FakeResponseCacheStore:
+    def __init__(self) -> None:
+        self.items = {}
+
+    def get(self, cache_key: str):
+        return self.items.get(cache_key)
+
+    def put(self, cache_key: str, payload):
+        self.items[cache_key] = dict(payload)
+
+
+def _shape_signature(value):  # noqa: ANN001
+    if isinstance(value, dict):
+        return {key: _shape_signature(val) for key, val in sorted(value.items())}
+    if isinstance(value, list):
+        if not value:
+            return []
+        return [_shape_signature(value[0])]
+    return type(value).__name__
+
+
 class FrontendApiRoutingTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self._orig_build_snapshot_engine = frontend_v2_module.build_snapshot_engine
@@ -98,6 +146,12 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self._orig_info_get_function_build_info = info_handler_module.get_function_build_info
         self._orig_info_storage_stats = info_handler_module.InfoHandler._storage_stats
         self._orig_job_status_store = index.APP_DEPS.get("job_status_store")
+        self._orig_metrics_client = index.APP_DEPS.get("metrics_client")
+        self._orig_browser_auth_proxy_secret = index.APP_DEPS.get("browser_auth_proxy_secret")
+        self._orig_bottleneck_metrics_level = index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level
+        self._orig_recent_stage_traces = list(RECENT_API_STAGE_EVENTS._events)  # type: ignore[attr-defined]
+        self._orig_recent_outer_traces = list(RECENT_DIRECT_API_OUTER_TRACES._events)  # type: ignore[attr-defined]
+        self._metrics = _MetricsRecorder()
         self._engine = _FakeSnapshotEngine(
             payload={
                 "meta": {
@@ -108,9 +162,34 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
                     "readmodelSource": "s3_snapshot",
                 },
                 "summary": {"tasksReturned": 1},
-                "filters": {},
-                "entities": {"people": [], "groups": [], "tags": [], "enums": {}},
-                "tasks": [{"id": "101", "history": "raw"}],
+                "filters": {"designer": "Designer One"},
+                "entities": {
+                    "people": [{"id": "person-1", "name": "Designer One", "position": "designer", "links": {"self": "/api/v2/frontend/entities/people/person-1"}}],
+                    "groups": [{"id": "group-1", "name": "Project X", "links": {"self": "/api/v2/frontend/entities/groups/group-1"}}],
+                    "tags": [],
+                    "enums": {},
+                },
+                "tasks": [
+                    {
+                        "id": "101",
+                        "title": "Task Alpha",
+                        "brand": "BrandA",
+                        "format_": "Banner",
+                        "customer": "CustomerA",
+                        "history": "raw",
+                        "attachments": [
+                            {
+                                "id": "att-1",
+                                "filename": "brief-alpha.pdf",
+                                "mime": "application/pdf",
+                                "size": 123,
+                                "uploadedAt": "2026-03-02T00:00:00Z",
+                                "uploadedBy": "Designer One",
+                                "preview": "https://storage/brief-alpha.pdf",
+                            }
+                        ],
+                    }
+                ],
             }
         )
         frontend_v2_module.build_snapshot_engine = lambda _ctx: self._engine  # type: ignore[assignment]
@@ -141,6 +220,11 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
             "byPrefix": {"raw": 100, "prep": 200, "extra": 300, "attachments": 400, "jobs": 24},
         }
         index.APP_DEPS["job_status_store"] = _FakeInfoStatusStore()
+        index.APP_DEPS["metrics_client"] = self._metrics
+        index.APP_DEPS["browser_auth_proxy_secret"] = "proxy-secret-test"
+        index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level = "stages"
+        RECENT_API_STAGE_EVENTS._events.clear()  # type: ignore[attr-defined]
+        RECENT_DIRECT_API_OUTER_TRACES._events.clear()  # type: ignore[attr-defined]
 
     def tearDown(self) -> None:
         frontend_v2_module.build_snapshot_engine = self._orig_build_snapshot_engine  # type: ignore[assignment]
@@ -149,6 +233,13 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         info_handler_module.get_function_build_info = self._orig_info_get_function_build_info  # type: ignore[assignment]
         info_handler_module.InfoHandler._storage_stats = self._orig_info_storage_stats  # type: ignore[assignment]
         index.APP_DEPS["job_status_store"] = self._orig_job_status_store
+        index.APP_DEPS["metrics_client"] = self._orig_metrics_client
+        index.APP_DEPS["browser_auth_proxy_secret"] = self._orig_browser_auth_proxy_secret
+        index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level = self._orig_bottleneck_metrics_level
+        RECENT_API_STAGE_EVENTS._events.clear()  # type: ignore[attr-defined]
+        RECENT_API_STAGE_EVENTS._events.extend(self._orig_recent_stage_traces)  # type: ignore[attr-defined]
+        RECENT_DIRECT_API_OUTER_TRACES._events.clear()  # type: ignore[attr-defined]
+        RECENT_DIRECT_API_OUTER_TRACES._events.extend(self._orig_recent_outer_traces)  # type: ignore[attr-defined]
 
     def test_http_path_from_proxy_template(self) -> None:
         event = _fixture_event()
@@ -179,6 +270,11 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 200)
         self.assertEqual(payload.get("meta", {}).get("artifact"), "dtm_frontend_api_v2")
         self.assertEqual(payload.get("meta", {}).get("readmodelSource"), "s3_snapshot")
+        self.assertEqual(payload.get("meta", {}).get("access", {}).get("mode"), "masked")
+        self.assertEqual(payload.get("meta", {}).get("access", {}).get("fallbackReason"), "untrusted_ingress")
+        self.assertIn("Server-Timing", response.get("headers", {}))
+        self.assertNotIn("X-DTM-Trace-Id", response.get("headers", {}))
+        self.assertNotIn("X-DTM-Frontend-Inner-Ms", response.get("headers", {}))
 
     def test_root_returns_v2_doc(self) -> None:
         event = _fixture_event()
@@ -207,8 +303,8 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         event = _fixture_event()
         event["pathParams"]["proxy"] = "info"
         event["params"]["proxy"] = "info"
-        event["url"] = "https://dtm.solofarm.ru/ops/info?format=json"
-        event["queryStringParameters"] = {"format": "json"}
+        event["url"] = "https://dtm.solofarm.ru/ops/info?format=json&view=detail"
+        event["queryStringParameters"] = {"format": "json", "view": "detail"}
         response = asyncio.run(index.handler(event, None))
         payload = json.loads(response.get("body", "{}"))
         self.assertEqual(response["statusCode"], 200)
@@ -360,6 +456,280 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 503)
         self.assertEqual(payload.get("error", {}).get("code"), "frontend_source_unavailable")
         self.assertEqual(payload.get("error", {}).get("details", {}).get("source"), "snapshot")
+
+    def test_untrusted_direct_call_forces_masked_mode_and_masks_sensitive_fields(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend"
+        event["headers"] = {
+            "x-dtm-access-mode": "full",
+            "x-dtm-authenticated": "1",
+            "x-dtm-contour": "test",
+            "x-dtm-user-id": "user-1",
+            "x-dtm-user-role": "admin",
+            "x-dtm-user-status": "approved",
+        }
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response["body"])
+        task = payload["tasks"][0]
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(payload["meta"]["access"]["mode"], "masked")
+        self.assertEqual(payload["meta"]["access"]["fallbackReason"], "untrusted_ingress")
+        self.assertIn(task["brand"], BRAND_DICTIONARY)
+        self.assertIn(task["format_"], FORMAT_DICTIONARY)
+        self.assertIn(payload["entities"]["people"][0]["name"], DESIGNER_DICTIONARY)
+        self.assertIn(payload["entities"]["groups"][0]["name"], SHOW_DICTIONARY)
+        self.assertIn(task["customer"], BRAND_DICTIONARY)
+        self.assertIn(" [", task["title"])
+        self.assertTrue(task["history"].startswith("Согласование по проекту «"))
+        self.assertFalse(any(name == "dtm.api.masking_ms" for name, _, _ in self._metrics.timings))
+
+    def test_trusted_proxy_secret_allows_full_mode(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend"
+        event["headers"] = {
+            "X-DTM-Proxy-Secret": "proxy-secret-test",
+            "x-dtm-access-mode": "full",
+            "x-dtm-authenticated": "1",
+            "x-dtm-contour": "test",
+            "x-dtm-user-id": "user-1",
+            "x-dtm-user-role": "admin",
+            "x-dtm-user-status": "approved",
+        }
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response["body"])
+        task = payload["tasks"][0]
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(payload["meta"]["access"]["mode"], "full")
+        self.assertEqual(payload["meta"]["access"]["userRole"], "admin")
+        self.assertEqual(task["title"], "Task Alpha")
+        self.assertEqual(task["brand"], "BrandA")
+        self.assertEqual(task["customer"], "CustomerA")
+        self.assertEqual(task["history"], "raw")
+
+    def test_trusted_proxy_secret_from_multivalue_headers_allows_full_mode(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend"
+        event["headers"] = {}
+        event["multiValueHeaders"] = {
+            "X-DTM-Proxy-Secret": ["proxy-secret-test"],
+            "x-dtm-access-mode": ["full"],
+            "x-dtm-authenticated": ["1"],
+            "x-dtm-contour": ["test"],
+            "x-dtm-user-id": ["user-1"],
+            "x-dtm-user-role": ["admin"],
+            "x-dtm-user-status": ["approved"],
+        }
+
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response["body"])
+
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(payload["meta"]["access"]["mode"], "full")
+        self.assertTrue(payload["meta"]["access"]["trustedIngress"])
+
+    def test_masked_mode_is_deterministic_and_preserves_payload_shape(self) -> None:
+        masked_event = _fixture_event()
+        masked_event["pathParams"]["proxy"] = "api/v2/frontend"
+        masked_event["params"]["proxy"] = "api/v2/frontend"
+        masked_event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend"
+        masked_event["headers"] = {
+            "X-DTM-Proxy-Secret": "proxy-secret-test",
+            "x-dtm-access-mode": "masked",
+            "x-dtm-authenticated": "1",
+            "x-dtm-contour": "test",
+            "x-dtm-user-id": "user-1",
+            "x-dtm-user-role": "admin",
+            "x-dtm-user-status": "approved",
+        }
+        full_event = _fixture_event()
+        full_event["pathParams"]["proxy"] = "api/v2/frontend"
+        full_event["params"]["proxy"] = "api/v2/frontend"
+        full_event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend"
+        full_event["headers"] = {
+            "X-DTM-Proxy-Secret": "proxy-secret-test",
+            "x-dtm-access-mode": "full",
+            "x-dtm-authenticated": "1",
+            "x-dtm-contour": "test",
+            "x-dtm-user-id": "user-1",
+            "x-dtm-user-role": "admin",
+            "x-dtm-user-status": "approved",
+        }
+
+        masked_payload_a = json.loads(asyncio.run(index.handler(masked_event, None))["body"])
+        masked_payload_b = json.loads(asyncio.run(index.handler(masked_event, None))["body"])
+        full_payload = json.loads(asyncio.run(index.handler(full_event, None))["body"])
+
+        self.assertEqual(masked_payload_a["meta"]["access"]["mode"], "masked")
+        self.assertEqual(masked_payload_a["tasks"][0]["title"], masked_payload_b["tasks"][0]["title"])
+        self.assertEqual(masked_payload_a["entities"]["people"][0]["name"], masked_payload_b["entities"]["people"][0]["name"])
+        self.assertEqual(_shape_signature(masked_payload_a), _shape_signature(full_payload))
+        self.assertNotEqual(masked_payload_a["tasks"][0]["title"], full_payload["tasks"][0]["title"])
+        self.assertNotEqual(masked_payload_a["entities"]["groups"][0]["name"], full_payload["entities"]["groups"][0]["name"])
+        self.assertIn(masked_payload_a["tasks"][0]["brand"], BRAND_DICTIONARY)
+        self.assertIn(masked_payload_a["tasks"][0]["format_"], FORMAT_DICTIONARY)
+        self.assertIn(masked_payload_a["entities"]["people"][0]["name"], DESIGNER_DICTIONARY)
+
+    def test_default_direct_request_is_written_to_response_cache(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = (
+            "https://dtm.solofarm.ru/test/ops/api/v2/frontend?"
+            "statuses=work,pre_done,done,wait&include_people=true&limit=60"
+        )
+        event["queryStringParameters"] = {
+            "statuses": "work,pre_done,done,wait",
+            "include_people": "true",
+            "limit": "60",
+        }
+
+        response = asyncio.run(index.handler(event, None))
+
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(len(self._engine.queries), 1)
+        self.assertIn(default_frontend_cache_key(route_class="api", access_mode="masked"), self._engine.response_cache_store.items)
+        self.assertEqual(self._metrics.counters, [])
+        stage_traces = RECENT_API_STAGE_EVENTS.recent_traces(limit=5)
+        self.assertTrue(stage_traces)
+        self.assertTrue(any(item["stage"] == "frontend_payload_build" for item in stage_traces[0]["stages"]))
+        self.assertEqual(stage_traces[0]["cacheResult"], "miss")
+
+    def test_default_direct_request_uses_cached_payload_on_second_hit(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = (
+            "https://dtm.solofarm.ru/test/ops/api/v2/frontend?"
+            "statuses=work,pre_done,done,wait&include_people=true&limit=60"
+        )
+        event["queryStringParameters"] = {
+            "statuses": "work,pre_done,done,wait",
+            "include_people": "true",
+            "limit": "60",
+        }
+
+        first = json.loads(asyncio.run(index.handler(event, None))["body"])
+        second = json.loads(asyncio.run(index.handler(event, None))["body"])
+
+        self.assertEqual(first["meta"]["access"]["mode"], "masked")
+        self.assertEqual(second["meta"]["access"]["mode"], "masked")
+        self.assertEqual(len(self._engine.queries), 1)
+        self.assertEqual(self._metrics.counters, [])
+        stage_traces = RECENT_API_STAGE_EVENTS.recent_traces(limit=5)
+        self.assertTrue(any(trace["cacheResult"] == "hit" for trace in stage_traces))
+        hit_trace = next(trace for trace in stage_traces if trace["cacheResult"] == "hit")
+        self.assertTrue(any(item["stage"] == "response_cache_read" for item in hit_trace["stages"]))
+        self.assertTrue(any(item["stage"] == "query_parse" for item in hit_trace["stages"]))
+        self.assertTrue(any(item["stage"] == "handler_total" for item in hit_trace["stages"]))
+
+    def test_default_proxy_request_uses_separate_cache_bucket(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = (
+            "https://dtm.solofarm.ru/test/ops/bff/api/v2/frontend?"
+            "statuses=work,pre_done,done,wait&include_people=true&limit=60"
+        )
+        event["queryStringParameters"] = {
+            "statuses": "work,pre_done,done,wait",
+            "include_people": "true",
+            "limit": "60",
+        }
+        event["headers"] = {
+            "X-DTM-Proxy-Secret": "proxy-secret-test",
+            "x-dtm-access-mode": "full",
+            "x-dtm-authenticated": "1",
+            "x-dtm-contour": "test",
+            "x-dtm-user-id": "user-1",
+            "x-dtm-user-role": "admin",
+            "x-dtm-user-status": "approved",
+        }
+
+        response = json.loads(asyncio.run(index.handler(event, None))["body"])
+
+        self.assertEqual(response["meta"]["access"]["mode"], "full")
+        self.assertIn(default_frontend_cache_key(route_class="bff", access_mode="full"), self._engine.response_cache_store.items)
+        stage_traces = RECENT_API_STAGE_EVENTS.recent_traces(limit=5)
+        self.assertTrue(any(trace["route"] == "bff" for trace in stage_traces))
+        self.assertTrue(any(trace["accessMode"] == "full" for trace in stage_traces))
+
+    def test_direct_api_outer_trace_is_recorded(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend?statuses=work"
+        event["queryStringParameters"] = {"statuses": "work"}
+
+        response = asyncio.run(index.handler(event, None))
+
+        self.assertEqual(response["statusCode"], 200)
+        traces = RECENT_DIRECT_API_OUTER_TRACES.recent_traces(limit=5)
+        self.assertTrue(traces)
+        self.assertEqual(traces[0]["operation"], "/api/v2/frontend")
+        self.assertIn("functionTotalMs", traces[0])
+        self.assertIn("routerPrecheckTotalMs", traces[0])
+        self.assertIn("routerHandlerTotalMs", traces[0])
+        self.assertIn("routerTotalMs", traces[0])
+        self.assertIn("frontendHandlerTotalMs", traces[0])
+        self.assertIn("frontendInnerCoreMs", traces[0])
+        self.assertGreaterEqual(traces[0]["routerTotalMs"], traces[0]["routerPrecheckTotalMs"])
+        self.assertGreaterEqual(traces[0]["routerTotalMs"], traces[0]["routerHandlerTotalMs"])
+        self.assertGreaterEqual(traces[0]["functionTotalMs"], traces[0]["routerTotalMs"])
+
+    def test_direct_api_response_has_no_outer_debug_headers_when_profiling_off(self) -> None:
+        index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level = "off"
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend?statuses=work"
+        event["queryStringParameters"] = {"statuses": "work"}
+
+        response = asyncio.run(index.handler(event, None))
+
+        self.assertEqual(response["statusCode"], 200)
+        self.assertNotIn("Server-Timing", response.get("headers", {}))
+        self.assertNotIn("X-DTM-Trace-Id", response.get("headers", {}))
+
+    def test_direct_api_response_has_extended_outer_debug_headers_in_debug_mode(self) -> None:
+        index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level = "debug"
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend?statuses=work"
+        event["queryStringParameters"] = {"statuses": "work"}
+
+        response = asyncio.run(index.handler(event, None))
+
+        self.assertEqual(response["statusCode"], 200)
+        self.assertIn("Server-Timing", response.get("headers", {}))
+        self.assertIn("X-DTM-Outer-Function-Total-Ms", response.get("headers", {}))
+        self.assertIn("X-DTM-Outer-Unexplained-Inside-Handler-Ms", response.get("headers", {}))
+        self.assertIn("X-DTM-Outer-Unexplained-After-Handler-Ms", response.get("headers", {}))
+
+    def test_direct_api_server_timing_has_no_conflicting_totals(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/frontend"
+        event["params"]["proxy"] = "api/v2/frontend"
+        event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/frontend?statuses=work"
+        event["queryStringParameters"] = {"statuses": "work"}
+
+        response = asyncio.run(index.handler(event, None))
+
+        server_timing = response.get("headers", {}).get("Server-Timing", "")
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(server_timing.count("function_total;dur="), 1)
+        self.assertIn("router_precheck;dur=", server_timing)
+        self.assertIn("router_handler;dur=", server_timing)
+        self.assertIn("router_total;dur=", server_timing)
+        self.assertIn("http_shell_post_router;dur=", server_timing)
+        self.assertIn("unexplained_inside_handler;dur=", server_timing)
+        self.assertIn("unexplained_after_handler;dur=", server_timing)
 
 
 if __name__ == "__main__":

@@ -13,7 +13,8 @@ if str(ROOT_DIR) not in sys.path:
 
 from src.entrypoints.http.dto import HttpRequest
 from src.entrypoints.http.info_handler import InfoHandler
-from src.observability import NoopMetricsClient, StdoutJsonLogger
+from src.observability import StdoutJsonLogger
+from src.observability.bottlenecks import RECENT_API_STAGE_EVENTS, RECENT_DIRECT_API_OUTER_TRACES, OuterApiTrace, StageEvent
 from src.worker.model import JobStatusRecord
 
 
@@ -84,6 +85,14 @@ class _FakeStatusStore:
         return None
 
 
+class _MetricsRecorder:
+    def __init__(self) -> None:
+        self.timings: list[tuple[str, float, dict[str, str]]] = []
+
+    def timing(self, name: str, ms: float, labels=None) -> None:
+        self.timings.append((name, float(ms), dict(labels or {})))
+
+
 class InfoObservabilityTestCase(unittest.TestCase):
     def setUp(self) -> None:
         import src.entrypoints.http.info_handler as module
@@ -93,39 +102,69 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.original_get_queue_live_stats = module.get_queue_live_stats
         self.original_get_function_build_info = module.get_function_build_info
         self.original_storage_stats = module.InfoHandler._storage_stats
-        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
-        module.get_queue_live_stats = lambda **_kwargs: SimpleNamespace(  # type: ignore[assignment]
-            to_dict=lambda: {
-                "queue_name": "dtm-test-commands",
-                "messages_visible": 2,
-                "messages_in_flight": 1,
-                "messages_delayed": 0,
-                "dlq_configured": True,
+        self._orig_recent_stage_events = list(RECENT_API_STAGE_EVENTS._events)  # type: ignore[attr-defined]
+        self._orig_recent_outer_traces = list(RECENT_DIRECT_API_OUTER_TRACES._events)  # type: ignore[attr-defined]
+        self.build_snapshot_engine_calls = 0
+        self.get_queue_live_stats_calls = 0
+        self.get_function_build_info_calls = 0
+        self.storage_stats_calls = 0
+
+        def _build_snapshot_engine(_ctx):
+            self.build_snapshot_engine_calls += 1
+            return _FakeSnapshotEngine()
+
+        def _get_queue_live_stats(**_kwargs):
+            self.get_queue_live_stats_calls += 1
+            return SimpleNamespace(
+                to_dict=lambda: {
+                    "queue_name": "dtm-test-commands",
+                    "messages_visible": 2,
+                    "messages_in_flight": 1,
+                    "messages_delayed": 0,
+                    "dlq_configured": True,
+                }
+            )
+
+        def _get_function_build_info(**_kwargs):
+            self.get_function_build_info_calls += 1
+            return SimpleNamespace(
+                function_name="dtm",
+                active_version_id="d4etest",
+                deployed_at="2026-03-09T09:00:00Z",
+                runtime="python311",
+                memory="512MB",
+                timeout_seconds=240,
+                entrypoint="index.handler",
+                service_account_id="aje-test",
+            )
+
+        def _storage_stats(*_args, **_kwargs):
+            self.storage_stats_calls += 1
+            return {
+                "objectsTotal": 3,
+                "bytesTotal": 1024,
+                "bytesHuman": "1.00 KB",
+                "byPrefix": {"raw": 256, "prep": 256, "extra": 256, "attachments": 256, "jobs": 0},
             }
-        )
-        module.get_function_build_info = lambda **_kwargs: SimpleNamespace(  # type: ignore[assignment]
-            function_name="dtm",
-            active_version_id="d4etest",
-            deployed_at="2026-03-09T09:00:00Z",
-            runtime="python311",
-            memory="512MB",
-            timeout_seconds=240,
-            entrypoint="index.handler",
-            service_account_id="aje-test",
-        )
-        module.InfoHandler._storage_stats = lambda *_args, **_kwargs: {  # type: ignore[assignment]
-            "objectsTotal": 3,
-            "bytesTotal": 1024,
-            "bytesHuman": "1.00 KB",
-            "byPrefix": {"raw": 256, "prep": 256, "extra": 256, "attachments": 256, "jobs": 0},
-        }
+
+        module.build_snapshot_engine = _build_snapshot_engine  # type: ignore[assignment]
+        module.get_queue_live_stats = _get_queue_live_stats  # type: ignore[assignment]
+        module.get_function_build_info = _get_function_build_info  # type: ignore[assignment]
+        module.InfoHandler._storage_stats = _storage_stats  # type: ignore[assignment]
+        self.metrics = _MetricsRecorder()
         self.ctx = SimpleNamespace(
             cfg=SimpleNamespace(
                 runtime=SimpleNamespace(
-                    runtime=SimpleNamespace(env_default="test"),
+                    runtime=SimpleNamespace(
+                        env_default="test",
+                        bottleneck_metrics_level="stages",
+                        dev_mode_metrics=True,
+                        metrics_delivery_mode="buffered",
+                    ),
                     monitoring=SimpleNamespace(
                         enabled=True,
                         backend="yandex_monitoring",
+                        emit_api_metrics=False,
                         folder_id="folder-test-monitoring",
                         dashboard_name_test="DTM Test Observability",
                         dashboard_name_prod="DTM Prod Observability",
@@ -203,9 +242,46 @@ class InfoObservabilityTestCase(unittest.TestCase):
                 "aws_secret_access_key": "sk",
                 "yc_sa_json_credentials": "{}",
                 "yc_sa_key_file": "",
-                "metrics_client": NoopMetricsClient(),
+                "metrics_client": self.metrics,
                 "structured_logger": StdoutJsonLogger(),
             },
+        )
+        RECENT_API_STAGE_EVENTS._events.clear()  # type: ignore[attr-defined]
+        RECENT_API_STAGE_EVENTS.record(
+            StageEvent(
+                trace_id="trace-1",
+                recorded_at="2026-03-09T12:00:00+00:00",
+                env="test",
+                operation="frontend_access",
+                stage="response_cache_read",
+                duration_ms=3.5,
+                result="success",
+                route="api",
+                access_mode="masked",
+                cache_result="hit",
+                debug={},
+            )
+        )
+        RECENT_DIRECT_API_OUTER_TRACES._events.clear()  # type: ignore[attr-defined]
+        RECENT_DIRECT_API_OUTER_TRACES.record(
+            OuterApiTrace(
+                trace_id="outer-trace-1",
+                recorded_at="2026-03-09T12:00:10+00:00",
+                env="test",
+                operation="/api/v2/frontend",
+                result="success",
+                function_total_ms=1200.0,
+                router_precheck_total_ms=100.0,
+                router_handler_total_ms=400.0,
+                router_total_ms=500.0,
+                http_shell_post_router_ms=25.0,
+                response_build_ms=30.0,
+                frontend_handler_total_ms=200.0,
+                frontend_inner_core_ms=150.0,
+                unexplained_inside_handler_ms=50.0,
+                unexplained_after_handler_ms=1000.0,
+                debug={},
+            )
         )
 
     def tearDown(self) -> None:
@@ -213,14 +289,45 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.module.get_queue_live_stats = self.original_get_queue_live_stats  # type: ignore[assignment]
         self.module.get_function_build_info = self.original_get_function_build_info  # type: ignore[assignment]
         self.module.InfoHandler._storage_stats = self.original_storage_stats  # type: ignore[assignment]
+        RECENT_API_STAGE_EVENTS._events.clear()  # type: ignore[attr-defined]
+        RECENT_API_STAGE_EVENTS._events.extend(self._orig_recent_stage_events)  # type: ignore[attr-defined]
+        RECENT_DIRECT_API_OUTER_TRACES._events.clear()  # type: ignore[attr-defined]
+        RECENT_DIRECT_API_OUTER_TRACES._events.extend(self._orig_recent_outer_traces)  # type: ignore[attr-defined]
 
-    def test_info_json_includes_build_queue_jobs_and_render_debug(self) -> None:
+    def test_info_json_default_summary_skips_heavy_diagnostics(self) -> None:
         handler = InfoHandler(self.ctx)
         response = handler.handle(
             HttpRequest(method="GET", path="/info", query={"format": "json"}, is_http_event=True)
         )
         self.assertIsNotNone(response)
         payload = json.loads(response.body)
+        self.assertEqual(payload["view"], "summary")
+        self.assertTrue(payload["counts"]["detailDeferred"])
+        self.assertTrue(payload["storage"]["detailDeferred"])
+        self.assertTrue(payload["jobs"]["detailDeferred"])
+        self.assertTrue(payload["build"]["detailDeferred"])
+        self.assertEqual(payload["bottlenecks"]["profilingLevel"], "stages")
+        self.assertTrue(payload["bottlenecks"]["recentApiTracesDeferred"])
+        self.assertTrue(payload["bottlenecks"]["recentDirectApiOuterTracesDeferred"])
+        self.assertEqual(self.build_snapshot_engine_calls, 0)
+        self.assertEqual(self.get_queue_live_stats_calls, 0)
+        self.assertEqual(self.get_function_build_info_calls, 0)
+        self.assertEqual(self.storage_stats_calls, 0)
+        self.assertEqual(self.metrics.timings, [])
+
+    def test_info_json_detail_includes_build_queue_jobs_and_render_debug(self) -> None:
+        handler = InfoHandler(self.ctx)
+        response = handler.handle(
+            HttpRequest(
+                method="GET",
+                path="/info",
+                query={"format": "json", "view": "detail"},
+                is_http_event=True,
+            )
+        )
+        self.assertIsNotNone(response)
+        payload = json.loads(response.body)
+        self.assertEqual(payload["view"], "detail")
         self.assertIn("build", payload)
         self.assertIn("queue", payload)
         self.assertIn("live", payload["queue"])
@@ -230,7 +337,11 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertEqual(payload["build"]["activeVersionId"], "d4etest")
         self.assertEqual(payload["queue"]["live"]["messages_visible"], 2)
         self.assertEqual(payload["queue"]["policy"]["retryModel"], "queue_driven")
-        self.assertEqual(payload["telemetry"]["metricsClient"], "NoopMetricsClient")
+        self.assertEqual(payload["telemetry"]["metricsClient"], "_MetricsRecorder")
+        self.assertEqual(payload["telemetry"]["metricsDeliveryMode"], "buffered")
+        self.assertEqual(payload["telemetry"]["metricsSink"], "_MetricsRecorder")
+        self.assertTrue(payload["telemetry"]["remoteMetricsEnabled"])
+        self.assertEqual(payload["telemetry"]["bottleneckMetricsLevel"], "stages")
         self.assertTrue(payload["telemetry"]["monitoringEnabled"])
         self.assertEqual(payload["telemetry"]["monitoringBackend"], "yandex_monitoring")
         self.assertEqual(payload["telemetry"]["dashboardName"], "DTM Test Observability")
@@ -249,7 +360,18 @@ class InfoObservabilityTestCase(unittest.TestCase):
             payload["telemetry"]["grafanaDashboardUrl"],
             "https://dtm.solofarm.ru/grafana/public-dashboards/test-token",
         )
+        self.assertTrue(payload["bottlenecks"]["stageMetricsEnabled"])
+        self.assertEqual(payload["bottlenecks"]["recentApiTraces"][0]["traceId"], "trace-1")
+        self.assertEqual(payload["bottlenecks"]["recentDirectApiOuterTraces"][0]["traceId"], "outer-trace-1")
+        self.assertEqual(payload["bottlenecks"]["recentDirectApiOuterTraces"][0]["routerPrecheckTotalMs"], 100.0)
+        self.assertEqual(payload["bottlenecks"]["recentDirectApiOuterTraces"][0]["routerHandlerTotalMs"], 400.0)
+        self.assertEqual(payload["bottlenecks"]["recentDirectApiOuterTraces"][0]["frontendHandlerTotalMs"], 200.0)
         self.assertEqual(len(payload["jobs"]["recent"]), 2)
+        self.assertGreater(self.build_snapshot_engine_calls, 0)
+        self.assertGreater(self.get_queue_live_stats_calls, 0)
+        self.assertGreater(self.get_function_build_info_calls, 0)
+        self.assertGreater(self.storage_stats_calls, 0)
+        self.assertEqual(self.metrics.timings, [])
 
     def test_info_html_contains_new_operational_sections(self) -> None:
         handler = InfoHandler(self.ctx)
@@ -259,6 +381,18 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertIn("Queue State", response.body)
         self.assertIn("Recent Jobs", response.body)
         self.assertIn("Last Render Job", response.body)
+        self.assertIn("/info?format=json&view=detail", response.body)
+        self.assertIn("trigger_id", response.body)
+        self.assertIn("a1smsif4rc82qbj1e3hf", response.body)
+        self.assertIn("Emulate trigger", response.body)
+        self.assertIn("access mode:", response.body)
+        self.assertIn("full (with cookie)", response.body)
+        self.assertIn("masked (omit cookie)", response.body)
+        self.assertIn("target route:", response.body)
+        self.assertIn("browser proxy (/bff/api)", response.body)
+        self.assertIn("direct backend (/api)", response.body)
+        self.assertIn("Bottleneck Profiling", response.body)
+        self.assertIn("Bottleneck Diagnostics", response.body)
 
     def test_info_json_includes_ui_base_path_for_prefixed_route(self) -> None:
         handler = InfoHandler(self.ctx)

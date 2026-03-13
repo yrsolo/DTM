@@ -3,6 +3,8 @@ runtime:
   strict_env_guard_default: false
   timezone: Europe/Moscow
   dev_mode_metrics: true
+  bottleneck_metrics_level: stages
+  metrics_delivery_mode: buffered
 
 monitoring:
   enabled: false
@@ -16,7 +18,7 @@ monitoring:
   dashboard_id_test: "fbe6m08jl1vj212t5v0c"
   dashboard_id_prod: ""
   emit_queue_metrics: true
-  emit_api_metrics: true
+  emit_api_metrics: false
   emit_snapshot_metrics: true
   emit_render_metrics: true
   emit_notify_metrics: true
@@ -81,6 +83,7 @@ snapshot_engine:
   prefix_prep: snapshots/{env}/prep/default.json
   prefix_extra: snapshots/{env}/extra/
   prefix_people: snapshots/{env}/people/default.json
+  prefix_responses: snapshots/{env}/responses/
   force_refresh_default: false
 
 queue:
@@ -121,6 +124,10 @@ timing:
 
 api:
   debug_http_event_default: false
+  auth_trusted_secret_header: X-DTM-Proxy-Secret
+  auth_trusted_fallback: masked
+  auth_mask_dictionary_version: v1
+  frontend_response_cache_ttl_minutes: 15
 
 triggers:
   a1sldapc8v2pha7dichv: timer

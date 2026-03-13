@@ -41,6 +41,7 @@ class SnapshotEngine:
         prep_cache: Any,
         extra_store: Any,
         people_store: Any,
+        response_cache_store: Any,
         query_engine: SnapshotQueryEngine,
         prep_builder: PrepBuilder,
         update_job_factory: Any,
@@ -50,6 +51,7 @@ class SnapshotEngine:
         self._prep_cache = prep_cache
         self._extra_store = extra_store
         self._people_store = people_store
+        self._response_cache_store = response_cache_store
         self._query_engine = query_engine
         self._prep_builder = prep_builder
         self._update_job_factory = update_job_factory
@@ -88,6 +90,9 @@ class SnapshotEngine:
 
     def get_people_snapshot(self) -> Any:
         return self._people_store.get()
+
+    def get_response_cache_store(self) -> Any:
+        return self._response_cache_store
 
     def attach_file_metadata(self, *, task_id: str, attachment: AttachmentMeta) -> dict[str, Any]:
         raw = self._raw_cache.get()
@@ -149,7 +154,7 @@ def build_snapshot_engine(ctx: AppContext) -> SnapshotEngine:
     db_cfg = cfg.db.object_storage
     endpoint_url = str(db_cfg.get("endpoint_url_default", "")).strip()
     env_name = str(cfg.runtime.runtime.env_default).strip().lower() or "dev"
-    raw_cache, prep_cache, extra_store, people_store = build_s3_stores(
+    raw_cache, prep_cache, extra_store, people_store, response_cache_store = build_s3_stores(
         bucket=str(snap_cfg.bucket).strip(),
         endpoint_url=endpoint_url,
         aws_access_key_id=deps.get("aws_access_key_id"),
@@ -158,6 +163,7 @@ def build_snapshot_engine(ctx: AppContext) -> SnapshotEngine:
         prep_key=_resolve_env_prefix(str(snap_cfg.prefix_prep), env_name),
         extra_prefix=_resolve_env_prefix(str(snap_cfg.prefix_extra), env_name),
         people_key=_resolve_env_prefix(str(snap_cfg.prefix_people), env_name),
+        response_prefix=_resolve_env_prefix(str(snap_cfg.prefix_responses), env_name),
     )
     prep_builder = PrepBuilder(extra_store)
     query_engine = SnapshotQueryEngine(
@@ -188,6 +194,7 @@ def build_snapshot_engine(ctx: AppContext) -> SnapshotEngine:
         prep_cache=prep_cache,
         extra_store=extra_store,
         people_store=people_store,
+        response_cache_store=response_cache_store,
         query_engine=query_engine,
         prep_builder=prep_builder,
         update_job_factory=_update_job_factory,

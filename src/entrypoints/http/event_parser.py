@@ -189,3 +189,49 @@ def query_params(event: dict[str, Any]) -> dict[str, Any]:
             if flattened:
                 return flattened
     return {}
+
+
+def header_params(event: dict[str, Any]) -> dict[str, Any]:
+    """Resolve headers from different API Gateway event shapes."""
+
+    def _flatten(source: dict[str, Any]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in source.items():
+            if not str(key or "").strip():
+                continue
+            if isinstance(value, list):
+                result[str(key)] = str(value[0]).strip() if value else ""
+            elif value is None:
+                result[str(key)] = ""
+            else:
+                result[str(key)] = str(value).strip()
+        return result
+
+    if not isinstance(event, dict):
+        return {}
+
+    merged: dict[str, Any] = {}
+
+    params = event.get("params")
+    if isinstance(params, dict):
+        for key in ("header", "headers"):
+            source = params.get(key)
+            if isinstance(source, dict):
+                merged.update(_flatten(source))
+
+    multi_params = event.get("multiValueParams")
+    if isinstance(multi_params, dict):
+        for key in ("header", "headers"):
+            source = multi_params.get(key)
+            if isinstance(source, dict):
+                merged.update(_flatten(source))
+
+    direct = event.get("multiValueHeaders")
+    if isinstance(direct, dict):
+        merged.update(_flatten(direct))
+
+    direct = event.get("headers")
+    if isinstance(direct, dict):
+        merged.update(_flatten(direct))
+
+    return merged

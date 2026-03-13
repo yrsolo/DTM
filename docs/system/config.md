@@ -17,6 +17,8 @@ Primary config files:
 ## Runtime contour
 - `runtime.env`: `dev|test|prod`
 - `runtime.timezone`: default `Europe/Moscow`
+- `runtime.bottleneck_metrics_level`: `off|stages|debug` profiling policy for detailed bottleneck analytics
+- `runtime.metrics_delivery_mode`: `buffered|off` delivery policy for runtime metrics writes
 - `runtime.snapshot_engine.*`: snapshot/Object Storage settings
 - `runtime.queue.*`: Yandex Message Queue settings
 - `runtime.telegram.*`: webhook and sender settings
@@ -24,6 +26,28 @@ Primary config files:
 - `runtime.monitoring.*`: Yandex Monitoring backend settings
 - `runtime.prometheus.*`: Prometheus-compatible sink settings
 - `runtime.grafana.*`: Grafana dashboard/embed metadata
+- `runtime.api.auth_trusted_secret_header`: trusted proxy secret header name for browser-facing auth
+- `runtime.api.auth_trusted_fallback`: direct/untrusted browser fallback mode (`masked`)
+- `runtime.api.auth_mask_dictionary_version`: deterministic masking dictionary version
+- `runtime.api.frontend_response_cache_ttl_minutes`: TTL for default frontend response cache entries
+- `runtime.snapshot_engine.prefix_responses`: Object Storage prefix for cached frontend responses
+
+Current profiling policy:
+- `off` keeps only baseline runtime metrics
+- `stages` emits stage timings/counters for bottleneck analysis
+- `debug` emits stage timings plus debug trace details for short investigations
+
+Current metrics delivery policy:
+- `buffered` accumulates runtime metrics in memory per request/job and performs one best-effort flush at the end
+- `off` disables runtime metrics writes through the main `metrics_client`
+
+Current API metrics policy:
+- `runtime.monitoring.emit_api_metrics=false` disables remote/runtime metric emission for `/api` and `/info` hot paths
+- in-process traces, `Server-Timing`, and `/info` bottleneck diagnostics stay available
+
+Backward compatibility:
+- legacy `runtime.dev_mode_metrics=true` is still treated as `stages` until cleanup removes the old boolean
+- `METRICS_DELIVERY_MODE` may override YAML at runtime for quick operator disable/restore
 
 ## Secrets
 Secrets stay outside repo config files:
@@ -34,8 +58,10 @@ Secrets stay outside repo config files:
 - Yandex Cloud auth/service secrets
 - `YANDEX_PROMETHEUS_API_KEY` / `YMP_API_KEY`
 - `GRAFANA_TOKEN`
+- `BROWSER_AUTH_PROXY_SECRET`
 
 They are resolved through secret storage / env in loader/bootstrap only.
+Current deploy workflows map `BROWSER_AUTH_PROXY_SECRET` from Lockbox into backend function env for both test and prod contours.
 
 Current active runtime no longer requires YDB contour secrets:
 - no `YDB_ID_*`

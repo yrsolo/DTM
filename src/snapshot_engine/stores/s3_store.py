@@ -181,6 +181,21 @@ class S3PeopleStore:
         self._store.put(self._key, people_to_dict(snapshot))
 
 
+class S3ResponseCacheStore:
+    def __init__(self, store: _S3JsonStore, prefix: str) -> None:
+        self._store = store
+        self._prefix = str(prefix).rstrip("/") + "/"
+
+    def _key(self, cache_key: str) -> str:
+        return f"{self._prefix}{str(cache_key).strip().strip('/')}.json"
+
+    def get(self, cache_key: str) -> dict[str, Any] | None:
+        return self._store.get(self._key(cache_key))
+
+    def put(self, cache_key: str, payload: dict[str, Any]) -> None:
+        self._store.put(self._key(cache_key), dict(payload or {}))
+
+
 def build_s3_stores(
     *,
     bucket: str,
@@ -191,7 +206,8 @@ def build_s3_stores(
     prep_key: str,
     extra_prefix: str,
     people_key: str,
-) -> tuple[S3RawCache, S3PrepCache, S3ExtraStore, S3PeopleStore]:
+    response_prefix: str,
+) -> tuple[S3RawCache, S3PrepCache, S3ExtraStore, S3PeopleStore, S3ResponseCacheStore]:
     store = _S3JsonStore(
         bucket=bucket,
         endpoint_url=endpoint_url,
@@ -203,4 +219,5 @@ def build_s3_stores(
         S3PrepCache(store, prep_key),
         S3ExtraStore(store, extra_prefix),
         S3PeopleStore(store, people_key),
+        S3ResponseCacheStore(store, response_prefix),
     )

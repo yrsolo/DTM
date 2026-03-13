@@ -9,10 +9,10 @@ from uuid import uuid4
 
 from src.app.context import AppContext
 from src.commands.model import Command, RequestedBy
-from src.commands.types import SEND_REMINDERS, UPDATE_SNAPSHOT
 from src.entrypoints.http.dto import to_gateway_response
 from src.entrypoints.http.runtime_execution import RuntimeExecutionRequest
 from src.entrypoints.runtime.runtime_shell import RuntimeShell
+from src.entrypoints.triggers.trigger_plan import planned_trigger_commands
 
 
 class TriggerShell:
@@ -26,36 +26,35 @@ class TriggerShell:
         if producer is None or status_store is None:
             return None
         mode = str(trigger_mode or "").strip().lower()
-        if mode == "timer":
-            command_type = UPDATE_SNAPSHOT
-            payload: dict[str, Any] = {"force_refresh": False, "dry_run": False}
-        elif mode == "morning":
-            command_type = SEND_REMINDERS
-            payload = {
-                "mode": "morning",
-                "statuses": ["work", "pre_done"],
-                "include_today": True,
-                "include_next_workday": True,
-                "force_test_chat": False,
-                "mock_external": False,
-            }
-        else:
+        planned = planned_trigger_commands(mode)
+        if not planned:
             return None
-        cmd = Command(
-            job_id=uuid4().hex,
-            type=command_type,
-            created_at_utc=datetime.now(timezone.utc),
-            requested_by=RequestedBy(source="trigger"),
-            payload=payload,
-        )
-        producer.send(cmd)
-        status_store.put_queued(cmd)
+        commands: list[dict[str, Any]] = []
+        for command_type, payload in planned:
+            cmd = Command(
+                job_id=uuid4().hex,
+                type=command_type,
+                created_at_utc=datetime.now(timezone.utc),
+                requested_by=RequestedBy(source="trigger"),
+                payload=dict(payload),
+            )
+            producer.send(cmd)
+            status_store.put_queued(cmd)
+            commands.append(
+                {
+                    "job_id": cmd.job_id,
+                    "command_type": cmd.type,
+                    "payload": dict(cmd.payload),
+                }
+            )
         return {
-            "artifact": "command_enqueued",
+            "artifact": "command_batch_enqueued" if len(commands) > 1 else "command_enqueued",
             "status": "accepted",
-            "job_id": cmd.job_id,
-            "command_type": cmd.type,
             "trigger_mode": mode,
+            "queued_count": len(commands),
+            "commands": commands,
+            "job_id": commands[0]["job_id"],
+            "command_type": commands[0]["command_type"],
         }
 
     async def handle_trigger(self, trigger_mode: str, event: Any) -> dict[str, Any]:

@@ -30,8 +30,21 @@ The following paths validate, build internal `Command`, enqueue, and return quic
 - admin enqueue endpoints
 - telegram webhook
 - trigger shell when queue mode is enabled
+- hidden admin trigger-emulation endpoint for operator/debug intake parity
 
 These paths must not execute heavy business logic inline.
+
+Current trigger fan-out:
+
+- `timer` trigger enqueues a batch of three commands:
+  - `update_snapshot`
+  - `render_timeline_sheet`
+  - `render_designers_sheet`
+- `morning` trigger enqueues one `send_reminders` command
+
+Queue caveat:
+
+- current queue type is `Standard`, so enqueue order is preserved in the shell response but strict cross-message execution ordering is not guaranteed by the queue itself
 
 ## Worker path
 

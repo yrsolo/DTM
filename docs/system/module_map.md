@@ -2,12 +2,15 @@
 
 This document is a navigation map of the codebase as it exists now.
 
+Governing policy:
+- [architecture_values.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/architecture_values.md)
+
 ## Top-level entrypoints
 
 | Path | Role | Responsibility | State | Notes |
 |---|---|---|---|---|
-| `index.py` | Entrypoint (HTTP) | Parse event, dispatch HTTP handlers, optionally trigger planner runtime modes | Refactor | Thin shell; uses `src/entrypoints/http/*` and shared runtime entry. |
-| `src/entrypoints/runtime/planner_runtime_entry.py` | Entrypoint (Runtime) | Canonical planner runtime orchestration for local/job and HTTP-triggered modes | OK | Single standard runtime entry used by `index.py` and `src/entrypoints/runtime/local_runtime.py`. |
+| `index.py` | Entrypoint (HTTP) | Parse event, dispatch HTTP handlers, optionally trigger runtime actions | OK | Thin shell with lazy runtime bootstrap; no module-level `AppContext` construction on import. |
+| `src/entrypoints/runtime/planner_runtime_entry.py` | Entrypoint (Runtime) | Transitional runtime adapter for local/job and HTTP-triggered modes | Transitional | Still active, but no longer builds `AppContext` on import and should not remain the conceptual runtime center. |
 | `local_run.py` | Support | Local wrapper for runtime modes | OK | Dev convenience tool; calls `src/entrypoints/runtime/local_runtime.py`. |
 
 ## Entrypoint boundaries
@@ -16,6 +19,7 @@ This document is a navigation map of the codebase as it exists now.
 |---|---|---|---|---|
 | `src/entrypoints/http/*` | Entrypoint (HTTP modules) | HTTP parsing/routing/handlers/runtime execution helpers | OK | Canonical HTTP boundary. |
 | `src/entrypoints/jobs/*` | Entrypoint (Jobs modules) | Runtime job steps used by planner runtime entry | OK | Active standard-runtime job modules only. |
+| `src/entrypoints/http/access*` | Entrypoint (HTTP access boundary) | Browser access context resolution and trusted ingress handling | OK | `access_context.py` validates proxy secret and resolves full vs masked mode before payload response. |
 
 ## Domain (new)
 
@@ -32,6 +36,7 @@ This document is a navigation map of the codebase as it exists now.
 | `src/services/sync_service.py` | Application | Canonical sync orchestration and preflight/full decision path | OK | Single active sync service in runtime. |
 | `src/services/readmodel_builder.py` | Application | Build frontend v2 readmodel snapshot | OK | Canonical snapshot builder. |
 | `src/services/pipeline_runtime.py` | Application | YDB sync + readmodel pipeline orchestration | OK | Preflight can skip full snapshot fetch. |
+| `src/services/access/*` | Application | Masking policy, deterministic mapping, and payload transform seams | OK | `masking.py` applies deterministic, shape-preserving masking over canonical frontend payloads. |
 | `src/services/sync/*` | Support | Sync helper primitives | Refactor | Keep only stateless primitives; no duplicate sync runner. |
 | `src/observability/*` | Support | Metrics, timing, and structured logging abstractions | OK | Shared instrumentation layer for active runtime. |
 
@@ -41,7 +46,8 @@ This document is a navigation map of the codebase as it exists now.
 |---|---|---|---|---|
 | `src/commands/*` | Application | Internal queue command DTOs, serializer, queue adapters | OK | Canonical async command boundary. |
 | `src/worker/*` | Application | Worker execution, dispatcher, status store | OK | Canonical queue execution boundary. |
-| `src/telegram/*` | Adapter/Application boundary | Typed Telegram parsing, command routing, webhook intake, sender | OK | Webhook stays thin and enqueue-only. |
+| `src/telegram/*` | Adapter/Application boundary | Typed Telegram parsing, command routing, webhook intake, sender | Frozen | Keep operational, but not the target model for new architecture during this wave. |
+| `src/notify/*` | Application | Reminder selection, formatting, and send orchestration | Frozen | Keep operational for break/fix work; do not use as the template for new architecture. |
 
 ## Adapters
 
@@ -63,6 +69,9 @@ This document is a navigation map of the codebase as it exists now.
 ## Immediate guidance
 
 - Keep `index.py` thin; local tooling should use `src/entrypoints/runtime/local_runtime.py`.
-- Keep planner runtime orchestration in `src/entrypoints/runtime/planner_runtime_entry.py`.
+- Keep main entrypoints import-safe; production `AppContext` must not be constructed at module import time.
+- Treat `src/entrypoints/runtime/planner_runtime_entry.py` as transitional and reduce it over time.
 - Keep API/runtime route logic in `src/entrypoints/http/*`.
+- Keep browser auth and masking outside query-engine internals.
+- Treat `src/telegram/*` and `src/notify/*` as frozen subsystems for this wave.
 - Keep legacy bindings explicit under `src/legacy/*` only; do not recreate compat shims in active `core/`.

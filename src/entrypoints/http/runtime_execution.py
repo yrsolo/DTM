@@ -42,6 +42,7 @@ class RuntimeExecutor:
                 dry_run=request.dry_run,
                 mock_external=request.mock_external,
                 force_refresh=request.force_refresh,
+                app_context=self._ctx,
             )
             runtime_result = await main_func(runtime_request)
         except Exception as ex:

@@ -68,7 +68,7 @@
       return base + path;
     }
     async function loadInfo(){
-      const r = await fetch(withBase('/info?format=json'), {cache:'no-store'});
+      const r = await fetch(withBase('/info?format=json&view=detail'), {cache:'no-store'});
       const text = await r.text();
       let p = {};
       try {
@@ -89,6 +89,7 @@
       const latestByCommand = jobs.latestByCommand || {};
       const lastRender = latestByCommand.render_timeline_sheet || null;
       const renderDebug = p.renderDebug || {};
+      const bottlenecks = p.bottlenecks || {};
       document.getElementById('env').textContent = s.env || '';
       document.getElementById('bucket').textContent = s.bucket || '';
       document.getElementById('sourceId').textContent = s.sourceId || '';
@@ -113,6 +114,11 @@
       document.getElementById('queueDelayed').textContent = String(ql.messages_delayed ?? '');
       document.getElementById('queueDlq').textContent = ql.dlq_configured === undefined ? '' : String(!!ql.dlq_configured);
       document.getElementById('queueError').textContent = ql.error || '';
+      document.getElementById('bottleneckLevel').textContent = String(bottlenecks.profilingLevel || '');
+      document.getElementById('bottleneckStageEnabled').textContent = String(!!bottlenecks.stageMetricsEnabled);
+      document.getElementById('bottleneckDebugEnabled').textContent = String(!!bottlenecks.debugMetricsEnabled);
+      document.getElementById('bottleneckTraceCount').textContent = String((bottlenecks.recentApiTraces || []).length);
+      document.getElementById('bottleneckDiagnostics').textContent = pretty(bottlenecks);
       document.getElementById('recentJobs').textContent = pretty(recent);
       document.getElementById('recentErrors').textContent = pretty(failed);
       document.getElementById('lastRenderJob').textContent = pretty(lastRender || {});
@@ -176,6 +182,13 @@
       adminTimer.stop();
       setTimeout(loadInfo, 1500);
     }
+    function selectedTriggerId(){
+      return String((document.getElementById('triggerIdValue') || {}).value || '').trim();
+    }
+    async function enqueueTriggerEmulation(){
+      const triggerId = selectedTriggerId();
+      await enqueueAdminCommand('/admin/commands/emulate-trigger', {trigger_id: triggerId});
+    }
     function setIncludePeople(flag){
       document.getElementById('includePeople').checked = !!flag;
     }
@@ -201,6 +214,18 @@
       if (document.getElementById('stDone').checked) statuses.push('done');
       return statuses;
     }
+    function selectedAccessMode(){
+      return document.getElementById('accessMasked').checked ? 'masked' : 'full';
+    }
+    function selectedApiRoutePath(){
+      return document.getElementById('routeDirect').checked ? '/api/v2/frontend' : '/bff/api/v2/frontend';
+    }
+    function selectedApiRouteLabel(){
+      return document.getElementById('routeDirect').checked ? 'direct backend (/api)' : 'browser proxy (/bff/api)';
+    }
+    function selectedFetchCredentials(){
+      return selectedAccessMode() === 'masked' ? 'omit' : 'include';
+    }
     function buildApiQuery(){
       const statuses = selectedStatuses();
       const limit = document.getElementById('limitValue').value || '200';
@@ -220,14 +245,26 @@
     function refreshApiRequestUrl(){
       const q = buildApiQuery();
       const origin = window.location.origin || '';
-      document.getElementById('apiRequestUrl').textContent = origin + withBase('/api/v2/frontend?') + q.toString();
+      const accessMode = selectedAccessMode();
+      const credentials = selectedFetchCredentials();
+      const routePath = selectedApiRoutePath();
+      document.getElementById('apiRequestUrl').textContent = origin + withBase(routePath + '?') + q.toString();
+      document.getElementById('apiRouteMode').textContent = selectedApiRouteLabel();
+      document.getElementById('apiAccessMode').textContent = accessMode + ' / credentials=' + credentials;
     }
     async function sendApiBuilder(){
       apiTimer.start();
       const q = buildApiQuery();
-      const r = await fetch(withBase('/api/v2/frontend?')+q.toString(), {cache:'no-store'});
+      const accessMode = selectedAccessMode();
+      const credentials = selectedFetchCredentials();
+      const routePath = selectedApiRoutePath();
+      const routeLabel = selectedApiRouteLabel();
+      const r = await fetch(withBase(routePath + '?')+q.toString(), {
+        cache:'no-store',
+        credentials: credentials,
+      });
       const t = await r.text();
-      document.getElementById('apiResult').textContent = 'HTTP '+r.status+'\\n'+pretty(t);
+      document.getElementById('apiResult').textContent = 'route=' + routeLabel + ' mode=' + accessMode + ' credentials=' + credentials + '\\nHTTP '+r.status+'\\n'+pretty(t);
       apiTimer.stop();
       refreshApiRequestUrl();
     }
@@ -267,7 +304,7 @@
       }
       refreshApiRequestUrl();
     }
-    const watchIds = ['includePeople','limitValue','stWork','stPreDone','stWait','stDone','windowStart','windowEnd'];
+    const watchIds = ['includePeople','accessFull','accessMasked','routeBff','routeDirect','limitValue','stWork','stPreDone','stWait','stDone','windowStart','windowEnd'];
     for (const id of watchIds) {
       const el = document.getElementById(id);
       if (el) el.addEventListener('change', refreshApiRequestUrl);

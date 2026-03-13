@@ -120,12 +120,14 @@ jobs:
             ENV=${{ vars.ENV || 'test' }}
             MONITORING_ENABLED=true
             MONITORING_BACKEND=yandex_monitoring
+            PROMETHEUS_ENABLED=true
             MONITORING_DASHBOARD_NAME=DTM Test Observability
           secrets: |
             TG_TOKEN=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/TG_TOKEN
             OPENAI_TOKEN=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/OPENAI_TOKEN
             ORG_TOKEN=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/ORG_TOKEN
             PROXY_URL=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/PROXY_URL
+            BROWSER_AUTH_PROXY_SECRET=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/BROWSER_AUTH_PROXY_SECRET
             GOOGLE_KEY_JSON=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/GOOGLE_KEY_JSON
             DEFAULT_CHAT_ID=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/DEFAULT_CHAT_ID
             AWS_ACCESS_KEY_ID=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/AWS_ACCESS_KEY_ID

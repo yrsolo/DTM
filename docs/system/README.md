@@ -2,6 +2,9 @@
 
 ## Current runtime docs
 - `architecture.md` — current high-level runtime architecture
+- `architecture_values.md` — normative architecture values and decision policy for the current wave
+- `auth_trust_boundary.md` — trusted-ingress rule for browser-facing auth headers
+- `browser_auth_contract.md` — current browser-facing auth/masked/full backend contract
 - `dataflow.md` — canonical snapshot/queue/data flow
 - `runtime_modes.md` — supported standard runtime modes
 - `entrypoints_index_main.md` — thin entrypoint and runtime shell map

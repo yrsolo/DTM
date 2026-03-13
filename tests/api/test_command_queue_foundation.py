@@ -58,6 +58,7 @@ class _FakeCtx:
         self.cfg = SimpleNamespace(
             runtime=SimpleNamespace(
                 runtime=SimpleNamespace(env_default="test"),
+                triggers={"a1smsif4rc82qbj1e3hf": "morning", "trigger-1": "timer"},
                 snapshot_engine=SimpleNamespace(bucket="dtm"),
             ),
             db=SimpleNamespace(object_storage={"endpoint_url_default": "https://storage.yandexcloud.net"}),
@@ -130,6 +131,30 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
         self.assertEqual(producer.commands[0].type, "send_reminders")
         payload = json.loads(response.body)
         self.assertEqual(payload["status"], "accepted")
+
+    def test_admin_queue_handler_emulates_trigger_batch(self) -> None:
+        producer = _FakeProducer()
+        status_store = _FakeStatusStore()
+        handler = AdminQueueHandler(_FakeCtx(producer=producer, status_store=status_store))
+        response = handler.handle(
+            HttpRequest(
+                method="POST",
+                path="/admin/commands/emulate-trigger",
+                body={"trigger_id": "trigger-1"},
+                is_http_event=True,
+            )
+        )
+        self.assertIsNotNone(response)
+        self.assertEqual(response.status, 202)
+        payload = json.loads(response.body)
+        self.assertEqual(payload["artifact"], "command_batch_enqueued")
+        self.assertEqual(payload["trigger_id"], "trigger-1")
+        self.assertEqual(payload["trigger_mode"], "timer")
+        self.assertEqual(payload["queued_count"], 3)
+        self.assertEqual(
+            [item["command_type"] for item in payload["commands"]],
+            ["update_snapshot", "render_timeline_sheet", "render_designers_sheet"],
+        )
 
     def test_admin_queue_handler_enqueues_attach_task_file_command(self) -> None:
         producer = _FakeProducer()
@@ -257,9 +282,18 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
             index.APP_TRIGGERS.update(original_triggers)
         self.assertEqual(response["statusCode"], 200)
         payload = json.loads(response["body"])
-        self.assertEqual(payload["artifact"], "command_enqueued")
+        self.assertEqual(payload["artifact"], "command_batch_enqueued")
         self.assertEqual(payload["command_type"], "update_snapshot")
-        self.assertEqual(len(producer.commands), 1)
+        self.assertEqual(payload["queued_count"], 3)
+        self.assertEqual(
+            [item["command_type"] for item in payload["commands"]],
+            ["update_snapshot", "render_timeline_sheet", "render_designers_sheet"],
+        )
+        self.assertEqual(len(producer.commands), 3)
+        self.assertEqual(
+            [cmd.type for cmd in producer.commands],
+            ["update_snapshot", "render_timeline_sheet", "render_designers_sheet"],
+        )
 
 
 if __name__ == "__main__":

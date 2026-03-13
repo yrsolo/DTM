@@ -70,6 +70,14 @@ class S3StoreTestCase(unittest.TestCase):
         self.assertEqual(loaded.version, 2)
         self.assertEqual(loaded.items_by_task_id, {})
 
+    def test_response_cache_store_roundtrip(self) -> None:
+        base = _FakeJsonStore()
+        store = s3_store.S3ResponseCacheStore(base, "snapshots/responses")
+        store.put("frontend_v2/default/api/full", {"payload": {"ok": True}})
+        self.assertIn("snapshots/responses/frontend_v2/default/api/full.json", base.data)
+        loaded = store.get("frontend_v2/default/api/full")
+        self.assertEqual(loaded, {"payload": {"ok": True}})
+
 
 if __name__ == "__main__":
     unittest.main()
