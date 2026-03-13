@@ -229,6 +229,28 @@
   - `.venv\Scripts\python.exe -m unittest tests.api.test_frontend_api_routing tests.api.test_info_observability`
   - `.venv\Scripts\python.exe -m unittest tests.app.test_bootstrap_monitoring tests.config.test_runtime_loader tests.observability.test_metrics_batching tests.api.test_command_queue_foundation tests.api.test_worker_shell`
 
+## Live verification after API metrics suppression (2026-03-13)
+- deployed commit to `origin/test`: `2d9d04d`
+- telemetry on `/test/ops/info?format=json&view=detail` confirms buffered delivery still active:
+  - `telemetry.metricsDeliveryMode=buffered`
+  - `telemetry.metricsSink=CompositeMetricsClient`
+  - `telemetry.remoteMetricsEnabled=true`
+- direct `/test/ops/api/v2/frontend?statuses=work,pre_done,done,wait&include_people=true&limit=60` live samples after suppressing `dtm.api.*` / `dtm.info.*` writes:
+  - run 1: wall `8809.5 ms`, response body `68249 B`
+  - run 2: wall `2796.9 ms`, response body `68249 B`
+  - run 3: wall `3081.2 ms`, response body `68249 B`
+  - run 4: wall `3431.5 ms`, response body `68249 B`
+  - run 5: wall `4559.1 ms`, response body `68249 B`
+- representative direct `/api` response headers now show only timing diagnostics, not API metrics writes:
+  - `server-timing: router_precheck;dur=0.02, router_handler;dur=650.749, router_total;dur=650.801, http_shell_post_router;dur=0.014, response_build;dur=0.003, frontend_handler;dur=647.812, frontend_inner;dur=595.669, function_total;dur=651.147, unexplained_inside_handler;dur=52.143, unexplained_after_handler;dur=3.335`
+- `/info` bottleneck recorder still works with API metrics suppressed:
+  - `recentApiTraces_count=8`
+  - `recentDirectApiOuterTraces_count=8`
+- interpretation:
+  - removing remote API metrics keeps `Server-Timing` and in-process traces intact
+  - direct `/api` no longer pays the previous remote observability tax from `dtm.api.*` / `dtm.info.*`
+  - refresh/render/worker observability remains enabled through buffered remote sinks
+
 ## Grafana dashboard rebuild (2026-03-12)
 - repo spec in `src/infra/grafana_specs.py` was rebuilt to cover all currently emitted runtime metrics from active code paths:
   - snapshot stages including `orphan_reconcile`
