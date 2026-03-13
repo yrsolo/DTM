@@ -1,12 +1,13 @@
 # Backlog
 
 ## In Progress
-- CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P04 buffered metrics delivery live verification on `test`
+- none
 
 ## Blocked
 - none
 
 ## Done
+- CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P04 buffered metrics delivery redesign and live verification on `test`
 - CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1
 - CAM-2026-03-12-DIRECT-API-OUTER-LATENCY-DECOMPOSITION-V1
 - CAM-2026-03-12-BOTTLENECK-ANALYTICS-V1

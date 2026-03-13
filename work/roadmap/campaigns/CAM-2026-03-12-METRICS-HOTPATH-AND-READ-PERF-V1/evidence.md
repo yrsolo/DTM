@@ -182,7 +182,37 @@
 - rollout step prepared:
   - `.github/workflows/deploy_yc_function_main.yml` restored `MONITORING_ENABLED=true` and `PROMETHEUS_ENABLED=true` for `test`
 - pending evidence:
-  - live `test` verification must confirm that direct `/api` stays near fast-path latency with both remote backends enabled again
+  - none
+
+## Live verification after buffered redesign (2026-03-13)
+- deployed commit to `origin/test`: `b20a189`
+- deploy workflow restored:
+  - `MONITORING_ENABLED=true`
+  - `PROMETHEUS_ENABLED=true`
+- rollout confirmation:
+  - `/test/ops/info?format=json&view=detail` now reports:
+    - `telemetry.metricsDeliveryMode=buffered`
+    - `telemetry.metricsClient=BufferedMetricsClient`
+    - remote metrics backends enabled again on `test`
+- direct `/test/ops/api/v2/frontend?statuses=work,pre_done,done,wait&include_people=true&limit=60` live samples after redeploy:
+  - run 1: wall `6564.1 ms`, `frontend_handler=830.300 ms`, `frontend_inner=829.645 ms`, `function_total=2489.132 ms`
+  - run 2: wall `2063.5 ms`, `frontend_handler=106.911 ms`, `frontend_inner=104.563 ms`, `function_total=835.877 ms`
+  - run 3: wall `2321.3 ms`, `frontend_handler=166.763 ms`, `frontend_inner=163.700 ms`, `function_total=1179.186 ms`
+  - run 4: wall `2696.9 ms`, `frontend_handler=110.244 ms`, `frontend_inner=108.099 ms`, `function_total=1154.438 ms`
+  - run 5: wall `1544.5 ms`, `frontend_handler=156.691 ms`, `frontend_inner=154.438 ms`, `function_total=717.315 ms`
+- interpretation:
+  - buffered delivery removes the previous `15-35s` request-path blow-up with remote backends enabled
+  - `frontend_inner` stays low and close to `frontend_handler`
+  - remaining wall clock is no longer dominated by synchronous per-metric backend writes
+- update-snapshot smoke after redesign:
+  - `POST /test/ops/admin/commands/update-snapshot` accepted in `1765.8 ms`
+  - resulting job `de41269494fe4680b0d40a673cafe46b` finished `success`
+  - summary:
+    - `job_wall_clock_ms=5143.91`
+    - `timings_ms.total_duration_ms=4084.1862450000017`
+- conclusion:
+  - buffered metrics delivery is sufficient to re-enable remote metrics backends on `test`
+  - direct `/api` regression from synchronous per-metric flush is closed
 
 ## Grafana dashboard rebuild (2026-03-12)
 - repo spec in `src/infra/grafana_specs.py` was rebuilt to cover all currently emitted runtime metrics from active code paths:
