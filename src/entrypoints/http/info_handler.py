@@ -23,6 +23,7 @@ from src.observability.bottlenecks import (
     is_stage_metrics_enabled,
     resolve_bottleneck_metrics_level,
 )
+from src.observability.buffered_metrics import metrics_sink_name, remote_metrics_enabled
 from src.snapshot_engine.engine import build_snapshot_engine
 from src.worker.model import JobStatusRecord
 
@@ -343,6 +344,9 @@ class InfoHandler:
         telemetry_payload = {
             "metricsEnabled": self._ctx.deps.get("metrics_client") is not None,
             "metricsClient": type(self._ctx.deps.get("metrics_client")).__name__,
+            "metricsDeliveryMode": str(self._ctx.cfg.runtime.runtime.metrics_delivery_mode or "").strip().lower() or "buffered",
+            "metricsSink": metrics_sink_name(self._ctx.deps.get("metrics_client")),
+            "remoteMetricsEnabled": remote_metrics_enabled(self._ctx.deps.get("metrics_client")),
             "monitoringEnabled": bool(
                 getattr(self._ctx.cfg.runtime, "monitoring", None)
                 and self._ctx.cfg.runtime.monitoring.enabled

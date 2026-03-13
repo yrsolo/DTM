@@ -20,6 +20,7 @@ from src.app.context import AppContext
 from src.config.loader import load_config
 from src.infra.yc_iam import get_iam_token
 from src.observability import (
+    BufferedMetricsClient,
     CompositeMetricsClient,
     NoopMetricsClient,
     StdoutJsonLogger,
@@ -78,6 +79,7 @@ def build_app_context() -> AppContext:
         "yandex_prometheus_api_key": os.getenv("YANDEX_PROMETHEUS_API_KEY", "").strip()
         or os.getenv("YMP_API_KEY", "").strip(),
         "metrics_client": NoopMetricsClient(),
+        "metrics_sink": NoopMetricsClient(),
         "structured_logger": structured_logger,
     }
     ctx = AppContext(cfg=cfg, deps=deps)
@@ -91,6 +93,8 @@ def build_app_context() -> AppContext:
             timeout_seconds=4.0,
         )
 
+    metrics_delivery_mode = str(cfg.runtime.runtime.metrics_delivery_mode or "").strip().lower() or "buffered"
+    metrics_sink = NoopMetricsClient()
     metrics_clients = []
     if bool(monitoring_cfg.enabled) and str(monitoring_cfg.backend).strip().lower() == "yandex_monitoring":
         folder_id = str(monitoring_cfg.folder_id).strip() or str(cfg.deploy.yandex_cloud.folder_id).strip()
@@ -126,9 +130,15 @@ def build_app_context() -> AppContext:
         else:
             raise ValueError(f"Unsupported prometheus backend: {backend_name}")
     if len(metrics_clients) == 1:
-        deps["metrics_client"] = metrics_clients[0]
+        metrics_sink = metrics_clients[0]
     elif len(metrics_clients) > 1:
-        deps["metrics_client"] = CompositeMetricsClient(metrics_clients)
+        metrics_sink = CompositeMetricsClient(metrics_clients)
+    deps["metrics_sink"] = metrics_sink
+    if metrics_delivery_mode == "off":
+        deps["metrics_client"] = NoopMetricsClient()
+        deps["metrics_sink"] = NoopMetricsClient()
+    else:
+        deps["metrics_client"] = BufferedMetricsClient(metrics_sink)
     queue_cfg = cfg.runtime.queue
     if bool(queue_cfg.enabled):
         from src.commands.yandex_mq import YandexMessageQueueProducer

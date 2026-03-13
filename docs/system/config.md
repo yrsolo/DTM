@@ -18,6 +18,7 @@ Primary config files:
 - `runtime.env`: `dev|test|prod`
 - `runtime.timezone`: default `Europe/Moscow`
 - `runtime.bottleneck_metrics_level`: `off|stages|debug` profiling policy for detailed bottleneck analytics
+- `runtime.metrics_delivery_mode`: `buffered|off` delivery policy for runtime metrics writes
 - `runtime.snapshot_engine.*`: snapshot/Object Storage settings
 - `runtime.queue.*`: Yandex Message Queue settings
 - `runtime.telegram.*`: webhook and sender settings
@@ -36,8 +37,13 @@ Current profiling policy:
 - `stages` emits stage timings/counters for bottleneck analysis
 - `debug` emits stage timings plus debug trace details for short investigations
 
+Current metrics delivery policy:
+- `buffered` accumulates runtime metrics in memory per request/job and performs one best-effort flush at the end
+- `off` disables runtime metrics writes through the main `metrics_client`
+
 Backward compatibility:
 - legacy `runtime.dev_mode_metrics=true` is still treated as `stages` until cleanup removes the old boolean
+- `METRICS_DELIVERY_MODE` may override YAML at runtime for quick operator disable/restore
 
 ## Secrets
 Secrets stay outside repo config files:

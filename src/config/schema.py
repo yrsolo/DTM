@@ -13,6 +13,7 @@ class RuntimeSection:
     timezone: str = "Europe/Moscow"
     dev_mode_metrics: bool = False
     bottleneck_metrics_level: str = "off"
+    metrics_delivery_mode: str = "buffered"
 
 
 @dataclass(slots=True)

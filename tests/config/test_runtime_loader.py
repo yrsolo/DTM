@@ -22,6 +22,15 @@ class RuntimeLoaderTestCase(unittest.TestCase):
             runtime = _merge_runtime_env_overrides(_runtime_from_dict({}))
         self.assertEqual(runtime.runtime.bottleneck_metrics_level, "stages")
 
+    def test_runtime_loader_reads_metrics_delivery_mode(self) -> None:
+        runtime = _runtime_from_dict({"runtime": {"metrics_delivery_mode": "off"}})
+        self.assertEqual(runtime.runtime.metrics_delivery_mode, "off")
+
+    def test_runtime_loader_env_overrides_metrics_delivery_mode(self) -> None:
+        with patch.dict(os.environ, {"METRICS_DELIVERY_MODE": "buffered"}, clear=False):
+            runtime = _merge_runtime_env_overrides(_runtime_from_dict({"runtime": {"metrics_delivery_mode": "off"}}))
+        self.assertEqual(runtime.runtime.metrics_delivery_mode, "buffered")
+
 
 if __name__ == "__main__":
     unittest.main()

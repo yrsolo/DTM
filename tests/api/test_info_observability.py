@@ -155,7 +155,12 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.ctx = SimpleNamespace(
             cfg=SimpleNamespace(
                 runtime=SimpleNamespace(
-                    runtime=SimpleNamespace(env_default="test", bottleneck_metrics_level="stages", dev_mode_metrics=True),
+                    runtime=SimpleNamespace(
+                        env_default="test",
+                        bottleneck_metrics_level="stages",
+                        dev_mode_metrics=True,
+                        metrics_delivery_mode="buffered",
+                    ),
                     monitoring=SimpleNamespace(
                         enabled=True,
                         backend="yandex_monitoring",
@@ -334,6 +339,9 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertEqual(payload["queue"]["live"]["messages_visible"], 2)
         self.assertEqual(payload["queue"]["policy"]["retryModel"], "queue_driven")
         self.assertEqual(payload["telemetry"]["metricsClient"], "_MetricsRecorder")
+        self.assertEqual(payload["telemetry"]["metricsDeliveryMode"], "buffered")
+        self.assertEqual(payload["telemetry"]["metricsSink"], "_MetricsRecorder")
+        self.assertTrue(payload["telemetry"]["remoteMetricsEnabled"])
         self.assertEqual(payload["telemetry"]["bottleneckMetricsLevel"], "stages")
         self.assertTrue(payload["telemetry"]["monitoringEnabled"])
         self.assertEqual(payload["telemetry"]["monitoringBackend"], "yandex_monitoring")

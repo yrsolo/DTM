@@ -31,6 +31,7 @@ ENV_ALLOWLIST = frozenset(
         "STRICT_ENV_GUARD",
         "DEV_MODE_METRICS",
         "BOTTLENECK_METRICS_LEVEL",
+        "METRICS_DELIVERY_MODE",
         "STORE_MODE",
         "READMODEL_SOURCE",
         "NOTIFY_SOURCE",
@@ -119,6 +120,8 @@ def _merge_runtime_env_overrides(runtime_cfg: RuntimeConfig) -> RuntimeConfig:
         runtime_cfg.runtime.dev_mode_metrics = _parse_bool(os.environ["DEV_MODE_METRICS"])
     if "BOTTLENECK_METRICS_LEVEL" in os.environ:
         runtime_cfg.runtime.bottleneck_metrics_level = os.environ["BOTTLENECK_METRICS_LEVEL"].strip().lower()
+    if "METRICS_DELIVERY_MODE" in os.environ:
+        runtime_cfg.runtime.metrics_delivery_mode = os.environ["METRICS_DELIVERY_MODE"].strip().lower()
 
     if "READMODEL_TTL_MINUTES" in os.environ:
         runtime_cfg.pipeline.readmodel_ttl_minutes = max(1, int(os.environ["READMODEL_TTL_MINUTES"]))
@@ -212,6 +215,9 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
     defaults.runtime.bottleneck_metrics_level = str(
         runtime_raw.get("bottleneck_metrics_level", defaults.runtime.bottleneck_metrics_level)
     ).strip().lower() or defaults.runtime.bottleneck_metrics_level
+    defaults.runtime.metrics_delivery_mode = str(
+        runtime_raw.get("metrics_delivery_mode", defaults.runtime.metrics_delivery_mode)
+    ).strip().lower() or defaults.runtime.metrics_delivery_mode
     defaults.monitoring.enabled = bool(monitoring_raw.get("enabled", defaults.monitoring.enabled))
     defaults.monitoring.backend = str(monitoring_raw.get("backend", defaults.monitoring.backend))
     defaults.monitoring.folder_id = str(monitoring_raw.get("folder_id", defaults.monitoring.folder_id))
@@ -530,6 +536,9 @@ def load_config(config_dir: Path = CONFIG_DIR) -> AppConfig:
         if not str(prometheus_cfg.namespace).strip():
             raise ValueError("prometheus.namespace is required when prometheus.enabled=true")
     grafana_cfg = runtime_cfg.grafana
+    metrics_delivery_mode = str(runtime_cfg.runtime.metrics_delivery_mode or "").strip().lower()
+    if metrics_delivery_mode not in {"buffered", "off"}:
+        raise ValueError("runtime.metrics_delivery_mode must be 'buffered' or 'off'")
     if bool(grafana_cfg.enabled):
         if not str(grafana_cfg.public_base_url).strip():
             raise ValueError("grafana.public_base_url is required when grafana.enabled=true")

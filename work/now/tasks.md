@@ -1,6 +1,6 @@
 # Active Tasks
 
-- none
+- CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P04: buffered one-flush-end metrics delivery is implemented locally with `METRICS_DELIVERY_MODE=off|buffered`; next verify live `test` after restoring Monitoring/Prometheus backends
 
 ## Done
 

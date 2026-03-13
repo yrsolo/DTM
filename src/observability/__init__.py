@@ -1,4 +1,5 @@
 from .composite_metrics import CompositeMetricsClient
+from .buffered_metrics import BufferedMetricsClient, managed_metrics_scope, metrics_sink_name, remote_metrics_enabled
 from .logging import StdoutJsonLogger, StructuredLogger
 from .metrics import MetricsClient, NoopMetricsClient, YandexMonitoringMetricsClient
 from .bottlenecks import (
@@ -24,6 +25,7 @@ __all__ = [
     "RECENT_DIRECT_API_OUTER_TRACES",
     "RECENT_API_STAGE_EVENTS",
     "CompositeMetricsClient",
+    "BufferedMetricsClient",
     "MetricsClient",
     "NoopMetricsClient",
     "StructuredLogger",
@@ -37,6 +39,9 @@ __all__ = [
     "is_debug_metrics_enabled",
     "is_detailed_metrics_enabled",
     "is_stage_metrics_enabled",
+    "managed_metrics_scope",
+    "metrics_sink_name",
+    "remote_metrics_enabled",
     "new_stage_trace_id",
     "record_api_outer_stage",
     "record_api_stage",

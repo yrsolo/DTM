@@ -12,6 +12,7 @@ from src.observability.batching import (
     is_stage_metrics_enabled,
     resolve_bottleneck_metrics_level,
 )
+from src.observability.buffered_metrics import BufferedMetricsClient, managed_metrics_scope
 from src.observability.metrics import BackendFlushResult, MetricEntry, NoopMetricsClient
 
 
@@ -94,6 +95,29 @@ class MetricsBatchingTestCase(unittest.TestCase):
         )
         self.assertEqual(resolve_bottleneck_metrics_level(ctx), "off")
         self.assertFalse(is_stage_metrics_enabled(ctx))
+
+    def test_buffered_client_accumulates_until_scope_end(self) -> None:
+        sink = _BatchRecordingMetrics()
+        metrics = BufferedMetricsClient(sink)
+        with managed_metrics_scope(metrics):
+            metrics.counter("dtm.test.counter", 2, {"env": "test"})
+            metrics.gauge("dtm.test.gauge", 3.5, {"env": "test"})
+            metrics.timing("dtm.test.duration_ms", 7.0, {"env": "test"})
+            self.assertEqual(sink.flushed, [])
+        self.assertEqual(len(sink.flushed), 1)
+        self.assertEqual(len(sink.flushed[0]), 3)
+
+    def test_buffered_collector_flush_does_not_hit_sink_until_scope_end(self) -> None:
+        sink = _BatchRecordingMetrics()
+        metrics = BufferedMetricsClient(sink)
+        collector = MetricsBatchCollector(metrics)
+        with managed_metrics_scope(metrics):
+            collector.counter("dtm.test.counter", 1, {"env": "test"})
+            report = collector.flush()
+            self.assertEqual(report.total_points, 0)
+            self.assertEqual(sink.flushed, [])
+        self.assertEqual(len(sink.flushed), 1)
+        self.assertEqual(len(sink.flushed[0]), 1)
 
 
 if __name__ == "__main__":

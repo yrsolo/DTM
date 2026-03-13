@@ -9,6 +9,7 @@ from src.observability.batching import (
     add_flush_metrics,
     is_detailed_metrics_enabled,
 )
+from src.observability.buffered_metrics import managed_metrics_scope
 from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
 from src.snapshot_engine import build_snapshot_engine
 
@@ -22,61 +23,62 @@ class UpdateSnapshotJob:
         logger = self._ctx.deps.get("structured_logger")
         env_name = str(self._ctx.cfg.runtime.runtime.env_default)
         labels = {"env": env_name, "module": "snapshot", "operation": "update", "result": "success"}
-        collector = MetricsBatchCollector(metrics)
-        wall_clock_started = perf_counter()
-        task_source = build_sheets_normalized_task_source(
-            key_json=str(self._ctx.deps.get("key_json", "")),
-            sheet_info_data=dict(self._ctx.deps.get("sheet_info", {})),
-            cfg=self._ctx.cfg,
-            dry_run=bool(cmd.payload.get("dry_run", False)),
-        )
-        with timed(
-            collector,
-            "dtm.snapshot.update_duration_ms",
-            {"env": env_name, "module": "snapshot", "operation": "update", "result": "finished"},
-        ):
-            result = build_snapshot_engine(self._ctx).update(
-                task_source=task_source,
-                force=bool(cmd.payload.get("force_refresh", False)),
+        with managed_metrics_scope(metrics):
+            collector = MetricsBatchCollector(metrics)
+            wall_clock_started = perf_counter()
+            task_source = build_sheets_normalized_task_source(
+                key_json=str(self._ctx.deps.get("key_json", "")),
+                sheet_info_data=dict(self._ctx.deps.get("sheet_info", {})),
+                cfg=self._ctx.cfg,
+                dry_run=bool(cmd.payload.get("dry_run", False)),
             )
-        collector.counter("dtm.snapshot.update_total", labels=labels)
-        collector.counter(
-                "dtm.snapshot.changed_total" if bool(result.changed) else "dtm.snapshot.nochange_total",
-                labels=labels,
-        )
-        detailed_metrics_enabled = is_detailed_metrics_enabled(self._ctx)
-        for metric_name in (
-            "dtm.snapshot.fetch_sheet_ms",
-            "dtm.snapshot.normalize_ms",
-            "dtm.snapshot.build_prep_ms",
-            "dtm.snapshot.write_raw_ms",
-            "dtm.snapshot.write_prep_ms",
-        ):
-            timing_value = result.timings_ms.get(metric_name.removeprefix("dtm.snapshot."))
-            if timing_value is not None:
-                collector.timing(metric_name, float(timing_value), labels=labels)
-        if detailed_metrics_enabled:
+            with timed(
+                collector,
+                "dtm.snapshot.update_duration_ms",
+                {"env": env_name, "module": "snapshot", "operation": "update", "result": "finished"},
+            ):
+                result = build_snapshot_engine(self._ctx).update(
+                    task_source=task_source,
+                    force=bool(cmd.payload.get("force_refresh", False)),
+                )
+            collector.counter("dtm.snapshot.update_total", labels=labels)
+            collector.counter(
+                    "dtm.snapshot.changed_total" if bool(result.changed) else "dtm.snapshot.nochange_total",
+                    labels=labels,
+            )
+            detailed_metrics_enabled = is_detailed_metrics_enabled(self._ctx)
             for metric_name in (
-                "dtm.snapshot.extra_load_ms",
-                "dtm.snapshot.orphan_reconcile_ms",
-                "dtm.snapshot.task_view_build_ms",
-                "dtm.snapshot.prep_index_build_ms",
+                "dtm.snapshot.fetch_sheet_ms",
+                "dtm.snapshot.normalize_ms",
+                "dtm.snapshot.build_prep_ms",
+                "dtm.snapshot.write_raw_ms",
+                "dtm.snapshot.write_prep_ms",
             ):
                 timing_value = result.timings_ms.get(metric_name.removeprefix("dtm.snapshot."))
                 if timing_value is not None:
                     collector.timing(metric_name, float(timing_value), labels=labels)
-        flush_report = collector.flush()
-        post_collector = MetricsBatchCollector(metrics)
-        add_flush_metrics(
-            post_collector,
-            env_name=env_name,
-            module="snapshot",
-            operation="update",
-            report=flush_report,
-        )
-        wall_clock_ms = (perf_counter() - wall_clock_started) * 1000.0
-        post_collector.timing("dtm.snapshot.job_wall_clock_ms", wall_clock_ms, labels=labels)
-        post_collector.flush()
+            if detailed_metrics_enabled:
+                for metric_name in (
+                    "dtm.snapshot.extra_load_ms",
+                    "dtm.snapshot.orphan_reconcile_ms",
+                    "dtm.snapshot.task_view_build_ms",
+                    "dtm.snapshot.prep_index_build_ms",
+                ):
+                    timing_value = result.timings_ms.get(metric_name.removeprefix("dtm.snapshot."))
+                    if timing_value is not None:
+                        collector.timing(metric_name, float(timing_value), labels=labels)
+            flush_report = collector.flush()
+            post_collector = MetricsBatchCollector(metrics)
+            add_flush_metrics(
+                post_collector,
+                env_name=env_name,
+                module="snapshot",
+                operation="update",
+                report=flush_report,
+            )
+            wall_clock_ms = (perf_counter() - wall_clock_started) * 1000.0
+            post_collector.timing("dtm.snapshot.job_wall_clock_ms", wall_clock_ms, labels=labels)
+            post_collector.flush()
         if logger is not None:
             logger.info(
                 "snapshot_update_finished",

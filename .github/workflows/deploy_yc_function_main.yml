@@ -118,9 +118,9 @@ jobs:
           service-account: ${{ vars.YC_RUNTIME_SERVICE_ACCOUNT_ID || secrets.YC_RUNTIME_SERVICE_ACCOUNT_ID || vars.YC_SERVICE_ACCOUNT_ID || secrets.YC_SERVICE_ACCOUNT_ID || env.YC_SERVICE_ACCOUNT_ID }}
           environment: |
             ENV=${{ vars.ENV || 'test' }}
-            MONITORING_ENABLED=false
+            MONITORING_ENABLED=true
             MONITORING_BACKEND=yandex_monitoring
-            PROMETHEUS_ENABLED=false
+            PROMETHEUS_ENABLED=true
             MONITORING_DASHBOARD_NAME=DTM Test Observability
           secrets: |
             TG_TOKEN=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/TG_TOKEN

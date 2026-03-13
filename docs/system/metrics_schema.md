@@ -113,7 +113,9 @@ Snapshot runtime notes:
 
 Metrics batching notes:
 
-- active jobs now batch metrics per operation and flush once per backend instead of one HTTP request per metric point
+- runtime request path now uses buffered one-flush-end delivery by default via `BufferedMetricsClient`
+- active jobs now batch metrics per operation and append into the same buffered runtime delivery where a managed scope exists
+- `METRICS_DELIVERY_MODE=off` is the operator kill-switch that disables runtime metrics writes without changing instrumentation call sites
 - `dtm.metrics.flush_duration_ms` and `dtm.metrics.flush_points_total` measure backend flush cost directly
 - `dtm.worker.wall_clock_ms` captures worker-side wall-clock including status-store writes and metric flush
 - `/info` summary/detail timing is emitted separately so default operator reads can be compared against heavy diagnostics explicitly
@@ -132,6 +134,7 @@ Bottleneck profiling policy:
 
 Current runtime default:
 
-- `NoopMetricsClient`
+- `BufferedMetricsClient` over the configured remote sink(s)
+- if no backend is enabled, the buffered client wraps `NoopMetricsClient`
 
 This keeps instrumentation points stable even before a real Yandex Monitoring adapter is wired in production.

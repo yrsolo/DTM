@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import src.app.bootstrap as bootstrap_module
 from src.observability import (
+    BufferedMetricsClient,
     CompositeMetricsClient,
     NoopMetricsClient,
     YandexManagedPrometheusRemoteWriteClient,
@@ -16,7 +17,7 @@ from src.observability import (
 def _fake_cfg(enabled: bool):
     return SimpleNamespace(
         runtime=SimpleNamespace(
-            runtime=SimpleNamespace(env_default="test"),
+            runtime=SimpleNamespace(env_default="test", metrics_delivery_mode="buffered"),
             monitoring=SimpleNamespace(
                 enabled=enabled,
                 backend="yandex_monitoring",
@@ -47,13 +48,15 @@ class BootstrapMonitoringTestCase(unittest.TestCase):
     def test_build_app_context_uses_noop_metrics_client_when_monitoring_disabled(self, load_config_mock) -> None:
         load_config_mock.return_value = _fake_cfg(False)
         ctx = bootstrap_module.build_app_context()
-        self.assertIsInstance(ctx.deps["metrics_client"], NoopMetricsClient)
+        self.assertIsInstance(ctx.deps["metrics_client"], BufferedMetricsClient)
+        self.assertIsInstance(ctx.deps["metrics_client"].sink, NoopMetricsClient)
 
     @patch.object(bootstrap_module, "load_config", autospec=True)
     def test_build_app_context_uses_yandex_monitoring_client_when_enabled(self, load_config_mock) -> None:
         load_config_mock.return_value = _fake_cfg(True)
         ctx = bootstrap_module.build_app_context()
-        self.assertIsInstance(ctx.deps["metrics_client"], YandexMonitoringMetricsClient)
+        self.assertIsInstance(ctx.deps["metrics_client"], BufferedMetricsClient)
+        self.assertIsInstance(ctx.deps["metrics_client"].sink, YandexMonitoringMetricsClient)
 
     @patch.object(bootstrap_module, "load_config", autospec=True)
     def test_build_app_context_uses_prometheus_client_when_enabled(self, load_config_mock) -> None:
@@ -65,7 +68,8 @@ class BootstrapMonitoringTestCase(unittest.TestCase):
         load_config_mock.return_value = cfg
         with patch.dict(bootstrap_module.os.environ, {"YANDEX_PROMETHEUS_API_KEY": "api-key-test"}, clear=False):
             ctx = bootstrap_module.build_app_context()
-        self.assertIsInstance(ctx.deps["metrics_client"], YandexManagedPrometheusRemoteWriteClient)
+        self.assertIsInstance(ctx.deps["metrics_client"], BufferedMetricsClient)
+        self.assertIsInstance(ctx.deps["metrics_client"].sink, YandexManagedPrometheusRemoteWriteClient)
 
     @patch.object(bootstrap_module, "load_config", autospec=True)
     def test_build_app_context_uses_composite_client_when_both_backends_enabled(self, load_config_mock) -> None:
@@ -77,7 +81,17 @@ class BootstrapMonitoringTestCase(unittest.TestCase):
         load_config_mock.return_value = cfg
         with patch.dict(bootstrap_module.os.environ, {"YANDEX_PROMETHEUS_API_KEY": "api-key-test"}, clear=False):
             ctx = bootstrap_module.build_app_context()
-        self.assertIsInstance(ctx.deps["metrics_client"], CompositeMetricsClient)
+        self.assertIsInstance(ctx.deps["metrics_client"], BufferedMetricsClient)
+        self.assertIsInstance(ctx.deps["metrics_client"].sink, CompositeMetricsClient)
+
+    @patch.object(bootstrap_module, "load_config", autospec=True)
+    def test_build_app_context_uses_noop_when_metrics_delivery_off(self, load_config_mock) -> None:
+        cfg = _fake_cfg(True)
+        cfg.runtime.runtime.metrics_delivery_mode = "off"
+        load_config_mock.return_value = cfg
+        ctx = bootstrap_module.build_app_context()
+        self.assertIsInstance(ctx.deps["metrics_client"], NoopMetricsClient)
+        self.assertIsInstance(ctx.deps["metrics_sink"], NoopMetricsClient)
 
     @patch.object(bootstrap_module, "load_config", autospec=True)
     def test_build_app_context_fails_without_prometheus_api_key_when_enabled(self, load_config_mock) -> None:

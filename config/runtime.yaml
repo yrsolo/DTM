@@ -4,6 +4,7 @@ runtime:
   timezone: Europe/Moscow
   dev_mode_metrics: true
   bottleneck_metrics_level: stages
+  metrics_delivery_mode: buffered
 
 monitoring:
   enabled: false

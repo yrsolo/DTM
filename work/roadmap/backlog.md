@@ -1,7 +1,7 @@
 # Backlog
 
 ## In Progress
-- none
+- CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P04 buffered metrics delivery live verification on `test`
 
 ## Blocked
 - none

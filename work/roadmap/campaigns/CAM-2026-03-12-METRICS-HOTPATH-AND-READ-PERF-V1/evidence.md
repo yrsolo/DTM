@@ -155,6 +155,35 @@
   - then local follow-up showed `MONITORING_ENABLED=1` by itself can also stall the request path into `~28.9s` with repeated sync `monitoring_metric_flush_failed`
   - final test-contour experiment disables both remote metrics backends in the test deploy workflow without changing prod behavior
 
+## Buffered metrics delivery redesign (2026-03-13)
+- implemented locally:
+  - new runtime config key `runtime.metrics_delivery_mode` with default `buffered`
+  - env override `METRICS_DELIVERY_MODE=off|buffered`
+  - `build_app_context()` now wires:
+    - `metrics_sink` as remote backend sink (`Noop`, `Monitoring`, `Prometheus`, `Composite`)
+    - `metrics_client` as `BufferedMetricsClient(metrics_sink)` by default
+    - `NoopMetricsClient` immediately when `metrics_delivery_mode=off`
+- request path change:
+  - `src/entrypoints/http/http_shell.py` now wraps the whole HTTP request in a managed buffered metrics scope and performs one best-effort flush at the end of the request
+- job/worker alignment:
+  - `Worker.run_once_from_messages()` and `UpdateSnapshotJob.run()` now execute under the same managed buffered scope, so batch collectors append into one buffered request/job batch instead of triggering per-metric remote writes
+- telemetry contract:
+  - `/info` telemetry block now exposes `metricsDeliveryMode`, `metricsSink`, and `remoteMetricsEnabled`
+- local contract verification passed:
+  - `.venv\Scripts\python.exe -m unittest tests.config.test_runtime_loader`
+  - `.venv\Scripts\python.exe -m unittest tests.app.test_bootstrap_monitoring`
+  - `.venv\Scripts\python.exe -m unittest tests.observability.test_metrics_batching`
+  - `.venv\Scripts\python.exe -m unittest tests.observability.test_prometheus_metrics`
+  - `.venv\Scripts\python.exe -m unittest tests.observability.test_yandex_monitoring_metrics`
+  - `.venv\Scripts\python.exe -m unittest tests.api.test_frontend_api_routing`
+  - `.venv\Scripts\python.exe -m unittest tests.api.test_info_observability`
+  - `.venv\Scripts\python.exe -m unittest tests.api.test_command_queue_foundation`
+  - `.venv\Scripts\python.exe -m unittest tests.api.test_worker_shell`
+- rollout step prepared:
+  - `.github/workflows/deploy_yc_function_main.yml` restored `MONITORING_ENABLED=true` and `PROMETHEUS_ENABLED=true` for `test`
+- pending evidence:
+  - live `test` verification must confirm that direct `/api` stays near fast-path latency with both remote backends enabled again
+
 ## Grafana dashboard rebuild (2026-03-12)
 - repo spec in `src/infra/grafana_specs.py` was rebuilt to cover all currently emitted runtime metrics from active code paths:
   - snapshot stages including `orphan_reconcile`
