@@ -4,6 +4,7 @@
 
 ## Done
 
+- CAM-2026-03-14-ARCHITECTURE-AUDIT-AND-ROADMAP-V1: completed code-backed architecture audit, subsystem scorecard, prioritized findings, and multi-wave refactor roadmap for active runtime
 - CAM-2026-03-12-DOC-CODE-REALIGN-V1 P03: rewrote current docs around the snapshot-first runtime, removed YDB/readmodel/planner-era stories from active narrative, and archived the snapshot-engine migration plan
 - CAM-2026-03-12-DOC-CODE-REALIGN-V1 P02: consolidated auth docs into a canonical contract/runbook set, documented external auth contour ownership, callback routes, Lockbox/env secret wiring, and test/prod verification steps
 

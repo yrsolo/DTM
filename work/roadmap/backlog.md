@@ -7,6 +7,7 @@
 - none
 
 ## Done
+- CAM-2026-03-14-ARCHITECTURE-AUDIT-AND-ROADMAP-V1
 - CAM-2026-03-12-DOC-CODE-REALIGN-V1 P03 current-doc cleanup for legacy/YDB removal and archival pointers
 - CAM-2026-03-12-DOC-CODE-REALIGN-V1 P02 auth docs realignment and operator/deploy consolidation
 - Remove false prod render-contour config guard at config-load stage
