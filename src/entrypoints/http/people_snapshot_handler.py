@@ -53,6 +53,7 @@ class PeopleSnapshotHandler:
         return {
             "personId": str(getattr(person, "person_id", "") or "").strip(),
             "name": str(getattr(person, "name", "") or "").strip(),
+            "isActive": bool(getattr(person, "is_active", True)),
             "position": str(getattr(person, "position", "") or "").strip(),
             "contactEmail": str(getattr(person, "contact_email", "") or "").strip(),
             "yandexEmail": str(getattr(person, "yandex_email", "") or "").strip(),

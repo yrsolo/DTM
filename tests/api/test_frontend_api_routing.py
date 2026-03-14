@@ -47,6 +47,7 @@ class _FakeSnapshotEngine:
             people_by_name={
                 "designer one": PersonView(
                     name="Designer One",
+                    is_active=True,
                     position="designer",
                     person_id="person-1",
                     contact_email="designer.one@example.com",
@@ -603,6 +604,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 200)
         self.assertEqual(payload["meta"]["artifact"], "dtm_people_snapshot_v1")
         self.assertEqual(payload["summary"]["peopleTotal"], 1)
+        self.assertTrue(payload["people"][0]["isActive"])
         self.assertEqual(payload["people"][0]["contactEmail"], "designer.one@example.com")
         self.assertEqual(payload["people"][0]["yandexEmail"], "designer.one@yandex.ru")
         self.assertEqual(payload["people"][0]["telegramId"], "1001")

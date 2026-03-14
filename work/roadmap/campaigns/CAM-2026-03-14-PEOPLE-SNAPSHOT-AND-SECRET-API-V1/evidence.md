@@ -65,3 +65,16 @@
   - kept `attributes` only in the internal people snapshot storage contract
   - removed `attributes` from `/api/v2/people` response payload
   - aligned docs so API is described as canonical projection, not raw snapshot dump
+
+## 2026-03-14 follow-up: derived active flag
+- requirement:
+  - auth and later reminder logic need explicit `isActive` on people registry
+- verified current data:
+  - test people snapshot currently contains `vacation='.'` and `vacation=''`; both must stay active
+  - current `info` values in test snapshot are empty
+- implemented:
+  - added derived `is_active` to people snapshot model and `isActive` to `/api/v2/people`
+  - inactive markers are intentionally narrow:
+    - vacation: `да`, `+`, `отпуск`
+    - info: `не работает`, `уволен`, explicit cross-mark symbols
+  - `.` is explicitly not treated as inactive

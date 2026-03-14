@@ -101,3 +101,7 @@ No business selection or snapshot reads happen inline in webhook intake.
   - `contact_email` -> `contactEmail`
   - `yandex_email` -> `yandexEmail`
 - `attributes` stays inside snapshot storage as internal completeness layer and is intentionally not returned by `/api/v2/people`.
+- `is_active` is derived during people snapshot refresh from explicit markers in `vacation` and `info`:
+  - inactive vacation markers: `да`, `+`, `отпуск`
+  - inactive info markers: `не работает`, `уволен`, explicit cross-mark symbols
+  - `.` does not mark inactivity

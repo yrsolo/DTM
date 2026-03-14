@@ -211,6 +211,7 @@ def people_to_dict(snapshot: PeopleSnapshot) -> dict[str, Any]:
     for key, person in snapshot.people_by_name.items():
         people[str(key)] = {
             "name": str(person.name),
+            "is_active": bool(person.is_active),
             "chat_id": str(person.chat_id),
             "vacation": str(person.vacation),
             "position": str(person.position),
@@ -242,6 +243,7 @@ def people_from_dict(payload: dict[str, Any]) -> PeopleSnapshot:
                 continue
             people_by_name[str(key)] = PersonView(
                 name=str(item.get("name", "")).strip(),
+                is_active=bool(item.get("is_active", True)),
                 chat_id=str(item.get("chat_id", "")).strip(),
                 vacation=str(item.get("vacation", "")).strip(),
                 position=str(item.get("position", "")).strip(),

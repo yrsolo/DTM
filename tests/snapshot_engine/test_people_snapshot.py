@@ -78,6 +78,7 @@ class PeopleSnapshotTestCase(unittest.TestCase):
             people_by_name={
                 "\u0434\u0438\u0437\u0430\u0439\u043d\u0435\u0440": PersonView(
                     name="\u0414\u0438\u0437\u0430\u0439\u043d\u0435\u0440",
+                    is_active=True,
                     chat_id="-1001",
                     vacation="\u043d\u0435\u0442",
                     position="designer",
@@ -94,6 +95,7 @@ class PeopleSnapshotTestCase(unittest.TestCase):
         )
         restored = people_from_dict(people_to_dict(snapshot))
         self.assertIn("\u0434\u0438\u0437\u0430\u0439\u043d\u0435\u0440", restored.people_by_name)
+        self.assertTrue(restored.people_by_name["\u0434\u0438\u0437\u0430\u0439\u043d\u0435\u0440"].is_active)
         self.assertEqual(restored.people_by_name["\u0434\u0438\u0437\u0430\u0439\u043d\u0435\u0440"].chat_id, "-1001")
         self.assertEqual(restored.people_by_name["\u0434\u0438\u0437\u0430\u0439\u043d\u0435\u0440"].contact_email, "designer@example.com")
         self.assertEqual(restored.people_by_name["\u0434\u0438\u0437\u0430\u0439\u043d\u0435\u0440"].yandex_email, "designer@yandex.ru")
@@ -135,6 +137,7 @@ class PeopleSnapshotTestCase(unittest.TestCase):
         )
         snapshot = updater.run(_FakeSource())
         self.assertIn("\u0438\u0432\u0430\u043d \u0438\u0432\u0430\u043d\u043e\u0432", snapshot.people_by_name)
+        self.assertTrue(snapshot.people_by_name["\u0438\u0432\u0430\u043d \u0438\u0432\u0430\u043d\u043e\u0432"].is_active)
         self.assertEqual(snapshot.people_by_name["\u0438\u0432\u0430\u043d \u0438\u0432\u0430\u043d\u043e\u0432"].chat_id, "-1001")
         self.assertEqual(snapshot.people_by_name["\u0438\u0432\u0430\u043d \u0438\u0432\u0430\u043d\u043e\u0432"].contact_email, "ivan@example.com")
         self.assertEqual(snapshot.people_by_name["\u0438\u0432\u0430\u043d \u0438\u0432\u0430\u043d\u043e\u0432"].yandex_email, "ivan@corp.local")
@@ -142,6 +145,7 @@ class PeopleSnapshotTestCase(unittest.TestCase):
         self.assertEqual(snapshot.people_by_name["\u0438\u0432\u0430\u043d \u0438\u0432\u0430\u043d\u043e\u0432"].phone, "79030000000")
         self.assertEqual(snapshot.people_by_name["\u0438\u0432\u0430\u043d \u0438\u0432\u0430\u043d\u043e\u0432"].attributes["telegram"], "@ivan")
         self.assertIn("\u043c\u0430\u0440\u0438\u044f \u043f\u0435\u0442\u0440\u043e\u0432\u0430", snapshot.people_by_name)
+        self.assertFalse(snapshot.people_by_name["\u043c\u0430\u0440\u0438\u044f \u043f\u0435\u0442\u0440\u043e\u0432\u0430"].is_active)
 
     def test_snapshot_engine_lookup_helpers_use_people_registry(self) -> None:
         people_store = _FakePeopleStore()
@@ -152,6 +156,7 @@ class PeopleSnapshotTestCase(unittest.TestCase):
                 people_by_name={
                     "\u0438\u0432\u0430\u043d \u0438\u0432\u0430\u043d\u043e\u0432": PersonView(
                         name="\u0418\u0432\u0430\u043d \u0418\u0432\u0430\u043d\u043e\u0432",
+                        is_active=True,
                         person_id="p1",
                         contact_email="ivan@example.com",
                         yandex_email="ivan@yandex.ru",
@@ -178,6 +183,18 @@ class PeopleSnapshotTestCase(unittest.TestCase):
         self.assertEqual(engine.find_by_telegram_id("1001").person_id, "p1")
         self.assertEqual(engine.find_by_chat_id("-1001").person_id, "p1")
         self.assertEqual(engine.find_by_name("\u0418\u0432\u0430\u043d \u0418\u0432\u0430\u043d\u043e\u0432").person_id, "p1")
+
+    def test_infer_person_is_active_uses_safe_markers_only(self) -> None:
+        from src.snapshot_engine.update_job import infer_person_is_active
+
+        self.assertTrue(infer_person_is_active(vacation=".", info=""))
+        self.assertTrue(infer_person_is_active(vacation="", info=""))
+        self.assertFalse(infer_person_is_active(vacation="да", info=""))
+        self.assertFalse(infer_person_is_active(vacation="+", info=""))
+        self.assertFalse(infer_person_is_active(vacation="в отпуске", info=""))
+        self.assertFalse(infer_person_is_active(vacation="", info="не работает"))
+        self.assertFalse(infer_person_is_active(vacation="", info="уволен"))
+        self.assertFalse(infer_person_is_active(vacation="", info="❌"))
 
 
 if __name__ == "__main__":

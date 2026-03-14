@@ -176,6 +176,24 @@ def normalize_person_lookup_value(value: Any) -> str:
     return str(value or "").strip()
 
 
+def _normalize_marker_text(value: Any) -> str:
+    return " ".join(str(value or "").strip().lower().split())
+
+
+def infer_person_is_active(*, vacation: Any, info: Any) -> bool:
+    vacation_text = _normalize_marker_text(vacation)
+    info_text = _normalize_marker_text(info)
+    if vacation_text in {"да", "+"}:
+        return False
+    if "отпуск" in vacation_text:
+        return False
+    if "не работает" in info_text or "уволен" in info_text:
+        return False
+    if any(marker in str(info or "") for marker in ("❌", "✖", "✖️", "✕", "✕️", "✗", "❎")):
+        return False
+    return True
+
+
 class PeopleSnapshotUpdater:
     def __init__(self, *, people_store: PeopleStore, source_id: str, people_field_map: dict[str, str]) -> None:
         self._people_store = people_store
@@ -221,6 +239,10 @@ class PeopleSnapshotUpdater:
                 continue
             person = PersonView(
                 name=name,
+                is_active=infer_person_is_active(
+                    vacation=attributes.get("vacation", ""),
+                    info=attributes.get("info", ""),
+                ),
                 chat_id=str(attributes.get("chat_id", "")).strip(),
                 vacation=str(attributes.get("vacation", "")).strip(),
                 position=str(attributes.get("position", "")).strip(),

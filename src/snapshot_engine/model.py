@@ -79,6 +79,7 @@ class TaskView:
 @dataclass(slots=True, frozen=True)
 class PersonView:
     name: str
+    is_active: bool = True
     chat_id: str = ""
     vacation: str = ""
     position: str = ""

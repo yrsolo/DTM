@@ -105,3 +105,6 @@ Current workflows:
   - `contact_email` / `contactEmail` for ordinary human contact
   - `yandex_email` / `yandexEmail` for Yandex-account identity
 - `/api/v2/people` returns only canonical projection fields; mapped raw attributes stay internal in storage.
+- canonical derived activity field:
+  - `is_active` / `isActive`
+  - becomes `false` only for explicit vacation/termination markers; `.` is not treated as inactive
