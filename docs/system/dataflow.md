@@ -100,3 +100,4 @@ No business selection or snapshot reads happen inline in webhook intake.
 - people registry stores both:
   - `contact_email` -> `contactEmail`
   - `yandex_email` -> `yandexEmail`
+- `attributes` stays inside snapshot storage as internal completeness layer and is intentionally not returned by `/api/v2/people`.

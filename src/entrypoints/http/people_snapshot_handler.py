@@ -62,10 +62,6 @@ class PeopleSnapshotHandler:
             "info": str(getattr(person, "info", "") or "").strip(),
             "vacation": str(getattr(person, "vacation", "") or "").strip(),
             "phone": str(getattr(person, "phone", "") or "").strip(),
-            "attributes": {
-                str(key): str(value).strip()
-                for key, value in sorted(dict(getattr(person, "attributes", {}) or {}).items())
-            },
         }
 
     @staticmethod

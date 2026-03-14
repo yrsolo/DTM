@@ -606,7 +606,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(payload["people"][0]["contactEmail"], "designer.one@example.com")
         self.assertEqual(payload["people"][0]["yandexEmail"], "designer.one@yandex.ru")
         self.assertEqual(payload["people"][0]["telegramId"], "1001")
-        self.assertEqual(payload["people"][0]["attributes"]["phone"], "79030000000")
+        self.assertNotIn("attributes", payload["people"][0])
 
     def test_masked_mode_is_deterministic_and_preserves_payload_shape(self) -> None:
         masked_event = _fixture_event()

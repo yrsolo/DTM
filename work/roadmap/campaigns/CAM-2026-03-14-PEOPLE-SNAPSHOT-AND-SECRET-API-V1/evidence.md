@@ -57,3 +57,11 @@
   - `src/snapshot_engine/serialization.py`
   - `src/snapshot_engine/engine.py`
   - `src/entrypoints/http/people_snapshot_handler.py`
+
+## 2026-03-14 follow-up: lean API projection
+- requirement:
+  - secret-only people API should not leak raw mapped row data when canonical fields are sufficient
+- implemented:
+  - kept `attributes` only in the internal people snapshot storage contract
+  - removed `attributes` from `/api/v2/people` response payload
+  - aligned docs so API is described as canonical projection, not raw snapshot dump

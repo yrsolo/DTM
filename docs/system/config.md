@@ -104,3 +104,4 @@ Current workflows:
 - canonical people-registry mail fields are:
   - `contact_email` / `contactEmail` for ordinary human contact
   - `yandex_email` / `yandexEmail` for Yandex-account identity
+- `/api/v2/people` returns only canonical projection fields; mapped raw attributes stay internal in storage.

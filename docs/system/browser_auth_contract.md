@@ -125,3 +125,4 @@ Contract:
 - people registry distinguishes:
   - `contactEmail` for ordinary human contact
   - `yandexEmail` for Yandex-account resolution
+- API response returns the stable canonical fields only; raw mapped row attributes stay internal to the snapshot storage contract

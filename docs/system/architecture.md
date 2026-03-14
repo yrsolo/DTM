@@ -115,3 +115,4 @@ If historical detail is needed, use `docs/archive/*`.
 - `frontend_v2.entities.people` is a derived owner list from selected tasks.
 - people snapshot is the canonical registry for reminder/auth lookup and internal reads.
 - people registry explicitly separates `contactEmail` from `yandexEmail` so auth/account identity is not mixed with human-contact data.
+- the HTTP API exposes a clean projection of that registry, not the raw mapped row payload.
