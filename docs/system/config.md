@@ -96,3 +96,8 @@ Current workflows:
 - no `os.getenv()` outside loader/bootstrap
 - services receive typed config objects
 - env-based branching belongs in bootstrap/policy selection, not inside core services
+
+## People registry
+- `config/tables.yaml -> field_maps.people` is the source-of-truth mapping for full people-registry columns.
+- secret-only internal route `GET /api/v2/people` reuses `BROWSER_AUTH_PROXY_SECRET` and `runtime.api.auth_trusted_secret_header`.
+- people snapshot stores the full normalized registry from sheet `Люди` and is separate from `frontend_v2.entities.people`.

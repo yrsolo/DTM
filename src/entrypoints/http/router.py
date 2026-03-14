@@ -11,6 +11,7 @@ from src.entrypoints.http.frontend_compat_handlers import FrontendRootHandler
 from src.entrypoints.http.frontend_v2_handler import FrontendV2Handler
 from src.entrypoints.http.info_handler import InfoHandler
 from src.entrypoints.http.job_status_handler import JobStatusHandler
+from src.entrypoints.http.people_snapshot_handler import PeopleSnapshotHandler
 from src.observability.bottlenecks import append_response_headers
 from src.telegram.webhook import TelegramWebhookHandler
 
@@ -23,6 +24,7 @@ class HttpRouter:
         self._admin_queue_handler = AdminQueueHandler(ctx)
         self._job_status_handler = JobStatusHandler(ctx)
         self._info_handler = InfoHandler(ctx)
+        self._people_snapshot_handler = PeopleSnapshotHandler(ctx)
         self._frontend_root_handler = FrontendRootHandler(ctx)
         self._frontend_v2_handler = FrontendV2Handler(ctx)
 
@@ -43,6 +45,7 @@ class HttpRouter:
             ("admin_queue", self._admin_queue_handler.handle),
             ("job_status", self._job_status_handler.handle),
             ("info", self._info_handler.handle),
+            ("people_snapshot", self._people_snapshot_handler.handle),
             ("frontend_root", self._frontend_root_handler.handle),
             ("frontend_v2", self._frontend_v2_handler.handle),
         ]

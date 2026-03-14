@@ -109,3 +109,8 @@ The current architecture story does not treat the following as canonical runtime
 - historical migration/cutover plans
 
 If historical detail is needed, use `docs/archive/*`.
+
+## People registry distinction
+- `/api/v2/people` is a secret-only internal auth-support route over the canonical people snapshot.
+- `frontend_v2.entities.people` is a derived owner list from selected tasks.
+- people snapshot is the canonical registry for reminder/auth lookup and internal reads.

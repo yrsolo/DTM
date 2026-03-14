@@ -79,10 +79,17 @@ class TaskView:
 @dataclass(slots=True, frozen=True)
 class PersonView:
     name: str
-    chat_id: str
-    vacation: str
-    position: str
+    chat_id: str = ""
+    vacation: str = ""
+    position: str = ""
     person_id: str = ""
+    email: str = ""
+    email_secondary: str = ""
+    telegram: str = ""
+    telegram_id: str = ""
+    info: str = ""
+    phone: str = ""
+    attributes: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass(slots=True, frozen=True)

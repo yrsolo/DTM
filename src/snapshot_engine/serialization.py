@@ -215,6 +215,16 @@ def people_to_dict(snapshot: PeopleSnapshot) -> dict[str, Any]:
             "vacation": str(person.vacation),
             "position": str(person.position),
             "person_id": str(person.person_id),
+            "email": str(person.email),
+            "email_secondary": str(person.email_secondary),
+            "telegram": str(person.telegram),
+            "telegram_id": str(person.telegram_id),
+            "info": str(person.info),
+            "phone": str(person.phone),
+            "attributes": {
+                str(attr_key): str(attr_value)
+                for attr_key, attr_value in sorted(dict(person.attributes or {}).items())
+            },
         }
     return {
         "source_id": str(snapshot.source_id),
@@ -236,6 +246,16 @@ def people_from_dict(payload: dict[str, Any]) -> PeopleSnapshot:
                 vacation=str(item.get("vacation", "")).strip(),
                 position=str(item.get("position", "")).strip(),
                 person_id=str(item.get("person_id", "")).strip(),
+                email=str(item.get("email", "")).strip(),
+                email_secondary=str(item.get("email_secondary", "")).strip(),
+                telegram=str(item.get("telegram", "")).strip(),
+                telegram_id=str(item.get("telegram_id", "")).strip(),
+                info=str(item.get("info", "")).strip(),
+                phone=str(item.get("phone", "")).strip(),
+                attributes={
+                    str(attr_key): str(attr_value).strip()
+                    for attr_key, attr_value in dict(item.get("attributes", {}) or {}).items()
+                },
             )
     return PeopleSnapshot(
         source_id=str(payload.get("source_id", "")).strip(),

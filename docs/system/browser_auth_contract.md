@@ -112,3 +112,13 @@ Forbidden direction:
 - `docs/system/browser_auth_runbook.md`
 - `docs/system/auth_trust_boundary.md`
 - `docs/system/config.md`
+
+## Secret-only internal people route
+
+Contract:
+- prod path: `/ops/api/v2/people`
+- test path: `/test/ops/api/v2/people`
+- requires valid `X-DTM-Proxy-Secret`
+- does not use `x-dtm-*` browser auth headers
+- returns `403` on missing/invalid secret
+- returns the full normalized people registry snapshot for internal auth-support consumers
