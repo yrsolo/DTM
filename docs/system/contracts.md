@@ -56,6 +56,16 @@ Represents bulk metadata that augments raw/prep snapshots:
 - attachment metadata,
 - orphan flags and other auxiliary task metadata.
 
+Attachment metadata fields:
+- `id`
+- `key` (internal only; not exposed by frontend API)
+- `filename`
+- `mime`
+- `size`
+- `uploaded_at`
+- `uploaded_by`
+- `preview`
+
 ## 4) Frontend API v2 contract
 
 Canonical response shape remains:

@@ -4,6 +4,7 @@
 
 ## Done
 
+- CAM-2026-03-12-DOC-CODE-REALIGN-V1 P04: verified current attachment upload contour against code, replaced stale attachment skeleton doc with current runtime contract, and updated main doc map
 - CAM-2026-03-14-PEOPLE-SNAPSHOT-AND-SECRET-API-V1: expanded people snapshot to full registry, added secret-only `GET /api/v2/people`, preserved reminder compatibility, and kept `frontend_v2` unchanged
 - CAM-2026-03-14-PEOPLE-SNAPSHOT-AND-SECRET-API-V1 P02: split people-registry mail fields into `contact_email` and `yandex_email`, and exposed them as `contactEmail` / `yandexEmail` in the secret-only people API
 - CAM-2026-03-14-PEOPLE-SNAPSHOT-AND-SECRET-API-V1 P03: added derived `is_active` / `isActive` using safe vacation/termination markers and explicitly kept `.` as active

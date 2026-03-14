@@ -32,6 +32,8 @@ People routing snapshot:
 
 Attachment metadata contour:
 - binary payloads are uploaded directly to Object Storage under `attachments/{env}/{task_id}/...`
+- admin upload-contract endpoint is `POST /admin/attachments/request-upload`
+- metadata enqueue endpoint is `POST /admin/commands/attach-task-file`
 - metadata is persisted in snapshot extra-store under canonical bulk key `snapshots/{env}/extra/default.json`
 - runtime no longer reads per-task extra objects from the hot path
 - worker command `attach_task_file` updates extra-store and rebuilds prep from current raw snapshot

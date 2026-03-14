@@ -7,6 +7,7 @@
 - none
 
 ## Done
+- CAM-2026-03-12-DOC-CODE-REALIGN-V1 P04 current attachment-upload doc refresh and skeleton removal
 - CAM-2026-03-14-PEOPLE-SNAPSHOT-AND-SECRET-API-V1
 - CAM-2026-03-14-ARCHITECTURE-AUDIT-AND-ROADMAP-V1
 - CAM-2026-03-12-DOC-CODE-REALIGN-V1 P03 current-doc cleanup for legacy/YDB removal and archival pointers

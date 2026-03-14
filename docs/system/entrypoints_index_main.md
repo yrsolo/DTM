@@ -40,6 +40,12 @@ Current HTTP handlers:
 - `AdminQueueHandler`
 - `InfoHandler`
 
+Admin attachment note:
+- `AdminQueueHandler` serves the active attachment intake endpoints:
+  - `POST /admin/attachments/request-upload`
+  - `POST /admin/commands/attach-task-file`
+  - binary upload goes directly to Object Storage; metadata attach goes through the queue
+
 Browser auth note:
 - `/ops/auth/*` and `/test/ops/auth/*` are external auth-contour routes, not Python handlers in this repo
 - this runtime receives browser data requests under `/ops/api/*` and `/test/ops/api/*`

@@ -23,6 +23,7 @@
 - `yandex_prometheus_workspace_setup.md` — exact manual YMP workspace/API-key steps and the repo command that provisions the Grafana datasource
 - `datalens_ops_dashboard.md` — DataLens operator dashboard structure and provisioning notes
 - `command_runtime_architecture.md` — current HTTP/intake/worker runtime flow
+- `file_attachments.md` — current attachment upload, queue, storage, and API metadata flow
 - `yandex_queue_setup.md` — current queue/DLQ/trigger topology
 - `telegram_webhook_setup.md` — current webhook hardening/setup rules
 - `telegram_commands.md` — current internal Telegram command taxonomy
@@ -31,7 +32,6 @@
 ## Future skeleton references
 - `command_queue_skeleton.md`
 - `telegram_intake_skeleton.md`
-- `file_attachments_skeleton.md`
 - `group_query_unification_skeleton.md`
 
 ## Archive policy

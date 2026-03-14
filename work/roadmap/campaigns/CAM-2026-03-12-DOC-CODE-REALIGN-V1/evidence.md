@@ -178,3 +178,40 @@
 - intentionally retained in current docs:
   - `architecture_values.md` keeps transitional/boundary language because it is still normative policy
   - skeleton docs keep anti-goal references where they explicitly constrain future design
+
+## 2026-03-14 trust refresh for P04 attachment docs verification
+- source: active attachment upload code, current docs surface, queue/job tests
+- last_verified_at: 2026-03-14
+- verified_by: Codex
+- evidence:
+  - `src/entrypoints/http/admin_queue_handler.py`
+  - `src/jobs/attach_task_file_job.py`
+  - `src/snapshot_engine/engine.py`
+  - `src/snapshot_engine/frontend_v2_payload_builder.py`
+  - `tests/api/test_command_queue_foundation.py`
+  - `tests/jobs/test_attach_task_file_job.py`
+  - `tests/snapshot_engine/test_engine_attach_metadata.py`
+  - `tests/snapshot_engine/test_query_engine.py`
+  - `docs/system/file_attachments_skeleton.md`
+  - `docs/system/dataflow.md`
+  - `docs/system/entrypoints_index_main.md`
+  - `docs/system/command_runtime_architecture.md`
+  - `docs/system/contracts.md`
+  - `docs/system/README.md`
+- trust_level: high
+- notes:
+  - current runtime already implements presigned upload contract plus queued metadata attach
+  - current doc surface still described file attachments as a future skeleton, which was misleading
+
+## 2026-03-14 post-edit evidence for P04
+- stale claim removed:
+  - `docs/system/file_attachments_skeleton.md` no longer presents attachment upload as future-only work
+- current runtime facts documented:
+  - `POST /admin/attachments/request-upload` returns the active presigned upload contract
+  - `POST /admin/commands/attach-task-file` enqueues `attach_task_file`
+  - worker/job path persists metadata into extra snapshot and rebuilds prep
+  - API v2 exposes `tasks[].attachments` metadata without object keys
+- current surface changes:
+  - added `docs/system/file_attachments.md`
+  - removed `file_attachments_skeleton.md` from current/future-skeleton map
+  - updated `dataflow.md`, `entrypoints_index_main.md`, `command_runtime_architecture.md`, and `contracts.md`
