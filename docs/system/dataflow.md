@@ -92,3 +92,16 @@ No business selection or snapshot reads happen inline in webhook intake.
   3) fallback to draft on empty/error
   4) Telegram delivery with retries/backoff/classified counters
 - in `env=test` all reminder sends are forced to test chat routing.
+
+## 7) People registry note
+- people snapshot keeps the full mapped `Люди` row contract, not only reminder fields.
+- secret-only `GET /api/v2/people` may return the full registry snapshot for internal auth-support consumers.
+- this registry is separate from `frontend_v2.entities.people`, which remains a derived owner list from selected tasks.
+- people registry stores both:
+  - `contact_email` -> `contactEmail`
+  - `yandex_email` -> `yandexEmail`
+- `attributes` stays inside snapshot storage as internal completeness layer and is intentionally not returned by `/api/v2/people`.
+- `is_active` is derived during people snapshot refresh from explicit markers in `vacation` and `info`:
+  - inactive vacation markers: `да`, `+`, `отпуск`
+  - inactive info markers: `не работает`, `уволен`, explicit cross-mark symbols
+  - `.` does not mark inactivity

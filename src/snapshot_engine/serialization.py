@@ -211,10 +211,21 @@ def people_to_dict(snapshot: PeopleSnapshot) -> dict[str, Any]:
     for key, person in snapshot.people_by_name.items():
         people[str(key)] = {
             "name": str(person.name),
+            "is_active": bool(person.is_active),
             "chat_id": str(person.chat_id),
             "vacation": str(person.vacation),
             "position": str(person.position),
             "person_id": str(person.person_id),
+            "contact_email": str(person.contact_email),
+            "yandex_email": str(person.yandex_email),
+            "telegram": str(person.telegram),
+            "telegram_id": str(person.telegram_id),
+            "info": str(person.info),
+            "phone": str(person.phone),
+            "attributes": {
+                str(attr_key): str(attr_value)
+                for attr_key, attr_value in sorted(dict(person.attributes or {}).items())
+            },
         }
     return {
         "source_id": str(snapshot.source_id),
@@ -232,10 +243,21 @@ def people_from_dict(payload: dict[str, Any]) -> PeopleSnapshot:
                 continue
             people_by_name[str(key)] = PersonView(
                 name=str(item.get("name", "")).strip(),
+                is_active=bool(item.get("is_active", True)),
                 chat_id=str(item.get("chat_id", "")).strip(),
                 vacation=str(item.get("vacation", "")).strip(),
                 position=str(item.get("position", "")).strip(),
                 person_id=str(item.get("person_id", "")).strip(),
+                contact_email=str(item.get("contact_email", "")).strip(),
+                yandex_email=str(item.get("yandex_email", "")).strip(),
+                telegram=str(item.get("telegram", "")).strip(),
+                telegram_id=str(item.get("telegram_id", "")).strip(),
+                info=str(item.get("info", "")).strip(),
+                phone=str(item.get("phone", "")).strip(),
+                attributes={
+                    str(attr_key): str(attr_value).strip()
+                    for attr_key, attr_value in dict(item.get("attributes", {}) or {}).items()
+                },
             )
     return PeopleSnapshot(
         source_id=str(payload.get("source_id", "")).strip(),

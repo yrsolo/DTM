@@ -28,9 +28,12 @@ field_maps:
   people:
     person_id: Id
     name: Имя
-    email: Почта
+    telegram: Телеграмм
+    contact_email: Почта
+    yandex_email: почта
     telegram_id: Телеграмм id
     chat_id: Телеграмм chat_id
     info: Информация
     position: Должность
     vacation: Отпуск
+    phone: Телефон

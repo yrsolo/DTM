@@ -16,6 +16,7 @@ if str(ROOT_DIR) not in sys.path:
 import index
 from src.entrypoints.http import frontend_v2_handler as frontend_v2_module
 from src.entrypoints.http import info_handler as info_handler_module
+from src.entrypoints.http import people_snapshot_handler as people_snapshot_handler_module
 from src.entrypoints.http.frontend_response_cache import default_frontend_cache_key
 from src.entrypoints.http.event_parser import extract_payload, http_path, query_params
 from src.entrypoints.http.frontend_query_params import parse_bool
@@ -23,6 +24,7 @@ from src.entrypoints.http.runtime_mode import extract_force_refresh, extract_run
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES
 from src.observability.bottlenecks import RECENT_API_STAGE_EVENTS, RECENT_DIRECT_API_OUTER_TRACES
 from src.services.access.masking import BRAND_DICTIONARY, DESIGNER_DICTIONARY, FORMAT_DICTIONARY, SHOW_DICTIONARY
+from src.snapshot_engine.model import PeopleSnapshot, PersonView
 from src.worker.model import JobStatusRecord
 
 
@@ -39,6 +41,39 @@ class _FakeSnapshotEngine:
         self.queries = []
         self.response_cache_store = _FakeResponseCacheStore()
         self.prep = type("Prep", (), {"raw_source_hash": "sha256:test"})()
+        self.people = PeopleSnapshot(
+            source_id="sheet:test:people",
+            fetched_at_utc=datetime(2026, 3, 2, tzinfo=timezone.utc),
+            people_by_name={
+                "designer one": PersonView(
+                    name="Designer One",
+                    is_active=True,
+                    position="designer",
+                    person_id="person-1",
+                    contact_email="designer.one@example.com",
+                    yandex_email="designer.one@yandex.ru",
+                    telegram="@designerone",
+                    telegram_id="1001",
+                    chat_id="-1001",
+                    info="team lead",
+                    vacation="",
+                    phone="79030000000",
+                    attributes={
+                        "person_id": "person-1",
+                        "name": "Designer One",
+                        "position": "designer",
+                        "contact_email": "designer.one@example.com",
+                        "yandex_email": "designer.one@yandex.ru",
+                        "telegram": "@designerone",
+                        "telegram_id": "1001",
+                        "chat_id": "-1001",
+                        "info": "team lead",
+                        "vacation": "",
+                        "phone": "79030000000",
+                    },
+                )
+            },
+        )
 
     def frontend_v2(self, query):  # noqa: ANN001
         self.queries.append(query)
@@ -46,6 +81,9 @@ class _FakeSnapshotEngine:
 
     def get_prep_snapshot(self):
         return self.prep
+
+    def get_people_snapshot(self):
+        return self.people
 
     def get_response_cache_store(self):
         return self.response_cache_store
@@ -142,6 +180,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self._orig_build_snapshot_engine = frontend_v2_module.build_snapshot_engine
         self._orig_info_build_snapshot_engine = info_handler_module.build_snapshot_engine
+        self._orig_people_build_snapshot_engine = people_snapshot_handler_module.build_snapshot_engine
         self._orig_info_get_queue_live_stats = info_handler_module.get_queue_live_stats
         self._orig_info_get_function_build_info = info_handler_module.get_function_build_info
         self._orig_info_storage_stats = info_handler_module.InfoHandler._storage_stats
@@ -194,6 +233,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         )
         frontend_v2_module.build_snapshot_engine = lambda _ctx: self._engine  # type: ignore[assignment]
         info_handler_module.build_snapshot_engine = lambda _ctx: _FakeInfoSnapshotEngine()  # type: ignore[assignment]
+        people_snapshot_handler_module.build_snapshot_engine = lambda _ctx: self._engine  # type: ignore[assignment]
         info_handler_module.get_queue_live_stats = lambda **_kwargs: type(  # type: ignore[assignment]
             "QueueStats",
             (),
@@ -229,6 +269,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
     def tearDown(self) -> None:
         frontend_v2_module.build_snapshot_engine = self._orig_build_snapshot_engine  # type: ignore[assignment]
         info_handler_module.build_snapshot_engine = self._orig_info_build_snapshot_engine  # type: ignore[assignment]
+        people_snapshot_handler_module.build_snapshot_engine = self._orig_people_build_snapshot_engine  # type: ignore[assignment]
         info_handler_module.get_queue_live_stats = self._orig_info_get_queue_live_stats  # type: ignore[assignment]
         info_handler_module.get_function_build_info = self._orig_info_get_function_build_info  # type: ignore[assignment]
         info_handler_module.InfoHandler._storage_stats = self._orig_info_storage_stats  # type: ignore[assignment]
@@ -532,6 +573,42 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 200)
         self.assertEqual(payload["meta"]["access"]["mode"], "full")
         self.assertTrue(payload["meta"]["access"]["trustedIngress"])
+
+    def test_people_api_requires_valid_secret(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/people"
+        event["params"]["proxy"] = "api/v2/people"
+        event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/people"
+        event["headers"] = {
+            "x-dtm-access-mode": "full",
+            "x-dtm-authenticated": "1",
+            "x-dtm-contour": "test",
+        }
+
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response["body"])
+
+        self.assertEqual(response["statusCode"], 403)
+        self.assertEqual(payload["error"]["code"], "forbidden")
+
+    def test_people_api_returns_full_snapshot_for_valid_secret(self) -> None:
+        event = _fixture_event()
+        event["pathParams"]["proxy"] = "api/v2/people"
+        event["params"]["proxy"] = "api/v2/people"
+        event["url"] = "https://dtm.solofarm.ru/test/ops/api/v2/people"
+        event["headers"] = {"X-DTM-Proxy-Secret": "proxy-secret-test"}
+
+        response = asyncio.run(index.handler(event, None))
+        payload = json.loads(response["body"])
+
+        self.assertEqual(response["statusCode"], 200)
+        self.assertEqual(payload["meta"]["artifact"], "dtm_people_snapshot_v1")
+        self.assertEqual(payload["summary"]["peopleTotal"], 1)
+        self.assertTrue(payload["people"][0]["isActive"])
+        self.assertEqual(payload["people"][0]["contactEmail"], "designer.one@example.com")
+        self.assertEqual(payload["people"][0]["yandexEmail"], "designer.one@yandex.ru")
+        self.assertEqual(payload["people"][0]["telegramId"], "1001")
+        self.assertNotIn("attributes", payload["people"][0])
 
     def test_masked_mode_is_deterministic_and_preserves_payload_shape(self) -> None:
         masked_event = _fixture_event()

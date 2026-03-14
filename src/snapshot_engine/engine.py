@@ -18,6 +18,9 @@ from src.snapshot_engine.update_job import (
     SheetsTaskNormalizer,
     TaskSourceSheetsAdapter,
     UpdateJob,
+    normalize_person_yandex_email,
+    normalize_person_lookup_value,
+    normalize_person_name,
 )
 
 
@@ -90,6 +93,55 @@ class SnapshotEngine:
 
     def get_people_snapshot(self) -> Any:
         return self._people_store.get()
+
+    def find_by_telegram_id(self, telegram_id: str) -> Any | None:
+        lookup = normalize_person_lookup_value(telegram_id)
+        if not lookup:
+            return None
+        snapshot = self.get_people_snapshot()
+        if snapshot is None:
+            return None
+        for person in snapshot.people_by_name.values():
+            if normalize_person_lookup_value(getattr(person, "telegram_id", "")) == lookup:
+                return person
+        return None
+
+    def find_by_chat_id(self, chat_id: str) -> Any | None:
+        lookup = normalize_person_lookup_value(chat_id)
+        if not lookup:
+            return None
+        snapshot = self.get_people_snapshot()
+        if snapshot is None:
+            return None
+        for person in snapshot.people_by_name.values():
+            if normalize_person_lookup_value(getattr(person, "chat_id", "")) == lookup:
+                return person
+        return None
+
+    def find_by_yandex_email(self, email: str) -> Any | None:
+        lookup = normalize_person_yandex_email(email)
+        if not lookup:
+            return None
+        snapshot = self.get_people_snapshot()
+        if snapshot is None:
+            return None
+        for person in snapshot.people_by_name.values():
+            primary = normalize_person_yandex_email(getattr(person, "yandex_email", ""))
+            if lookup == primary:
+                return person
+        return None
+
+    def find_by_email(self, email: str) -> Any | None:
+        return self.find_by_yandex_email(email)
+
+    def find_by_name(self, name: str) -> Any | None:
+        lookup = normalize_person_name(name)
+        if not lookup:
+            return None
+        snapshot = self.get_people_snapshot()
+        if snapshot is None:
+            return None
+        return snapshot.people_by_name.get(lookup)
 
     def get_response_cache_store(self) -> Any:
         return self._response_cache_store

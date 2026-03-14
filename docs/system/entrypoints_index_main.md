@@ -34,6 +34,7 @@ Transport shells:
 Current HTTP handlers:
 - `FrontendRootHandler`
 - `FrontendV2Handler`
+- `PeopleSnapshotHandler`
 - `TelegramWebhookHandler`
 - `GroupQueryHandler`
 - `AdminQueueHandler`

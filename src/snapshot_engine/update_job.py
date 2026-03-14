@@ -168,6 +168,32 @@ def normalize_person_name(value: Any) -> str:
     return " ".join(text.split())
 
 
+def normalize_person_yandex_email(value: Any) -> str:
+    return str(value or "").strip().lower()
+
+
+def normalize_person_lookup_value(value: Any) -> str:
+    return str(value or "").strip()
+
+
+def _normalize_marker_text(value: Any) -> str:
+    return " ".join(str(value or "").strip().lower().split())
+
+
+def infer_person_is_active(*, vacation: Any, info: Any) -> bool:
+    vacation_text = _normalize_marker_text(vacation)
+    info_text = _normalize_marker_text(info)
+    if vacation_text in {"да", "+"}:
+        return False
+    if "отпуск" in vacation_text:
+        return False
+    if "не работает" in info_text or "уволен" in info_text:
+        return False
+    if any(marker in str(info or "") for marker in ("❌", "✖", "✖️", "✕", "✕️", "✗", "❎")):
+        return False
+    return True
+
+
 class PeopleSnapshotUpdater:
     def __init__(self, *, people_store: PeopleStore, source_id: str, people_field_map: dict[str, str]) -> None:
         self._people_store = people_store
@@ -195,19 +221,39 @@ class PeopleSnapshotUpdater:
         values = source.read_worksheet_values("people", "A1:Z200")
         header_index = self._header_index(values)
         people_by_name: dict[str, PersonView] = {}
+        mapped_columns = {
+            str(key): str(value).strip()
+            for key, value in dict(self._people_field_map or {}).items()
+            if str(key).strip() and str(value).strip()
+        }
         for row in list(values[1:] if len(values) > 1 else []):
             if not isinstance(row, list):
                 continue
-            name = self._cell(row, header_index.get(self._people_field_map.get("name", "")))
+            attributes = {
+                field_name: self._cell(row, header_index.get(column_name))
+                for field_name, column_name in mapped_columns.items()
+            }
+            name = str(attributes.get("name", "")).strip()
             name_key = normalize_person_name(name)
             if not name_key:
                 continue
             person = PersonView(
                 name=name,
-                chat_id=self._cell(row, header_index.get(self._people_field_map.get("chat_id", ""))),
-                vacation=self._cell(row, header_index.get(self._people_field_map.get("vacation", ""))),
-                position=self._cell(row, header_index.get(self._people_field_map.get("position", ""))),
-                person_id=self._cell(row, header_index.get(self._people_field_map.get("person_id", ""))),
+                is_active=infer_person_is_active(
+                    vacation=attributes.get("vacation", ""),
+                    info=attributes.get("info", ""),
+                ),
+                chat_id=str(attributes.get("chat_id", "")).strip(),
+                vacation=str(attributes.get("vacation", "")).strip(),
+                position=str(attributes.get("position", "")).strip(),
+                person_id=str(attributes.get("person_id", "")).strip(),
+                contact_email=str(attributes.get("contact_email", "")).strip(),
+                yandex_email=str(attributes.get("yandex_email", "")).strip(),
+                telegram=str(attributes.get("telegram", "")).strip(),
+                telegram_id=str(attributes.get("telegram_id", "")).strip(),
+                info=str(attributes.get("info", "")).strip(),
+                phone=str(attributes.get("phone", "")).strip(),
+                attributes={str(key): str(value).strip() for key, value in attributes.items()},
             )
             people_by_name[name_key] = person
         snapshot = PeopleSnapshot(

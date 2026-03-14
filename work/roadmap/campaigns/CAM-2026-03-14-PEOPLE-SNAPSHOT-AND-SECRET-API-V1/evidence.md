@@ -1,0 +1,80 @@
+# Evidence - CAM-2026-03-14-PEOPLE-SNAPSHOT-AND-SECRET-API-V1
+
+## Trust gate
+- source: verified runtime code, config, current docs
+- last_verified_at: 2026-03-14
+- verified_by: Codex
+- evidence:
+  - `src/snapshot_engine/update_job.py`
+  - `src/snapshot_engine/serialization.py`
+  - `src/snapshot_engine/engine.py`
+  - `src/entrypoints/http/router.py`
+  - `src/entrypoints/http/access_context.py`
+  - `config/tables.yaml`
+  - `config/runtime.yaml`
+  - `docs/system/config.md`
+  - `docs/system/architecture.md`
+- trust_level: high
+- notes:
+  - current people snapshot is partial and reminder-oriented
+  - current frontend `entities.people` is derived from task owners, not from people snapshot
+  - existing trusted secret contract is code-backed and can be reused for a secret-only internal people API
+
+## 2026-03-14 execution evidence
+- implemented:
+  - full-fidelity people snapshot model with canonical fields plus mapped `attributes`
+  - updater now reads all mapped people columns from `config/tables.yaml`
+  - secret-only `GET /api/v2/people`
+  - snapshot engine lookup helpers for `telegram_id`, `chat_id`, `yandex_email`, and `name`
+- verified by code pointers:
+  - `src/snapshot_engine/update_job.py`
+  - `src/snapshot_engine/serialization.py`
+  - `src/snapshot_engine/engine.py`
+  - `src/entrypoints/http/people_snapshot_handler.py`
+  - `src/entrypoints/http/router.py`
+  - `config/tables.yaml`
+- docs aligned:
+  - `docs/system/config.md`
+  - `docs/system/architecture.md`
+  - `docs/system/browser_auth_contract.md`
+  - `docs/system/dataflow.md`
+- retained distinction:
+  - `frontend_v2.entities.people` remains derived from selected task owners
+  - people snapshot is the canonical registry for reminder/auth use cases
+
+## 2026-03-14 follow-up: explicit Yandex account email naming
+- requirement:
+  - primary people-registry email field must read as Yandex-account identity data, not as generic human-contact email
+- implemented:
+  - renamed primary canonical field from `email` to `yandex_email`
+  - then corrected the business model to keep both `contact_email` and `yandex_email`
+  - secret-only API payload now returns `contactEmail` and `yandexEmail`
+  - snapshot engine added explicit `find_by_yandex_email(...)` lookup while retaining `find_by_email(...)` as compatibility wrapper
+- verified by code pointers:
+  - `config/tables.yaml`
+  - `src/snapshot_engine/model.py`
+  - `src/snapshot_engine/update_job.py`
+  - `src/snapshot_engine/serialization.py`
+  - `src/snapshot_engine/engine.py`
+  - `src/entrypoints/http/people_snapshot_handler.py`
+
+## 2026-03-14 follow-up: lean API projection
+- requirement:
+  - secret-only people API should not leak raw mapped row data when canonical fields are sufficient
+- implemented:
+  - kept `attributes` only in the internal people snapshot storage contract
+  - removed `attributes` from `/api/v2/people` response payload
+  - aligned docs so API is described as canonical projection, not raw snapshot dump
+
+## 2026-03-14 follow-up: derived active flag
+- requirement:
+  - auth and later reminder logic need explicit `isActive` on people registry
+- verified current data:
+  - test people snapshot currently contains `vacation='.'` and `vacation=''`; both must stay active
+  - current `info` values in test snapshot are empty
+- implemented:
+  - added derived `is_active` to people snapshot model and `isActive` to `/api/v2/people`
+  - inactive markers are intentionally narrow:
+    - vacation: `да`, `+`, `отпуск`
+    - info: `не работает`, `уволен`, explicit cross-mark symbols
+  - `.` is explicitly not treated as inactive
