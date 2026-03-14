@@ -81,7 +81,8 @@ class PeopleSnapshotHandler:
             method = "GET"
         if method != "GET":
             return None
-        if normalize_path(req.path) != "/api/v2/people":
+        path = normalize_path(req.path)
+        if path != "/api/v2/people" and not path.endswith("/api/v2/people"):
             return None
         if not self._authorized(req):
             return error_response(
