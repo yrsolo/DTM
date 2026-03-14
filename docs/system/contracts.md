@@ -1,68 +1,92 @@
 # Contracts (Current)
 
-This document defines the canonical data shapes used in the pipeline.
-They are not necessarily 1:1 with Python dataclasses; they represent what the system treats as "truth".
+This document defines the current runtime contracts that shape the live snapshot-first contour.
+It intentionally excludes legacy database/storage schemas and historical migration contracts.
 
-## 1) NormalizedTask (canonical)
-Fields (minimum set observed in current code):
-- task_id: str (UUID)
-- title: str
-- brand: str
-- format_: str
-- customer: str
-- owner_id: str
-- group_id: str
-- raw_timing: str
-- status: str (derived from color mapping; normalized workflow status)
-- history: str (raw textual status from source column)
-- min_date: YYYY-MM-DD? (derived from milestones planned dates)
-- max_date: YYYY-MM-DD? (derived from milestones planned dates)
-- milestones: list[Milestone]
+## 1) Normalized task contract
+
+Minimum canonical task fields observed in the active runtime:
+- `task_id`
+- `title`
+- `brand`
+- `format_`
+- `customer`
+- `owner_id`
+- `group_id`
+- `raw_timing`
+- `status`
+- `history`
+- `min_date`
+- `max_date`
+- `milestones`
 
 Notes:
-- Some fields may be empty in sheet; still included in hashing basis after normalization.
-- `history` is stored as first-class column `dtm_tasks.history`; `raw_payload` is diagnostic only and not a source of truth for `history`.
+- `status` is the normalized workflow status derived from sheet color/text mapping.
+- `history` is the raw human-facing source status/history text preserved for runtime consumers.
+- task identity is snapshot-centric and stable across the active runtime contour.
 
-## 2) Milestone
-- idx: int (ordering within task)
-- type: str (e.g., start / draft / approve / etc.)
-- planned: YYYY-MM-DD? (string in canonical encoding)
-- actual: YYYY-MM-DD? (optional)
-- status: str (planned/done/...)
-- raw_text: str? (optional)
+## 2) Milestone contract
 
-Invariants:
-- milestones array must never be empty (at least a synthetic "start").
+Milestone fields used by the active runtime:
+- `idx`
+- `type`
+- `planned`
+- `actual`
+- `status`
+- `raw_text`
 
-## 3) Hash contracts
+Invariant:
+- `milestones` must never be empty for a runtime task view.
 
-### stable_json_hash(values)
-- Used for source snapshots.
-- Must be stable across platforms: JSON dump with sorted keys and fixed separators.
+## 3) Snapshot contracts
 
-### content_hash(task_fields + milestones_fields)
-- Used for versioning.
-- Must include milestones fields (timing changes matter).
-- Must exclude pure status markers (row color) from causing version bump.
+### Raw snapshot
+Represents normalized sheet source state before extra metadata merge.
 
-## 4) Query filters (frontend API v2)
-Minimal supported filtering behavior (as per current API design):
-- time window: window_start/window_end, mode intersects (task included if its start/end intersects)
-- status filters may be applied by consumers (active/archived)
+### Prep snapshot
+Represents the canonical read-side snapshot used by:
+- frontend/API reads,
+- render jobs,
+- reminder flows,
+- group-query selection,
+- attachment metadata exposure.
 
-## 5) YDB table contracts (what each row represents)
+### Extra snapshot
+Represents bulk metadata that augments raw/prep snapshots:
+- attachment metadata,
+- orphan flags and other auxiliary task metadata.
 
-### dtm_tasks row = HEAD state
-Represents the latest canonical task state as of last successful sync.
+## 4) Frontend API v2 contract
 
-### dtm_task_versions row = Immutable version record
-Represents one version snapshot of the task (payload_json + content_hash), optionally marked archive.
+Canonical response shape remains:
+- `meta`
+- `filters`
+- `summary`
+- `entities`
+- `tasks`
 
-### dtm_task_milestones_v row = Immutable milestones for (task_id, version)
-Represents one milestone entry for a specific task version.
+Current behavioral guarantees:
+- filtering stays query-driven over prep snapshot,
+- masking changes sensitive values but preserves payload shape,
+- `milestones` remain full for selected tasks,
+- ids, dates, statuses, and summary/meta structure remain stable across full/masked modes.
 
-### dtm_readmodel_frontend_v2 row = View snapshot
-Represents a full payload JSON snapshot for frontend/API consumption.
+## 5) Hashing and freshness contracts
 
-## 6) Runtime modes (contract-level view)
-See `docs/system/runtime_modes.md` for the mapping of modes to use-cases and data sources.
+### Stable source hash
+- built from stable JSON over sheet values/colors
+- used to decide whether snapshot rebuild is necessary
+
+### Content-level task hashing
+- must include milestone timing fields
+- must not let cosmetic-only markers redefine task identity
+
+## 6) Runtime mode contract view
+
+See `docs/system/runtime_modes.md` for current supported modes and transport mapping.
+
+## Archive pointer
+
+Legacy YDB/readmodel table contracts are not part of the current runtime story.
+If historical schema detail is needed, use:
+- `docs/archive/system_legacy/ydb_schema.md`

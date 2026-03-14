@@ -4,7 +4,9 @@ from src.app.bootstrap import build_app_context
 from src.entrypoints.index_dispatcher import IndexDispatcher
 
 
-class _LazyMappingProxy:
+class _LazyMapping:
+    """Lazy mutable mapping used only to preserve test/runtime compatibility."""
+
     def __init__(self, getter):
         self._getter = getter
 
@@ -29,12 +31,6 @@ class _LazyMappingProxy:
     def get(self, key, default=None):
         return self._mapping().get(key, default)
 
-    def clear(self) -> None:
-        self._mapping().clear()
-
-    def update(self, *args, **kwargs) -> None:
-        self._mapping().update(*args, **kwargs)
-
     def keys(self):
         return self._mapping().keys()
 
@@ -43,6 +39,12 @@ class _LazyMappingProxy:
 
     def values(self):
         return self._mapping().values()
+
+    def clear(self) -> None:
+        self._mapping().clear()
+
+    def update(self, *args, **kwargs) -> None:
+        self._mapping().update(*args, **kwargs)
 
 _APP_CONTEXT = None
 _APP_DISPATCHER = None
@@ -72,8 +74,8 @@ def _get_dispatcher() -> IndexDispatcher:
     return _APP_DISPATCHER
 
 
-APP_DEPS = _LazyMappingProxy(_get_deps)
-APP_TRIGGERS = _LazyMappingProxy(_get_triggers)
+APP_DEPS = _LazyMapping(_get_deps)
+APP_TRIGGERS = _LazyMapping(_get_triggers)
 
 
 async def handler(event, _):

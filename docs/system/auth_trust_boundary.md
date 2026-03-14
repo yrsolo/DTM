@@ -23,6 +23,18 @@ Current repo implementation does not return `403` for direct browser calls. It d
 
 This choice must not be left implicit.
 
+Headers currently read by backend after trusted-ingress validation:
+- `x-dtm-access-mode`
+- `x-dtm-authenticated`
+- `x-dtm-contour`
+- `x-dtm-user-id`
+- `x-dtm-user-role`
+- `x-dtm-user-status`
+
+The current implementation is code-backed in:
+- `src/entrypoints/http/access_context.py`
+- `src/app/bootstrap.py`
+
 ## Required implementation behavior
 
 - `x-dtm-*` headers are ignored unless trusted ingress validation passes
@@ -37,5 +49,7 @@ This choice must not be left implicit.
 
 ## Related docs
 
+- `docs/system/browser_auth_runbook.md`
 - `docs/system/browser_auth_contract.md`
+- `docs/system/config.md`
 - `docs/system/architecture_values.md`

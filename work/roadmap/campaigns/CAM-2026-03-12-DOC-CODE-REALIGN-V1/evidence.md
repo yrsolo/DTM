@@ -53,3 +53,128 @@
   - `docs/system/architecture.md`
   - `docs/system/module_map.md`
   - `work/roadmap/MASTER_EXECUTION_BRIEF_2026-03-12.md`
+
+## 2026-03-14 trust refresh for P02 auth docs consolidation
+- source: active auth docs, auth reference handoff, verified runtime code, deploy workflows
+- last_verified_at: 2026-03-14
+- verified_by: Codex
+- evidence:
+  - `docs/system/browser_auth_contract.md`
+  - `docs/system/auth_trust_boundary.md`
+  - `docs/system/config.md`
+  - `docs/system/architecture.md`
+  - `docs/system/entrypoints_index_main.md`
+  - `docs/system/runbook.md`
+  - `agent/intructions/DTM-test/BACKEND_AUTH_HANDOFF.md`
+  - `src/entrypoints/http/access_context.py`
+  - `src/app/bootstrap.py`
+  - `config/runtime.yaml`
+  - `.github/workflows/deploy_yc_function_main.yml`
+  - `.github/workflows/release_yc_function_prod.yml`
+- trust_level: high
+- notes:
+  - trust boundary behavior, trusted headers, masked fallback, and secret bootstrap were verified against active code
+  - deploy wiring for `BROWSER_AUTH_PROXY_SECRET` was verified against current test/prod workflows
+  - remaining drift is editorial/operator-facing rather than behavioral
+
+## 2026-03-14 pre-edit drift matrix for P02
+- canonical code-backed claims already verified:
+  - backend trust logic lives in `src/entrypoints/http/access_context.py`
+  - `BROWSER_AUTH_PROXY_SECRET` is bootstrapped from env in `src/app/bootstrap.py`
+  - trusted header name and fallback policy are configured in `config/runtime.yaml`
+  - both test and prod deploy workflows map `BROWSER_AUTH_PROXY_SECRET` from Lockbox into function env
+- stale or incomplete main-doc claims to close:
+  - auth function/auth contour is not explicitly described as a separate boundary component in main docs
+  - callback paths and browser-facing auth routes are not documented together in one canonical operator-facing package
+  - deploy/operator verification steps for `test` and `prod` are scattered and incomplete
+  - reference bundle `agent/intructions/DTM-test/**` still contains auth function details not fully promoted into `docs/system/*`
+
+## 2026-03-14 post-edit evidence for P02
+- canonical auth doc set now consists of:
+  - `docs/system/browser_auth_contract.md`
+  - `docs/system/auth_trust_boundary.md`
+  - `docs/system/browser_auth_runbook.md`
+  - `docs/system/config.md`
+  - `docs/system/architecture.md`
+  - `docs/system/entrypoints_index_main.md`
+- stale claims or omissions closed:
+  - main docs now describe auth contour/function as an external boundary component rather than an implicit assumption
+  - callback paths are documented in main docs for both `test` and `prod`
+  - operator-facing Lockbox/env wiring and rollout verification steps are documented in main docs
+  - `agent/intructions/DTM-test/BACKEND_AUTH_HANDOFF.md` is now explicitly treated as reference-only input rather than canonical runtime documentation
+- static verification evidence:
+  - `docs/system/*` now contains one consistent wording set for:
+    - trusted header contract
+    - `masked` fallback on untrusted ingress
+    - `BROWSER_AUTH_PROXY_SECRET` bootstrap and workflow mapping
+    - `/ops/auth/*`, `/test/ops/auth/*`, `/ops/auth/callback`, `/test/ops/auth/callback`
+- intentionally left as reference/archive:
+  - `agent/intructions/DTM-test/**` remains a historical handoff bundle and not a living main-doc root
+
+## 2026-03-14 trust refresh for P03 current-doc cleanup
+- source: current main docs, snapshot-engine docs, verified runtime imports/usages, archive tree
+- last_verified_at: 2026-03-14
+- verified_by: Codex
+- evidence:
+  - `README.md`
+  - `docs/README.md`
+  - `docs/system/architecture.md`
+  - `docs/system/module_map.md`
+  - `docs/system/contracts.md`
+  - `docs/system/entrypoints_index_main.md`
+  - `docs/system/runbook.md`
+  - `docs/system/runtime_modes.md`
+  - `docs/snapshot_engine/README.md`
+  - `docs/snapshot_engine/architecture.md`
+  - `docs/snapshot_engine/api_v2_parity.md`
+  - `docs/snapshot_engine/migration_plan.md`
+  - `src/entrypoints/runtime/runtime_shell.py`
+  - `src/entrypoints/runtime/local_runtime.py`
+  - `src/entrypoints/runtime/planner_runtime_entry.py`
+  - `src/entrypoints/http/frontend_v2_handler.py`
+  - `src/snapshot_engine/*`
+  - `docs/archive/system_legacy/*`
+- trust_level: high
+- notes:
+  - current docs still contain misleading active-looking references to YDB/readmodel/planner-era modules
+  - archive tree already contains the correct home for deep legacy detail, so cleanup can be done without losing historical references
+
+## 2026-03-14 pre-edit drift matrix for P03
+- misleading current-doc claims observed:
+  - `docs/system/module_map.md` still marks `src/adapters/ydb/*` as canonical persistence boundary and keeps YDB/readmodel services in active service inventory
+  - `docs/system/contracts.md` still documents YDB table contracts as part of current contracts
+  - `docs/system/architecture.md` and `docs/system/entrypoints_index_main.md` still over-explain planner/transitional runtime in current narrative
+  - `docs/snapshot_engine/migration_plan.md` is migration-era material living in current tree
+  - `README.md` and `docs/README.md` still point readers into a transitional cleanup story rather than a simple current-runtime story
+- intended cleanup:
+  - current docs become snapshot-first, queue-backed, browser-safe, serverless runtime docs only
+  - legacy detail stays only as archive pointer
+
+## 2026-03-14 post-edit evidence for P03
+- current docs rewritten:
+  - `README.md`
+  - `docs/README.md`
+  - `docs/system/module_map.md`
+  - `docs/system/contracts.md`
+  - `docs/system/architecture.md`
+  - `docs/system/entrypoints_index_main.md`
+  - `docs/system/runbook.md`
+  - `docs/system/command_runtime_architecture.md`
+  - `docs/system/config.md`
+  - `docs/snapshot_engine/README.md`
+  - `docs/snapshot_engine/api_v2_parity.md`
+- moved to archive:
+  - `docs/snapshot_engine/migration_plan.md` -> `docs/archive/system_legacy/snapshot_engine_migration_plan.md`
+- misleading current-story claims removed:
+  - YDB/readmodel tables are no longer described as current contracts
+  - YDB adapters/repositories are no longer presented as active canonical module boundaries
+  - planner-era runtime is no longer described as the active architecture center
+  - current README/docs start points now lead directly into the snapshot-first runtime story
+- static verification result:
+  - remaining `YDB`/`planner`/`readmodel`/`legacy` mentions in current docs are limited to:
+    - archive pointers
+    - anti-goals / historical notes
+    - explicit backward-compatibility notes that still exist in live config/metrics policy
+- intentionally retained in current docs:
+  - `architecture_values.md` keeps transitional/boundary language because it is still normative policy
+  - skeleton docs keep anti-goal references where they explicitly constrain future design

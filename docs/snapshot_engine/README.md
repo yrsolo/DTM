@@ -1,22 +1,25 @@
 # Snapshot Engine
 
-`Snapshot Engine` — канонический runtime-контур для API v2 и group-query после hard cutover.
+Snapshot Engine is the canonical read-side runtime contour.
 
-Путь данных:
-1. Sheets snapshot (`values + colors`)
-2. normalize -> `RawSnapshot`
-3. merge extra -> `PrepSnapshot`
-4. запись `raw/prep/extra` в S3
-5. query из `PrepSnapshot` для HTTP/notify
+Current data path:
+1. fetch Sheets snapshot (`values + colors`)
+2. normalize into `RawSnapshot`
+3. merge extra metadata into `PrepSnapshot`
+4. write raw/prep/extra objects to Object Storage
+5. serve query/render/notify flows from prep snapshot
 
-Ключевые инварианты:
-- `status` = нормализованный color-derived статус
-- `history` = сырой текстовый статус из таблицы
-- `task_id` = ID из исходной таблицы (канонический идентификатор)
+Key invariants:
+- `status` is normalized from source color/text rules
+- `history` preserves source human-facing status/history text
+- `task_id` stays the canonical runtime identifier
 
-Runtime больше не использует YDB readmodel как source-of-truth для API v2.
+Current environment isolation:
+- `snapshots/test/...`
+- `snapshots/prod/...`
 
-Изоляция test/prod в одном бакете:
-- `prefix_raw/prefix_prep/prefix_extra` поддерживают шаблон `{env}`.
-- Для `ENV=test` ключи пишутся в `snapshots/test/...`.
-- Для `ENV=prod` ключи пишутся в `snapshots/prod/...`.
+Current doc set:
+- `docs/snapshot_engine/architecture.md`
+- `docs/snapshot_engine/api_v2_parity.md`
+
+Historical cutover/migration material is archive-only and not part of the current runtime story.

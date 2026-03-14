@@ -91,8 +91,8 @@ Transport shells:
 - `src/entrypoints/triggers/trigger_shell.py`
 - `src/entrypoints/runtime/runtime_shell.py`
 
-Standard runtime entry:
+Local/manual runtime still passes through a transitional runtime adapter, but that adapter is not the conceptual center of the current architecture.
 
-- `src/entrypoints/runtime/planner_runtime_entry.py`
-
-Legacy runtime code is archived under `src/legacy/` and is not part of standard runtime.
+Historical runtime detail is archive-only:
+- `src/legacy/`
+- `docs/archive/system_legacy/modules/*`

@@ -1,110 +1,111 @@
-﻿# Architecture (Current)
+# Architecture (Current)
 
 ## Purpose
-DTM is a Cloud Functions runtime that:
-- reads task data from Google Sheets,
-- builds snapshot artifacts in Object Storage,
-- serves API/query responses from prepared snapshots,
-- renders operational Sheets views,
-- sends Telegram notifications,
-- executes heavy mutations asynchronously through Message Queue workers.
 
-Governing architecture policy:
+DTM is a snapshot-first, queue-backed, browser-safe serverless runtime.
+
+Canonical formula:
+- Google Sheets as source input,
+- Raw/Prep snapshots in Object Storage,
+- browser/API reads from prepared snapshots,
+- heavy mutations through queue-backed jobs,
+- browser auth and masking enforced at the HTTP boundary.
+
+Governing policy:
 - [architecture_values.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/architecture_values.md)
 
-## Canonical production contour
-1. Sheets snapshot (`values + colors`)
-2. Normalize into canonical task model
-3. Write Raw snapshot to S3/Object Storage
-4. Merge Extra metadata and build Prep snapshot
-5. Consumers read Prep snapshot
+## Canonical runtime contour
 
-Consumers:
+1. Fetch Sheets data (`values + colors`)
+2. Normalize into canonical task state
+3. Write Raw snapshot
+4. Merge extra metadata and build Prep snapshot
+5. Serve/query/render/notify from Prep snapshot and related lightweight stores
+
+Primary consumers:
 - `/api/v2/frontend`
 - `/info`
-- render jobs (`Задачи`, `Дизайнеры`)
+- render jobs
 - reminder jobs
-- group query reply jobs
+- group-query reply jobs
 
 ## Runtime topology
-- `index.py` is a thin top-level shell.
-- `src/entrypoints/index_dispatcher.py` classifies event shape.
-- Transport shells handle:
+
+- `index.py` is the thin top-level shell
+- `src/entrypoints/index_dispatcher.py` classifies incoming event shape
+- transport shells handle:
   - HTTP
   - queue worker events
   - scheduled triggers
-  - runtime execution bridge
+  - explicit runtime-mode execution
 
-Current architectural direction for the 2026-03-12 wave:
-- remove import-time production bootstrap from active runtime modules,
-- reduce planner runtime to a transitional adapter rather than the conceptual center,
-- keep browser auth and masking at the access boundary,
-- validate browser-facing trusted ingress with an internal proxy secret before honoring `x-dtm-*` auth headers,
-- keep read endpoints cache-first and side-effect free by default.
-- keep `/info` summary-first by default and expose heavy diagnostics only through explicit detail mode.
-- treat Telegram/reminder/group-query as frozen unless break/fix work is required.
+## Browser-facing boundary
 
-## Async mutation contour
-Heavy and mutating actions are queue-backed:
-- snapshot update
-- render timeline sheet
-- render designers sheet
-- send reminders
-- attach task file
-- telegram group-query reply
-
-Flow:
-1. enqueue command
-2. worker consumes command
-3. writes job status/history to S3
-4. `/info` shows recent/latest job state
-
-## Standard runtime modes
-Supported standard runtime modes:
-- `timer`
-- `sync-only`
-- `render_v2`
-- `reminder_v2`
-- `reminders-only`
-- `morning`
-- `test`
-
-Unsupported legacy planner modes are intentionally rejected.
-
-## Entry boundary rules
-- `index.py` must remain thin.
-- `index.py` and `src/entrypoints/runtime/planner_runtime_entry.py` must stay import-safe and construct `AppContext` only inside explicit runtime/factory calls.
-- `src/entrypoints/**` owns transport parsing/translation only.
-- domain logic lives in `src/core/**` and focused service/use-case modules.
-- archived planner/bootstrap/render/reference code lives under `src/legacy/**` and must not be imported by standard runtime.
-- browser-facing access policy belongs at the HTTP/access boundary, not inside query engine internals.
-
-## Browser-facing access contract
-
-Canonical browser-facing data/auth namespaces:
+Canonical browser-facing namespaces:
 - prod API: `/ops/api/*`
 - test API: `/test/ops/api/*`
 - prod auth: `/ops/auth/*`
 - test auth: `/test/ops/auth/*`
 - shared infra route: `/grafana/*`
 
-The active backend direction is:
-- one canonical frontend payload path,
-- one canonical read-side query path,
-- optional masking as a post-build transform,
-- no separate masked query engine.
-- trusted `x-dtm-*` handling is constrained by [auth_trust_boundary.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/auth_trust_boundary.md).
+Boundary ownership:
+- external auth contour/function owns auth/session routes and callbacks
+- this repo owns browser data routes and validates trusted ingress before honoring `x-dtm-*`
+
+Current backend direction:
+- one canonical frontend payload path
+- one canonical query path over prep snapshot
+- optional masking as a post-build transform
+- no separate masked query engine
+
+Operator-facing auth details:
+- [browser_auth_runbook.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/browser_auth_runbook.md)
+- [auth_trust_boundary.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/auth_trust_boundary.md)
+
+## Async mutation contour
+
+Heavy or mutating actions are queue-backed:
+- snapshot refresh
+- timeline render
+- designers render
+- reminders
+- attachment metadata update
+- group query reply
+
+Flow:
+1. validate/build internal command
+2. enqueue command
+3. worker executes one job
+4. job status/history is written to Object Storage
+5. `/info` exposes recent/latest state
+
+## Runtime boundaries
+
+- `index.py` remains thin and import-safe
+- `src/entrypoints/**` owns transport parsing/translation only
+- `src/snapshot_engine/*` owns read-side build/query/storage logic
+- `src/jobs/*` and `src/worker/*` own mutation execution
+- browser access policy stays at the HTTP boundary, not inside query internals
+- render/notify/group-query consume prepared snapshot data instead of inventing parallel read contours
 
 ## Storage roles
+
 - Object Storage/S3:
   - raw snapshot
   - prep snapshot
   - people snapshot
   - extra metadata
+  - response-cache objects
   - job status/history
-  - attachment binaries
+  - attachments
 - Yandex Message Queue:
   - async command intake
-- YDB:
-  - no longer canonical for API v2 runtime path
-  - remaining code is legacy/reference or non-canonical support debt
+
+## Current non-goals for active docs
+
+The current architecture story does not treat the following as canonical runtime contours:
+- planner-era orchestration as the conceptual center
+- legacy database/readmodel source paths
+- historical migration/cutover plans
+
+If historical detail is needed, use `docs/archive/*`.
