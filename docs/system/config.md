@@ -63,12 +63,13 @@ Secrets stay outside repo config files:
 They are resolved through secret storage / env in loader/bootstrap only.
 Current deploy workflows map `BROWSER_AUTH_PROXY_SECRET` from Lockbox into backend function env for both test and prod contours.
 
-Current active runtime no longer requires YDB contour secrets:
-- no `YDB_ID_*`
-- no `YDB_ENDPOINT_*`
-- no `YDB_DATABASE_*`
-
-If old migration/backfill utilities still need YDB, they must receive endpoint/database explicitly via their own args or local tooling env, not through active deploy/runtime wiring.
+Browser auth secret wiring:
+- backend bootstrap reads `BROWSER_AUTH_PROXY_SECRET` in `src/app/bootstrap.py`
+- backend trust logic consumes it in `src/entrypoints/http/access_context.py`
+- test workflow: `.github/workflows/deploy_yc_function_main.yml`
+- prod workflow: `.github/workflows/release_yc_function_prod.yml`
+- external auth contour must use the same Lockbox-backed secret value when forwarding `X-DTM-Proxy-Secret`
+- operator verification steps live in `docs/system/browser_auth_runbook.md`
 
 ## Object Storage
 Used for:

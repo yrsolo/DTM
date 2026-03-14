@@ -4,6 +4,9 @@
 
 ## Done
 
+- CAM-2026-03-12-DOC-CODE-REALIGN-V1 P03: rewrote current docs around the snapshot-first runtime, removed YDB/readmodel/planner-era stories from active narrative, and archived the snapshot-engine migration plan
+- CAM-2026-03-12-DOC-CODE-REALIGN-V1 P02: consolidated auth docs into a canonical contract/runbook set, documented external auth contour ownership, callback routes, Lockbox/env secret wiring, and test/prod verification steps
+
 - Removed false prod config-load guard that blocked same source/target spreadsheet; unsafe render protection now stays only at worksheet-level (`ТАБЛИЧКА`)
 - Trigger timer queue fan-out: `timer` trigger now enqueues `update_snapshot`, `render_timeline_sheet`, and `render_designers_sheet` instead of only `update_snapshot`
 - CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1 P05: disabled `dtm.api.*` and `dtm.info.*` remote writes on hot HTTP read path while preserving `Server-Timing`, in-process traces, and refresh/render/worker metrics

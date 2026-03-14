@@ -1,38 +1,32 @@
 # Designers Task Manager (DTM)
 
-DTM is an automation service for design-team planning around Google Sheets.
-It is moving toward a snapshot-first, queue-backed, browser-safe runtime that serves prepared read paths and async command execution from one data contour.
+DTM is a snapshot-first, queue-backed automation service for design-team planning around Google Sheets.
 
-## Core capabilities
-- Ingest and normalize tasks/milestones from Google Sheets.
-- Build and publish prepared frontend-ready snapshots.
-- Serve HTTP API for web clients and operational views.
-- Render planning views and run reminder flows for Telegram.
-- Apply optional LLM-based message styling (`openai`, `google`, `yandex`).
-
-## Architecture (high level)
-Flow: `Sheets -> Raw Snapshot -> Prep Snapshot -> Read/API/Render/Notify + Queue-backed mutations`.
-The project is actively removing planner-centric runtime assumptions and import-time bootstrap side effects.
-Deploy target is Yandex Cloud Function with test/prod contours.
+Current runtime shape:
+- reads tasks and people data from Google Sheets,
+- builds Raw/Prep snapshots in Object Storage,
+- serves browser/API reads from prepared snapshots,
+- runs heavy mutations asynchronously through queue-backed jobs,
+- renders Sheets views and sends Telegram reminders from the same snapshot contour.
 
 Current runtime defaults:
-- `index.py` and `planner_runtime_entry.py` are import-safe and build `AppContext` only at explicit runtime boundaries.
-- `/info` is summary-first by default; heavy diagnostics are exposed only through explicit detail mode.
-- Telegram/reminder/group-query stays frozen for this wave unless break/fix work is required.
+- `index.py` is a thin shell,
+- read paths are browser-safe and side-effect free,
+- `/info` is summary-first by default,
+- browser auth and masking stay at the HTTP boundary,
+- render/refresh/reminder work happens through async commands or explicit runtime modes.
 
-Current architecture policy and wave guidance:
-- [docs/system/architecture_values.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/architecture_values.md)
+Start here:
 - [docs/system/architecture.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/architecture.md)
 - [docs/system/module_map.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/module_map.md)
-- [docs/system/browser_auth_contract.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/browser_auth_contract.md)
-- [docs/system/auth_trust_boundary.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/auth_trust_boundary.md)
-- [work/roadmap/MASTER_EXECUTION_BRIEF_2026-03-12.md](/n:/PROJECTS/python/SCRIPT/DTM/work/roadmap/MASTER_EXECUTION_BRIEF_2026-03-12.md)
+- [docs/system/config.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/config.md)
+- [docs/system/runbook.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/runbook.md)
+- [docs/system/browser_auth_runbook.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/browser_auth_runbook.md)
 
-## Context
-Data volume is moderate (historical around 1000 tasks, active subset smaller).
-Hourly-level synchronization is sufficient for current business cadence.
+Documentation/process maps:
+- [docs/README.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/README.md)
+- [work/README.md](/n:/PROJECTS/python/SCRIPT/DTM/work/README.md)
+- [work/now/README.md](/n:/PROJECTS/python/SCRIPT/DTM/work/now/README.md)
 
-## Entry points
-- Documentation map: `docs/README.md`
-- Process/campaign map: `work/README.md`
-- Current campaign status: `work/now/README.md`
+Legacy and migration-era material is intentionally kept out of the current narrative.
+If historical detail is needed, use `docs/archive/*` and `work/archive/*`.

@@ -1,77 +1,61 @@
-# Module map (Current)
+# Module Map (Current)
 
-This document is a navigation map of the codebase as it exists now.
+This document maps the modules that matter for the active runtime contour.
 
 Governing policy:
 - [architecture_values.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/architecture_values.md)
 
-## Top-level entrypoints
+## Active runtime entrypoints
 
 | Path | Role | Responsibility | State | Notes |
 |---|---|---|---|---|
-| `index.py` | Entrypoint (HTTP) | Parse event, dispatch HTTP handlers, optionally trigger runtime actions | OK | Thin shell with lazy runtime bootstrap; no module-level `AppContext` construction on import. |
-| `src/entrypoints/runtime/planner_runtime_entry.py` | Entrypoint (Runtime) | Transitional runtime adapter for local/job and HTTP-triggered modes | Transitional | Still active, but no longer builds `AppContext` on import and should not remain the conceptual runtime center. |
-| `local_run.py` | Support | Local wrapper for runtime modes | OK | Dev convenience tool; calls `src/entrypoints/runtime/local_runtime.py`. |
+| `index.py` | Entrypoint | Thin runtime shell for cloud events | OK | Lazy bootstrap and dispatch only. |
+| `src/entrypoints/index_dispatcher.py` | Entrypoint | Classify event shape and delegate to the correct shell | OK | Canonical top-level router. |
+| `src/entrypoints/http/*` | Entrypoint | HTTP parsing, access boundary, handlers, response translation | OK | Canonical browser/API boundary. |
+| `src/entrypoints/queue/*` | Entrypoint | Queue-trigger transport shell | OK | Canonical worker intake boundary. |
+| `src/entrypoints/triggers/*` | Entrypoint | Scheduled-trigger intake and queue fan-out | OK | Canonical trigger boundary. |
+| `src/entrypoints/runtime/*` | Entrypoint | Explicit runtime-mode bridge for local/manual execution | OK | Includes the transitional adapter used by local/runtime shells. |
 
-## Entrypoint boundaries
-
-| Path | Role | Responsibility | State | Notes |
-|---|---|---|---|---|
-| `src/entrypoints/http/*` | Entrypoint (HTTP modules) | HTTP parsing/routing/handlers/runtime execution helpers | OK | Canonical HTTP boundary. |
-| `src/entrypoints/jobs/*` | Entrypoint (Jobs modules) | Runtime job steps used by planner runtime entry | OK | Active standard-runtime job modules only. |
-| `src/entrypoints/http/access*` | Entrypoint (HTTP access boundary) | Browser access context resolution and trusted ingress handling | OK | `access_context.py` validates proxy secret and resolves full vs masked mode before payload response. |
-
-## Domain (new)
+## Active domain and application areas
 
 | Path | Role | Responsibility | State | Notes |
 |---|---|---|---|---|
-| `src/core/models/*` | Domain | Domain contracts and DTOs | OK | Canonical domain types. |
-| `src/core/normalize/*` | Domain | Normalization/date inference rules | OK | Pure business logic. |
-| `src/core/rules/*` | Domain | Pure domain rules | OK | Keep pure and tested. |
+| `src/core/models/*` | Domain | Canonical domain DTOs | OK | Pure contracts only. |
+| `src/core/normalize/*` | Domain | Normalization, parsing, inference rules | OK | Pure business logic. |
+| `src/core/rules/*` | Domain | Domain rules and invariants | OK | Keep pure and tested. |
+| `src/snapshot_engine/*` | Application | Snapshot build, query, cache, and storage access | OK | Canonical read-side engine. |
+| `src/commands/*` | Application | Internal command contracts and queue serialization | OK | Canonical async command boundary. |
+| `src/worker/*` | Application | Worker dispatcher, execution, status persistence | OK | Canonical async mutation runner. |
+| `src/jobs/*` | Application | Concrete snapshot/render/reminder jobs | OK | Canonical mutation jobs. |
+| `src/services/access/*` | Application | Access context masking and payload transforms | OK | Browser access policy lives at the boundary. |
+| `src/notify/*` | Application | Reminder formatting and delivery orchestration | Frozen | Operational but not target for redesign in this wave. |
+| `src/telegram/*` | Adapter/Application boundary | Telegram parsing, routing, webhook intake, sender | Frozen | Operational but not target for redesign in this wave. |
+| `src/observability/*` | Support | Metrics, logging, timing, trace helpers | OK | Shared observability layer. |
+| `src/config/*` | Support | Typed config schema and loader | OK | Canonical config source of truth. |
+| `src/app/bootstrap.py` | Support | Composition root and dependency assembly | OK | Bootstrap only; no business logic. |
 
-## Application services
-
-| Path | Role | Responsibility | State | Notes |
-|---|---|---|---|---|
-| `src/services/sync_service.py` | Application | Canonical sync orchestration and preflight/full decision path | OK | Single active sync service in runtime. |
-| `src/services/readmodel_builder.py` | Application | Build frontend v2 readmodel snapshot | OK | Canonical snapshot builder. |
-| `src/services/pipeline_runtime.py` | Application | YDB sync + readmodel pipeline orchestration | OK | Preflight can skip full snapshot fetch. |
-| `src/services/access/*` | Application | Masking policy, deterministic mapping, and payload transform seams | OK | `masking.py` applies deterministic, shape-preserving masking over canonical frontend payloads. |
-| `src/services/sync/*` | Support | Sync helper primitives | Refactor | Keep only stateless primitives; no duplicate sync runner. |
-| `src/observability/*` | Support | Metrics, timing, and structured logging abstractions | OK | Shared instrumentation layer for active runtime. |
-
-## Messaging and worker
-
-| Path | Role | Responsibility | State | Notes |
-|---|---|---|---|---|
-| `src/commands/*` | Application | Internal queue command DTOs, serializer, queue adapters | OK | Canonical async command boundary. |
-| `src/worker/*` | Application | Worker execution, dispatcher, status store | OK | Canonical queue execution boundary. |
-| `src/telegram/*` | Adapter/Application boundary | Typed Telegram parsing, command routing, webhook intake, sender | Frozen | Keep operational, but not the target model for new architecture during this wave. |
-| `src/notify/*` | Application | Reminder selection, formatting, and send orchestration | Frozen | Keep operational for break/fix work; do not use as the template for new architecture. |
-
-## Adapters
+## Active adapters
 
 | Path | Role | Responsibility | State | Notes |
 |---|---|---|---|---|
-| `src/adapters/ydb/*` | Adapter | YDB clients/repos/schema and readmodel/operational storage | OK | Canonical persistence boundary. |
-| `src/adapters/store_ydb.py` | Adapter (legacy) | Legacy blob store write path | Legacy | Kept for compatibility windows. |
-| `src/adapters/*sheets*` | Adapter | Google Sheets access and related integrations | Refactor | Runtime uses bulk snapshot reads where required. |
-| `src/adapters/telegram.py` | Adapter | Telegram notifier integration | OK | Used by entrypoint runtime and group query flows. |
+| `src/adapters/*sheets*` | Adapter | Google Sheets fetch/update integrations | OK | Edge adapter for source data and render writes. |
+| `src/adapters/telegram.py` | Adapter | Telegram delivery integration | OK | Used by notify and group-query flows. |
+| `src/adapters/llm_*` | Adapter | Optional LLM enhancement providers | OK | Optional edge integrations only. |
 
-## Legacy and archive
+## Historical or archive-only areas
 
-| Path | Role | Responsibility | State | Notes |
-|---|---|---|---|---|
-| `src/legacy/*` | Legacy | Archived planner/bootstrap/render/reference contour, including legacy core/bootstrap/use-case shims | Legacy | Reference-only; must not be imported by standard runtime. |
-| `core/*` | Domain/compat mix | Domain contracts still used by live features; legacy compatibility shims removed from active root | Refactor | `core/bootstrap.py` and `core/manager.py` are archived under `src/legacy/core/`. |
-| `old/v1/*` | Legacy archive | Historical v1 artifacts | Legacy | Preserved as archaeology; not active runtime path. |
+These are not part of the canonical runtime story:
+- `src/legacy/*`
+- `old/v1/*`
+- planner-era extraction plans and compatibility notes under `docs/archive/system_legacy/modules/*`
+- legacy YDB/readmodel/schema material under `docs/archive/system_legacy/ydb_schema.md`
+
+If a reader needs that history, current docs should point there instead of retelling it here.
 
 ## Immediate guidance
 
-- Keep `index.py` thin; local tooling should use `src/entrypoints/runtime/local_runtime.py`.
-- Keep main entrypoints import-safe; production `AppContext` must not be constructed at module import time.
-- Treat `src/entrypoints/runtime/planner_runtime_entry.py` as transitional and reduce it over time.
-- Keep API/runtime route logic in `src/entrypoints/http/*`.
-- Keep browser auth and masking outside query-engine internals.
-- Treat `src/telegram/*` and `src/notify/*` as frozen subsystems for this wave.
-- Keep legacy bindings explicit under `src/legacy/*` only; do not recreate compat shims in active `core/`.
+- Keep `index.py` thin.
+- Treat `src/snapshot_engine/*` as the canonical read-side runtime.
+- Keep browser auth and masking at the HTTP/access boundary.
+- Keep refresh/render/reminder work in async jobs or explicit runtime modes.
+- Treat archive modules and docs as reference-only, not as active architecture.

@@ -1,6 +1,6 @@
 # API v2 parity for Snapshot Engine
 
-This document defines parity requirements while replacing legacy API payload builder.
+This document defines the current API v2 query and payload expectations for the snapshot-engine read path.
 
 ## Query parity
 - `statuses`: comma-separated list, default `work,pre_done`.
@@ -20,4 +20,3 @@ This document defines parity requirements while replacing legacy API payload bui
 
 ## Source-of-truth
 - Runtime API v2 source is `PrepSnapshot` from Snapshot Engine.
-- Legacy payload builder (`core/api_payload_v2`) is out of runtime scope for snapshot path.
