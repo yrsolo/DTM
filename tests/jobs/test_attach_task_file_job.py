@@ -6,13 +6,26 @@ from types import SimpleNamespace
 
 from src.app.context import AppContext
 from src.commands.model import Command, RequestedBy
+from src.services.errors import TransientError
 from src.jobs.attach_task_file_job import AttachTaskFileJob
+
+
+class _FakeResponseCacheStore:
+    def __init__(self) -> None:
+        self.deleted = []
+        self.fail = False
+
+    def delete(self, cache_key: str) -> None:
+        if self.fail:
+            raise TransientError("cache delete failed", code="s3_delete_failed")
+        self.deleted.append(cache_key)
 
 
 class _FakeEngine:
     def __init__(self) -> None:
         self.calls = []
         self.ready_calls = []
+        self.response_cache_store = _FakeResponseCacheStore()
 
     def attach_file_metadata(self, *, task_id, attachment):  # noqa: ANN001
         self.calls.append((task_id, attachment))
@@ -33,6 +46,9 @@ class _FakeEngine:
 
     def mark_ready(self, *, task_id, attachment_id):  # noqa: ANN001
         self.ready_calls.append((task_id, attachment_id))
+
+    def get_response_cache_store(self):
+        return self.response_cache_store
 
 
 class AttachTaskFileJobTestCase(unittest.TestCase):
@@ -68,6 +84,45 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
         self.assertEqual(engine.calls[0][1].filename, "file.docx")
         self.assertEqual(engine.calls[0][1].kind, "docx")
         self.assertEqual(engine.ready_calls, [("task-1", engine.calls[0][1].attachment_id)])
+        self.assertEqual(
+            engine.response_cache_store.deleted,
+            [
+                "frontend_v2/default/api/masked",
+                "frontend_v2/default/api/full",
+                "frontend_v2/default/bff/masked",
+                "frontend_v2/default/bff/full",
+            ],
+        )
+
+    def test_attach_job_keeps_ok_when_cache_invalidation_fails(self) -> None:
+        import src.jobs.attach_task_file_job as module
+
+        original = module.build_snapshot_engine
+        engine = _FakeEngine()
+        engine.response_cache_store.fail = True
+        module.build_snapshot_engine = lambda _ctx: engine  # type: ignore[assignment]
+        try:
+            ctx = AppContext(cfg=SimpleNamespace(), deps={})
+            cmd = Command(
+                job_id="job-3",
+                type="attach_task_file",
+                created_at_utc=datetime.now(timezone.utc),
+                requested_by=RequestedBy(source="admin"),
+                payload={
+                    "task_id": "task-1",
+                    "key": "attachments/test/task-1/a1-file.docx",
+                    "filename": "file.docx",
+                    "mime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "size": 123,
+                    "uploaded_by": "tester",
+                },
+            )
+            result = AttachTaskFileJob(ctx).run(cmd)
+        finally:
+            module.build_snapshot_engine = original  # type: ignore[assignment]
+
+        self.assertEqual(result["status"], "ok")
+        self.assertIn("frontend_response_cache_invalidation_failed", result["warnings"])
 
     def test_attach_job_returns_failed_result_on_missing_required_field(self) -> None:
         ctx = AppContext(cfg=SimpleNamespace(), deps={})

@@ -10,6 +10,7 @@
 - CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1
 
 ## Done
+- Attachment post-mutation cache invalidation for exact default frontend response cache after attach/delete
 - CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1 hidden cleanup enqueue path, job, TTL policy, and tests
 - CAM-2026-03-12-DOC-CODE-REALIGN-V1 P04 current attachment-upload doc refresh and skeleton removal
 - CAM-2026-03-14-PEOPLE-SNAPSHOT-AND-SECRET-API-V1

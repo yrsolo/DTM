@@ -58,3 +58,21 @@
 - `python -m unittest tests.api.test_command_queue_foundation tests.jobs.test_delete_task_attachment_job tests.jobs.test_attach_task_file_job tests.snapshot_engine.test_engine_attach_metadata tests.snapshot_engine.test_query_engine tests.api.test_frontend_api_routing tests.api.test_task_attachment_read_handler`
 - `python scripts/check_no_legacy_entrypoint_imports.py`
 - `python scripts/check_no_monsters.py`
+
+## Follow-up evidence: post-mutation cache invalidation
+- verified_at: 2026-03-15
+- files:
+  - `src/entrypoints/http/frontend_response_cache.py`
+  - `src/snapshot_engine/stores/s3_store.py`
+  - `src/jobs/attach_task_file_job.py`
+  - `src/jobs/delete_task_attachment_job.py`
+  - `tests/entrypoints/http/test_frontend_response_cache.py`
+  - `tests/snapshot_engine/test_s3_store.py`
+  - `tests/jobs/test_attach_task_file_job.py`
+  - `tests/jobs/test_delete_task_attachment_job.py`
+- behavior:
+  - successful attach/delete mutations keep prep rebuild inside `SnapshotEngine`
+  - after mutation, runtime best-effort invalidates exact default frontend response cache keys for `api|bff` x `masked|full`
+  - invalidation failure does not fail the mutation job and is returned as warning
+- verification:
+  - `python -m unittest tests.entrypoints.http.test_frontend_response_cache tests.snapshot_engine.test_s3_store tests.jobs.test_attach_task_file_job tests.jobs.test_delete_task_attachment_job tests.api.test_frontend_api_routing`

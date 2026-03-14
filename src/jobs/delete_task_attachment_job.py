@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from src.app.context import AppContext
+from src.entrypoints.http.frontend_response_cache import invalidate_default_frontend_responses
 from src.services.attachments import build_attachment_storage
 from src.services.errors import AppError, UserError
 from src.snapshot_engine import build_snapshot_engine
@@ -42,6 +43,11 @@ class DeleteTaskAttachmentJob:
                 warning=delete_warning,
             )
             result = engine.delete_attachment(task_id=task_id, attachment_id=attachment_id)
+            try:
+                invalidate_default_frontend_responses(engine)
+            except AppError:
+                result["warnings"] = list(result.get("warnings", []) or [])
+                result["warnings"].append("frontend_response_cache_invalidation_failed")
             if delete_warning:
                 result["warnings"] = [delete_warning]
             return result

@@ -14,7 +14,7 @@ The canonical upload flow is:
 2. Upload the binary directly to Object Storage using the returned presigned URL.
 3. Finalize the uploaded object; backend verifies object existence, size, and mime.
 4. Finalize enqueues metadata attachment through the command queue.
-5. Worker writes canonical attachment metadata into the extra snapshot and rebuilds prep.
+5. Worker writes canonical attachment metadata into the extra snapshot, rebuilds prep, and best-effort invalidates exact default frontend response cache entries.
 
 ## HTTP/admin intake
 
@@ -163,8 +163,9 @@ Worker responsibilities:
 3. append/replace attachment metadata in task extra record
 4. persist bulk extra snapshot
 5. rebuild and write prep snapshot
-6. revoke readability and remove metadata during delete
-7. remove stale non-ready/deleted metadata during cleanup with one bulk prep rebuild
+6. best-effort invalidate exact default frontend response cache entries after successful attach/delete mutation
+7. revoke readability and remove metadata during delete
+8. remove stale non-ready/deleted metadata during cleanup with one bulk prep rebuild
 
 ## Read path behavior
 
@@ -194,6 +195,7 @@ Security and visibility rules:
 - masked contour hides attachments entirely
 - read access requires trusted ingress + authenticated + `full` + `approved`
 - storage keys are intentionally not exposed through the frontend payload
+- successful attach/delete mutation also clears exact default frontend response cache variants (`api|bff` x `masked|full`) so the next default frontend hit is rebuilt from fresh prep
 
 ## Lifecycle and cleanup policy
 

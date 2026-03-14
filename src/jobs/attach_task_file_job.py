@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from src.app.context import AppContext
+from src.entrypoints.http.frontend_response_cache import invalidate_default_frontend_responses
 from src.services.errors import AppError, UserError
 from src.snapshot_engine import build_snapshot_engine
 from src.snapshot_engine.model import AttachmentMeta
@@ -66,6 +67,11 @@ class AttachTaskFileJob:
             if lookup is not None:
                 metadata_store.mark_ready(task_id=task_id, attachment_id=attachment_id)
             result = engine.attach_file_metadata(task_id=task_id, attachment=attachment)
+            try:
+                invalidate_default_frontend_responses(engine)
+            except AppError:
+                result["warnings"] = list(result.get("warnings", []) or [])
+                result["warnings"].append("frontend_response_cache_invalidation_failed")
             result["object_key"] = attachment.key
             return result
         except AppError as error:
