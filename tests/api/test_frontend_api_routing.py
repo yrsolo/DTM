@@ -49,8 +49,8 @@ class _FakeSnapshotEngine:
                     name="Designer One",
                     position="designer",
                     person_id="person-1",
-                    email="designer.one@example.com",
-                    email_secondary="designer.one@corp.local",
+                    yandex_email="designer.one@example.com",
+                    yandex_email_secondary="designer.one@corp.local",
                     telegram="@designerone",
                     telegram_id="1001",
                     chat_id="-1001",
@@ -61,8 +61,8 @@ class _FakeSnapshotEngine:
                         "person_id": "person-1",
                         "name": "Designer One",
                         "position": "designer",
-                        "email": "designer.one@example.com",
-                        "email_secondary": "designer.one@corp.local",
+                        "yandex_email": "designer.one@example.com",
+                        "yandex_email_secondary": "designer.one@corp.local",
                         "telegram": "@designerone",
                         "telegram_id": "1001",
                         "chat_id": "-1001",
@@ -603,7 +603,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(response["statusCode"], 200)
         self.assertEqual(payload["meta"]["artifact"], "dtm_people_snapshot_v1")
         self.assertEqual(payload["summary"]["peopleTotal"], 1)
-        self.assertEqual(payload["people"][0]["email"], "designer.one@example.com")
+        self.assertEqual(payload["people"][0]["yandexEmail"], "designer.one@example.com")
         self.assertEqual(payload["people"][0]["telegramId"], "1001")
         self.assertEqual(payload["people"][0]["attributes"]["phone"], "79030000000")
 

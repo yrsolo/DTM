@@ -122,3 +122,4 @@ Contract:
 - does not use `x-dtm-*` browser auth headers
 - returns `403` on missing/invalid secret
 - returns the full normalized people registry snapshot for internal auth-support consumers
+- primary account-identity field is `yandexEmail` to make clear it is intended for Yandex account resolution, not human contact routing

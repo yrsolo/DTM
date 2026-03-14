@@ -54,19 +54,19 @@ class _FakeSource:
         return [
             [
                 "Id",
-                "Имя",
-                "Должность",
-                "Почта",
-                "Телеграмм",
-                "Телеграмм id",
-                "Телеграмм chat_id",
-                "Информация",
-                "Отпуск",
-                "Телефон",
-                "почта",
+                "\u0418\u043c\u044f",
+                "\u0414\u043e\u043b\u0436\u043d\u043e\u0441\u0442\u044c",
+                "\u041f\u043e\u0447\u0442\u0430",
+                "\u0422\u0435\u043b\u0435\u0433\u0440\u0430\u043c\u043c",
+                "\u0422\u0435\u043b\u0435\u0433\u0440\u0430\u043c\u043c id",
+                "\u0422\u0435\u043b\u0435\u0433\u0440\u0430\u043c\u043c chat_id",
+                "\u0418\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u044f",
+                "\u041e\u0442\u043f\u0443\u0441\u043a",
+                "\u0422\u0435\u043b\u0435\u0444\u043e\u043d",
+                "\u043f\u043e\u0447\u0442\u0430",
             ],
-            ["p1", "Иван Иванов", "designer", "ivan@example.com", "@ivan", "1001", "-1001", "lead", "", "79030000000", "ivan@corp.local"],
-            ["p2", "Мария Петрова", "designer", "", "@maria", "1002", "", "", "да", "", ""],
+            ["p1", "\u0418\u0432\u0430\u043d \u0418\u0432\u0430\u043d\u043e\u0432", "designer", "ivan@example.com", "@ivan", "1001", "-1001", "lead", "", "79030000000", "ivan@corp.local"],
+            ["p2", "\u041c\u0430\u0440\u0438\u044f \u041f\u0435\u0442\u0440\u043e\u0432\u0430", "designer", "", "@maria", "1002", "", "", "\u0434\u0430", "", ""],
         ]
 
 
@@ -76,28 +76,28 @@ class PeopleSnapshotTestCase(unittest.TestCase):
             source_id="sheet:test:people",
             fetched_at_utc=datetime.now(timezone.utc),
             people_by_name={
-                "дизайнер": PersonView(
-                    name="Дизайнер",
+                "\u0434\u0438\u0437\u0430\u0439\u043d\u0435\u0440": PersonView(
+                    name="\u0414\u0438\u0437\u0430\u0439\u043d\u0435\u0440",
                     chat_id="-1001",
-                    vacation="нет",
+                    vacation="\u043d\u0435\u0442",
                     position="designer",
                     person_id="p1",
-                    email="designer@example.com",
-                    email_secondary="designer@corp.local",
+                    yandex_email="designer@example.com",
+                    yandex_email_secondary="designer@corp.local",
                     telegram="@designer",
                     telegram_id="1001",
                     info="lead",
                     phone="79030000000",
-                    attributes={"email": "designer@example.com", "phone": "79030000000"},
+                    attributes={"yandex_email": "designer@example.com", "phone": "79030000000"},
                 )
             },
         )
         restored = people_from_dict(people_to_dict(snapshot))
-        self.assertIn("дизайнер", restored.people_by_name)
-        self.assertEqual(restored.people_by_name["дизайнер"].chat_id, "-1001")
-        self.assertEqual(restored.people_by_name["дизайнер"].email, "designer@example.com")
-        self.assertEqual(restored.people_by_name["дизайнер"].phone, "79030000000")
-        self.assertEqual(restored.people_by_name["дизайнер"].attributes["email"], "designer@example.com")
+        self.assertIn("\u0434\u0438\u0437\u0430\u0439\u043d\u0435\u0440", restored.people_by_name)
+        self.assertEqual(restored.people_by_name["\u0434\u0438\u0437\u0430\u0439\u043d\u0435\u0440"].chat_id, "-1001")
+        self.assertEqual(restored.people_by_name["\u0434\u0438\u0437\u0430\u0439\u043d\u0435\u0440"].yandex_email, "designer@example.com")
+        self.assertEqual(restored.people_by_name["\u0434\u0438\u0437\u0430\u0439\u043d\u0435\u0440"].phone, "79030000000")
+        self.assertEqual(restored.people_by_name["\u0434\u0438\u0437\u0430\u0439\u043d\u0435\u0440"].attributes["yandex_email"], "designer@example.com")
 
     def test_s3_people_store_get_put(self) -> None:
         base = _FakeJsonStore()
@@ -105,7 +105,7 @@ class PeopleSnapshotTestCase(unittest.TestCase):
         snapshot = PeopleSnapshot(
             source_id="sheet:test:people",
             fetched_at_utc=datetime.now(timezone.utc),
-            people_by_name={"a": PersonView(name="A", chat_id="-1", vacation="", position="designer", email="a@example.com")},
+            people_by_name={"a": PersonView(name="A", chat_id="-1", vacation="", position="designer", yandex_email="a@example.com")},
         )
         store.put(snapshot)
         loaded = store.get()
@@ -119,27 +119,27 @@ class PeopleSnapshotTestCase(unittest.TestCase):
             source_id="sheet:test:people",
             people_field_map={
                 "person_id": "Id",
-                "name": "Имя",
-                "position": "Должность",
-                "email": "Почта",
-                "telegram": "Телеграмм",
-                "telegram_id": "Телеграмм id",
-                "chat_id": "Телеграмм chat_id",
-                "info": "Информация",
-                "vacation": "Отпуск",
-                "phone": "Телефон",
-                "email_secondary": "почта",
+                "name": "\u0418\u043c\u044f",
+                "position": "\u0414\u043e\u043b\u0436\u043d\u043e\u0441\u0442\u044c",
+                "yandex_email": "\u041f\u043e\u0447\u0442\u0430",
+                "telegram": "\u0422\u0435\u043b\u0435\u0433\u0440\u0430\u043c\u043c",
+                "telegram_id": "\u0422\u0435\u043b\u0435\u0433\u0440\u0430\u043c\u043c id",
+                "chat_id": "\u0422\u0435\u043b\u0435\u0433\u0440\u0430\u043c\u043c chat_id",
+                "info": "\u0418\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u044f",
+                "vacation": "\u041e\u0442\u043f\u0443\u0441\u043a",
+                "phone": "\u0422\u0435\u043b\u0435\u0444\u043e\u043d",
+                "yandex_email_secondary": "\u043f\u043e\u0447\u0442\u0430",
             },
         )
         snapshot = updater.run(_FakeSource())
-        self.assertIn("иван иванов", snapshot.people_by_name)
-        self.assertEqual(snapshot.people_by_name["иван иванов"].chat_id, "-1001")
-        self.assertEqual(snapshot.people_by_name["иван иванов"].email, "ivan@example.com")
-        self.assertEqual(snapshot.people_by_name["иван иванов"].telegram_id, "1001")
-        self.assertEqual(snapshot.people_by_name["иван иванов"].phone, "79030000000")
-        self.assertEqual(snapshot.people_by_name["иван иванов"].email_secondary, "ivan@corp.local")
-        self.assertEqual(snapshot.people_by_name["иван иванов"].attributes["telegram"], "@ivan")
-        self.assertIn("мария петрова", snapshot.people_by_name)
+        self.assertIn("\u0438\u0432\u0430\u043d \u0438\u0432\u0430\u043d\u043e\u0432", snapshot.people_by_name)
+        self.assertEqual(snapshot.people_by_name["\u0438\u0432\u0430\u043d \u0438\u0432\u0430\u043d\u043e\u0432"].chat_id, "-1001")
+        self.assertEqual(snapshot.people_by_name["\u0438\u0432\u0430\u043d \u0438\u0432\u0430\u043d\u043e\u0432"].yandex_email, "ivan@example.com")
+        self.assertEqual(snapshot.people_by_name["\u0438\u0432\u0430\u043d \u0438\u0432\u0430\u043d\u043e\u0432"].telegram_id, "1001")
+        self.assertEqual(snapshot.people_by_name["\u0438\u0432\u0430\u043d \u0438\u0432\u0430\u043d\u043e\u0432"].phone, "79030000000")
+        self.assertEqual(snapshot.people_by_name["\u0438\u0432\u0430\u043d \u0438\u0432\u0430\u043d\u043e\u0432"].yandex_email_secondary, "ivan@corp.local")
+        self.assertEqual(snapshot.people_by_name["\u0438\u0432\u0430\u043d \u0438\u0432\u0430\u043d\u043e\u0432"].attributes["telegram"], "@ivan")
+        self.assertIn("\u043c\u0430\u0440\u0438\u044f \u043f\u0435\u0442\u0440\u043e\u0432\u0430", snapshot.people_by_name)
 
     def test_snapshot_engine_lookup_helpers_use_people_registry(self) -> None:
         people_store = _FakePeopleStore()
@@ -148,11 +148,11 @@ class PeopleSnapshotTestCase(unittest.TestCase):
                 source_id="sheet:test:people",
                 fetched_at_utc=datetime.now(timezone.utc),
                 people_by_name={
-                    "иван иванов": PersonView(
-                        name="Иван Иванов",
+                    "\u0438\u0432\u0430\u043d \u0438\u0432\u0430\u043d\u043e\u0432": PersonView(
+                        name="\u0418\u0432\u0430\u043d \u0418\u0432\u0430\u043d\u043e\u0432",
                         person_id="p1",
-                        email="ivan@example.com",
-                        email_secondary="ivan@corp.local",
+                        yandex_email="ivan@example.com",
+                        yandex_email_secondary="ivan@corp.local",
                         telegram_id="1001",
                         chat_id="-1001",
                     )
@@ -171,11 +171,12 @@ class PeopleSnapshotTestCase(unittest.TestCase):
             people_update_job_factory=lambda _source: None,
         )
 
+        self.assertEqual(engine.find_by_yandex_email("ivan@example.com").person_id, "p1")
+        self.assertEqual(engine.find_by_yandex_email("ivan@corp.local").person_id, "p1")
         self.assertEqual(engine.find_by_email("ivan@example.com").person_id, "p1")
-        self.assertEqual(engine.find_by_email("ivan@corp.local").person_id, "p1")
         self.assertEqual(engine.find_by_telegram_id("1001").person_id, "p1")
         self.assertEqual(engine.find_by_chat_id("-1001").person_id, "p1")
-        self.assertEqual(engine.find_by_name("Иван Иванов").person_id, "p1")
+        self.assertEqual(engine.find_by_name("\u0418\u0432\u0430\u043d \u0418\u0432\u0430\u043d\u043e\u0432").person_id, "p1")
 
 
 if __name__ == "__main__":

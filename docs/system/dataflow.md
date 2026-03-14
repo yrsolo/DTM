@@ -97,3 +97,4 @@ No business selection or snapshot reads happen inline in webhook intake.
 - people snapshot keeps the full mapped `Люди` row contract, not only reminder fields.
 - secret-only `GET /api/v2/people` may return the full registry snapshot for internal auth-support consumers.
 - this registry is separate from `frontend_v2.entities.people`, which remains a derived owner list from selected tasks.
+- primary account field is stored as `yandex_email` and exposed as `yandexEmail`.

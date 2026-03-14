@@ -270,7 +270,7 @@ SOURCE_SHEET_INFO = MapProxy(
 TASK_FIELD_MAP = MapProxy(dict(_TABLES_CFG.field_maps.get("tasks", {})))
 
 # Legacy sheet columns for people map are configured via YAML field_maps.people.
-# id, name, email, telegram_id, chat_id, info, position
+# id, name, yandex_email, telegram_id, chat_id, info, position
 PEOPLE_FIELD_MAP = MapProxy(dict(_TABLES_CFG.field_maps.get("people", {})))
 
 COLOR_STATUS = MapProxy(dict(_MAPPING_CFG.status_by_color))

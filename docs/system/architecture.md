@@ -114,3 +114,4 @@ If historical detail is needed, use `docs/archive/*`.
 - `/api/v2/people` is a secret-only internal auth-support route over the canonical people snapshot.
 - `frontend_v2.entities.people` is a derived owner list from selected tasks.
 - people snapshot is the canonical registry for reminder/auth lookup and internal reads.
+- the canonical account-identity field is `yandexEmail`, explicitly separate from generic human-contact semantics.

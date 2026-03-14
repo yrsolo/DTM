@@ -18,7 +18,7 @@ from src.snapshot_engine.update_job import (
     SheetsTaskNormalizer,
     TaskSourceSheetsAdapter,
     UpdateJob,
-    normalize_person_email,
+    normalize_person_yandex_email,
     normalize_person_lookup_value,
     normalize_person_name,
 )
@@ -118,19 +118,22 @@ class SnapshotEngine:
                 return person
         return None
 
-    def find_by_email(self, email: str) -> Any | None:
-        lookup = normalize_person_email(email)
+    def find_by_yandex_email(self, email: str) -> Any | None:
+        lookup = normalize_person_yandex_email(email)
         if not lookup:
             return None
         snapshot = self.get_people_snapshot()
         if snapshot is None:
             return None
         for person in snapshot.people_by_name.values():
-            primary = normalize_person_email(getattr(person, "email", ""))
-            secondary = normalize_person_email(getattr(person, "email_secondary", ""))
+            primary = normalize_person_yandex_email(getattr(person, "yandex_email", ""))
+            secondary = normalize_person_yandex_email(getattr(person, "yandex_email_secondary", ""))
             if lookup in {primary, secondary}:
                 return person
         return None
+
+    def find_by_email(self, email: str) -> Any | None:
+        return self.find_by_yandex_email(email)
 
     def find_by_name(self, name: str) -> Any | None:
         lookup = normalize_person_name(name)

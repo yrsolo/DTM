@@ -168,7 +168,7 @@ def normalize_person_name(value: Any) -> str:
     return " ".join(text.split())
 
 
-def normalize_person_email(value: Any) -> str:
+def normalize_person_yandex_email(value: Any) -> str:
     return str(value or "").strip().lower()
 
 
@@ -225,8 +225,8 @@ class PeopleSnapshotUpdater:
                 vacation=str(attributes.get("vacation", "")).strip(),
                 position=str(attributes.get("position", "")).strip(),
                 person_id=str(attributes.get("person_id", "")).strip(),
-                email=str(attributes.get("email", "")).strip(),
-                email_secondary=str(attributes.get("email_secondary", "")).strip(),
+                yandex_email=str(attributes.get("yandex_email", "")).strip(),
+                yandex_email_secondary=str(attributes.get("yandex_email_secondary", "")).strip(),
                 telegram=str(attributes.get("telegram", "")).strip(),
                 telegram_id=str(attributes.get("telegram_id", "")).strip(),
                 info=str(attributes.get("info", "")).strip(),
