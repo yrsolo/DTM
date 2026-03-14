@@ -127,8 +127,7 @@ class SnapshotEngine:
             return None
         for person in snapshot.people_by_name.values():
             primary = normalize_person_yandex_email(getattr(person, "yandex_email", ""))
-            secondary = normalize_person_yandex_email(getattr(person, "yandex_email_secondary", ""))
-            if lookup in {primary, secondary}:
+            if lookup == primary:
                 return person
         return None
 

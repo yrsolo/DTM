@@ -47,8 +47,8 @@
   - primary people-registry email field must read as Yandex-account identity data, not as generic human-contact email
 - implemented:
   - renamed primary canonical field from `email` to `yandex_email`
-  - renamed secondary canonical field from `email_secondary` to `yandex_email_secondary`
-  - secret-only API payload now returns `yandexEmail` and `yandexEmailSecondary`
+  - then corrected the business model to keep both `contact_email` and `yandex_email`
+  - secret-only API payload now returns `contactEmail` and `yandexEmail`
   - snapshot engine added explicit `find_by_yandex_email(...)` lookup while retaining `find_by_email(...)` as compatibility wrapper
 - verified by code pointers:
   - `config/tables.yaml`
