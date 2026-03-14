@@ -28,6 +28,7 @@ Read sources:
 The following paths validate, build internal `Command`, enqueue, and return quickly:
 
 - admin enqueue endpoints
+- attachment metadata enqueue after presigned upload-contract issuance
 - telegram webhook
 - trigger shell when queue mode is enabled
 - hidden admin trigger-emulation endpoint for operator/debug intake parity
@@ -66,6 +67,12 @@ Worker responsibilities:
 - `render_designers_sheet`
 - `group_query_reply`
 - `attach_task_file`
+
+Attachment upload contract:
+
+- `POST /admin/attachments/request-upload` returns a presigned upload contract after task-exists validation
+- binary upload happens directly against Object Storage
+- `POST /admin/commands/attach-task-file` enqueues metadata persistence through `attach_task_file`
 
 ## Status and observability
 
