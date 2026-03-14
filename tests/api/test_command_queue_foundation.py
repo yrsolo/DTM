@@ -243,6 +243,24 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
         self.assertEqual(producer.commands[0].type, "attach_task_file")
         self.assertEqual(producer.commands[0].payload["task_id"], "task-1")
 
+    def test_admin_queue_handler_enqueues_cleanup_task_attachments_command(self) -> None:
+        producer = _FakeProducer()
+        status_store = _FakeStatusStore()
+        handler = AdminQueueHandler(_FakeCtx(producer=producer, status_store=status_store))
+        response = handler.handle(
+            HttpRequest(
+                method="POST",
+                path="/admin/commands/cleanup-task-attachments",
+                body={"ttl_seconds": 7200},
+                is_http_event=True,
+            )
+        )
+        self.assertIsNotNone(response)
+        self.assertEqual(response.status, 202)
+        self.assertEqual(len(producer.commands), 1)
+        self.assertEqual(producer.commands[0].type, "cleanup_task_attachments")
+        self.assertEqual(producer.commands[0].payload["ttl_seconds"], 7200)
+
     def test_admin_queue_handler_returns_upload_contract_for_existing_task(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
 

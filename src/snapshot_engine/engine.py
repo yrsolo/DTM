@@ -7,7 +7,7 @@ from datetime import date, datetime, timezone
 from typing import Any
 
 from src.app.context import AppContext
-from src.services.errors import UserError
+from src.services.errors import AppError, UserError
 
 from src.snapshot_engine.model import AttachmentMeta, ExtraSnapshot, TaskExtra
 from src.snapshot_engine.prep_builder import PrepBuilder
@@ -23,7 +23,12 @@ from src.snapshot_engine.update_job import (
     normalize_person_name,
 )
 from src.services.attachments import AttachmentMetadataStore
-from src.services.attachments.contracts import ATTACHMENT_STATUS_READY
+from src.services.attachments.contracts import (
+    ATTACHMENT_STATUS_DELETED,
+    ATTACHMENT_STATUS_PENDING_UPLOAD,
+    ATTACHMENT_STATUS_READY,
+    ATTACHMENT_STATUS_UPLOADED_UNVERIFIED,
+)
 
 
 @dataclass(frozen=True)
@@ -228,6 +233,108 @@ class SnapshotEngine:
             "attachments_total": len(attachments),
             "prep_written": True,
         }
+
+    def cleanup_stale_attachments(
+        self,
+        *,
+        ttl_seconds: int,
+        delete_object: Any,
+        now_utc: datetime | None = None,
+    ) -> dict[str, Any]:
+        now = now_utc or datetime.now(timezone.utc)
+        ttl = max(int(ttl_seconds or 0), 1)
+        stale_before = now.timestamp() - ttl
+        extra_snapshot = self._extra_store.get_snapshot()
+        items_by_task_id = dict(extra_snapshot.items_by_task_id or {})
+        changed = False
+        tasks_touched = 0
+        warnings: list[str] = []
+        counts = {
+            ATTACHMENT_STATUS_PENDING_UPLOAD: 0,
+            ATTACHMENT_STATUS_UPLOADED_UNVERIFIED: 0,
+            ATTACHMENT_STATUS_DELETED: 0,
+        }
+        for task_id, current in list(items_by_task_id.items()):
+            task_key = str(task_id or "").strip()
+            if not task_key:
+                continue
+            current_attachments = list(current.attachments or [])
+            kept_attachments: list[AttachmentMeta] = []
+            task_changed = False
+            for item in current_attachments:
+                attachment_id = str(getattr(item, "attachment_id", "") or "").strip()
+                item_task_id = str(getattr(item, "task_id", "") or "").strip()
+                if not attachment_id or not item_task_id or item_task_id != task_key:
+                    kept_attachments.append(item)
+                    continue
+                status = str(getattr(item, "status", "") or "").strip().lower()
+                if status not in counts:
+                    kept_attachments.append(item)
+                    continue
+                reference_time = self._cleanup_reference_time(item)
+                if reference_time is None or reference_time.timestamp() >= stale_before:
+                    kept_attachments.append(item)
+                    continue
+                storage_key = str(getattr(item, "storage_key", "") or getattr(item, "key", "") or "").strip()
+                if storage_key:
+                    try:
+                        delete_object(key=storage_key)
+                    except AppError as error:
+                        warnings.append(f"{task_key}:{attachment_id}:{error.code}")
+                        kept_attachments.append(item)
+                        continue
+                counts[status] += 1
+                task_changed = True
+                changed = True
+            if not task_changed:
+                continue
+            tasks_touched += 1
+            items_by_task_id[task_key] = TaskExtra(
+                task_id=current.task_id,
+                orphaned=bool(current.orphaned),
+                updated_at_utc=now,
+                attachments=kept_attachments,
+                docs=list(current.docs),
+                links=list(current.links),
+                notes=str(current.notes),
+                artifacts=list(current.artifacts),
+            )
+        prep_written = False
+        if changed:
+            self._extra_store.put_snapshot(
+                ExtraSnapshot(
+                    version=max(int(extra_snapshot.version or 2), 1),
+                    updated_at_utc=now,
+                    items_by_task_id=items_by_task_id,
+                )
+            )
+            raw = self._raw_cache.get()
+            if raw is not None:
+                prep_result = self._prep_builder.build(raw)
+                self._prep_cache.put(prep_result.prep)
+                prep_written = True
+        return {
+            "artifact": "cleanup_task_attachments",
+            "status": "ok",
+            "ttl_seconds": ttl,
+            "pending_removed": counts[ATTACHMENT_STATUS_PENDING_UPLOAD],
+            "uploaded_unverified_removed": counts[ATTACHMENT_STATUS_UPLOADED_UNVERIFIED],
+            "deleted_removed": counts[ATTACHMENT_STATUS_DELETED],
+            "tasks_touched": tasks_touched,
+            "prep_written": prep_written,
+            "warnings": warnings,
+        }
+
+    @staticmethod
+    def _cleanup_reference_time(item: AttachmentMeta) -> datetime | None:
+        status = str(getattr(item, "status", "") or "").strip().lower()
+        if status == ATTACHMENT_STATUS_PENDING_UPLOAD:
+            return getattr(item, "uploaded_at_utc", None)
+        if status == ATTACHMENT_STATUS_UPLOADED_UNVERIFIED:
+            return getattr(item, "verified_at_utc", None) or getattr(item, "uploaded_at_utc", None)
+        if status == ATTACHMENT_STATUS_DELETED:
+            return getattr(item, "deleted_at_utc", None)
+        return None
 
     def get_attachment_metadata_store(self) -> AttachmentMetadataStore:
         return AttachmentMetadataStore(self._extra_store, bucket=self._attachment_bucket)

@@ -94,6 +94,18 @@ Optional request body:
 
 This compatibility endpoint only enqueues command `attach_task_file`; canonical callers should use `finalize`.
 
+Hidden cleanup enqueue:
+- `POST /admin/commands/cleanup-task-attachments`
+
+Request body:
+- `ttl_seconds` (optional, default `86400`)
+
+Behavior:
+- enqueues `cleanup_task_attachments`
+- scans bulk attachment metadata for stale `pending_upload`, `uploaded_unverified`, and `deleted` records
+- best-effort deletes the underlying storage object when `storage_key` is present
+- removes stale metadata and rebuilds prep once if anything changed
+
 ## Storage contract
 
 Object Storage key scheme:
@@ -136,6 +148,7 @@ Canonical metadata model includes:
 Command type:
 - `attach_task_file`
 - `delete_task_attachment`
+- `cleanup_task_attachments`
 
 Runtime path:
 - `AdminTaskAttachmentsHandler` serves canonical request-upload/finalize/delete routes
@@ -151,6 +164,7 @@ Worker responsibilities:
 4. persist bulk extra snapshot
 5. rebuild and write prep snapshot
 6. revoke readability and remove metadata during delete
+7. remove stale non-ready/deleted metadata during cleanup with one bulk prep rebuild
 
 ## Read path behavior
 
@@ -180,6 +194,62 @@ Security and visibility rules:
 - masked contour hides attachments entirely
 - read access requires trusted ingress + authenticated + `full` + `approved`
 - storage keys are intentionally not exposed through the frontend payload
+
+## Lifecycle and cleanup policy
+
+Active lifecycle states:
+- `pending_upload`
+- `uploaded_unverified`
+- `ready`
+- `delete_pending`
+- `deleted`
+- `failed`
+
+Publication rules:
+- only `ready` + `snapshot_visible=true` attachments are published into task payloads
+- masked contour hides attachments entirely
+- `deleted`, `pending_upload`, `uploaded_unverified`, and `failed` attachments are never frontend-visible
+
+Cleanup v1 policy:
+- stale `pending_upload` older than 24h -> orphan candidate
+- stale `uploaded_unverified` older than 24h -> orphan candidate
+- stale `deleted` older than 24h -> final cleanup candidate
+- `ready` records are never touched by cleanup
+- `delete_pending` younger than TTL is never touched by cleanup
+- transient storage-delete failure keeps metadata and records a warning
+
+Reference timestamps:
+- `pending_upload` -> `uploaded_at_utc`
+- `uploaded_unverified` -> `verified_at_utc`, fallback `uploaded_at_utc`
+- `deleted` -> `deleted_at_utc`
+
+Cleanup carrier:
+- no separate attachment table/store in v1
+- stale cleanup scans the existing bulk extra snapshot only
+
+## Operator smoke runbook
+
+Minimal manual smoke on `test`:
+1. `POST /test/ops/admin/task-attachments/request-upload`
+2. direct `PUT` to returned `uploadUrl`
+3. `POST /test/ops/admin/task-attachments/finalize`
+4. wait for worker and confirm attachment appears in trusted `GET /test/ops/api/v2/frontend`
+5. confirm masked `GET /test/ops/api/v2/frontend` hides attachments
+6. `GET /test/ops/api/task-attachments/{attachment_id}/view` -> expect `302`
+7. `GET /test/ops/api/task-attachments/{attachment_id}/download` -> expect `302`
+8. `POST /test/ops/admin/task-attachments/delete`
+9. wait for worker and confirm attachment no longer appears in trusted frontend payload
+
+Expected statuses:
+- `request-upload` -> `200`
+- direct Object Storage `PUT` -> `200`
+- `finalize` -> `202`
+- `delete` -> `202`
+- `view` / `download` for trusted full approved access -> `302`
+
+Contour note:
+- `test` live smoke is verified against deployed runtime
+- `prod` smoke requires running the manual release workflow first because push to `main` does not deploy the function by itself
 
 ## Current boundaries
 

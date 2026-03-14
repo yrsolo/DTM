@@ -63,19 +63,32 @@ Use `/info` first when diagnosing:
 - recent job state
 - browser/API access behavior
 
-## 6) Render safety
+## 6) Task attachments
+
+Canonical attachment routes and lifecycle are documented in:
+- `docs/system/file_attachments.md`
+
+Operator notes:
+- upload path is `request-upload -> direct PUT -> finalize -> worker attach`
+- delete path is asynchronous and removes published metadata after worker execution
+- stale attachment cleanup is available through hidden enqueue path:
+  - `POST /admin/commands/cleanup-task-attachments`
+  - default TTL is `86400`
+- `test` contour smoke is verified; `prod` smoke requires manual production release workflow before verification because pushing `main` alone does not deploy the live function
+
+## 7) Render safety
 
 - render jobs may write only to approved target worksheets
 - source worksheet `ТАБЛИЧКА` must never be a render target
 - unsafe target returns structured blocked result
 
-## 7) Branching and deploy
+## 8) Branching and deploy
 
 1. Development goes to `dev`.
 2. Push/merge flow for `test` follows the active test deploy workflow.
-3. Production release remains owner-controlled.
+3. Production release remains owner-controlled and is triggered manually from the production release workflow.
 
-## 8) Guardrails
+## 9) Guardrails
 
 Use the anti-relapse checks before shipping architectural cleanup:
 - `python scripts/check_no_monsters.py`
@@ -87,7 +100,7 @@ Purpose:
 - keep shells thin and import-safe
 - keep current runtime docs aligned with active code
 
-## 9) Archive policy
+## 10) Archive policy
 
 Current runbook does not document historical planner-era or old database contours.
 If historical troubleshooting detail is needed, use `docs/archive/*`.

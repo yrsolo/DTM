@@ -8,6 +8,7 @@ from uuid import uuid4
 from src.commands.model import Command, RequestedBy
 from src.commands.types import (
     ATTACH_TASK_FILE,
+    CLEANUP_TASK_ATTACHMENTS,
     RENDER_DESIGNERS_SHEET,
     RENDER_TIMELINE_SHEET,
     SEND_REMINDERS,
@@ -263,6 +264,19 @@ class AdminQueueHandler:
                     "uploaded_by": str(body.get("uploaded_by", "")).strip(),
                     "preview": str(body.get("preview", "")).strip(),
                 },
+                req=req,
+            )
+        if path == "/admin/commands/cleanup-task-attachments":
+            ttl_seconds = body.get("ttl_seconds", 86400)
+            try:
+                ttl_seconds = int(ttl_seconds)
+            except (TypeError, ValueError):
+                return error_response(400, code="ttl_seconds_invalid", message="ttl_seconds must be an integer.")
+            if ttl_seconds <= 0:
+                return error_response(400, code="ttl_seconds_invalid", message="ttl_seconds must be positive.")
+            return self._enqueue(
+                command_type=CLEANUP_TASK_ATTACHMENTS,
+                payload={"ttl_seconds": ttl_seconds},
                 req=req,
             )
         return None
