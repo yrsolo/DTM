@@ -1,13 +1,10 @@
 """Yandex Cloud entrypoint with thin top-level dispatch."""
 
-from collections.abc import MutableMapping
-from typing import Iterator
-
 from src.app.bootstrap import build_app_context
 from src.entrypoints.index_dispatcher import IndexDispatcher
 
 
-class _LazyMapping(MutableMapping):
+class _LazyMapping:
     """Lazy mutable mapping used only to preserve test/runtime compatibility."""
 
     def __init__(self, getter):
@@ -25,11 +22,29 @@ class _LazyMapping(MutableMapping):
     def __delitem__(self, key) -> None:
         del self._mapping()[key]
 
-    def __iter__(self) -> Iterator:
+    def __iter__(self):
         return iter(self._mapping())
 
     def __len__(self) -> int:
         return len(self._mapping())
+
+    def get(self, key, default=None):
+        return self._mapping().get(key, default)
+
+    def keys(self):
+        return self._mapping().keys()
+
+    def items(self):
+        return self._mapping().items()
+
+    def values(self):
+        return self._mapping().values()
+
+    def clear(self) -> None:
+        self._mapping().clear()
+
+    def update(self, *args, **kwargs) -> None:
+        self._mapping().update(*args, **kwargs)
 
 _APP_CONTEXT = None
 _APP_DISPATCHER = None
