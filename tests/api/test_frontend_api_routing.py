@@ -41,6 +41,7 @@ class _FakeSnapshotEngine:
         self.queries = []
         self.response_cache_store = _FakeResponseCacheStore()
         self.prep = type("Prep", (), {"raw_source_hash": "sha256:test"})()
+        self._attachment_store = type("AttachmentStore", (), {"get_by_attachment_id": staticmethod(lambda _attachment_id: None)})()
         self.people = PeopleSnapshot(
             source_id="sheet:test:people",
             fetched_at_utc=datetime(2026, 3, 2, tzinfo=timezone.utc),
@@ -87,6 +88,9 @@ class _FakeSnapshotEngine:
 
     def get_response_cache_store(self):
         return self.response_cache_store
+
+    def get_attachment_metadata_store(self):
+        return self._attachment_store
 
 
 class _FakeInfoSnapshotEngine:
@@ -219,12 +223,18 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
                         "attachments": [
                             {
                                 "id": "att-1",
-                                "filename": "brief-alpha.pdf",
-                                "mime": "application/pdf",
-                                "size": 123,
+                                "name": "brief-alpha.docx",
+                                "mime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                "kind": "docx",
+                                "sizeBytes": 123,
+                                "status": "ready",
                                 "uploadedAt": "2026-03-02T00:00:00Z",
-                                "uploadedBy": "Designer One",
-                                "preview": "https://storage/brief-alpha.pdf",
+                                "capabilities": ["browser_view", "download", "docx_view"],
+                                "meta": {"preview": "preview-1"},
+                                "links": {
+                                    "view": "/api/task-attachments/att-1/view",
+                                    "download": "/api/task-attachments/att-1/download",
+                                },
                             }
                         ],
                     }
@@ -645,7 +655,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(masked_payload_a["meta"]["access"]["mode"], "masked")
         self.assertEqual(masked_payload_a["tasks"][0]["title"], masked_payload_b["tasks"][0]["title"])
         self.assertEqual(masked_payload_a["entities"]["people"][0]["name"], masked_payload_b["entities"]["people"][0]["name"])
-        self.assertEqual(_shape_signature(masked_payload_a), _shape_signature(full_payload))
+        self.assertEqual(masked_payload_a["tasks"][0]["attachments"], [])
         self.assertNotEqual(masked_payload_a["tasks"][0]["title"], full_payload["tasks"][0]["title"])
         self.assertNotEqual(masked_payload_a["entities"]["groups"][0]["name"], full_payload["entities"]["groups"][0]["name"])
         self.assertIn(masked_payload_a["tasks"][0]["brand"], BRAND_DICTIONARY)

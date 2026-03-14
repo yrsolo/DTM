@@ -37,14 +37,24 @@ Current HTTP handlers:
 - `PeopleSnapshotHandler`
 - `TelegramWebhookHandler`
 - `GroupQueryHandler`
+- `AdminTaskAttachmentsHandler`
+- `TaskAttachmentReadHandler`
 - `AdminQueueHandler`
 - `InfoHandler`
 
 Admin attachment note:
-- `AdminQueueHandler` serves the active attachment intake endpoints:
+- canonical attachment admin routes live in `AdminTaskAttachmentsHandler`:
+  - `POST /ops/admin/task-attachments/request-upload`
+  - `POST /ops/admin/task-attachments/finalize`
+  - `POST /ops/admin/task-attachments/delete`
+  - same routes under `/test`
+- browser-safe attachment reads live in `TaskAttachmentReadHandler`:
+  - `GET /ops/api/task-attachments/{attachment_id}/view`
+  - `GET /ops/api/task-attachments/{attachment_id}/download`
+- binary upload goes directly to Object Storage; metadata attach/delete goes through the queue
+- legacy paths remain only as transitional wrappers:
   - `POST /admin/attachments/request-upload`
   - `POST /admin/commands/attach-task-file`
-  - binary upload goes directly to Object Storage; metadata attach goes through the queue
 
 Browser auth note:
 - `/ops/auth/*` and `/test/ops/auth/*` are external auth-contour routes, not Python handlers in this repo

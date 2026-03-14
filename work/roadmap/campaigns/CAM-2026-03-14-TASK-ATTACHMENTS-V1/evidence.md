@@ -1,0 +1,60 @@
+# Evidence - CAM-2026-03-14-TASK-ATTACHMENTS-V1
+
+## Trust gate
+- source: active attachment code, current docs, attachment tests, owner-provided campaign proposal
+- last_verified_at: 2026-03-14
+- verified_by: Codex
+- evidence:
+  - `src/entrypoints/http/admin_queue_handler.py`
+  - `src/jobs/attach_task_file_job.py`
+  - `src/snapshot_engine/model.py`
+  - `src/snapshot_engine/serialization.py`
+  - `src/snapshot_engine/engine.py`
+  - `src/snapshot_engine/frontend_v2_payload_builder.py`
+  - `src/entrypoints/http/access_context.py`
+  - `src/entrypoints/http/router.py`
+  - `tests/api/test_command_queue_foundation.py`
+  - `tests/jobs/test_attach_task_file_job.py`
+  - `tests/snapshot_engine/test_engine_attach_metadata.py`
+  - `tests/snapshot_engine/test_query_engine.py`
+  - `docs/system/file_attachments.md`
+  - `agent/intructions/intruct.md`
+- trust_level: high
+- notes:
+  - current runtime has a pragmatic upload contract plus queued metadata attach, but no finalize, delete, or browser-safe read routes
+  - current docs were recently updated and match the narrow existing implementation
+  - owner intent is to invest in future-ready architecture before attachments become a live product surface
+
+## Baseline findings
+- current attachment metadata lives inside bulk extra snapshot under `TaskExtra.attachments`
+- current `AttachmentMeta` is too small for future-ready lifecycle/status/read policy
+- current admin routes are:
+  - `POST /admin/attachments/request-upload`
+  - `POST /admin/commands/attach-task-file`
+- current payload publishes attachments directly from prep snapshot and currently does not hide them in masked mode
+- current system has no:
+  - finalize verification
+  - delete lifecycle
+  - browser-safe `view/download`
+  - canonical attachment service module
+
+## Implementation evidence
+- canonical attachment services package added under `src/services/attachments/`
+- canonical admin routes added:
+  - `POST /ops/admin/task-attachments/request-upload`
+  - `POST /ops/admin/task-attachments/finalize`
+  - `POST /ops/admin/task-attachments/delete`
+- safe read routes added:
+  - `GET /ops/api/task-attachments/{attachment_id}/view`
+  - `GET /ops/api/task-attachments/{attachment_id}/download`
+- legacy routes remain as transitional wrappers only
+- attachment metadata model expanded from minimal upload metadata to canonical lifecycle record with future enrichment stub fields
+- finalize verifies object existence/size/mime before attach publication
+- delete path revokes readability and rebuilds prep
+- payload publication now includes only `ready` + visible attachments, with masked mode hiding attachments entirely
+- snapshot package exports were changed to lazy loading to avoid an import cycle introduced by the new attachment bounded context
+
+## Verification
+- `python -m unittest tests.api.test_command_queue_foundation tests.jobs.test_delete_task_attachment_job tests.jobs.test_attach_task_file_job tests.snapshot_engine.test_engine_attach_metadata tests.snapshot_engine.test_query_engine tests.api.test_frontend_api_routing tests.api.test_task_attachment_read_handler`
+- `python scripts/check_no_legacy_entrypoint_imports.py`
+- `python scripts/check_no_monsters.py`

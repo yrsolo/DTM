@@ -12,6 +12,7 @@ from src.jobs.attach_task_file_job import AttachTaskFileJob
 class _FakeEngine:
     def __init__(self) -> None:
         self.calls = []
+        self.ready_calls = []
 
     def attach_file_metadata(self, *, task_id, attachment):  # noqa: ANN001
         self.calls.append((task_id, attachment))
@@ -23,6 +24,15 @@ class _FakeEngine:
             "attachments_total": 1,
             "prep_written": True,
         }
+
+    def get_attachment_metadata_store(self):
+        return self
+
+    def get_by_attachment_id(self, attachment_id):  # noqa: ANN001
+        return ("task-1", object()) if attachment_id else None
+
+    def mark_ready(self, *, task_id, attachment_id):  # noqa: ANN001
+        self.ready_calls.append((task_id, attachment_id))
 
 
 class AttachTaskFileJobTestCase(unittest.TestCase):
@@ -41,9 +51,9 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
                 requested_by=RequestedBy(source="admin"),
                 payload={
                     "task_id": "task-1",
-                    "key": "attachments/test/task-1/a1-file.pdf",
-                    "filename": "file.pdf",
-                    "mime": "application/pdf",
+                    "key": "attachments/test/task-1/a1-file.docx",
+                    "filename": "file.docx",
+                    "mime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     "size": 123,
                     "uploaded_by": "tester",
                 },
@@ -55,7 +65,9 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
         self.assertEqual(result["status"], "ok")
         self.assertEqual(result["task_id"], "task-1")
         self.assertEqual(len(engine.calls), 1)
-        self.assertEqual(engine.calls[0][1].filename, "file.pdf")
+        self.assertEqual(engine.calls[0][1].filename, "file.docx")
+        self.assertEqual(engine.calls[0][1].kind, "docx")
+        self.assertEqual(engine.ready_calls, [("task-1", engine.calls[0][1].attachment_id)])
 
     def test_attach_job_returns_failed_result_on_missing_required_field(self) -> None:
         ctx = AppContext(cfg=SimpleNamespace(), deps={})
@@ -68,7 +80,7 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
         )
         result = AttachTaskFileJob(ctx).run(cmd)
         self.assertEqual(result["status"], "failed")
-        self.assertEqual(result["error"]["code"], "key_required")
+        self.assertEqual(result["error"]["code"], "mime_required")
 
 
 if __name__ == "__main__":

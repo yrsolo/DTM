@@ -167,6 +167,7 @@ class PeopleSnapshotTestCase(unittest.TestCase):
             )
         )
         engine = SnapshotEngine(
+            attachment_bucket="dtm",
             raw_cache=_NoopStore(),
             prep_cache=_NoopStore(),
             extra_store=_NoopStore(),

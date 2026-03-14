@@ -57,14 +57,28 @@ Represents bulk metadata that augments raw/prep snapshots:
 - orphan flags and other auxiliary task metadata.
 
 Attachment metadata fields:
-- `id`
-- `key` (internal only; not exposed by frontend API)
-- `filename`
-- `mime`
-- `size`
+- `attachment_id`
+- `task_id`
+- `filename_original`
+- `filename_display`
+- `mime_type`
+- `kind`
+- `size_bytes`
+- `status`
+- `storage_bucket` (internal only)
+- `storage_key` (internal only; not exposed by frontend API)
+- `storage_etag`
+- `storage_version`
+- `uploaded_by_user_id`
 - `uploaded_at`
-- `uploaded_by`
-- `preview`
+- `verified_at`
+- `deleted_at`
+- `deleted_by_user_id`
+- `error_code`
+- `error_message`
+- `snapshot_visible`
+- `preview_capabilities`
+- future enrichment fields are reserved but may be null in v1
 
 ## 4) Frontend API v2 contract
 
@@ -80,6 +94,12 @@ Current behavioral guarantees:
 - masking changes sensitive values but preserves payload shape,
 - `milestones` remain full for selected tasks,
 - ids, dates, statuses, and summary/meta structure remain stable across full/masked modes.
+
+Attachment publication guarantees:
+- `tasks[].attachments` contains only `ready` + visible attachments
+- frontend DTO never exposes storage internals
+- masked mode returns empty attachments arrays
+- browser content access goes through trusted read routes, not direct storage keys
 
 ## 5) Hashing and freshness contracts
 

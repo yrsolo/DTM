@@ -243,18 +243,6 @@ def _apply_mask(payload: dict[str, Any], *, version: str) -> dict[str, Any]:
         row["customer"] = _mask_value("customer", str(row.get("customer") or ""), version=version)
         row["history"] = _mask_value("history", str(row.get("history") or ""), version=version)
         attachments = []
-        for attachment in list(row.get("attachments", []) or []):
-            masked_attachment = dict(attachment or {})
-            masked_attachment["filename"] = _mask_value(
-                "filename", str(masked_attachment.get("filename") or ""), version=version
-            )
-            masked_attachment["uploadedBy"] = _mask_value(
-                "person", str(masked_attachment.get("uploadedBy") or ""), version=version
-            )
-            masked_attachment["preview"] = _mask_value(
-                "preview", str(masked_attachment.get("preview") or ""), version=version
-            )
-            attachments.append(masked_attachment)
         row["attachments"] = attachments
         tasks.append(row)
     masked["tasks"] = tasks

@@ -7,6 +7,7 @@ from datetime import date, datetime, timezone
 from typing import Any
 
 from src.snapshot_engine.model import Milestone, PrepSnapshot, TaskSheet, TaskView
+from src.services.attachments.policy import attachment_projection_visible
 
 
 def _to_str(value: Any) -> str:
@@ -243,15 +244,22 @@ class FrontendV2PayloadBuilder:
                     "history": _to_str(sheet.history),
                     "attachments": [
                         {
-                            "id": _to_str(item.id),
-                            "filename": _to_str(item.filename),
-                            "mime": _to_str(item.mime),
-                            "size": int(item.size),
+                            "id": _to_str(item.attachment_id),
+                            "name": _to_str(item.filename_display),
+                            "mime": _to_str(item.mime_type),
+                            "kind": _to_str(item.kind),
+                            "sizeBytes": int(item.size_bytes),
+                            "status": _to_str(item.status),
                             "uploadedAt": _utc_iso(item.uploaded_at_utc),
-                            "uploadedBy": _to_str(item.uploaded_by),
-                            "preview": _to_str(item.preview),
+                            "capabilities": list(item.preview_capabilities or []),
+                            "meta": {"preview": _to_str(item.preview)} if _to_str(item.preview) else {},
+                            "links": {
+                                "view": f"/api/task-attachments/{_to_str(item.attachment_id)}/view",
+                                "download": f"/api/task-attachments/{_to_str(item.attachment_id)}/download",
+                            },
                         }
                         for item in list((view.extra.attachments if view.extra is not None else []) or [])
+                        if attachment_projection_visible(item)
                     ],
                     "ownerId": _owner_id(sheet),
                     "groupId": _group_id(sheet),

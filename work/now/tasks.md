@@ -1,6 +1,6 @@
 # Active Tasks
 
-- none
+- CAM-2026-03-14-TASK-ATTACHMENTS-V1: build future-ready attachment subsystem with canonical routes, finalize/delete/read lifecycle, and snapshot publication. Status: done.
 
 ## Done
 

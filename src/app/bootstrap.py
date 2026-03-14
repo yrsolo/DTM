@@ -148,6 +148,7 @@ def build_app_context() -> AppContext:
         from src.jobs.update_snapshot_job import UpdateSnapshotJob
         from src.jobs.group_query_reply_job import GroupQueryReplyJob
         from src.jobs.attach_task_file_job import AttachTaskFileJob
+        from src.jobs.delete_task_attachment_job import DeleteTaskAttachmentJob
         from src.worker.dispatcher import CommandDispatcher
         from src.worker.status_store import S3JobStatusStore
         from src.worker.worker import Worker
@@ -176,6 +177,7 @@ def build_app_context() -> AppContext:
             render_designers_job=RenderDesignersJob(ctx),
             group_query_reply_job=GroupQueryReplyJob(ctx),
             attach_task_file_job=AttachTaskFileJob(ctx),
+            delete_task_attachment_job=DeleteTaskAttachmentJob(ctx),
         )
         deps["job_status_store"] = status_store
         deps["command_queue_producer"] = producer

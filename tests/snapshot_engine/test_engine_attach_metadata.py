@@ -73,10 +73,12 @@ class SnapshotEngineAttachMetadataTestCase(unittest.TestCase):
         prep_cache = _PrepCache()
         extra_store = _ExtraStore()
         engine = SnapshotEngine(
+            attachment_bucket="dtm",
             raw_cache=_RawCache(raw),
             prep_cache=prep_cache,
             extra_store=extra_store,
             people_store=None,
+            response_cache_store=None,
             query_engine=None,
             prep_builder=_PrepBuilder(),
             update_job_factory=None,
@@ -97,6 +99,7 @@ class SnapshotEngineAttachMetadataTestCase(unittest.TestCase):
         self.assertEqual(result["status"], "ok")
         self.assertIn("t1", extra_store.snapshot.items_by_task_id)
         self.assertEqual(extra_store.snapshot.items_by_task_id["t1"].attachments[0].filename, "a1.pdf")
+        self.assertEqual(extra_store.snapshot.items_by_task_id["t1"].attachments[0].status, "ready")
         self.assertIsNotNone(prep_cache.current)
 
 
