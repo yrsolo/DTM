@@ -7,6 +7,8 @@ from src.app.context import AppContext
 from src.services.errors import AppError, UserError
 from src.snapshot_engine import build_snapshot_engine
 from src.snapshot_engine.model import AttachmentMeta
+from src.services.attachments.policy import build_attachment_capabilities, infer_attachment_kind
+from src.services.attachments.contracts import ATTACHMENT_STATUS_READY
 
 
 class AttachTaskFileJob:
@@ -33,17 +35,37 @@ class AttachTaskFileJob:
         try:
             task_id = self._require_text(payload, "task_id")
             attachment_id = str(payload.get("attachment_id", "")).strip() or uuid4().hex
+            mime_type = self._require_text(payload, "mime")
+            size_bytes = self._parse_size(payload)
+            kind = infer_attachment_kind(mime_type)
             attachment = AttachmentMeta(
                 id=attachment_id,
+                attachment_id=attachment_id,
+                task_id=task_id,
                 key=self._require_text(payload, "key"),
+                storage_key=self._require_text(payload, "key"),
                 filename=self._require_text(payload, "filename"),
-                mime=self._require_text(payload, "mime"),
-                size=self._parse_size(payload),
+                filename_original=self._require_text(payload, "filename"),
+                filename_display=self._require_text(payload, "filename"),
+                mime=mime_type,
+                mime_type=mime_type,
+                kind=kind,
+                size=size_bytes,
+                size_bytes=size_bytes,
                 uploaded_at_utc=datetime.now(timezone.utc),
                 uploaded_by=self._require_text(payload, "uploaded_by"),
+                uploaded_by_user_id=self._require_text(payload, "uploaded_by"),
                 preview=str(payload.get("preview", "")).strip(),
+                preview_capabilities=build_attachment_capabilities(kind),
+                status=ATTACHMENT_STATUS_READY,
+                snapshot_visible=True,
             )
-            result = build_snapshot_engine(self._ctx).attach_file_metadata(task_id=task_id, attachment=attachment)
+            engine = build_snapshot_engine(self._ctx)
+            metadata_store = engine.get_attachment_metadata_store()
+            lookup = metadata_store.get_by_attachment_id(attachment_id)
+            if lookup is not None:
+                metadata_store.mark_ready(task_id=task_id, attachment_id=attachment_id)
+            result = engine.attach_file_metadata(task_id=task_id, attachment=attachment)
             result["object_key"] = attachment.key
             return result
         except AppError as error:

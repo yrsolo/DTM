@@ -67,12 +67,15 @@ class SnapshotQueryEngineTestCase(unittest.TestCase):
                         attachments=[
                             AttachmentMeta(
                                 id="a1",
-                                key="attachments/test/t1/a1-file.pdf",
-                                filename="file.pdf",
-                                mime="application/pdf",
+                                key="attachments/test/t1/a1-file.docx",
+                                filename="file.docx",
+                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                                 size=123,
                                 uploaded_at_utc=datetime(2026, 3, 8, 10, 0, tzinfo=timezone.utc),
                                 uploaded_by="Alice",
+                                kind="docx",
+                                status="ready",
+                                snapshot_visible=True,
                             )
                         ],
                     ),
@@ -93,7 +96,9 @@ class SnapshotQueryEngineTestCase(unittest.TestCase):
                 window_end=None,
             ),
         )
-        self.assertEqual(payload["tasks"][0]["attachments"][0]["filename"], "file.pdf")
+        self.assertEqual(payload["tasks"][0]["attachments"][0]["name"], "file.docx")
+        self.assertEqual(payload["tasks"][0]["attachments"][0]["kind"], "docx")
+        self.assertEqual(payload["tasks"][0]["attachments"][0]["status"], "ready")
         self.assertNotIn("key", payload["tasks"][0]["attachments"][0])
 
     def test_query_frontend_v2_window_filter(self) -> None:

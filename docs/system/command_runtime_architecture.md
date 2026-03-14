@@ -69,10 +69,11 @@ Worker responsibilities:
 - `attach_task_file`
 
 Attachment upload contract:
-
-- `POST /admin/attachments/request-upload` returns a presigned upload contract after task-exists validation
+- `POST /ops/admin/task-attachments/request-upload` returns a presigned upload contract after task-exists validation
 - binary upload happens directly against Object Storage
-- `POST /admin/commands/attach-task-file` enqueues metadata persistence through `attach_task_file`
+- `POST /ops/admin/task-attachments/finalize` verifies the object and enqueues `attach_task_file`
+- `POST /ops/admin/task-attachments/delete` enqueues `delete_task_attachment`
+- legacy paths remain as transitional wrappers only
 
 ## Status and observability
 

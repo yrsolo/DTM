@@ -6,6 +6,7 @@ from typing import Any
 from src.commands.model import Command
 from src.commands.types import (
     ATTACH_TASK_FILE,
+    DELETE_TASK_ATTACHMENT,
     GROUP_QUERY_REPLY,
     RENDER_DESIGNERS_SHEET,
     RENDER_TIMELINE_SHEET,
@@ -26,6 +27,7 @@ class CommandDispatcher:
         render_designers_job: Any,
         group_query_reply_job: Any,
         attach_task_file_job: Any,
+        delete_task_attachment_job: Any,
     ) -> None:
         self._handlers = {
             UPDATE_SNAPSHOT: update_snapshot_job,
@@ -34,6 +36,7 @@ class CommandDispatcher:
             RENDER_DESIGNERS_SHEET: render_designers_job,
             GROUP_QUERY_REPLY: group_query_reply_job,
             ATTACH_TASK_FILE: attach_task_file_job,
+            DELETE_TASK_ATTACHMENT: delete_task_attachment_job,
         }
 
     async def dispatch(self, cmd: Command) -> JobResult:

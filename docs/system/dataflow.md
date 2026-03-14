@@ -32,12 +32,15 @@ People routing snapshot:
 
 Attachment metadata contour:
 - binary payloads are uploaded directly to Object Storage under `attachments/{env}/{task_id}/...`
-- admin upload-contract endpoint is `POST /admin/attachments/request-upload`
-- metadata enqueue endpoint is `POST /admin/commands/attach-task-file`
+- admin upload-contract endpoint is `POST /ops/admin/task-attachments/request-upload`
+- finalize endpoint is `POST /ops/admin/task-attachments/finalize`
+- delete endpoint is `POST /ops/admin/task-attachments/delete`
+- metadata attach/delete still execute asynchronously through queue jobs
 - metadata is persisted in snapshot extra-store under canonical bulk key `snapshots/{env}/extra/default.json`
 - runtime no longer reads per-task extra objects from the hot path
-- worker command `attach_task_file` updates extra-store and rebuilds prep from current raw snapshot
+- worker commands `attach_task_file` and `delete_task_attachment` update extra-store and rebuild prep from current raw snapshot
 - API v2 exposes attachment metadata through `tasks[].attachments` without exposing storage keys
+- browser reads go through `/ops/api/task-attachments/{attachment_id}/{view|download}` with trusted/full access only
 
 Prep-build hot path:
 - load one bulk extra snapshot

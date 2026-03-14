@@ -7,11 +7,13 @@ from time import perf_counter
 from src.app.context import AppContext
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.admin_queue_handler import AdminQueueHandler
+from src.entrypoints.http.admin_task_attachments_handler import AdminTaskAttachmentsHandler
 from src.entrypoints.http.frontend_compat_handlers import FrontendRootHandler
 from src.entrypoints.http.frontend_v2_handler import FrontendV2Handler
 from src.entrypoints.http.info_handler import InfoHandler
 from src.entrypoints.http.job_status_handler import JobStatusHandler
 from src.entrypoints.http.people_snapshot_handler import PeopleSnapshotHandler
+from src.entrypoints.http.task_attachment_read_handler import TaskAttachmentReadHandler
 from src.observability.bottlenecks import append_response_headers
 from src.telegram.webhook import TelegramWebhookHandler
 
@@ -21,10 +23,12 @@ class HttpRouter:
 
     def __init__(self, ctx: AppContext) -> None:
         self._telegram_webhook_handler = TelegramWebhookHandler(ctx)
+        self._admin_task_attachments_handler = AdminTaskAttachmentsHandler(ctx)
         self._admin_queue_handler = AdminQueueHandler(ctx)
         self._job_status_handler = JobStatusHandler(ctx)
         self._info_handler = InfoHandler(ctx)
         self._people_snapshot_handler = PeopleSnapshotHandler(ctx)
+        self._task_attachment_read_handler = TaskAttachmentReadHandler(ctx)
         self._frontend_root_handler = FrontendRootHandler(ctx)
         self._frontend_v2_handler = FrontendV2Handler(ctx)
 
@@ -42,10 +46,12 @@ class HttpRouter:
         started_at = perf_counter()
         handlers = [
             ("telegram", self._telegram_webhook_handler.handle),
+            ("admin_task_attachments", self._admin_task_attachments_handler.handle),
             ("admin_queue", self._admin_queue_handler.handle),
             ("job_status", self._job_status_handler.handle),
             ("info", self._info_handler.handle),
             ("people_snapshot", self._people_snapshot_handler.handle),
+            ("task_attachment_read", self._task_attachment_read_handler.handle),
             ("frontend_root", self._frontend_root_handler.handle),
             ("frontend_v2", self._frontend_v2_handler.handle),
         ]
