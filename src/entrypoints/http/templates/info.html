@@ -32,7 +32,7 @@ __INFO_CSS__
       <div class="row"><span class="k">Size human:</span> <span class="v" id="bytesHuman"></span></div>
       <div class="row"><span class="k">Breakdown:</span> <span class="v" id="sizeBreakdown"></span></div>
     </div>
-    <div class="card">
+    <div class="card" id="functionBuildCard">
       <h2>Function Build</h2>
       <div class="row"><span class="k">Function:</span> <span class="v" id="buildFunctionName"></span></div>
       <div class="row"><span class="k">Version:</span> <span class="v" id="buildVersionId"></span></div>
@@ -69,7 +69,7 @@ __INFO_CSS__
 
   <details class="card section collapsible">
     <summary class="section-summary">
-      <span>Recent Jobs</span>
+      <span>Jobs & Render Debug</span>
       <span class="collapse-hint">show</span>
     </summary>
     <div class="grid collapsible-grid">
@@ -98,7 +98,7 @@ __INFO_CSS__
       <span class="collapse-hint">show</span>
     </summary>
     <div class="hline">
-      <h2>Admin Actions</h2>
+      <span class="section-note">Queue-backed admin actions</span>
       <span class="timer" id="adminTimer">00:00.0</span>
     </div>
     <button onclick="enqueueAdminCommand('/admin/commands/update-snapshot', {force_refresh:true,dry_run:false})">Force snapshot refresh</button>
@@ -118,7 +118,7 @@ __INFO_CSS__
       <span class="collapse-hint">show</span>
     </summary>
     <div class="hline">
-      <h2>API Request Builder</h2>
+      <span class="section-note">Manual frontend API query builder</span>
       <span class="timer" id="apiTimer">00:00.0</span>
     </div>
     <div class="controls">
@@ -175,7 +175,7 @@ __INFO_CSS__
       <span class="collapse-hint">show</span>
     </summary>
     <div class="hline">
-      <h2>Attachment Harness</h2>
+      <span class="section-note">Reserved probe task attachment flow</span>
       <span class="timer" id="attachmentTimer">00:00.0</span>
     </div>
     <div class="row"><span class="k">Probe task:</span> <span class="v" id="attachmentProbeTaskId"></span></div>
@@ -206,21 +206,24 @@ __INFO_CSS__
 
   <details class="card section collapsible">
     <summary class="section-summary">
-      <span>Info JSON</span>
+      <span>Payload JSON</span>
       <span class="collapse-hint">show</span>
     </summary>
-    <h2>Info JSON</h2>
     <pre id="infoResult">__INFO_PAYLOAD_JSON__</pre>
   </details>
 
-  <div class="card section">
+  <details class="card section collapsible" id="grafanaSection">
+    <summary class="section-summary">
+      <span>Grafana Dashboard</span>
+      <span class="collapse-hint">show</span>
+    </summary>
     <div class="hline">
-      <h2>Grafana Dashboard</h2>
+      <span class="section-note">Embedded observability dashboard</span>
       <a id="grafanaLink" class="v" href="#" target="_blank" rel="noreferrer" style="display:none">open</a>
     </div>
     <div id="grafanaEmpty" class="muted">Grafana embed URL is not configured.</div>
     <iframe id="grafanaFrame" src="" allowfullscreen style="display:none"></iframe>
-  </div>
+  </details>
 
   <script>
 __INFO_JS__

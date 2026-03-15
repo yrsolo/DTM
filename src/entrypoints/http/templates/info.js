@@ -88,6 +88,43 @@
     function attachmentClearLog(){
       attachmentResetLog();
     }
+    async function copyOutput(targetId, button){
+      const node = document.getElementById(targetId);
+      if (!node) return;
+      const text = String(node.textContent || '');
+      try {
+        await navigator.clipboard.writeText(text);
+        if (button) {
+          const old = button.textContent;
+          button.textContent = 'Copied';
+          setTimeout(() => { button.textContent = old; }, 1200);
+        }
+      } catch (_e) {
+        if (button) {
+          const old = button.textContent;
+          button.textContent = 'Copy failed';
+          setTimeout(() => { button.textContent = old; }, 1200);
+        }
+      }
+    }
+    function installCopyButtons(){
+      const targets = Array.from(document.querySelectorAll('pre[id]'));
+      for (const pre of targets) {
+        const parent = pre.parentElement;
+        if (!parent) continue;
+        if (parent.querySelector('.pre-toolbar[data-target="' + pre.id + '"]')) continue;
+        const toolbar = document.createElement('div');
+        toolbar.className = 'pre-toolbar';
+        toolbar.setAttribute('data-target', pre.id);
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'copy-button';
+        button.textContent = 'Copy';
+        button.addEventListener('click', () => copyOutput(pre.id, button));
+        toolbar.appendChild(button);
+        parent.insertBefore(toolbar, pre);
+      }
+    }
     function withBase(path){
       const payloadNode = document.getElementById('infoResult');
       let base = '';
@@ -141,6 +178,11 @@
       document.getElementById('buildRuntime').textContent = b.runtime || '';
       document.getElementById('buildResources').textContent = (b.memory || '') + ((b.timeoutSeconds ?? '') !== '' ? ' / ' + String(b.timeoutSeconds) + 's' : '');
       document.getElementById('buildEntrypoint').textContent = b.entrypoint || '';
+      const functionBuildCard = document.getElementById('functionBuildCard');
+      if (functionBuildCard) {
+        const buildUnavailable = !!String(b.error || '').trim();
+        functionBuildCard.style.display = buildUnavailable ? 'none' : 'block';
+      }
       document.getElementById('queueName').textContent = ql.queue_name || q.queueName || '';
       document.getElementById('queueVisible').textContent = String(ql.messages_visible ?? '');
       document.getElementById('queueInflight').textContent = String(ql.messages_in_flight ?? '');
@@ -670,4 +712,5 @@
       }
     }
     refreshApiRequestUrl();
+    installCopyButtons();
     loadInfo();
