@@ -5,6 +5,7 @@
 
 ## Done
 
+- Attachment `request-upload` now returns structured JSON error details (`artifact`, `step`, `reason`, echoed inputs, missing field marker) so frontend can distinguish intake validation from task/storage issues
 - Attachment upload contract now returns additive diagnostics (`signedMethod`, `signedContentType`, `uploadUrlHost/path`, expiry, browser preflight note) to debug presigned browser upload failures without changing finalize flow
 - Morning reminders now skip weekend delivery while preserving Friday -> Monday next-workday selection
 - Attachment post-mutation cache hygiene: successful `attach_task_file` and `delete_task_attachment` now best-effort invalidate exact default frontend response cache entries after prep rebuild, without triggering full snapshot refresh

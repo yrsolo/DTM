@@ -90,3 +90,16 @@
   - diagnostics are intended to help distinguish frontend misuse from storage/nginx ingress instability without changing finalize or queue semantics
 - verification:
   - `python -m unittest tests.api.test_command_queue_foundation`
+
+## Follow-up evidence: structured request-upload errors
+- verified_at: 2026-03-15
+- files:
+  - `src/entrypoints/http/admin_task_attachments_handler.py`
+  - `tests/api/test_command_queue_foundation.py`
+  - `docs/system/file_attachments.md`
+- behavior:
+  - `request-upload` keeps the standard JSON error envelope
+  - `400/404/503` responses on upload-contract intake now include structured `error.details` with `artifact`, `step`, `reason`, echoed inputs, and missing-field marker when applicable
+  - frontend can now distinguish validation rejection from task lookup failure without relying on HTTP status alone
+- verification:
+  - `python -m unittest tests.api.test_command_queue_foundation`

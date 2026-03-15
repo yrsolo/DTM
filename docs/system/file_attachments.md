@@ -72,6 +72,14 @@ Current direct-upload contract details:
 - browser caller must use the returned `uploadUrl` as-is
 - browser `PUT` may require successful `OPTIONS`/CORS handling on the storage ingress before the actual upload
 
+`request-upload` error responses are JSON and now include structured `error.details` for frontend diagnostics:
+- `artifact=attachment_upload_request_error`
+- `step=request-upload`
+- `reason=<machine-readable reason>`
+- input echoes such as `task_id`, `filename`, `mime`, `size`
+- `uploaded_by_present`
+- `field` for missing required input when applicable
+
 Finalize request:
 - `POST /ops/admin/task-attachments/finalize`
 - `POST /test/ops/admin/task-attachments/finalize`

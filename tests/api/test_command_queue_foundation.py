@@ -116,11 +116,12 @@ class _FakeAttachmentStore:
 
 
 class _FakeSnapshotEngine:
-    def __init__(self) -> None:
+    def __init__(self, *, tasks_by_id=None) -> None:
         self._attachment_store = _FakeAttachmentStore()
+        self._tasks_by_id = dict(tasks_by_id or {"task-1": object()})
 
     def get_prep_snapshot(self):
-        return SimpleNamespace(tasks_by_id={"task-1": object()})
+        return SimpleNamespace(tasks_by_id=self._tasks_by_id)
 
     def get_attachment_metadata_store(self):
         return self._attachment_store
@@ -357,6 +358,77 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
         self.assertEqual(payload["attachment_id"], "a1")
         self.assertEqual(len(producer.commands), 1)
         self.assertEqual(producer.commands[0].type, "attach_task_file")
+
+    def test_admin_task_attachments_handler_request_upload_returns_structured_400_details(self) -> None:
+        handler = AdminTaskAttachmentsHandler(_FakeCtx())
+        response = handler.handle(
+            HttpRequest(
+                method="POST",
+                path="/admin/task-attachments/request-upload",
+                body={
+                    "task_id": "task-1",
+                    "filename": "spec final.docx",
+                    "mime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "size": 128,
+                },
+                headers={
+                    "X-DTM-Proxy-Secret": "proxy-secret-test",
+                    "x-dtm-access-mode": "full",
+                    "x-dtm-authenticated": "1",
+                    "x-dtm-contour": "test",
+                    "x-dtm-user-status": "approved",
+                },
+                is_http_event=True,
+            )
+        )
+        self.assertIsNotNone(response)
+        self.assertEqual(response.status, 400)
+        payload = json.loads(response.body)
+        self.assertEqual(payload["error"]["code"], "uploaded_by_required")
+        self.assertEqual(payload["error"]["details"]["artifact"], "attachment_upload_request_error")
+        self.assertEqual(payload["error"]["details"]["step"], "request-upload")
+        self.assertEqual(payload["error"]["details"]["reason"], "uploaded_by_required")
+        self.assertEqual(payload["error"]["details"]["field"], "uploaded_by")
+        self.assertEqual(payload["error"]["details"]["task_id"], "task-1")
+        self.assertEqual(payload["error"]["details"]["filename"], "spec final.docx")
+
+    def test_admin_task_attachments_handler_request_upload_returns_task_not_found_details(self) -> None:
+        import src.entrypoints.http.admin_task_attachments_handler as module
+
+        original_build_snapshot_engine = module.build_snapshot_engine
+        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine(tasks_by_id={})  # type: ignore[assignment]
+        try:
+            handler = AdminTaskAttachmentsHandler(_FakeCtx())
+            response = handler.handle(
+                HttpRequest(
+                    method="POST",
+                    path="/admin/task-attachments/request-upload",
+                    body={
+                        "task_id": "task-missing",
+                        "filename": "spec final.docx",
+                        "mime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        "size": 128,
+                        "uploaded_by": "tester",
+                    },
+                    headers={
+                        "X-DTM-Proxy-Secret": "proxy-secret-test",
+                        "x-dtm-access-mode": "full",
+                        "x-dtm-authenticated": "1",
+                        "x-dtm-contour": "test",
+                        "x-dtm-user-status": "approved",
+                    },
+                    is_http_event=True,
+                )
+            )
+        finally:
+            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+        self.assertIsNotNone(response)
+        self.assertEqual(response.status, 404)
+        payload = json.loads(response.body)
+        self.assertEqual(payload["error"]["code"], "task_not_found")
+        self.assertEqual(payload["error"]["details"]["step"], "request-upload")
+        self.assertEqual(payload["error"]["details"]["reason"], "task_not_found")
+        self.assertEqual(payload["error"]["details"]["task_id"], "task-missing")
 
     def test_admin_task_attachments_handler_enqueues_delete_command(self) -> None:
         producer = _FakeProducer()

@@ -27,6 +27,31 @@ class AdminTaskAttachmentsHandler:
         return self._ctx.deps.get("job_status_store")
 
     @staticmethod
+    def _upload_error_details(
+        *,
+        reason: str,
+        task_id: str,
+        filename: str,
+        mime: str,
+        size: int | str | None,
+        uploaded_by: str,
+        extra: dict[str, object] | None = None,
+    ) -> dict[str, object]:
+        details: dict[str, object] = {
+            "artifact": "attachment_upload_request_error",
+            "step": "request-upload",
+            "reason": reason,
+            "task_id": task_id,
+            "filename": filename,
+            "mime": mime,
+            "size": size,
+            "uploaded_by_present": bool(str(uploaded_by or "").strip()),
+        }
+        if extra:
+            details.update(extra)
+        return details
+
+    @staticmethod
     def _requested_by(req: HttpRequest) -> RequestedBy:
         headers = dict(req.headers or {})
         return RequestedBy(
@@ -77,22 +102,111 @@ class AdminTaskAttachmentsHandler:
         try:
             size = max(int(body.get("size", 0) or 0), 0)
         except (TypeError, ValueError):
-            return error_response(400, code="size_invalid", message="size must be an integer.")
+            return error_response(
+                400,
+                code="size_invalid",
+                message="size must be an integer.",
+                details=self._upload_error_details(
+                    reason="size_invalid",
+                    task_id=task_id,
+                    filename=filename,
+                    mime=mime,
+                    size=body.get("size"),
+                    uploaded_by=uploaded_by,
+                ),
+            )
         if not task_id:
-            return error_response(400, code="task_id_required", message="task_id is required.")
+            return error_response(
+                400,
+                code="task_id_required",
+                message="task_id is required.",
+                details=self._upload_error_details(
+                    reason="task_id_required",
+                    task_id=task_id,
+                    filename=filename,
+                    mime=mime,
+                    size=size,
+                    uploaded_by=uploaded_by,
+                    extra={"field": "task_id"},
+                ),
+            )
         if not filename:
-            return error_response(400, code="filename_required", message="filename is required.")
+            return error_response(
+                400,
+                code="filename_required",
+                message="filename is required.",
+                details=self._upload_error_details(
+                    reason="filename_required",
+                    task_id=task_id,
+                    filename=filename,
+                    mime=mime,
+                    size=size,
+                    uploaded_by=uploaded_by,
+                    extra={"field": "filename"},
+                ),
+            )
         if not mime:
-            return error_response(400, code="mime_required", message="mime is required.")
+            return error_response(
+                400,
+                code="mime_required",
+                message="mime is required.",
+                details=self._upload_error_details(
+                    reason="mime_required",
+                    task_id=task_id,
+                    filename=filename,
+                    mime=mime,
+                    size=size,
+                    uploaded_by=uploaded_by,
+                    extra={"field": "mime"},
+                ),
+            )
         if not uploaded_by:
-            return error_response(400, code="uploaded_by_required", message="uploaded_by is required.")
+            return error_response(
+                400,
+                code="uploaded_by_required",
+                message="uploaded_by is required.",
+                details=self._upload_error_details(
+                    reason="uploaded_by_required",
+                    task_id=task_id,
+                    filename=filename,
+                    mime=mime,
+                    size=size,
+                    uploaded_by=uploaded_by,
+                    extra={"field": "uploaded_by"},
+                ),
+            )
         try:
             engine = build_snapshot_engine(self._ctx)
             prep = engine.get_prep_snapshot()
         except Exception as error:
-            return error_response(503, code="snapshot_unavailable", message="Snapshot engine is temporarily unavailable.", details={"errorType": type(error).__name__})
+            return error_response(
+                503,
+                code="snapshot_unavailable",
+                message="Snapshot engine is temporarily unavailable.",
+                details=self._upload_error_details(
+                    reason="snapshot_unavailable",
+                    task_id=task_id,
+                    filename=filename,
+                    mime=mime,
+                    size=size,
+                    uploaded_by=uploaded_by,
+                    extra={"errorType": type(error).__name__},
+                ),
+            )
         if prep is None or task_id not in prep.tasks_by_id:
-            return error_response(404, code="task_not_found", message="Task was not found in current snapshot.")
+            return error_response(
+                404,
+                code="task_not_found",
+                message="Task was not found in current snapshot.",
+                details=self._upload_error_details(
+                    reason="task_not_found",
+                    task_id=task_id,
+                    filename=filename,
+                    mime=mime,
+                    size=size,
+                    uploaded_by=uploaded_by,
+                ),
+            )
         attachment_id = str(body.get("attachment_id", "")).strip() or uuid4().hex
         storage = build_attachment_storage(self._ctx)
         object_key = storage.build_object_key(
@@ -113,7 +227,19 @@ class AdminTaskAttachmentsHandler:
             )
             contract = storage.generate_upload_contract(key=object_key, mime_type=record.mime_type)
         except AppError as error:
-            return error_response(400 if error.code.endswith("_unsupported") or error.code.endswith("_required") else 503, code=error.code, message=str(error))
+            return error_response(
+                400 if error.code.endswith("_unsupported") or error.code.endswith("_required") else 503,
+                code=error.code,
+                message=str(error),
+                details=self._upload_error_details(
+                    reason=error.code,
+                    task_id=task_id,
+                    filename=filename,
+                    mime=mime,
+                    size=size,
+                    uploaded_by=uploaded_by,
+                ),
+            )
         upload_url = str(contract["uploadUrl"])
         parsed_upload_url = urlsplit(upload_url)
         expires_in = int(contract["expiresIn"])
