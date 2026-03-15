@@ -5,6 +5,7 @@
 
 ## Done
 
+- Morning reminders now skip weekend delivery while preserving Friday -> Monday next-workday selection
 - Attachment post-mutation cache hygiene: successful `attach_task_file` and `delete_task_attachment` now best-effort invalidate exact default frontend response cache entries after prep rebuild, without triggering full snapshot refresh
 - CAM-2026-03-12-DOC-CODE-REALIGN-V1 P04: verified current attachment upload contour against code, replaced stale attachment skeleton doc with current runtime contract, and updated main doc map
 - CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1: implemented hidden cleanup enqueue path, `cleanup_task_attachments` worker job, 24h stale-metadata cleanup policy, and single-pass prep rebuild semantics

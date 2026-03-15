@@ -42,6 +42,11 @@ Reminder runtime source:
 - tasks from prep snapshot
 - people routing from people snapshot
 
+Reminder delivery policy:
+- `morning` is workday-only
+- Saturday/Sunday `morning` runs are skipped without Telegram delivery
+- Friday `morning` still includes Monday as the next workday
+
 Webhook intake policy:
 - webhook only, no polling
 - validate Telegram secret header

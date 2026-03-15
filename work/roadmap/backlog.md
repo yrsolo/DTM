@@ -10,6 +10,7 @@
 - CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1
 
 ## Done
+- Morning reminders skip weekend delivery and preserve Friday -> Monday next-workday behavior
 - Attachment post-mutation cache invalidation for exact default frontend response cache after attach/delete
 - CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1 hidden cleanup enqueue path, job, TTL policy, and tests
 - CAM-2026-03-12-DOC-CODE-REALIGN-V1 P04 current attachment-upload doc refresh and skeleton removal

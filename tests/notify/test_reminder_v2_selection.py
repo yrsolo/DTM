@@ -67,6 +67,28 @@ class ReminderSelectionTestCase(unittest.TestCase):
         self.assertEqual(next_workday(date(2026, 3, 7)), date(2026, 3, 9))  # Sat -> Mon
         self.assertEqual(next_workday(date(2026, 3, 8)), date(2026, 3, 9))  # Sun -> Mon
 
+    def test_friday_selection_keeps_monday_as_next_workday(self) -> None:
+        friday = date(2026, 3, 6)
+        monday = date(2026, 3, 9)
+        prep = PrepSnapshot(
+            source_id="sheet:test",
+            raw_source_hash="hash",
+            built_at_utc=datetime.now(timezone.utc),
+            tasks_by_id={
+                "1": _task("1", "Дизайнер 1", "work", friday),
+                "2": _task("2", "Дизайнер 1", "work", monday),
+            },
+            indexes=PrepIndexes(),
+        )
+        groups, selected_today, selected_next = ReminderUseCase(_FakeEngine(prep)).select(
+            ReminderRequest(mode="morning", today_override=friday, include_today=True, include_next_workday=True)
+        )
+        self.assertEqual(selected_today, friday)
+        self.assertEqual(selected_next, monday)
+        self.assertEqual(len(groups), 1)
+        self.assertEqual(len(groups[0].tasks_today), 1)
+        self.assertEqual(len(groups[0].tasks_next_workday), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
