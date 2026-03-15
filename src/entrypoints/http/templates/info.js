@@ -430,7 +430,7 @@
       const jobId = String(finalizePayload.job_id || finalizePayload.jobId || '');
       return attachmentPollJob(jobId);
     }
-    async function attachmentCheckProbeState(){
+    async function attachmentCheckProbeState(expectedVisible, stepLabel){
       attachmentTimer.start();
       try {
         await loadInfo();
@@ -446,7 +446,10 @@
         }));
         const expectedStatus = String(config.probeTaskExpectedStatus || '');
         const currentStatus = String(config.probeTaskStatus || '');
-        attachmentSetResult('frontend-check', 'ok', {
+        const expectedPresenceKnown = typeof expectedVisible === 'boolean';
+        const actualVisible = !!match;
+        const effectiveStep = String(stepLabel || 'frontend-check');
+        attachmentSetResult(effectiveStep, 'ok', {
           probeTaskId: config.probeTaskId || '',
           probeTaskAvailable: !!config.probeTaskAvailable,
           probeTaskExpectedStatus: expectedStatus,
@@ -456,12 +459,14 @@
           probeAttachmentIds: attachmentsBrief.map((item) => item.id),
           probeAttachments: attachmentsBrief,
           targetAttachmentId: targetId,
-          targetAttachmentVisible: !!match,
+          expectedTargetAttachmentVisible: expectedPresenceKnown ? !!expectedVisible : null,
+          targetAttachmentVisible: actualVisible,
+          targetAttachmentVisibilityMatchesExpected: expectedPresenceKnown ? actualVisible === !!expectedVisible : null,
           targetAttachment: match || null,
         });
         return match || null;
       } catch (error) {
-        attachmentSetResult('frontend-check', 'failed', {message: String((error || {}).message || error || 'unknown_error')});
+        attachmentSetResult(String(stepLabel || 'frontend-check'), 'failed', {message: String((error || {}).message || error || 'unknown_error')});
         return null;
       } finally {
         attachmentTimer.stop();
@@ -537,7 +542,7 @@
       const finalizePayload = attachmentHarnessState.finalizeResult || {};
       if (!finalizePayload.job_id && !finalizePayload.jobId) return;
       await attachmentPollLastJob();
-      const visible = await attachmentCheckProbeState();
+      const visible = await attachmentCheckProbeState(true, 'frontend-check-after-attach');
       if (!visible) return;
       await attachmentOpenView();
       await attachmentOpenDownload();
@@ -546,7 +551,7 @@
       if (deletePayload.job_id || deletePayload.jobId) {
         await attachmentPollLastJob();
       }
-      await attachmentCheckProbeState();
+      await attachmentCheckProbeState(false, 'frontend-check-after-delete');
     }
     async function pollJob(jobId){
       for (let attempt = 0; attempt < 60; attempt += 1) {
