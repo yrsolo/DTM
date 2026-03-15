@@ -4,9 +4,23 @@
 - none
 
 ## Blocked
-- none
+- CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
+
+## Planned
+- CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1
 
 ## Done
+- Attachment docs now explicitly anchor troubleshooting to `/test/ops/info` as backend verification source before escalating product-UI failures to backend runtime
+- `/info` Attachment Harness now resets stale selected attachment state and includes direct delete action on attachment cards
+- `/info` Attachment Harness now shows live probe-task attachment cards with direct open/download actions for manual operator verification
+- Detailed frontend attachment handoff doc now captures the verified `test` contract, async lifecycle, and explicit `prod` caveat
+- `/info` Attachment Harness now logs expected visibility after attach vs after delete, reducing false “not visible” confusion during full probe runs
+- `/info` Attachment Harness for reserved probe task plus documented reuse of `/ops/auth/attachments/*` with `jobs/{job_id}` polling
+- Attachment request-upload structured error details for frontend diagnostics
+- Attachment upload contract diagnostics for direct browser PUT troubleshooting
+- Morning reminders skip weekend delivery and preserve Friday -> Monday next-workday behavior
+- Attachment post-mutation cache invalidation for exact default frontend response cache after attach/delete
+- CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1 hidden cleanup enqueue path, job, TTL policy, and tests
 - CAM-2026-03-12-DOC-CODE-REALIGN-V1 P04 current attachment-upload doc refresh and skeleton removal
 - CAM-2026-03-14-PEOPLE-SNAPSHOT-AND-SECRET-API-V1
 - CAM-2026-03-14-TASK-ATTACHMENTS-V1
@@ -24,9 +38,6 @@
 - CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1
 - CAM-2026-03-12-RUNTIME-DEPLANNERIZE-AND-BOOTSTRAP-HARDENING-V1
 - CAM-2026-03-12-DOC-CODE-REALIGN-V1
-
-## Planned
-- none
 
 ## Parked
 - CAM-2026-03-09-RUNTIME-DEPLANNERIZE-V1 (obsolete / already substantially delivered)

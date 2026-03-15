@@ -11,6 +11,7 @@
     .collapsible{padding:0;overflow:hidden}
     .section-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;list-style:none;padding:16px;font-weight:700}
     .section-summary::-webkit-details-marker{display:none}
+    .section-note{font-size:14px;font-weight:600;color:#334155}
     .collapse-hint{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#64748b}
     .collapsible[open] .collapse-hint{color:#0f62fe}
     .collapsible[open] .collapse-hint::before{content:"hide"}
@@ -23,6 +24,25 @@
     button{margin:4px 6px 4px 0;padding:8px 10px;border:0;border-radius:8px;background:#0f62fe;color:#fff;cursor:pointer}
     button.alt{background:#4b5563}
     button.small{padding:6px 8px;font-size:12px}
+    button.copy-button{background:#1d4ed8;font-size:12px;padding:6px 10px}
     pre{background:#0b1220;color:#dbeafe;padding:12px;border-radius:10px;overflow:auto;max-height:280px;white-space:pre-wrap}
+    .pre-toolbar{display:flex;justify-content:flex-end;align-items:center;margin:6px 0 0}
     iframe{width:100%;height:900px;border:1px solid #cbd5e1;border-radius:10px;background:#fff}
     .muted{color:#64748b;font-size:14px}
+    .attachment-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin:12px 0}
+    .attachment-item{border:1px solid #dbe7f3;background:#f8fbff;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px}
+    .attachment-item.selected{border-color:#0f62fe;box-shadow:0 0 0 2px rgba(15,98,254,.12)}
+    .attachment-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .attachment-title{display:flex;flex-direction:column;gap:4px;min-width:0}
+    .attachment-name{font-weight:700;color:#0f172a;word-break:break-word}
+    .attachment-meta{font-size:12px;color:#475569;word-break:break-word}
+    .attachment-badges{display:flex;flex-wrap:wrap;gap:6px}
+    .attachment-badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:700}
+    .attachment-badge.kind{background:#dbeafe;color:#1d4ed8}
+    .attachment-badge.ready{background:#dcfce7;color:#166534}
+    .attachment-badge.pending{background:#fef3c7;color:#92400e}
+    .attachment-badge.hidden{background:#e2e8f0;color:#334155}
+    .attachment-badge.visible{background:#dcfce7;color:#166534}
+    .attachment-actions{display:flex;flex-wrap:wrap;gap:8px}
+    .attachment-actions button{margin:0}
+    .attachment-empty{padding:12px;border:1px dashed #cbd5e1;border-radius:10px;color:#64748b;background:#f8fafc}

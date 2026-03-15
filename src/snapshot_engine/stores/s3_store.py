@@ -84,6 +84,14 @@ class _S3JsonStore:
         except Exception as error:
             raise TransientError(str(error), code="s3_put_failed") from error
 
+    def delete(self, key: str) -> None:
+        try:
+            self.client.delete_object(Bucket=self.bucket, Key=key)
+        except Exception as error:
+            if _is_missing_key(error):
+                return
+            raise TransientError(str(error), code="s3_delete_failed") from error
+
     def list_prefix(self, prefix: str) -> list[str]:
         keys: list[str] = []
         token: str | None = None
@@ -194,6 +202,9 @@ class S3ResponseCacheStore:
 
     def put(self, cache_key: str, payload: dict[str, Any]) -> None:
         self._store.put(self._key(cache_key), dict(payload or {}))
+
+    def delete(self, cache_key: str) -> None:
+        self._store.delete(self._key(cache_key))
 
 
 def build_s3_stores(

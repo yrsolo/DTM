@@ -6,9 +6,10 @@ Single source of truth for campaign lifecycle state.
 - none
 
 ## Blocked
-- none
+- CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## Done
+- CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1
 - CAM-2026-03-14-TASK-ATTACHMENTS-V1
 - CAM-2026-03-14-PEOPLE-SNAPSHOT-AND-SECRET-API-V1
 - CAM-2026-03-14-ARCHITECTURE-AUDIT-AND-ROADMAP-V1
@@ -21,7 +22,7 @@ Single source of truth for campaign lifecycle state.
 - CAM-2026-03-12-DOC-CODE-REALIGN-V1
 
 ## Planned
-- none
+- CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1
 
 ## Parked
 - CAM-2026-03-09-RUNTIME-DEPLANNERIZE-V1 (obsolete / already substantially delivered)

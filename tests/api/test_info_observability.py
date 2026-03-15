@@ -33,6 +33,22 @@ class _FakeSnapshotEngine:
             tasks_by_id={
                 "task-1": SimpleNamespace(sheet=SimpleNamespace(status="work")),
                 "task-2": SimpleNamespace(sheet=SimpleNamespace(status="done")),
+                "1111111111": SimpleNamespace(
+                    sheet=SimpleNamespace(status="test"),
+                    extra=SimpleNamespace(
+                        attachments=[
+                            SimpleNamespace(
+                                attachment_id="att-probe-1",
+                                filename_display="probe-brief.docx",
+                                mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                kind="docx",
+                                status="ready",
+                                snapshot_visible=True,
+                                uploaded_at_utc=now,
+                            )
+                        ]
+                    ),
+                ),
             },
             source_id="sheet:test",
             raw_source_hash="sha256:test",
@@ -225,6 +241,11 @@ class InfoObservabilityTestCase(unittest.TestCase):
                         secret_required=True,
                     ),
                     web={"api_domain_test": "dtm.solofarm.ru/test/ops", "api_domain_prod": "dtm.solofarm.ru/ops"},
+                    api={
+                        "attachment_harness_enabled": True,
+                        "attachment_harness_probe_task_id": "1111111111",
+                        "attachment_harness_probe_task_status": "test",
+                    },
                 ),
                 db=SimpleNamespace(object_storage={"endpoint_url_default": "https://storage.yandexcloud.net"}),
                 deploy=SimpleNamespace(
@@ -336,6 +357,13 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertEqual(payload["renderDebug"]["state"], "noop")
         self.assertEqual(payload["build"]["activeVersionId"], "d4etest")
         self.assertEqual(payload["queue"]["live"]["messages_visible"], 2)
+        self.assertIn("attachmentsHarness", payload)
+        self.assertTrue(payload["attachmentsHarness"]["enabled"])
+        self.assertEqual(payload["attachmentsHarness"]["probeTaskId"], "1111111111")
+        self.assertTrue(payload["attachmentsHarness"]["probeTaskAvailable"])
+        self.assertEqual(payload["attachmentsHarness"]["probeTaskStatus"], "test")
+        self.assertEqual(payload["attachmentsHarness"]["probeAttachmentsTotal"], 1)
+        self.assertIn("/auth/attachments/request-upload", payload["attachmentsHarness"]["browserRoutes"]["requestUpload"])
         self.assertEqual(payload["queue"]["policy"]["retryModel"], "queue_driven")
         self.assertEqual(payload["telemetry"]["metricsClient"], "_MetricsRecorder")
         self.assertEqual(payload["telemetry"]["metricsDeliveryMode"], "buffered")
@@ -393,6 +421,8 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertIn("direct backend (/api)", response.body)
         self.assertIn("Bottleneck Profiling", response.body)
         self.assertIn("Bottleneck Diagnostics", response.body)
+        self.assertIn("Attachment Harness", response.body)
+        self.assertIn("Run full probe", response.body)
 
     def test_info_json_includes_ui_base_path_for_prefixed_route(self) -> None:
         handler = InfoHandler(self.ctx)

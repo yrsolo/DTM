@@ -26,6 +26,8 @@
 
 ### `morning`
 - production-like reminder mode for workday delivery
+- Saturday/Sunday runs are skipped with a successful structured no-op result
+- Friday still includes `next_workday = Monday` when next-workday reminders are enabled
 
 ### `test`
 - safe operator/developer mode

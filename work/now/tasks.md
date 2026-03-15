@@ -1,10 +1,22 @@
 # Active Tasks
 
-- CAM-2026-03-14-TASK-ATTACHMENTS-V1: build future-ready attachment subsystem with canonical routes, finalize/delete/read lifecycle, and snapshot publication. Status: done.
+- CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke is blocked until the manual production release workflow is executed. Status: blocked.
+- none
 
 ## Done
 
+- Attachment docs now explicitly state that `/test/ops/info` is the backend-owned verification source for the working `test` contour, and that product-UI-only failures after a passing harness are frontend/auth integration issues by default
+- `/info` Attachment Harness now clears stale selected attachment state on new upload and exposes per-card delete action for direct operator verification
+- `/info` Attachment Harness now renders current probe-task attachments as operator cards with status badges and direct `Open file` / `Download file` actions for manual end-to-end verification
+- Added detailed frontend attachment handoff doc with verified `test` lifecycle, async rules, auth facade routes, and explicit confidence boundary between `test` and `prod`
+- `/info` Attachment Harness now distinguishes `frontend-check-after-attach` vs `frontend-check-after-delete`, so `targetAttachmentVisible=false` after full probe is reported as expected post-delete state instead of ambiguous failure
+- `/info` now exposes Attachment Harness metadata and UI for the reserved probe task, with step-by-step browser diagnostics and documented reuse of the external auth attachment facade under `/ops/auth/attachments/*`
+- Attachment `request-upload` now returns structured JSON error details (`artifact`, `step`, `reason`, echoed inputs, missing field marker) so frontend can distinguish intake validation from task/storage issues
+- Attachment upload contract now returns additive diagnostics (`signedMethod`, `signedContentType`, `uploadUrlHost/path`, expiry, browser preflight note) to debug presigned browser upload failures without changing finalize flow
+- Morning reminders now skip weekend delivery while preserving Friday -> Monday next-workday selection
+- Attachment post-mutation cache hygiene: successful `attach_task_file` and `delete_task_attachment` now best-effort invalidate exact default frontend response cache entries after prep rebuild, without triggering full snapshot refresh
 - CAM-2026-03-12-DOC-CODE-REALIGN-V1 P04: verified current attachment upload contour against code, replaced stale attachment skeleton doc with current runtime contract, and updated main doc map
+- CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1: implemented hidden cleanup enqueue path, `cleanup_task_attachments` worker job, 24h stale-metadata cleanup policy, and single-pass prep rebuild semantics
 - CAM-2026-03-14-PEOPLE-SNAPSHOT-AND-SECRET-API-V1: expanded people snapshot to full registry, added secret-only `GET /api/v2/people`, preserved reminder compatibility, and kept `frontend_v2` unchanged
 - CAM-2026-03-14-PEOPLE-SNAPSHOT-AND-SECRET-API-V1 P02: split people-registry mail fields into `contact_email` and `yandex_email`, and exposed them as `contactEmail` / `yandexEmail` in the secret-only people API
 - CAM-2026-03-14-PEOPLE-SNAPSHOT-AND-SECRET-API-V1 P03: added derived `is_active` / `isActive` using safe vacation/termination markers and explicitly kept `.` as active

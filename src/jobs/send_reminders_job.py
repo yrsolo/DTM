@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 from src.adapters.llm_google import AsyncGoogleLLMChatAgent
 from src.adapters.llm_openai import AsyncOpenAIChatAgent
 from src.adapters.llm_yandex import AsyncYandexLLMChatAgent
@@ -60,6 +63,14 @@ def _build_notify_enhancer(ctx: AppContext, *, mock_external: bool):
     )
 
 
+def _today_in_runtime_timezone(ctx: AppContext):
+    timezone_name = str(ctx.cfg.runtime.runtime.timezone or "Europe/Moscow").strip() or "Europe/Moscow"
+    try:
+        return datetime.now(ZoneInfo(timezone_name)).date()
+    except Exception:
+        return datetime.now().date()
+
+
 class SendRemindersJob:
     def __init__(self, ctx: AppContext):
         self._ctx = ctx
@@ -79,6 +90,22 @@ class SendRemindersJob:
         )
         notify_cfg = self._ctx.cfg.runtime.notify
         mode = str(cmd.payload.get("mode", "morning")).strip().lower() or "morning"
+        today = _today_in_runtime_timezone(self._ctx)
+        if mode == "morning" and today.weekday() >= 5:
+            return {
+                "artifact": "reminder_v2",
+                "status": "ok",
+                "mode": mode,
+                "today": today.isoformat(),
+                "next_workday": "",
+                "groups": 0,
+                "delivery_counters": {
+                    "candidates_total": 0,
+                    "sent": 0,
+                },
+                "enhancement_counters": {},
+                "warnings": ["morning_weekend_skipped"],
+            }
         llm_mode = str(notify_cfg.llm_mode_default or "provider")
         mock_external = bool(cmd.payload.get("mock_external", False))
         mock_llm = bool(
@@ -109,6 +136,7 @@ class SendRemindersJob:
                     statuses=list(cmd.payload.get("statuses", ["work", "pre_done"])),
                     include_today=bool(cmd.payload.get("include_today", True)),
                     include_next_workday=bool(cmd.payload.get("include_next_workday", True)),
+                    today_override=today if mode == "morning" else None,
                     force_test_chat=bool(cmd.payload.get("force_test_chat", False))
                     or mode == "test"
                     or str(self._ctx.cfg.runtime.runtime.env_default).strip().lower() == "test",

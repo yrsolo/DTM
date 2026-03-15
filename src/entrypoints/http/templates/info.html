@@ -32,7 +32,7 @@ __INFO_CSS__
       <div class="row"><span class="k">Size human:</span> <span class="v" id="bytesHuman"></span></div>
       <div class="row"><span class="k">Breakdown:</span> <span class="v" id="sizeBreakdown"></span></div>
     </div>
-    <div class="card">
+    <div class="card" id="functionBuildCard">
       <h2>Function Build</h2>
       <div class="row"><span class="k">Function:</span> <span class="v" id="buildFunctionName"></span></div>
       <div class="row"><span class="k">Version:</span> <span class="v" id="buildVersionId"></span></div>
@@ -69,7 +69,7 @@ __INFO_CSS__
 
   <details class="card section collapsible">
     <summary class="section-summary">
-      <span>Recent Jobs</span>
+      <span>Jobs & Render Debug</span>
       <span class="collapse-hint">show</span>
     </summary>
     <div class="grid collapsible-grid">
@@ -98,7 +98,7 @@ __INFO_CSS__
       <span class="collapse-hint">show</span>
     </summary>
     <div class="hline">
-      <h2>Admin Actions</h2>
+      <span class="section-note">Queue-backed admin actions</span>
       <span class="timer" id="adminTimer">00:00.0</span>
     </div>
     <button onclick="enqueueAdminCommand('/admin/commands/update-snapshot', {force_refresh:true,dry_run:false})">Force snapshot refresh</button>
@@ -118,7 +118,7 @@ __INFO_CSS__
       <span class="collapse-hint">show</span>
     </summary>
     <div class="hline">
-      <h2>API Request Builder</h2>
+      <span class="section-note">Manual frontend API query builder</span>
       <span class="timer" id="apiTimer">00:00.0</span>
     </div>
     <div class="controls">
@@ -171,21 +171,61 @@ __INFO_CSS__
 
   <details class="card section collapsible">
     <summary class="section-summary">
-      <span>Info JSON</span>
+      <span>Attachment Harness</span>
       <span class="collapse-hint">show</span>
     </summary>
-    <h2>Info JSON</h2>
+    <div class="hline">
+      <span class="section-note">Reserved probe task attachment flow</span>
+      <span class="timer" id="attachmentTimer">00:00.0</span>
+    </div>
+    <div class="row"><span class="k">Probe task:</span> <span class="v" id="attachmentProbeTaskId"></span></div>
+    <div class="row"><span class="k">Expected status:</span> <span class="v" id="attachmentProbeExpectedStatus"></span></div>
+    <div class="row"><span class="k">Task available:</span> <span class="v" id="attachmentProbeAvailable"></span></div>
+    <div class="row"><span class="k">Current task status:</span> <span class="v" id="attachmentProbeStatus"></span></div>
+    <div class="row"><span class="k">Current attachments:</span> <span class="v" id="attachmentProbeAttachmentsCount"></span></div>
+    <div class="row"><span class="k">Allowed mime types:</span> <span class="v" id="attachmentAllowedMimes"></span></div>
+    <div class="row"><span class="k">Selected attachment:</span> <span class="v" id="attachmentSelectedId"></span></div>
+    <div id="attachmentProbeAttachmentsList" class="attachment-list"></div>
+    <div class="controls">
+      <label>file <input id="attachmentFileInput" type="file" /></label>
+    </div>
+    <div class="controls">
+      <button onclick="attachmentRequestUpload()">Request upload</button>
+      <button class="alt" onclick="attachmentUploadBinary()">Upload binary</button>
+      <button class="alt" onclick="attachmentFinalize()">Finalize</button>
+      <button class="alt" onclick="attachmentPollLastJob()">Poll job</button>
+    </div>
+    <div class="controls">
+      <button class="alt" onclick="attachmentCheckProbeState()">Refresh probe state</button>
+      <button class="alt" onclick="attachmentOpenView()">View</button>
+      <button class="alt" onclick="attachmentOpenDownload()">Download</button>
+      <button class="alt" onclick="attachmentDelete()">Delete</button>
+      <button onclick="attachmentRunFullFlow()">Run full probe</button>
+      <button class="alt" onclick="attachmentClearLog()">Clear log</button>
+    </div>
+    <pre id="attachmentHarnessResult">Select a file to start the attachment harness.</pre>
+  </details>
+
+  <details class="card section collapsible">
+    <summary class="section-summary">
+      <span>Payload JSON</span>
+      <span class="collapse-hint">show</span>
+    </summary>
     <pre id="infoResult">__INFO_PAYLOAD_JSON__</pre>
   </details>
 
-  <div class="card section">
+  <details class="card section collapsible" id="grafanaSection">
+    <summary class="section-summary">
+      <span>Grafana Dashboard</span>
+      <span class="collapse-hint">show</span>
+    </summary>
     <div class="hline">
-      <h2>Grafana Dashboard</h2>
+      <span class="section-note">Embedded observability dashboard</span>
       <a id="grafanaLink" class="v" href="#" target="_blank" rel="noreferrer" style="display:none">open</a>
     </div>
     <div id="grafanaEmpty" class="muted">Grafana embed URL is not configured.</div>
     <iframe id="grafanaFrame" src="" allowfullscreen style="display:none"></iframe>
-  </div>
+  </details>
 
   <script>
 __INFO_JS__

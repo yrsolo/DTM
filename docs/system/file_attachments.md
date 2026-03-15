@@ -14,7 +14,7 @@ The canonical upload flow is:
 2. Upload the binary directly to Object Storage using the returned presigned URL.
 3. Finalize the uploaded object; backend verifies object existence, size, and mime.
 4. Finalize enqueues metadata attachment through the command queue.
-5. Worker writes canonical attachment metadata into the extra snapshot and rebuilds prep.
+5. Worker writes canonical attachment metadata into the extra snapshot, rebuilds prep, and best-effort invalidates exact default frontend response cache entries.
 
 ## HTTP/admin intake
 
@@ -47,11 +47,38 @@ Returned fields:
 - `method`
 - `uploadUrl`
 - `headers`
+- `diagnostics`
+
+`diagnostics` is additive debug metadata for browser upload troubleshooting:
+- `uploadContractVersion`
+- `signedMethod`
+- `signedContentType`
+- `requiredHeaders`
+- `uploadUrlScheme`
+- `uploadUrlHost`
+- `uploadUrlPath`
+- `expiresAtUtc`
+- `browserMayRequirePreflight`
+- `notes`
 
 The handler validates:
 - task exists in the current prep snapshot
 - mime type is supported
 - filename is normalized into a safe storage key
+
+Current direct-upload contract details:
+- backend signs exact `PUT`
+- backend signs exact `Content-Type`
+- browser caller must use the returned `uploadUrl` as-is
+- browser `PUT` may require successful `OPTIONS`/CORS handling on the storage ingress before the actual upload
+
+`request-upload` error responses are JSON and now include structured `error.details` for frontend diagnostics:
+- `artifact=attachment_upload_request_error`
+- `step=request-upload`
+- `reason=<machine-readable reason>`
+- input echoes such as `task_id`, `filename`, `mime`, `size`
+- `uploaded_by_present`
+- `field` for missing required input when applicable
 
 Finalize request:
 - `POST /ops/admin/task-attachments/finalize`
@@ -93,6 +120,18 @@ Optional request body:
 - `preview`
 
 This compatibility endpoint only enqueues command `attach_task_file`; canonical callers should use `finalize`.
+
+Hidden cleanup enqueue:
+- `POST /admin/commands/cleanup-task-attachments`
+
+Request body:
+- `ttl_seconds` (optional, default `86400`)
+
+Behavior:
+- enqueues `cleanup_task_attachments`
+- scans bulk attachment metadata for stale `pending_upload`, `uploaded_unverified`, and `deleted` records
+- best-effort deletes the underlying storage object when `storage_key` is present
+- removes stale metadata and rebuilds prep once if anything changed
 
 ## Storage contract
 
@@ -136,6 +175,7 @@ Canonical metadata model includes:
 Command type:
 - `attach_task_file`
 - `delete_task_attachment`
+- `cleanup_task_attachments`
 
 Runtime path:
 - `AdminTaskAttachmentsHandler` serves canonical request-upload/finalize/delete routes
@@ -150,7 +190,9 @@ Worker responsibilities:
 3. append/replace attachment metadata in task extra record
 4. persist bulk extra snapshot
 5. rebuild and write prep snapshot
-6. revoke readability and remove metadata during delete
+6. best-effort invalidate exact default frontend response cache entries after successful attach/delete mutation
+7. revoke readability and remove metadata during delete
+8. remove stale non-ready/deleted metadata during cleanup with one bulk prep rebuild
 
 ## Read path behavior
 
@@ -180,6 +222,143 @@ Security and visibility rules:
 - masked contour hides attachments entirely
 - read access requires trusted ingress + authenticated + `full` + `approved`
 - storage keys are intentionally not exposed through the frontend payload
+- successful attach/delete mutation also clears exact default frontend response cache variants (`api|bff` x `masked|full`) so the next default frontend hit is rebuilt from fresh prep
+
+## Lifecycle and cleanup policy
+
+Active lifecycle states:
+- `pending_upload`
+- `uploaded_unverified`
+- `ready`
+- `delete_pending`
+- `deleted`
+- `failed`
+
+Publication rules:
+- only `ready` + `snapshot_visible=true` attachments are published into task payloads
+- masked contour hides attachments entirely
+- `deleted`, `pending_upload`, `uploaded_unverified`, and `failed` attachments are never frontend-visible
+
+Cleanup v1 policy:
+- stale `pending_upload` older than 24h -> orphan candidate
+- stale `uploaded_unverified` older than 24h -> orphan candidate
+- stale `deleted` older than 24h -> final cleanup candidate
+- `ready` records are never touched by cleanup
+- `delete_pending` younger than TTL is never touched by cleanup
+- transient storage-delete failure keeps metadata and records a warning
+
+Reference timestamps:
+- `pending_upload` -> `uploaded_at_utc`
+- `uploaded_unverified` -> `verified_at_utc`, fallback `uploaded_at_utc`
+- `deleted` -> `deleted_at_utc`
+
+Cleanup carrier:
+- no separate attachment table/store in v1
+- stale cleanup scans the existing bulk extra snapshot only
+
+## `/info` attachment harness
+
+Backend-owned operator harness is exposed through:
+- `/ops/info`
+- `/test/ops/info`
+
+Detail payload now includes additive block:
+- `attachmentsHarness`
+
+Current fields:
+- `enabled`
+- `probeTaskId`
+- `probeTaskExpectedStatus`
+- `probeTaskAvailable`
+- `probeTaskStatus`
+- `probeAttachmentsTotal`
+- `probeAttachments`
+- `allowedMimeTypes`
+- `browserRoutes`
+- `backendRoutes`
+- `authFacadeRequired`
+- `notes`
+
+Purpose:
+- verify the full attachment contour from an operator-controlled page
+- use one reserved real probe task instead of arbitrary task input
+- surface step-by-step diagnostics for upload/finalize/job/read/delete operations
+- provide backend-owned manual proof that the current `test` contour works independently of the product frontend UI
+
+Reserved probe task contract:
+- task id comes from runtime config:
+  - `runtime.api.attachment_harness_probe_task_id`
+- expected source status comes from:
+  - `runtime.api.attachment_harness_probe_task_status`
+- current default values:
+  - `attachment_harness_probe_task_id = "1111111111"`
+  - `attachment_harness_probe_task_status = "test"`
+
+Important:
+- the probe task must exist in the real source data and current prep snapshot
+- backend does not add synthetic-task bypass for harness use
+- harness publication check is backend-owned:
+  - `/info` detail payload reports `probeAttachments` for the reserved task
+- this avoids depending on normal frontend query defaults, which do not have to include the `test` status
+
+Harness flow in `/info`:
+1. request upload contract through browser-safe auth facade route
+2. upload binary directly to Object Storage using returned `uploadUrl`
+3. finalize through auth facade
+4. poll queued job until terminal state
+5. reload `/info` detail payload and inspect `probeAttachments`
+6. test `view` / `download`
+7. delete attachment and verify disappearance again
+
+Current operator affordances in `/info`:
+- step-by-step harness log
+- current probe-task attachment cards
+- direct `Open file`
+- direct `Download file`
+- direct `Delete file`
+- explicit after-attach vs after-delete visibility checks
+
+Current `/info` harness uses browser-facing auth facade routes only for:
+- `/ops/auth/attachments/request-upload`
+- `/ops/auth/attachments/finalize`
+- `/ops/auth/attachments/delete`
+- `/ops/auth/attachments/jobs/{job_id}`
+- `/ops/auth/attachments/{attachment_id}/view`
+- `/ops/auth/attachments/{attachment_id}/download`
+
+Same namespace is expected under `/test/ops/auth/attachments/*` for the `test` contour.
+
+Operational rule:
+- if `/test/ops/info` succeeds for the same environment and auth facade, backend attachment runtime should be considered verified
+- subsequent failures in product UI are then most likely in frontend/auth integration, not in the core attachment pipeline itself
+
+Direct binary upload remains outside auth facade:
+- browser uses returned Object Storage `uploadUrl` directly
+- auth facade must not proxy the binary upload stream
+
+## Operator smoke runbook
+
+Minimal manual smoke on `test`:
+1. `POST /test/ops/admin/task-attachments/request-upload`
+2. direct `PUT` to returned `uploadUrl`
+3. `POST /test/ops/admin/task-attachments/finalize`
+4. wait for worker and confirm attachment appears in trusted `GET /test/ops/api/v2/frontend`
+5. confirm masked `GET /test/ops/api/v2/frontend` hides attachments
+6. `GET /test/ops/api/task-attachments/{attachment_id}/view` -> expect `302`
+7. `GET /test/ops/api/task-attachments/{attachment_id}/download` -> expect `302`
+8. `POST /test/ops/admin/task-attachments/delete`
+9. wait for worker and confirm attachment no longer appears in trusted frontend payload
+
+Expected statuses:
+- `request-upload` -> `200`
+- direct Object Storage `PUT` -> `200`
+- `finalize` -> `202`
+- `delete` -> `202`
+- `view` / `download` for trusted full approved access -> `302`
+
+Contour note:
+- `test` live smoke is verified against deployed runtime
+- `prod` smoke requires running the manual release workflow first because push to `main` does not deploy the function by itself
 
 ## Current boundaries
 

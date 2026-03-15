@@ -59,8 +59,8 @@ def get_function_build_info(
         raise RuntimeError(f"Function not found: {function_name}")
     function_id = str(function_item.get("id", "")).strip()
     version_response = requests.get(
-        f"{FUNCTIONS_API_BASE}/functions/{function_id}:getVersionByTag",
-        params={"tag": "$latest"},
+        f"{FUNCTIONS_API_BASE}/versions:byTag",
+        params={"functionId": function_id, "tag": "$latest"},
         headers=auth_headers(iam_token),
         timeout=timeout_seconds,
     )

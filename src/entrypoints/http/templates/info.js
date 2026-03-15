@@ -56,6 +56,75 @@
     }
     const adminTimer = createTimer('adminTimer');
     const apiTimer = createTimer('apiTimer');
+    const attachmentTimer = createTimer('attachmentTimer');
+    let currentInfoPayload = {};
+    let attachmentHarnessState = {
+      requestUpload: null,
+      uploadResult: null,
+      finalizeResult: null,
+      lastJobPayload: null,
+      lastAttachmentId: '',
+      logEntries: [],
+    };
+    function nowTimeLabel(){
+      const value = new Date();
+      const hh = String(value.getHours()).padStart(2, '0');
+      const mm = String(value.getMinutes()).padStart(2, '0');
+      const ss = String(value.getSeconds()).padStart(2, '0');
+      return hh + ':' + mm + ':' + ss;
+    }
+    function renderAttachmentLog(){
+      const log = Array.isArray(attachmentHarnessState.logEntries) ? attachmentHarnessState.logEntries : [];
+      if (!log.length) {
+        document.getElementById('attachmentHarnessResult').textContent = 'Select a file to start the attachment harness.';
+        return;
+      }
+      document.getElementById('attachmentHarnessResult').textContent = log.join('\n\n');
+    }
+    function attachmentResetLog(){
+      attachmentHarnessState.logEntries = [];
+      renderAttachmentLog();
+    }
+    function attachmentClearLog(){
+      attachmentResetLog();
+    }
+    async function copyOutput(targetId, button){
+      const node = document.getElementById(targetId);
+      if (!node) return;
+      const text = String(node.textContent || '');
+      try {
+        await navigator.clipboard.writeText(text);
+        if (button) {
+          const old = button.textContent;
+          button.textContent = 'Copied';
+          setTimeout(() => { button.textContent = old; }, 1200);
+        }
+      } catch (_e) {
+        if (button) {
+          const old = button.textContent;
+          button.textContent = 'Copy failed';
+          setTimeout(() => { button.textContent = old; }, 1200);
+        }
+      }
+    }
+    function installCopyButtons(){
+      const targets = Array.from(document.querySelectorAll('pre[id]'));
+      for (const pre of targets) {
+        const parent = pre.parentElement;
+        if (!parent) continue;
+        if (parent.querySelector('.pre-toolbar[data-target="' + pre.id + '"]')) continue;
+        const toolbar = document.createElement('div');
+        toolbar.className = 'pre-toolbar';
+        toolbar.setAttribute('data-target', pre.id);
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'copy-button';
+        button.textContent = 'Copy';
+        button.addEventListener('click', () => copyOutput(pre.id, button));
+        toolbar.appendChild(button);
+        parent.insertBefore(toolbar, pre);
+      }
+    }
     function withBase(path){
       const payloadNode = document.getElementById('infoResult');
       let base = '';
@@ -77,6 +146,7 @@
         document.getElementById('infoResult').textContent = 'HTTP ' + r.status + '\\n' + text;
         return;
       }
+      currentInfoPayload = p || {};
       const s = p.snapshot || {};
       const c = p.counts || {};
       const st = p.storage || {};
@@ -108,6 +178,11 @@
       document.getElementById('buildRuntime').textContent = b.runtime || '';
       document.getElementById('buildResources').textContent = (b.memory || '') + ((b.timeoutSeconds ?? '') !== '' ? ' / ' + String(b.timeoutSeconds) + 's' : '');
       document.getElementById('buildEntrypoint').textContent = b.entrypoint || '';
+      const functionBuildCard = document.getElementById('functionBuildCard');
+      if (functionBuildCard) {
+        const buildUnavailable = !!String(b.error || '').trim();
+        functionBuildCard.style.display = buildUnavailable ? 'none' : 'block';
+      }
       document.getElementById('queueName').textContent = ql.queue_name || q.queueName || '';
       document.getElementById('queueVisible').textContent = String(ql.messages_visible ?? '');
       document.getElementById('queueInflight').textContent = String(ql.messages_in_flight ?? '');
@@ -124,6 +199,7 @@
       document.getElementById('lastRenderJob').textContent = pretty(lastRender || {});
       document.getElementById('renderDebug').textContent = pretty(renderDebug);
       document.getElementById('infoResult').textContent = pretty(p);
+      renderAttachmentHarness(p.attachmentsHarness || {});
       const telemetry = p.telemetry || {};
       const web = p.web || {};
       const uiBasePath = String(web.uiBasePath || '').trim();
@@ -148,6 +224,486 @@
         grafanaFrame.style.display = 'none';
         grafanaEmpty.style.display = 'block';
       }
+    }
+    function attachmentCurrentConfig(){
+      return ((currentInfoPayload || {}).attachmentsHarness) || {};
+    }
+    function attachmentSetResult(step, status, payload){
+      const lines = ['[' + nowTimeLabel() + '] step=' + String(step || ''), 'status=' + String(status || '')];
+      const value = payload === undefined ? '' : pretty(payload);
+      attachmentHarnessState.logEntries.push(lines.join(' | ') + (value ? '\n' + value : ''));
+      if (attachmentHarnessState.logEntries.length > 40) {
+        attachmentHarnessState.logEntries = attachmentHarnessState.logEntries.slice(-40);
+      }
+      renderAttachmentLog();
+    }
+    function attachmentSelectedFile(){
+      const input = document.getElementById('attachmentFileInput');
+      const files = input && input.files ? input.files : [];
+      return files && files.length ? files[0] : null;
+    }
+    function attachmentMimeType(file){
+      const mime = String((file || {}).type || '').trim();
+      if (mime) return mime;
+      const name = String((file || {}).name || '').toLowerCase();
+      if (name.endsWith('.docx')) return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      if (name.endsWith('.png')) return 'image/png';
+      if (name.endsWith('.jpg') || name.endsWith('.jpeg')) return 'image/jpeg';
+      if (name.endsWith('.webp')) return 'image/webp';
+      return 'application/octet-stream';
+    }
+    function attachmentCurrentSelectedId(){
+      return String(attachmentHarnessState.lastAttachmentId || '').trim();
+    }
+    function attachmentSetSelectedId(attachmentId){
+      attachmentHarnessState.lastAttachmentId = String(attachmentId || '').trim();
+      const selectedNode = document.getElementById('attachmentSelectedId');
+      if (selectedNode) {
+        selectedNode.textContent = attachmentHarnessState.lastAttachmentId || 'not selected';
+      }
+    }
+    function attachmentEnsureValidSelection(config){
+      const attachments = Array.isArray((config || {}).probeAttachments) ? config.probeAttachments : [];
+      const selectedId = attachmentCurrentSelectedId();
+      if (!selectedId) {
+        attachmentSetSelectedId('');
+        return;
+      }
+      const exists = attachments.some((item) => String((item || {}).id || '').trim() === selectedId);
+      if (!exists) attachmentSetSelectedId('');
+    }
+    function attachmentKindLabel(item){
+      const kind = String((item || {}).kind || '').trim().toLowerCase();
+      if (kind === 'image') return 'IMG';
+      if (kind === 'docx') return 'DOCX';
+      return (kind || 'FILE').toUpperCase();
+    }
+    function attachmentStatusClass(status){
+      const value = String(status || '').trim().toLowerCase();
+      if (value === 'ready') return 'ready';
+      if (value === 'pending_upload' || value === 'uploaded_unverified') return 'pending';
+      return 'hidden';
+    }
+    function attachmentOpenBrowserRoute(url, step, attachmentId){
+      const value = String(url || '').trim();
+      if (!value) {
+        attachmentSetResult(step, 'blocked', {reason: 'route_missing', attachmentId: String(attachmentId || '')});
+        return;
+      }
+      const anchor = document.createElement('a');
+      anchor.href = value;
+      anchor.target = '_blank';
+      anchor.rel = 'noopener';
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      attachmentSetSelectedId(attachmentId);
+      attachmentSetResult(step, 'opened', {attachmentId: String(attachmentId || ''), url: value});
+    }
+    function renderAttachmentProbeList(config){
+      const host = document.getElementById('attachmentProbeAttachmentsList');
+      if (!host) return;
+      const attachments = Array.isArray(config.probeAttachments) ? config.probeAttachments : [];
+      const selectedId = attachmentCurrentSelectedId();
+      host.innerHTML = '';
+      if (!attachments.length) {
+        const empty = document.createElement('div');
+        empty.className = 'attachment-empty';
+        empty.textContent = 'No attachments currently linked to the probe task.';
+        host.appendChild(empty);
+        return;
+      }
+      for (const item of attachments) {
+        const attachmentId = String((item || {}).id || '').trim();
+        const card = document.createElement('div');
+        card.className = 'attachment-item' + (selectedId && selectedId === attachmentId ? ' selected' : '');
+
+        const head = document.createElement('div');
+        head.className = 'attachment-head';
+
+        const title = document.createElement('div');
+        title.className = 'attachment-title';
+        const name = document.createElement('div');
+        name.className = 'attachment-name';
+        name.textContent = String((item || {}).name || '');
+        const meta = document.createElement('div');
+        meta.className = 'attachment-meta';
+        meta.textContent = 'id=' + attachmentId + ' | uploaded=' + formatUtcAndMsk((item || {}).uploadedAt || '');
+        title.appendChild(name);
+        title.appendChild(meta);
+
+        const badges = document.createElement('div');
+        badges.className = 'attachment-badges';
+        const kindBadge = document.createElement('span');
+        kindBadge.className = 'attachment-badge kind';
+        kindBadge.textContent = attachmentKindLabel(item);
+        const statusBadge = document.createElement('span');
+        statusBadge.className = 'attachment-badge ' + attachmentStatusClass((item || {}).status || '');
+        statusBadge.textContent = String((item || {}).status || 'unknown');
+        const visibilityBadge = document.createElement('span');
+        visibilityBadge.className = 'attachment-badge ' + (((item || {}).snapshotVisible) ? 'visible' : 'hidden');
+        visibilityBadge.textContent = ((item || {}).snapshotVisible) ? 'visible in snapshot' : 'hidden from snapshot';
+        badges.appendChild(kindBadge);
+        badges.appendChild(statusBadge);
+        badges.appendChild(visibilityBadge);
+
+        head.appendChild(title);
+        head.appendChild(badges);
+        card.appendChild(head);
+
+        const actions = document.createElement('div');
+        actions.className = 'attachment-actions';
+
+        const useButton = document.createElement('button');
+        useButton.type = 'button';
+        useButton.className = 'alt';
+        useButton.textContent = selectedId === attachmentId ? 'Selected' : 'Use';
+        useButton.addEventListener('click', () => {
+          attachmentSetSelectedId(attachmentId);
+          renderAttachmentProbeList(attachmentCurrentConfig());
+          attachmentSetResult('attachment-select', 'ok', {attachmentId});
+        });
+        actions.appendChild(useButton);
+
+        const links = (item || {}).links || {};
+        const viewButton = document.createElement('button');
+        viewButton.type = 'button';
+        viewButton.className = 'alt';
+        viewButton.textContent = 'Open file';
+        viewButton.disabled = !String(links.view || '').trim();
+        viewButton.addEventListener('click', () => attachmentOpenBrowserRoute(String(links.view || ''), 'open-file', attachmentId));
+        actions.appendChild(viewButton);
+
+        const downloadButton = document.createElement('button');
+        downloadButton.type = 'button';
+        downloadButton.textContent = 'Download file';
+        downloadButton.disabled = !String(links.download || '').trim();
+        downloadButton.addEventListener('click', () => attachmentOpenBrowserRoute(String(links.download || ''), 'download-file', attachmentId));
+        actions.appendChild(downloadButton);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'alt';
+        deleteButton.textContent = 'Delete file';
+        deleteButton.addEventListener('click', async () => {
+          const confirmed = window.confirm('Delete attachment ' + attachmentId + '?');
+          if (!confirmed) return;
+          await attachmentDeleteById(attachmentId, 'delete-file');
+        });
+        actions.appendChild(deleteButton);
+
+        card.appendChild(actions);
+        host.appendChild(card);
+      }
+    }
+    function renderAttachmentHarness(config){
+      attachmentEnsureValidSelection(config);
+      document.getElementById('attachmentProbeTaskId').textContent = String(config.probeTaskId || '');
+      document.getElementById('attachmentProbeExpectedStatus').textContent = String(config.probeTaskExpectedStatus || '');
+      document.getElementById('attachmentProbeAvailable').textContent = String(!!config.probeTaskAvailable);
+      document.getElementById('attachmentProbeStatus').textContent = String(config.probeTaskStatus || '');
+      document.getElementById('attachmentProbeAttachmentsCount').textContent = String(config.probeAttachmentsTotal ?? 0);
+      document.getElementById('attachmentAllowedMimes').textContent = String((config.allowedMimeTypes || []).join(', '));
+      attachmentSetSelectedId(attachmentCurrentSelectedId());
+      renderAttachmentProbeList(config);
+    }
+    async function attachmentFetchJson(url, init){
+      const response = await fetch(url, init);
+      const text = await response.text();
+      let payload = text;
+      try {
+        payload = JSON.parse(text);
+      } catch (_e) {}
+      return {response, payload, text};
+    }
+    async function attachmentRequestUpload(){
+      attachmentTimer.start();
+      try {
+        const config = attachmentCurrentConfig();
+        const file = attachmentSelectedFile();
+        if (!config.enabled) {
+          attachmentSetResult('request-upload', 'disabled', {reason: 'attachment_harness_disabled'});
+          return;
+        }
+        if (!config.probeTaskAvailable) {
+          attachmentSetResult('request-upload', 'blocked', {reason: config.failureReason || 'probe_task_unavailable', probeTaskId: config.probeTaskId || ''});
+          return;
+        }
+        if (!file) {
+          attachmentSetResult('request-upload', 'blocked', {reason: 'file_required'});
+          return;
+        }
+        const route = (((config.browserRoutes || {}).requestUpload) || '').trim();
+        const body = {
+          task_id: String(config.probeTaskId || ''),
+          filename: String(file.name || ''),
+          mime: attachmentMimeType(file),
+          size: Number(file.size || 0),
+          uploaded_by: 'info_attachment_harness',
+        };
+        const {response, payload} = await attachmentFetchJson(route, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          credentials: 'include',
+          body: JSON.stringify(body),
+        });
+        attachmentHarnessState.requestUpload = response.ok && payload && typeof payload === 'object' ? payload : null;
+        attachmentHarnessState.uploadResult = null;
+        attachmentHarnessState.finalizeResult = null;
+        attachmentHarnessState.lastJobPayload = null;
+        attachmentHarnessState.lastAttachmentId = String(((attachmentHarnessState.requestUpload || {}).attachment_id) || '');
+        attachmentResetLog();
+        attachmentSetSelectedId(attachmentHarnessState.lastAttachmentId);
+        attachmentSetResult('request-upload', response.status, payload);
+      } catch (error) {
+        attachmentSetResult('request-upload', 'failed', {message: String((error || {}).message || error || 'unknown_error')});
+      } finally {
+        attachmentTimer.stop();
+      }
+    }
+    async function attachmentUploadBinary(){
+      attachmentTimer.start();
+      try {
+        const contract = attachmentHarnessState.requestUpload || {};
+        const file = attachmentSelectedFile();
+        if (!file) {
+          attachmentSetResult('upload-binary', 'blocked', {reason: 'file_required'});
+          return;
+        }
+        if (!contract.uploadUrl) {
+          attachmentSetResult('upload-binary', 'blocked', {reason: 'request_upload_required'});
+          return;
+        }
+        const headers = {};
+        const sourceHeaders = contract.headers || {};
+        for (const [key, value] of Object.entries(sourceHeaders)) {
+          headers[String(key)] = String(value);
+        }
+        const response = await fetch(String(contract.uploadUrl), {
+          method: 'PUT',
+          headers,
+          body: file,
+        });
+        const text = await response.text();
+        attachmentHarnessState.uploadResult = {
+          status: response.status,
+          ok: response.ok,
+          body: text,
+          headers,
+          diagnostics: contract.diagnostics || {},
+        };
+        attachmentSetResult('upload-binary', response.status, attachmentHarnessState.uploadResult);
+      } catch (error) {
+        const contract = attachmentHarnessState.requestUpload || {};
+        const diagnostics = contract.diagnostics || {};
+        const uploadUrl = String(contract.uploadUrl || '');
+        let uploadHost = '';
+        try {
+          uploadHost = uploadUrl ? new URL(uploadUrl).host : '';
+        } catch (_e) {}
+        attachmentHarnessState.uploadResult = {
+          step: 'upload-binary',
+          host: uploadHost,
+          method: 'PUT',
+          details: String((error || {}).message || error || 'Failed to fetch'),
+          uploadHost: uploadHost,
+          headerKeys: Object.keys(contract.headers || {}),
+          diagnostics,
+        };
+        attachmentSetResult('upload-binary', 'failed', attachmentHarnessState.uploadResult);
+      } finally {
+        attachmentTimer.stop();
+      }
+    }
+    async function attachmentFinalize(){
+      attachmentTimer.start();
+      try {
+        const config = attachmentCurrentConfig();
+        const contract = attachmentHarnessState.requestUpload || {};
+        if (!config.probeTaskId || !contract.attachment_id) {
+          attachmentSetResult('finalize', 'blocked', {reason: 'request_upload_required'});
+          return;
+        }
+        const route = (((config.browserRoutes || {}).finalize) || '').trim();
+        const {response, payload} = await attachmentFetchJson(route, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          credentials: 'include',
+          body: JSON.stringify({
+            task_id: String(config.probeTaskId || ''),
+            attachment_id: String(contract.attachment_id || ''),
+            uploaded_by: 'info_attachment_harness',
+          }),
+        });
+        attachmentHarnessState.finalizeResult = response.ok && payload && typeof payload === 'object' ? payload : null;
+        attachmentSetResult('finalize', response.status, payload);
+      } catch (error) {
+        attachmentSetResult('finalize', 'failed', {message: String((error || {}).message || error || 'unknown_error')});
+      } finally {
+        attachmentTimer.stop();
+      }
+    }
+    async function attachmentPollJob(jobId){
+      attachmentTimer.start();
+      try {
+        const config = attachmentCurrentConfig();
+        const template = String((((config.browserRoutes || {}).jobStatusTemplate) || '')).trim();
+        if (!template || !jobId) {
+          attachmentSetResult('job-status', 'blocked', {reason: 'job_id_required'});
+          return null;
+        }
+        const url = template.replace('{job_id}', encodeURIComponent(String(jobId)));
+        for (let attempt = 0; attempt < 60; attempt += 1) {
+          const {response, payload} = await attachmentFetchJson(url, {cache:'no-store', credentials:'include'});
+          attachmentHarnessState.lastJobPayload = payload;
+          attachmentSetResult('job-status', response.status, payload);
+          if (response.ok && payload && typeof payload === 'object') {
+            const status = String(payload.status || '').toLowerCase();
+            if (status === 'success' || status === 'failed_retryable' || status === 'failed_terminal') {
+              return payload;
+            }
+          }
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+        return null;
+      } catch (error) {
+        attachmentSetResult('job-status', 'failed', {message: String((error || {}).message || error || 'unknown_error')});
+        return null;
+      } finally {
+        attachmentTimer.stop();
+      }
+    }
+    async function attachmentPollLastJob(){
+      const finalizePayload = attachmentHarnessState.finalizeResult || {};
+      const jobId = String(finalizePayload.job_id || finalizePayload.jobId || '');
+      return attachmentPollJob(jobId);
+    }
+    async function attachmentCheckProbeState(expectedVisible, stepLabel){
+      attachmentTimer.start();
+      try {
+        await loadInfo();
+        const config = attachmentCurrentConfig();
+        const targetId = String(attachmentHarnessState.lastAttachmentId || '');
+        const attachments = Array.isArray(config.probeAttachments) ? config.probeAttachments : [];
+        const match = targetId ? attachments.find((item) => String((item || {}).id || '') === targetId) : null;
+        const attachmentsBrief = attachments.map((item) => ({
+          id: String((item || {}).id || ''),
+          name: String((item || {}).name || ''),
+          status: String((item || {}).status || ''),
+          snapshotVisible: !!((item || {}).snapshotVisible),
+        }));
+        const expectedStatus = String(config.probeTaskExpectedStatus || '');
+        const currentStatus = String(config.probeTaskStatus || '');
+        const expectedPresenceKnown = typeof expectedVisible === 'boolean';
+        const actualVisible = !!match;
+        const effectiveStep = String(stepLabel || 'frontend-check');
+        attachmentSetResult(effectiveStep, 'ok', {
+          probeTaskId: config.probeTaskId || '',
+          probeTaskAvailable: !!config.probeTaskAvailable,
+          probeTaskExpectedStatus: expectedStatus,
+          probeTaskStatus: currentStatus,
+          probeTaskStatusMatchesExpected: !expectedStatus || expectedStatus === currentStatus,
+          probeAttachmentsTotal: config.probeAttachmentsTotal ?? attachments.length,
+          probeAttachmentIds: attachmentsBrief.map((item) => item.id),
+          probeAttachments: attachmentsBrief,
+          targetAttachmentId: targetId,
+          expectedTargetAttachmentVisible: expectedPresenceKnown ? !!expectedVisible : null,
+          targetAttachmentVisible: actualVisible,
+          targetAttachmentVisibilityMatchesExpected: expectedPresenceKnown ? actualVisible === !!expectedVisible : null,
+          targetAttachment: match || null,
+        });
+        return match || null;
+      } catch (error) {
+        attachmentSetResult(String(stepLabel || 'frontend-check'), 'failed', {message: String((error || {}).message || error || 'unknown_error')});
+        return null;
+      } finally {
+        attachmentTimer.stop();
+      }
+    }
+    async function attachmentOpenLink(kind){
+      attachmentTimer.start();
+      try {
+        const config = attachmentCurrentConfig();
+        const attachmentId = String(attachmentHarnessState.lastAttachmentId || '');
+        const browserRoutes = config.browserRoutes || {};
+        const template = kind === 'download' ? browserRoutes.downloadTemplate : browserRoutes.viewTemplate;
+        if (!template || !attachmentId) {
+          attachmentSetResult(kind, 'blocked', {reason: 'attachment_id_required'});
+          return;
+        }
+        const url = String(template).replace('{attachment_id}', encodeURIComponent(attachmentId));
+        const response = await fetch(url, {cache:'no-store', credentials:'include', redirect:'manual'});
+        const text = await response.text();
+        attachmentSetResult(kind, response.status, {
+          redirected: response.type === 'opaqueredirect' || response.status === 302 || response.status === 301 || response.status === 307 || response.status === 308,
+          location: response.headers.get('Location') || '',
+          body: text,
+        });
+      } catch (error) {
+        attachmentSetResult(kind, 'failed', {message: String((error || {}).message || error || 'unknown_error')});
+      } finally {
+        attachmentTimer.stop();
+      }
+    }
+    async function attachmentOpenView(){
+      return attachmentOpenLink('view');
+    }
+    async function attachmentOpenDownload(){
+      return attachmentOpenLink('download');
+    }
+    async function attachmentDelete(){
+      return attachmentDeleteById(attachmentCurrentSelectedId(), 'delete');
+    }
+    async function attachmentDeleteById(attachmentId, stepName){
+      attachmentTimer.start();
+      try {
+        const config = attachmentCurrentConfig();
+        const targetId = String(attachmentId || '').trim();
+        if (!config.probeTaskId || !attachmentId) {
+          attachmentSetResult(String(stepName || 'delete'), 'blocked', {reason: 'attachment_id_required'});
+          return;
+        }
+        const route = (((config.browserRoutes || {}).delete) || '').trim();
+        const {response, payload} = await attachmentFetchJson(route, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          credentials: 'include',
+          body: JSON.stringify({
+            task_id: String(config.probeTaskId || ''),
+            attachment_id: targetId,
+            deleted_by: 'info_attachment_harness',
+          }),
+        });
+        attachmentSetSelectedId(targetId);
+        attachmentSetResult(String(stepName || 'delete'), response.status, payload);
+        if (response.ok && payload && typeof payload === 'object') {
+          attachmentHarnessState.finalizeResult = payload;
+        }
+      } catch (error) {
+        attachmentSetResult(String(stepName || 'delete'), 'failed', {message: String((error || {}).message || error || 'unknown_error')});
+      } finally {
+        attachmentTimer.stop();
+      }
+    }
+    async function attachmentRunFullFlow(){
+      await attachmentRequestUpload();
+      if (!attachmentHarnessState.requestUpload) return;
+      await attachmentUploadBinary();
+      if (!attachmentHarnessState.uploadResult || !attachmentHarnessState.uploadResult.ok) return;
+      await attachmentFinalize();
+      const finalizePayload = attachmentHarnessState.finalizeResult || {};
+      if (!finalizePayload.job_id && !finalizePayload.jobId) return;
+      await attachmentPollLastJob();
+      const visible = await attachmentCheckProbeState(true, 'frontend-check-after-attach');
+      if (!visible) return;
+      await attachmentOpenView();
+      await attachmentOpenDownload();
+      await attachmentDelete();
+      const deletePayload = attachmentHarnessState.finalizeResult || {};
+      if (deletePayload.job_id || deletePayload.jobId) {
+        await attachmentPollLastJob();
+      }
+      await attachmentCheckProbeState(false, 'frontend-check-after-delete');
     }
     async function pollJob(jobId){
       for (let attempt = 0; attempt < 60; attempt += 1) {
@@ -313,4 +869,5 @@
       }
     }
     refreshApiRequestUrl();
+    installCopyButtons();
     loadInfo();

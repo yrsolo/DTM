@@ -58,3 +58,78 @@
 - `python -m unittest tests.api.test_command_queue_foundation tests.jobs.test_delete_task_attachment_job tests.jobs.test_attach_task_file_job tests.snapshot_engine.test_engine_attach_metadata tests.snapshot_engine.test_query_engine tests.api.test_frontend_api_routing tests.api.test_task_attachment_read_handler`
 - `python scripts/check_no_legacy_entrypoint_imports.py`
 - `python scripts/check_no_monsters.py`
+
+## Follow-up evidence: post-mutation cache invalidation
+- verified_at: 2026-03-15
+- files:
+  - `src/entrypoints/http/frontend_response_cache.py`
+  - `src/snapshot_engine/stores/s3_store.py`
+  - `src/jobs/attach_task_file_job.py`
+  - `src/jobs/delete_task_attachment_job.py`
+  - `tests/entrypoints/http/test_frontend_response_cache.py`
+  - `tests/snapshot_engine/test_s3_store.py`
+  - `tests/jobs/test_attach_task_file_job.py`
+  - `tests/jobs/test_delete_task_attachment_job.py`
+- behavior:
+  - successful attach/delete mutations keep prep rebuild inside `SnapshotEngine`
+  - after mutation, runtime best-effort invalidates exact default frontend response cache keys for `api|bff` x `masked|full`
+  - invalidation failure does not fail the mutation job and is returned as warning
+- verification:
+  - `python -m unittest tests.entrypoints.http.test_frontend_response_cache tests.snapshot_engine.test_s3_store tests.jobs.test_attach_task_file_job tests.jobs.test_delete_task_attachment_job tests.api.test_frontend_api_routing`
+
+## Follow-up evidence: upload-contract diagnostics
+- verified_at: 2026-03-15
+- files:
+  - `src/entrypoints/http/admin_task_attachments_handler.py`
+  - `src/services/attachments/storage.py`
+  - `tests/api/test_command_queue_foundation.py`
+  - `docs/system/file_attachments.md`
+- behavior:
+  - `request-upload` still returns the same canonical upload contract fields
+  - response now also includes additive `diagnostics` with signed method, signed content type, required headers, upload URL scheme/host/path, UTC expiry timestamp, and a browser preflight note
+  - diagnostics are intended to help distinguish frontend misuse from storage/nginx ingress instability without changing finalize or queue semantics
+- verification:
+  - `python -m unittest tests.api.test_command_queue_foundation`
+
+## Follow-up evidence: structured request-upload errors
+- verified_at: 2026-03-15
+- files:
+  - `src/entrypoints/http/admin_task_attachments_handler.py`
+  - `tests/api/test_command_queue_foundation.py`
+  - `docs/system/file_attachments.md`
+- behavior:
+  - `request-upload` keeps the standard JSON error envelope
+  - `400/404/503` responses on upload-contract intake now include structured `error.details` with `artifact`, `step`, `reason`, echoed inputs, and missing-field marker when applicable
+  - frontend can now distinguish validation rejection from task lookup failure without relying on HTTP status alone
+- verification:
+  - `python -m unittest tests.api.test_command_queue_foundation`
+
+## Follow-up evidence: `/info` attachment harness
+- verified_at: 2026-03-15
+- files:
+  - `config/runtime.yaml`
+  - `src/entrypoints/http/info_handler.py`
+  - `src/entrypoints/http/templates/info.html`
+  - `src/entrypoints/http/templates/info.js`
+  - `tests/api/test_info_observability.py`
+  - `tests/api/test_frontend_api_routing.py`
+  - `docs/system/file_attachments.md`
+  - `docs/system/browser_auth_contract.md`
+  - `docs/system/browser_auth_runbook.md`
+  - `docs/system/runbook.md`
+- behavior:
+  - `/info?format=json&view=detail` now includes additive `attachmentsHarness` metadata for a reserved real probe task
+  - `/info` HTML now exposes an `Attachment Harness` section with step-by-step operator actions:
+    - `request-upload`
+    - direct browser upload
+    - `finalize`
+    - job polling
+    - probe-state refresh
+    - `view`
+    - `download`
+    - `delete`
+  - backend does not introduce a synthetic task bypass; probe-task availability depends on the real task being present in prep snapshot
+  - direct binary upload remains a direct Object Storage call
+  - auth facade for browser-safe harness operations now reuses the existing `/ops/auth/attachments/*` namespace with `jobs/{job_id}` polling, instead of requiring a separate alias namespace
+- verification:
+  - `python -m unittest tests.api.test_info_observability tests.api.test_frontend_api_routing`

@@ -23,6 +23,9 @@ class _FakeJsonStore:
     def put(self, key: str, payload):
         self.data[key] = payload
 
+    def delete(self, key: str):
+        self.data.pop(key, None)
+
     def list_prefix(self, prefix: str):
         return [key for key in self.data if key.startswith(prefix)]
 
@@ -77,6 +80,8 @@ class S3StoreTestCase(unittest.TestCase):
         self.assertIn("snapshots/responses/frontend_v2/default/api/full.json", base.data)
         loaded = store.get("frontend_v2/default/api/full")
         self.assertEqual(loaded, {"payload": {"ok": True}})
+        store.delete("frontend_v2/default/api/full")
+        self.assertNotIn("snapshots/responses/frontend_v2/default/api/full.json", base.data)
 
 
 if __name__ == "__main__":
