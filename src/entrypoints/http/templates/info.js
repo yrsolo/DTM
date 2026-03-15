@@ -64,7 +64,30 @@
       finalizeResult: null,
       lastJobPayload: null,
       lastAttachmentId: '',
+      logEntries: [],
     };
+    function nowTimeLabel(){
+      const value = new Date();
+      const hh = String(value.getHours()).padStart(2, '0');
+      const mm = String(value.getMinutes()).padStart(2, '0');
+      const ss = String(value.getSeconds()).padStart(2, '0');
+      return hh + ':' + mm + ':' + ss;
+    }
+    function renderAttachmentLog(){
+      const log = Array.isArray(attachmentHarnessState.logEntries) ? attachmentHarnessState.logEntries : [];
+      if (!log.length) {
+        document.getElementById('attachmentHarnessResult').textContent = 'Select a file to start the attachment harness.';
+        return;
+      }
+      document.getElementById('attachmentHarnessResult').textContent = log.join('\n\n');
+    }
+    function attachmentResetLog(){
+      attachmentHarnessState.logEntries = [];
+      renderAttachmentLog();
+    }
+    function attachmentClearLog(){
+      attachmentResetLog();
+    }
     function withBase(path){
       const payloadNode = document.getElementById('infoResult');
       let base = '';
@@ -164,9 +187,13 @@
       return ((currentInfoPayload || {}).attachmentsHarness) || {};
     }
     function attachmentSetResult(step, status, payload){
-      const lines = ['step=' + String(step || ''), 'status=' + String(status || '')];
+      const lines = ['[' + nowTimeLabel() + '] step=' + String(step || ''), 'status=' + String(status || '')];
       const value = payload === undefined ? '' : pretty(payload);
-      document.getElementById('attachmentHarnessResult').textContent = lines.join(' | ') + (value ? '\n' + value : '');
+      attachmentHarnessState.logEntries.push(lines.join(' | ') + (value ? '\n' + value : ''));
+      if (attachmentHarnessState.logEntries.length > 40) {
+        attachmentHarnessState.logEntries = attachmentHarnessState.logEntries.slice(-40);
+      }
+      renderAttachmentLog();
     }
     function attachmentSelectedFile(){
       const input = document.getElementById('attachmentFileInput');
@@ -236,6 +263,7 @@
         attachmentHarnessState.finalizeResult = null;
         attachmentHarnessState.lastJobPayload = null;
         attachmentHarnessState.lastAttachmentId = String(((attachmentHarnessState.requestUpload || {}).attachment_id) || '');
+        attachmentResetLog();
         attachmentSetResult('request-upload', response.status, payload);
       } catch (error) {
         attachmentSetResult('request-upload', 'failed', {message: String((error || {}).message || error || 'unknown_error')});
@@ -368,11 +396,23 @@
         const targetId = String(attachmentHarnessState.lastAttachmentId || '');
         const attachments = Array.isArray(config.probeAttachments) ? config.probeAttachments : [];
         const match = targetId ? attachments.find((item) => String((item || {}).id || '') === targetId) : null;
+        const attachmentsBrief = attachments.map((item) => ({
+          id: String((item || {}).id || ''),
+          name: String((item || {}).name || ''),
+          status: String((item || {}).status || ''),
+          snapshotVisible: !!((item || {}).snapshotVisible),
+        }));
+        const expectedStatus = String(config.probeTaskExpectedStatus || '');
+        const currentStatus = String(config.probeTaskStatus || '');
         attachmentSetResult('frontend-check', 'ok', {
           probeTaskId: config.probeTaskId || '',
           probeTaskAvailable: !!config.probeTaskAvailable,
-          probeTaskStatus: config.probeTaskStatus || '',
+          probeTaskExpectedStatus: expectedStatus,
+          probeTaskStatus: currentStatus,
+          probeTaskStatusMatchesExpected: !expectedStatus || expectedStatus === currentStatus,
           probeAttachmentsTotal: config.probeAttachmentsTotal ?? attachments.length,
+          probeAttachmentIds: attachmentsBrief.map((item) => item.id),
+          probeAttachments: attachmentsBrief,
           targetAttachmentId: targetId,
           targetAttachmentVisible: !!match,
           targetAttachment: match || null,
