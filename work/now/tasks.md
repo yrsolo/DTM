@@ -5,6 +5,7 @@
 
 ## Done
 
+- Attachment docs now explicitly state that `/test/ops/info` is the backend-owned verification source for the working `test` contour, and that product-UI-only failures after a passing harness are frontend/auth integration issues by default
 - `/info` Attachment Harness now clears stale selected attachment state on new upload and exposes per-card delete action for direct operator verification
 - `/info` Attachment Harness now renders current probe-task attachments as operator cards with status badges and direct `Open file` / `Download file` actions for manual end-to-end verification
 - Added detailed frontend attachment handoff doc with verified `test` lifecycle, async rules, auth facade routes, and explicit confidence boundary between `test` and `prod`

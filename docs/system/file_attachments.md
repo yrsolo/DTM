@@ -283,6 +283,7 @@ Purpose:
 - verify the full attachment contour from an operator-controlled page
 - use one reserved real probe task instead of arbitrary task input
 - surface step-by-step diagnostics for upload/finalize/job/read/delete operations
+- provide backend-owned manual proof that the current `test` contour works independently of the product frontend UI
 
 Reserved probe task contract:
 - task id comes from runtime config:
@@ -309,6 +310,14 @@ Harness flow in `/info`:
 6. test `view` / `download`
 7. delete attachment and verify disappearance again
 
+Current operator affordances in `/info`:
+- step-by-step harness log
+- current probe-task attachment cards
+- direct `Open file`
+- direct `Download file`
+- direct `Delete file`
+- explicit after-attach vs after-delete visibility checks
+
 Current `/info` harness uses browser-facing auth facade routes only for:
 - `/ops/auth/attachments/request-upload`
 - `/ops/auth/attachments/finalize`
@@ -318,6 +327,10 @@ Current `/info` harness uses browser-facing auth facade routes only for:
 - `/ops/auth/attachments/{attachment_id}/download`
 
 Same namespace is expected under `/test/ops/auth/attachments/*` for the `test` contour.
+
+Operational rule:
+- if `/test/ops/info` succeeds for the same environment and auth facade, backend attachment runtime should be considered verified
+- subsequent failures in product UI are then most likely in frontend/auth integration, not in the core attachment pipeline itself
 
 Direct binary upload remains outside auth facade:
 - browser uses returned Object Storage `uploadUrl` directly

@@ -10,6 +10,7 @@
 - CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1
 
 ## Done
+- Attachment docs now explicitly anchor troubleshooting to `/test/ops/info` as backend verification source before escalating product-UI failures to backend runtime
 - `/info` Attachment Harness now resets stale selected attachment state and includes direct delete action on attachment cards
 - `/info` Attachment Harness now shows live probe-task attachment cards with direct open/download actions for manual operator verification
 - Detailed frontend attachment handoff doc now captures the verified `test` contract, async lifecycle, and explicit `prod` caveat
