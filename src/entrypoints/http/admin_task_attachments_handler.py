@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
+from urllib.parse import urlsplit
 from uuid import uuid4
 
 from src.commands.model import Command, RequestedBy
@@ -113,6 +114,10 @@ class AdminTaskAttachmentsHandler:
             contract = storage.generate_upload_contract(key=object_key, mime_type=record.mime_type)
         except AppError as error:
             return error_response(400 if error.code.endswith("_unsupported") or error.code.endswith("_required") else 503, code=error.code, message=str(error))
+        upload_url = str(contract["uploadUrl"])
+        parsed_upload_url = urlsplit(upload_url)
+        expires_in = int(contract["expiresIn"])
+        expires_at = datetime.now(timezone.utc).timestamp() + expires_in
         payload = {
             "artifact": "attachment_upload_request",
             "status": "ok",
@@ -124,9 +129,25 @@ class AdminTaskAttachmentsHandler:
             "kind": record.kind,
             "key": object_key,
             "method": contract["method"],
-            "uploadUrl": contract["uploadUrl"],
+            "uploadUrl": upload_url,
             "headers": contract["headers"],
-            "expiresIn": contract["expiresIn"],
+            "expiresIn": expires_in,
+            "diagnostics": {
+                "uploadContractVersion": "presigned_put_v1",
+                "signedMethod": str(contract["method"]),
+                "signedContentType": record.mime_type,
+                "requiredHeaders": dict(contract["headers"] or {}),
+                "uploadUrlScheme": str(parsed_upload_url.scheme or ""),
+                "uploadUrlHost": str(parsed_upload_url.netloc or ""),
+                "uploadUrlPath": str(parsed_upload_url.path or ""),
+                "expiresAtUtc": datetime.fromtimestamp(expires_at, tz=timezone.utc).isoformat(),
+                "browserMayRequirePreflight": True,
+                "notes": [
+                    "Use the returned uploadUrl exactly as-is.",
+                    "Send a direct PUT request with the exact Content-Type from headers.",
+                    "Browser uploads may require successful OPTIONS/CORS handling on the storage ingress.",
+                ],
+            },
         }
         return json_response(200, payload)
 

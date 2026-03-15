@@ -47,11 +47,30 @@ Returned fields:
 - `method`
 - `uploadUrl`
 - `headers`
+- `diagnostics`
+
+`diagnostics` is additive debug metadata for browser upload troubleshooting:
+- `uploadContractVersion`
+- `signedMethod`
+- `signedContentType`
+- `requiredHeaders`
+- `uploadUrlScheme`
+- `uploadUrlHost`
+- `uploadUrlPath`
+- `expiresAtUtc`
+- `browserMayRequirePreflight`
+- `notes`
 
 The handler validates:
 - task exists in the current prep snapshot
 - mime type is supported
 - filename is normalized into a safe storage key
+
+Current direct-upload contract details:
+- backend signs exact `PUT`
+- backend signs exact `Content-Type`
+- browser caller must use the returned `uploadUrl` as-is
+- browser `PUT` may require successful `OPTIONS`/CORS handling on the storage ingress before the actual upload
 
 Finalize request:
 - `POST /ops/admin/task-attachments/finalize`

@@ -5,6 +5,7 @@
 
 ## Done
 
+- Attachment upload contract now returns additive diagnostics (`signedMethod`, `signedContentType`, `uploadUrlHost/path`, expiry, browser preflight note) to debug presigned browser upload failures without changing finalize flow
 - Morning reminders now skip weekend delivery while preserving Friday -> Monday next-workday selection
 - Attachment post-mutation cache hygiene: successful `attach_task_file` and `delete_task_attachment` now best-effort invalidate exact default frontend response cache entries after prep rebuild, without triggering full snapshot refresh
 - CAM-2026-03-12-DOC-CODE-REALIGN-V1 P04: verified current attachment upload contour against code, replaced stale attachment skeleton doc with current runtime contract, and updated main doc map

@@ -10,6 +10,7 @@
 - CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1
 
 ## Done
+- Attachment upload contract diagnostics for direct browser PUT troubleshooting
 - Morning reminders skip weekend delivery and preserve Friday -> Monday next-workday behavior
 - Attachment post-mutation cache invalidation for exact default frontend response cache after attach/delete
 - CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1 hidden cleanup enqueue path, job, TTL policy, and tests

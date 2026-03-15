@@ -76,3 +76,17 @@
   - invalidation failure does not fail the mutation job and is returned as warning
 - verification:
   - `python -m unittest tests.entrypoints.http.test_frontend_response_cache tests.snapshot_engine.test_s3_store tests.jobs.test_attach_task_file_job tests.jobs.test_delete_task_attachment_job tests.api.test_frontend_api_routing`
+
+## Follow-up evidence: upload-contract diagnostics
+- verified_at: 2026-03-15
+- files:
+  - `src/entrypoints/http/admin_task_attachments_handler.py`
+  - `src/services/attachments/storage.py`
+  - `tests/api/test_command_queue_foundation.py`
+  - `docs/system/file_attachments.md`
+- behavior:
+  - `request-upload` still returns the same canonical upload contract fields
+  - response now also includes additive `diagnostics` with signed method, signed content type, required headers, upload URL scheme/host/path, UTC expiry timestamp, and a browser preflight note
+  - diagnostics are intended to help distinguish frontend misuse from storage/nginx ingress instability without changing finalize or queue semantics
+- verification:
+  - `python -m unittest tests.api.test_command_queue_foundation`

@@ -299,6 +299,15 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
         self.assertIn("attachments/test/task-1/", payload["key"])
         self.assertEqual(payload["headers"]["Content-Type"], "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
         self.assertEqual(payload["kind"], "docx")
+        self.assertEqual(payload["diagnostics"]["uploadContractVersion"], "presigned_put_v1")
+        self.assertEqual(payload["diagnostics"]["signedMethod"], "PUT")
+        self.assertEqual(
+            payload["diagnostics"]["signedContentType"],
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+        self.assertEqual(payload["diagnostics"]["uploadUrlHost"], "example.test")
+        self.assertEqual(payload["diagnostics"]["uploadUrlPath"], "/upload")
+        self.assertTrue(payload["diagnostics"]["browserMayRequirePreflight"])
 
     def test_admin_task_attachments_handler_finalizes_and_enqueues_attach_command(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
