@@ -262,6 +262,16 @@
         selectedNode.textContent = attachmentHarnessState.lastAttachmentId || 'not selected';
       }
     }
+    function attachmentEnsureValidSelection(config){
+      const attachments = Array.isArray((config || {}).probeAttachments) ? config.probeAttachments : [];
+      const selectedId = attachmentCurrentSelectedId();
+      if (!selectedId) {
+        attachmentSetSelectedId('');
+        return;
+      }
+      const exists = attachments.some((item) => String((item || {}).id || '').trim() === selectedId);
+      if (!exists) attachmentSetSelectedId('');
+    }
     function attachmentKindLabel(item){
       const kind = String((item || {}).kind || '').trim().toLowerCase();
       if (kind === 'image') return 'IMG';
@@ -371,11 +381,23 @@
         downloadButton.addEventListener('click', () => attachmentOpenBrowserRoute(String(links.download || ''), 'download-file', attachmentId));
         actions.appendChild(downloadButton);
 
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'alt';
+        deleteButton.textContent = 'Delete file';
+        deleteButton.addEventListener('click', async () => {
+          const confirmed = window.confirm('Delete attachment ' + attachmentId + '?');
+          if (!confirmed) return;
+          await attachmentDeleteById(attachmentId, 'delete-file');
+        });
+        actions.appendChild(deleteButton);
+
         card.appendChild(actions);
         host.appendChild(card);
       }
     }
     function renderAttachmentHarness(config){
+      attachmentEnsureValidSelection(config);
       document.getElementById('attachmentProbeTaskId').textContent = String(config.probeTaskId || '');
       document.getElementById('attachmentProbeExpectedStatus').textContent = String(config.probeTaskExpectedStatus || '');
       document.getElementById('attachmentProbeAvailable').textContent = String(!!config.probeTaskAvailable);
@@ -431,6 +453,7 @@
         attachmentHarnessState.lastJobPayload = null;
         attachmentHarnessState.lastAttachmentId = String(((attachmentHarnessState.requestUpload || {}).attachment_id) || '');
         attachmentResetLog();
+        attachmentSetSelectedId(attachmentHarnessState.lastAttachmentId);
         attachmentSetResult('request-upload', response.status, payload);
       } catch (error) {
         attachmentSetResult('request-upload', 'failed', {message: String((error || {}).message || error || 'unknown_error')});
@@ -629,12 +652,15 @@
       return attachmentOpenLink('download');
     }
     async function attachmentDelete(){
+      return attachmentDeleteById(attachmentCurrentSelectedId(), 'delete');
+    }
+    async function attachmentDeleteById(attachmentId, stepName){
       attachmentTimer.start();
       try {
         const config = attachmentCurrentConfig();
-        const attachmentId = String(attachmentHarnessState.lastAttachmentId || '');
+        const targetId = String(attachmentId || '').trim();
         if (!config.probeTaskId || !attachmentId) {
-          attachmentSetResult('delete', 'blocked', {reason: 'attachment_id_required'});
+          attachmentSetResult(String(stepName || 'delete'), 'blocked', {reason: 'attachment_id_required'});
           return;
         }
         const route = (((config.browserRoutes || {}).delete) || '').trim();
@@ -644,16 +670,17 @@
           credentials: 'include',
           body: JSON.stringify({
             task_id: String(config.probeTaskId || ''),
-            attachment_id: attachmentId,
+            attachment_id: targetId,
             deleted_by: 'info_attachment_harness',
           }),
         });
-        attachmentSetResult('delete', response.status, payload);
+        attachmentSetSelectedId(targetId);
+        attachmentSetResult(String(stepName || 'delete'), response.status, payload);
         if (response.ok && payload && typeof payload === 'object') {
           attachmentHarnessState.finalizeResult = payload;
         }
       } catch (error) {
-        attachmentSetResult('delete', 'failed', {message: String((error || {}).message || error || 'unknown_error')});
+        attachmentSetResult(String(stepName || 'delete'), 'failed', {message: String((error || {}).message || error || 'unknown_error')});
       } finally {
         attachmentTimer.stop();
       }

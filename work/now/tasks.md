@@ -5,6 +5,7 @@
 
 ## Done
 
+- `/info` Attachment Harness now clears stale selected attachment state on new upload and exposes per-card delete action for direct operator verification
 - `/info` Attachment Harness now renders current probe-task attachments as operator cards with status badges and direct `Open file` / `Download file` actions for manual end-to-end verification
 - Added detailed frontend attachment handoff doc with verified `test` lifecycle, async rules, auth facade routes, and explicit confidence boundary between `test` and `prod`
 - `/info` Attachment Harness now distinguishes `frontend-check-after-attach` vs `frontend-check-after-delete`, so `targetAttachmentVisible=false` after full probe is reported as expected post-delete state instead of ambiguous failure
