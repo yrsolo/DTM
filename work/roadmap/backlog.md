@@ -10,6 +10,8 @@
 - CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1
 
 ## Done
+- `/info` Attachment Harness now shows live probe-task attachment cards with direct open/download actions for manual operator verification
+- Detailed frontend attachment handoff doc now captures the verified `test` contract, async lifecycle, and explicit `prod` caveat
 - `/info` Attachment Harness now logs expected visibility after attach vs after delete, reducing false “not visible” confusion during full probe runs
 - `/info` Attachment Harness for reserved probe task plus documented reuse of `/ops/auth/attachments/*` with `jobs/{job_id}` polling
 - Attachment request-upload structured error details for frontend diagnostics

@@ -1,0 +1,442 @@
+[17:29:36] step=request-upload | status=200
+{
+  "artifact": "attachment_upload_request",
+  "status": "ok",
+  "task_id": "1111111111",
+  "attachment_id": "fbe31a5953734cc982aaf88355079618",
+  "filename": "Screenshot_20260314_215052_Yandex Browser.jpg",
+  "mime": "image/jpeg",
+  "size": 217062,
+  "kind": "image",
+  "key": "attachments/test/1111111111/fbe31a5953734cc982aaf88355079618-Screenshot_20260314_215052_Yandex-Browser.jpg",
+  "method": "PUT",
+  "uploadUrl": "https://storage.yandexcloud.net/dtm/attachments/test/1111111111/fbe31a5953734cc982aaf88355079618-Screenshot_20260314_215052_Yandex-Browser.jpg?AWSAccessKeyId=YCAJEq6ypKUSnBupa5s8um87E&Signature=J6awdzsYUqe1s0ORnQQNs9jNUMU%3D&content-type=image%2Fjpeg&Expires=1773585876",
+  "headers": {
+    "Content-Type": "image/jpeg"
+  },
+  "expiresIn": 900,
+  "diagnostics": {
+    "uploadContractVersion": "presigned_put_v1",
+    "signedMethod": "PUT",
+    "signedContentType": "image/jpeg",
+    "requiredHeaders": {
+      "Content-Type": "image/jpeg"
+    },
+    "uploadUrlScheme": "https",
+    "uploadUrlHost": "storage.yandexcloud.net",
+    "uploadUrlPath": "/dtm/attachments/test/1111111111/fbe31a5953734cc982aaf88355079618-Screenshot_20260314_215052_Yandex-Browser.jpg",
+    "expiresAtUtc": "2026-03-15T14:44:36.343029+00:00",
+    "browserMayRequirePreflight": true,
+    "notes": [
+      "Use the returned uploadUrl exactly as-is.",
+      "Send a direct PUT request with the exact Content-Type from headers.",
+      "Browser uploads may require successful OPTIONS/CORS handling on the storage ingress."
+    ]
+  }
+}
+
+[17:29:44] step=upload-binary | status=200
+{
+  "status": 200,
+  "ok": true,
+  "body": "",
+  "headers": {
+    "Content-Type": "image/jpeg"
+  },
+  "diagnostics": {
+    "uploadContractVersion": "presigned_put_v1",
+    "signedMethod": "PUT",
+    "signedContentType": "image/jpeg",
+    "requiredHeaders": {
+      "Content-Type": "image/jpeg"
+    },
+    "uploadUrlScheme": "https",
+    "uploadUrlHost": "storage.yandexcloud.net",
+    "uploadUrlPath": "/dtm/attachments/test/1111111111/fbe31a5953734cc982aaf88355079618-Screenshot_20260314_215052_Yandex-Browser.jpg",
+    "expiresAtUtc": "2026-03-15T14:44:36.343029+00:00",
+    "browserMayRequirePreflight": true,
+    "notes": [
+      "Use the returned uploadUrl exactly as-is.",
+      "Send a direct PUT request with the exact Content-Type from headers.",
+      "Browser uploads may require successful OPTIONS/CORS handling on the storage ingress."
+    ]
+  }
+}
+
+[17:29:45] step=finalize | status=202
+{
+  "artifact": "attachment_finalize_enqueued",
+  "status": "accepted",
+  "job_id": "6958df1ccbaa4dd6b7f495c48df0f4c3",
+  "command_type": "attach_task_file",
+  "queued_at": "2026-03-15T14:29:44.613070+00:00",
+  "verified": {
+    "mime": "image/jpeg",
+    "size": 217062,
+    "etag": "ea4b659632cb9e6b824e636cea5a94cb",
+    "version": ""
+  },
+  "attachment_id": "fbe31a5953734cc982aaf88355079618",
+  "task_id": "1111111111"
+}
+
+[17:29:45] step=job-status | status=200
+{
+  "artifact": "job_status",
+  "job_id": "6958df1ccbaa4dd6b7f495c48df0f4c3",
+  "command_type": "attach_task_file",
+  "status": "accepted",
+  "requested_at_utc": "2026-03-15T14:29:44+00:00",
+  "started_at_utc": null,
+  "finished_at_utc": null,
+  "requested_by": {
+    "chat_id": null,
+    "source": "admin",
+    "user_id": null
+  },
+  "summary": {},
+  "warnings": [],
+  "retryable": false,
+  "error": null
+}
+
+[17:29:48] step=job-status | status=200
+{
+  "artifact": "job_status",
+  "job_id": "6958df1ccbaa4dd6b7f495c48df0f4c3",
+  "command_type": "attach_task_file",
+  "status": "accepted",
+  "requested_at_utc": "2026-03-15T14:29:44+00:00",
+  "started_at_utc": null,
+  "finished_at_utc": null,
+  "requested_by": {
+    "chat_id": null,
+    "source": "admin",
+    "user_id": null
+  },
+  "summary": {},
+  "warnings": [],
+  "retryable": false,
+  "error": null
+}
+
+[17:29:52] step=job-status | status=200
+{
+  "artifact": "job_status",
+  "job_id": "6958df1ccbaa4dd6b7f495c48df0f4c3",
+  "command_type": "attach_task_file",
+  "status": "success",
+  "requested_at_utc": "2026-03-15T14:29:44+00:00",
+  "started_at_utc": "2026-03-15T14:29:49+00:00",
+  "finished_at_utc": "2026-03-15T14:29:50+00:00",
+  "requested_by": {
+    "chat_id": "None",
+    "source": "admin",
+    "user_id": "None"
+  },
+  "summary": {
+    "artifact": "attach_task_file",
+    "attachment_id": "fbe31a5953734cc982aaf88355079618",
+    "attachments_total": 10,
+    "object_key": "attachments/test/1111111111/fbe31a5953734cc982aaf88355079618-Screenshot_20260314_215052_Yandex-Browser.jpg",
+    "prep_written": true,
+    "status": "ok",
+    "task_id": "1111111111"
+  },
+  "warnings": [],
+  "retryable": false,
+  "error": null
+}
+
+[17:29:53] step=frontend-check-after-attach | status=ok
+{
+  "probeTaskId": "1111111111",
+  "probeTaskAvailable": true,
+  "probeTaskExpectedStatus": "test",
+  "probeTaskStatus": "done",
+  "probeTaskStatusMatchesExpected": false,
+  "probeAttachmentsTotal": 10,
+  "probeAttachmentIds": [
+    "08ebfb81694e4354a02085de1da2248d",
+    "11d10c971109474893ecc770cef93b37",
+    "e7ad0fe07d7f48d1a808f86ba3284bfe",
+    "f40a1fdda39d456aa8fbace899333fb6",
+    "dd36dd945ba148848851773735fe0f62",
+    "1c27861ed5704df8a1e38adddd99ce81",
+    "fbb8222e25764a17916202419007a287",
+    "774312a942ba467eb328f9d155a95d40",
+    "9def5d4b3cfe4d3f96209a656ad9c81f",
+    "fbe31a5953734cc982aaf88355079618"
+  ],
+  "probeAttachments": [
+    {
+      "id": "08ebfb81694e4354a02085de1da2248d",
+      "name": "01_cmpk.jpg",
+      "status": "pending_upload",
+      "snapshotVisible": false
+    },
+    {
+      "id": "11d10c971109474893ecc770cef93b37",
+      "name": "01_cmpk.jpg",
+      "status": "pending_upload",
+      "snapshotVisible": false
+    },
+    {
+      "id": "e7ad0fe07d7f48d1a808f86ba3284bfe",
+      "name": "01_cmpk.jpg",
+      "status": "pending_upload",
+      "snapshotVisible": false
+    },
+    {
+      "id": "f40a1fdda39d456aa8fbace899333fb6",
+      "name": "01_cmpk.jpg",
+      "status": "pending_upload",
+      "snapshotVisible": false
+    },
+    {
+      "id": "dd36dd945ba148848851773735fe0f62",
+      "name": "01_cmpk.jpg",
+      "status": "ready",
+      "snapshotVisible": true
+    },
+    {
+      "id": "1c27861ed5704df8a1e38adddd99ce81",
+      "name": "01_cmpk.jpg",
+      "status": "pending_upload",
+      "snapshotVisible": false
+    },
+    {
+      "id": "fbb8222e25764a17916202419007a287",
+      "name": "01_cmpk.jpg",
+      "status": "pending_upload",
+      "snapshotVisible": false
+    },
+    {
+      "id": "774312a942ba467eb328f9d155a95d40",
+      "name": "01_cmpk.jpg",
+      "status": "pending_upload",
+      "snapshotVisible": false
+    },
+    {
+      "id": "9def5d4b3cfe4d3f96209a656ad9c81f",
+      "name": "01_cmpk.jpg",
+      "status": "ready",
+      "snapshotVisible": true
+    },
+    {
+      "id": "fbe31a5953734cc982aaf88355079618",
+      "name": "Screenshot_20260314_215052_Yandex Browser.jpg",
+      "status": "ready",
+      "snapshotVisible": true
+    }
+  ],
+  "targetAttachmentId": "fbe31a5953734cc982aaf88355079618",
+  "expectedTargetAttachmentVisible": true,
+  "targetAttachmentVisible": true,
+  "targetAttachmentVisibilityMatchesExpected": true,
+  "targetAttachment": {
+    "id": "fbe31a5953734cc982aaf88355079618",
+    "name": "Screenshot_20260314_215052_Yandex Browser.jpg",
+    "mime": "image/jpeg",
+    "kind": "image",
+    "status": "ready",
+    "snapshotVisible": true,
+    "uploadedAt": "2026-03-15T14:29:49+00:00",
+    "links": {
+      "view": "/test/ops/auth/attachments/fbe31a5953734cc982aaf88355079618/view",
+      "download": "/test/ops/auth/attachments/fbe31a5953734cc982aaf88355079618/download"
+    }
+  }
+}
+
+[17:29:54] step=view | status=
+{
+  "redirected": true,
+  "location": "",
+  "body": ""
+}
+
+[17:29:54] step=download | status=
+{
+  "redirected": true,
+  "location": "",
+  "body": ""
+}
+
+[17:29:55] step=delete | status=202
+{
+  "artifact": "attachment_delete_enqueued",
+  "status": "accepted",
+  "job_id": "9f67542744414f7da815482b77c01cea",
+  "command_type": "delete_task_attachment",
+  "queued_at": "2026-03-15T14:29:54.771318+00:00"
+}
+
+[17:29:55] step=job-status | status=200
+{
+  "artifact": "job_status",
+  "job_id": "9f67542744414f7da815482b77c01cea",
+  "command_type": "delete_task_attachment",
+  "status": "accepted",
+  "requested_at_utc": "2026-03-15T14:29:54+00:00",
+  "started_at_utc": null,
+  "finished_at_utc": null,
+  "requested_by": {
+    "chat_id": null,
+    "source": "admin",
+    "user_id": null
+  },
+  "summary": {},
+  "warnings": [],
+  "retryable": false,
+  "error": null
+}
+
+[17:29:58] step=job-status | status=200
+{
+  "artifact": "job_status",
+  "job_id": "9f67542744414f7da815482b77c01cea",
+  "command_type": "delete_task_attachment",
+  "status": "accepted",
+  "requested_at_utc": "2026-03-15T14:29:54+00:00",
+  "started_at_utc": null,
+  "finished_at_utc": null,
+  "requested_by": {
+    "chat_id": null,
+    "source": "admin",
+    "user_id": null
+  },
+  "summary": {},
+  "warnings": [],
+  "retryable": false,
+  "error": null
+}
+
+[17:30:01] step=job-status | status=200
+{
+  "artifact": "job_status",
+  "job_id": "9f67542744414f7da815482b77c01cea",
+  "command_type": "delete_task_attachment",
+  "status": "running",
+  "requested_at_utc": "2026-03-15T14:29:54+00:00",
+  "started_at_utc": "2026-03-15T14:30:00+00:00",
+  "finished_at_utc": null,
+  "requested_by": {
+    "chat_id": "None",
+    "source": "admin",
+    "user_id": "None"
+  },
+  "summary": {},
+  "warnings": [],
+  "retryable": false,
+  "error": null
+}
+
+[17:30:03] step=job-status | status=200
+{
+  "artifact": "job_status",
+  "job_id": "9f67542744414f7da815482b77c01cea",
+  "command_type": "delete_task_attachment",
+  "status": "success",
+  "requested_at_utc": "2026-03-15T14:29:54+00:00",
+  "started_at_utc": "2026-03-15T14:30:00+00:00",
+  "finished_at_utc": "2026-03-15T14:30:01+00:00",
+  "requested_by": {
+    "chat_id": "None",
+    "source": "admin",
+    "user_id": "None"
+  },
+  "summary": {
+    "artifact": "delete_task_attachment",
+    "attachment_id": "fbe31a5953734cc982aaf88355079618",
+    "attachments_total": 9,
+    "prep_written": true,
+    "status": "ok",
+    "task_id": "1111111111"
+  },
+  "warnings": [],
+  "retryable": false,
+  "error": null
+}
+
+[17:30:04] step=frontend-check-after-delete | status=ok
+{
+  "probeTaskId": "1111111111",
+  "probeTaskAvailable": true,
+  "probeTaskExpectedStatus": "test",
+  "probeTaskStatus": "done",
+  "probeTaskStatusMatchesExpected": false,
+  "probeAttachmentsTotal": 9,
+  "probeAttachmentIds": [
+    "08ebfb81694e4354a02085de1da2248d",
+    "11d10c971109474893ecc770cef93b37",
+    "e7ad0fe07d7f48d1a808f86ba3284bfe",
+    "f40a1fdda39d456aa8fbace899333fb6",
+    "dd36dd945ba148848851773735fe0f62",
+    "1c27861ed5704df8a1e38adddd99ce81",
+    "fbb8222e25764a17916202419007a287",
+    "774312a942ba467eb328f9d155a95d40",
+    "9def5d4b3cfe4d3f96209a656ad9c81f"
+  ],
+  "probeAttachments": [
+    {
+      "id": "08ebfb81694e4354a02085de1da2248d",
+      "name": "01_cmpk.jpg",
+      "status": "pending_upload",
+      "snapshotVisible": false
+    },
+    {
+      "id": "11d10c971109474893ecc770cef93b37",
+      "name": "01_cmpk.jpg",
+      "status": "pending_upload",
+      "snapshotVisible": false
+    },
+    {
+      "id": "e7ad0fe07d7f48d1a808f86ba3284bfe",
+      "name": "01_cmpk.jpg",
+      "status": "pending_upload",
+      "snapshotVisible": false
+    },
+    {
+      "id": "f40a1fdda39d456aa8fbace899333fb6",
+      "name": "01_cmpk.jpg",
+      "status": "pending_upload",
+      "snapshotVisible": false
+    },
+    {
+      "id": "dd36dd945ba148848851773735fe0f62",
+      "name": "01_cmpk.jpg",
+      "status": "ready",
+      "snapshotVisible": true
+    },
+    {
+      "id": "1c27861ed5704df8a1e38adddd99ce81",
+      "name": "01_cmpk.jpg",
+      "status": "pending_upload",
+      "snapshotVisible": false
+    },
+    {
+      "id": "fbb8222e25764a17916202419007a287",
+      "name": "01_cmpk.jpg",
+      "status": "pending_upload",
+      "snapshotVisible": false
+    },
+    {
+      "id": "774312a942ba467eb328f9d155a95d40",
+      "name": "01_cmpk.jpg",
+      "status": "pending_upload",
+      "snapshotVisible": false
+    },
+    {
+      "id": "9def5d4b3cfe4d3f96209a656ad9c81f",
+      "name": "01_cmpk.jpg",
+      "status": "ready",
+      "snapshotVisible": true
+    }
+  ],
+  "targetAttachmentId": "fbe31a5953734cc982aaf88355079618",
+  "expectedTargetAttachmentVisible": false,
+  "targetAttachmentVisible": false,
+  "targetAttachmentVisibilityMatchesExpected": true,
+  "targetAttachment": null
+}

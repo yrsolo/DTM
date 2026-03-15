@@ -252,6 +252,129 @@
       if (name.endsWith('.webp')) return 'image/webp';
       return 'application/octet-stream';
     }
+    function attachmentCurrentSelectedId(){
+      return String(attachmentHarnessState.lastAttachmentId || '').trim();
+    }
+    function attachmentSetSelectedId(attachmentId){
+      attachmentHarnessState.lastAttachmentId = String(attachmentId || '').trim();
+      const selectedNode = document.getElementById('attachmentSelectedId');
+      if (selectedNode) {
+        selectedNode.textContent = attachmentHarnessState.lastAttachmentId || 'not selected';
+      }
+    }
+    function attachmentKindLabel(item){
+      const kind = String((item || {}).kind || '').trim().toLowerCase();
+      if (kind === 'image') return 'IMG';
+      if (kind === 'docx') return 'DOCX';
+      return (kind || 'FILE').toUpperCase();
+    }
+    function attachmentStatusClass(status){
+      const value = String(status || '').trim().toLowerCase();
+      if (value === 'ready') return 'ready';
+      if (value === 'pending_upload' || value === 'uploaded_unverified') return 'pending';
+      return 'hidden';
+    }
+    function attachmentOpenBrowserRoute(url, step, attachmentId){
+      const value = String(url || '').trim();
+      if (!value) {
+        attachmentSetResult(step, 'blocked', {reason: 'route_missing', attachmentId: String(attachmentId || '')});
+        return;
+      }
+      const anchor = document.createElement('a');
+      anchor.href = value;
+      anchor.target = '_blank';
+      anchor.rel = 'noopener';
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      attachmentSetSelectedId(attachmentId);
+      attachmentSetResult(step, 'opened', {attachmentId: String(attachmentId || ''), url: value});
+    }
+    function renderAttachmentProbeList(config){
+      const host = document.getElementById('attachmentProbeAttachmentsList');
+      if (!host) return;
+      const attachments = Array.isArray(config.probeAttachments) ? config.probeAttachments : [];
+      const selectedId = attachmentCurrentSelectedId();
+      host.innerHTML = '';
+      if (!attachments.length) {
+        const empty = document.createElement('div');
+        empty.className = 'attachment-empty';
+        empty.textContent = 'No attachments currently linked to the probe task.';
+        host.appendChild(empty);
+        return;
+      }
+      for (const item of attachments) {
+        const attachmentId = String((item || {}).id || '').trim();
+        const card = document.createElement('div');
+        card.className = 'attachment-item' + (selectedId && selectedId === attachmentId ? ' selected' : '');
+
+        const head = document.createElement('div');
+        head.className = 'attachment-head';
+
+        const title = document.createElement('div');
+        title.className = 'attachment-title';
+        const name = document.createElement('div');
+        name.className = 'attachment-name';
+        name.textContent = String((item || {}).name || '');
+        const meta = document.createElement('div');
+        meta.className = 'attachment-meta';
+        meta.textContent = 'id=' + attachmentId + ' | uploaded=' + formatUtcAndMsk((item || {}).uploadedAt || '');
+        title.appendChild(name);
+        title.appendChild(meta);
+
+        const badges = document.createElement('div');
+        badges.className = 'attachment-badges';
+        const kindBadge = document.createElement('span');
+        kindBadge.className = 'attachment-badge kind';
+        kindBadge.textContent = attachmentKindLabel(item);
+        const statusBadge = document.createElement('span');
+        statusBadge.className = 'attachment-badge ' + attachmentStatusClass((item || {}).status || '');
+        statusBadge.textContent = String((item || {}).status || 'unknown');
+        const visibilityBadge = document.createElement('span');
+        visibilityBadge.className = 'attachment-badge ' + (((item || {}).snapshotVisible) ? 'visible' : 'hidden');
+        visibilityBadge.textContent = ((item || {}).snapshotVisible) ? 'visible in snapshot' : 'hidden from snapshot';
+        badges.appendChild(kindBadge);
+        badges.appendChild(statusBadge);
+        badges.appendChild(visibilityBadge);
+
+        head.appendChild(title);
+        head.appendChild(badges);
+        card.appendChild(head);
+
+        const actions = document.createElement('div');
+        actions.className = 'attachment-actions';
+
+        const useButton = document.createElement('button');
+        useButton.type = 'button';
+        useButton.className = 'alt';
+        useButton.textContent = selectedId === attachmentId ? 'Selected' : 'Use';
+        useButton.addEventListener('click', () => {
+          attachmentSetSelectedId(attachmentId);
+          renderAttachmentProbeList(attachmentCurrentConfig());
+          attachmentSetResult('attachment-select', 'ok', {attachmentId});
+        });
+        actions.appendChild(useButton);
+
+        const links = (item || {}).links || {};
+        const viewButton = document.createElement('button');
+        viewButton.type = 'button';
+        viewButton.className = 'alt';
+        viewButton.textContent = 'Open file';
+        viewButton.disabled = !String(links.view || '').trim();
+        viewButton.addEventListener('click', () => attachmentOpenBrowserRoute(String(links.view || ''), 'open-file', attachmentId));
+        actions.appendChild(viewButton);
+
+        const downloadButton = document.createElement('button');
+        downloadButton.type = 'button';
+        downloadButton.textContent = 'Download file';
+        downloadButton.disabled = !String(links.download || '').trim();
+        downloadButton.addEventListener('click', () => attachmentOpenBrowserRoute(String(links.download || ''), 'download-file', attachmentId));
+        actions.appendChild(downloadButton);
+
+        card.appendChild(actions);
+        host.appendChild(card);
+      }
+    }
     function renderAttachmentHarness(config){
       document.getElementById('attachmentProbeTaskId').textContent = String(config.probeTaskId || '');
       document.getElementById('attachmentProbeExpectedStatus').textContent = String(config.probeTaskExpectedStatus || '');
@@ -259,6 +382,8 @@
       document.getElementById('attachmentProbeStatus').textContent = String(config.probeTaskStatus || '');
       document.getElementById('attachmentProbeAttachmentsCount').textContent = String(config.probeAttachmentsTotal ?? 0);
       document.getElementById('attachmentAllowedMimes').textContent = String((config.allowedMimeTypes || []).join(', '));
+      attachmentSetSelectedId(attachmentCurrentSelectedId());
+      renderAttachmentProbeList(config);
     }
     async function attachmentFetchJson(url, init){
       const response = await fetch(url, init);
