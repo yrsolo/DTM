@@ -128,6 +128,9 @@ api:
   auth_trusted_fallback: masked
   auth_mask_dictionary_version: v1
   frontend_response_cache_ttl_minutes: 15
+  attachment_harness_enabled: true
+  attachment_harness_probe_task_id: "1111111111"
+  attachment_harness_probe_task_status: test
 
 triggers:
   a1sldapc8v2pha7dichv: timer

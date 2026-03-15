@@ -103,3 +103,33 @@
   - frontend can now distinguish validation rejection from task lookup failure without relying on HTTP status alone
 - verification:
   - `python -m unittest tests.api.test_command_queue_foundation`
+
+## Follow-up evidence: `/info` attachment harness
+- verified_at: 2026-03-15
+- files:
+  - `config/runtime.yaml`
+  - `src/entrypoints/http/info_handler.py`
+  - `src/entrypoints/http/templates/info.html`
+  - `src/entrypoints/http/templates/info.js`
+  - `tests/api/test_info_observability.py`
+  - `tests/api/test_frontend_api_routing.py`
+  - `docs/system/file_attachments.md`
+  - `docs/system/browser_auth_contract.md`
+  - `docs/system/browser_auth_runbook.md`
+  - `docs/system/runbook.md`
+- behavior:
+  - `/info?format=json&view=detail` now includes additive `attachmentsHarness` metadata for a reserved real probe task
+  - `/info` HTML now exposes an `Attachment Harness` section with step-by-step operator actions:
+    - `request-upload`
+    - direct browser upload
+    - `finalize`
+    - job polling
+    - probe-state refresh
+    - `view`
+    - `download`
+    - `delete`
+  - backend does not introduce a synthetic task bypass; probe-task availability depends on the real task being present in prep snapshot
+  - direct binary upload remains a direct Object Storage call
+  - auth facade for browser-safe harness operations now reuses the existing `/ops/auth/attachments/*` namespace with `jobs/{job_id}` polling, instead of requiring a separate alias namespace
+- verification:
+  - `python -m unittest tests.api.test_info_observability tests.api.test_frontend_api_routing`

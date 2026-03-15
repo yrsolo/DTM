@@ -10,6 +10,7 @@
 - CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1
 
 ## Done
+- `/info` Attachment Harness for reserved probe task plus documented reuse of `/ops/auth/attachments/*` with `jobs/{job_id}` polling
 - Attachment request-upload structured error details for frontend diagnostics
 - Attachment upload contract diagnostics for direct browser PUT troubleshooting
 - Morning reminders skip weekend delivery and preserve Friday -> Monday next-workday behavior

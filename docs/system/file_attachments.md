@@ -256,6 +256,73 @@ Cleanup carrier:
 - no separate attachment table/store in v1
 - stale cleanup scans the existing bulk extra snapshot only
 
+## `/info` attachment harness
+
+Backend-owned operator harness is exposed through:
+- `/ops/info`
+- `/test/ops/info`
+
+Detail payload now includes additive block:
+- `attachmentsHarness`
+
+Current fields:
+- `enabled`
+- `probeTaskId`
+- `probeTaskExpectedStatus`
+- `probeTaskAvailable`
+- `probeTaskStatus`
+- `probeAttachmentsTotal`
+- `probeAttachments`
+- `allowedMimeTypes`
+- `browserRoutes`
+- `backendRoutes`
+- `authFacadeRequired`
+- `notes`
+
+Purpose:
+- verify the full attachment contour from an operator-controlled page
+- use one reserved real probe task instead of arbitrary task input
+- surface step-by-step diagnostics for upload/finalize/job/read/delete operations
+
+Reserved probe task contract:
+- task id comes from runtime config:
+  - `runtime.api.attachment_harness_probe_task_id`
+- expected source status comes from:
+  - `runtime.api.attachment_harness_probe_task_status`
+- current default values:
+  - `attachment_harness_probe_task_id = "1111111111"`
+  - `attachment_harness_probe_task_status = "test"`
+
+Important:
+- the probe task must exist in the real source data and current prep snapshot
+- backend does not add synthetic-task bypass for harness use
+- harness publication check is backend-owned:
+  - `/info` detail payload reports `probeAttachments` for the reserved task
+- this avoids depending on normal frontend query defaults, which do not have to include the `test` status
+
+Harness flow in `/info`:
+1. request upload contract through browser-safe auth facade route
+2. upload binary directly to Object Storage using returned `uploadUrl`
+3. finalize through auth facade
+4. poll queued job until terminal state
+5. reload `/info` detail payload and inspect `probeAttachments`
+6. test `view` / `download`
+7. delete attachment and verify disappearance again
+
+Current `/info` harness uses browser-facing auth facade routes only for:
+- `/ops/auth/attachments/request-upload`
+- `/ops/auth/attachments/finalize`
+- `/ops/auth/attachments/delete`
+- `/ops/auth/attachments/jobs/{job_id}`
+- `/ops/auth/attachments/{attachment_id}/view`
+- `/ops/auth/attachments/{attachment_id}/download`
+
+Same namespace is expected under `/test/ops/auth/attachments/*` for the `test` contour.
+
+Direct binary upload remains outside auth facade:
+- browser uses returned Object Storage `uploadUrl` directly
+- auth facade must not proxy the binary upload stream
+
 ## Operator smoke runbook
 
 Minimal manual smoke on `test`:

@@ -29,6 +29,12 @@ Current ownership split:
 - external auth contour/function owns `/ops/auth/*` and `/test/ops/auth/*`
 - backend function in this repo owns `/ops/api/*` and `/test/ops/api/*`
 
+Attachment harness uses the existing browser-safe attachment auth facade:
+- `/ops/auth/attachments/*`
+- `/test/ops/auth/attachments/*`
+- these routes are not a generic BFF/proxy namespace
+- `/info` relies on this existing attachment facade for reserved probe-task operations
+
 ## Trust boundary
 
 Browser traffic must be interpreted through trusted proxy/gateway chain only.
@@ -112,6 +118,43 @@ Forbidden direction:
 - `docs/system/browser_auth_runbook.md`
 - `docs/system/auth_trust_boundary.md`
 - `docs/system/config.md`
+
+## Attachment harness facade contract
+
+The external auth contour already exposes browser-safe attachment facade routes that `/info` may reuse for operator diagnostics.
+
+Expected browser-facing routes:
+- `POST /ops/auth/attachments/request-upload`
+- `POST /test/ops/auth/attachments/request-upload`
+- `POST /ops/auth/attachments/finalize`
+- `POST /test/ops/auth/attachments/finalize`
+- `POST /ops/auth/attachments/delete`
+- `POST /test/ops/auth/attachments/delete`
+- `GET /ops/auth/attachments/jobs/{job_id}`
+- `GET /test/ops/auth/attachments/jobs/{job_id}`
+- `GET /ops/auth/attachments/{attachment_id}/view`
+- `GET /test/ops/auth/attachments/{attachment_id}/view`
+- `GET /ops/auth/attachments/{attachment_id}/download`
+- `GET /test/ops/auth/attachments/{attachment_id}/download`
+
+Facade behavior:
+- validate browser session/cookie using the existing auth contour
+- inject `X-DTM-Proxy-Secret`
+- inject trusted `x-dtm-*` headers
+- preserve method, query, JSON body, response status, response body, and redirect semantics
+- forward only to matching backend-owned routes needed by the attachment harness
+
+Backend route mapping:
+- `request-upload` -> `/ops/admin/task-attachments/request-upload`
+- `finalize` -> `/ops/admin/task-attachments/finalize`
+- `delete` -> `/ops/admin/task-attachments/delete`
+- `jobs/{job_id}` -> `/ops/admin/jobs/{job_id}`
+- `view` -> `/ops/api/task-attachments/{attachment_id}/view`
+- `download` -> `/ops/api/task-attachments/{attachment_id}/download`
+
+Deliberate non-goal:
+- direct Object Storage binary upload is not proxied through `/ops/auth/*`
+- returned presigned `uploadUrl` is used directly by browser
 
 ## Secret-only internal people route
 

@@ -37,6 +37,7 @@ Current browser auth contour has three components:
 Important:
 - auth/session endpoints are not implemented by Python handlers in this repo
 - this repo documents and validates the backend side of that contract
+- `/info` remains backend-owned and reuses the existing browser-safe attachment facade under `/ops/auth/attachments/*`
 
 ## Public routes and callbacks
 
@@ -57,6 +58,12 @@ Important:
 - `/test/ops/api/*`
 - `/test/ops/admin/*`
 - `/test/ops/telegram*`
+
+### Browser-safe attachment facade used by `/info` harness
+- `/ops/auth/attachments/*`
+- `/test/ops/auth/attachments/*`
+
+These are special-case attachment routes, not a generic BFF namespace. `/info` uses them for the reserved operator attachment probe.
 
 ### Shared infra route
 - `/grafana/*`
@@ -160,6 +167,33 @@ If browser route still returns masked payload:
    - browser session/cookie did not resolve to authenticated user
 4. If `trustedIngress=true`, `authenticated=true`, `mode=full`, but payload still looks masked:
    - investigate backend masking branch after access resolution
+
+## `/info` attachment harness support
+
+Backend `/info` detail payload now includes `attachmentsHarness` metadata for a reserved probe task.
+
+Operator/browser flow:
+1. Open `/ops/info` or `/test/ops/info`
+2. Use `Attachment Harness` section
+3. Browser calls auth-facade routes under `/ops/auth/attachments/*` or `/test/ops/auth/attachments/*`
+4. Auth contour forwards only those special routes to backend-owned attachment endpoints with trusted secret and trusted `x-dtm-*`
+5. Browser uploads binary directly to returned Object Storage `uploadUrl`
+
+Required auth-contour behavior:
+- preserve JSON request/response bodies for:
+  - `request-upload`
+  - `finalize`
+  - `delete`
+  - `job status`
+- preserve redirect behavior for:
+  - `view`
+  - `download`
+- do not proxy binary upload to Object Storage
+
+Probe-task policy:
+- reserved task id comes from backend runtime config and is shown in `/info`
+- task must exist in source data with service status `test`
+- attachment readiness is checked in backend-owned `/info` detail payload via `attachmentsHarness.probeAttachments`
 
 ## Related docs
 

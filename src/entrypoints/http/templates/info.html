@@ -171,6 +171,40 @@ __INFO_CSS__
 
   <details class="card section collapsible">
     <summary class="section-summary">
+      <span>Attachment Harness</span>
+      <span class="collapse-hint">show</span>
+    </summary>
+    <div class="hline">
+      <h2>Attachment Harness</h2>
+      <span class="timer" id="attachmentTimer">00:00.0</span>
+    </div>
+    <div class="row"><span class="k">Probe task:</span> <span class="v" id="attachmentProbeTaskId"></span></div>
+    <div class="row"><span class="k">Expected status:</span> <span class="v" id="attachmentProbeExpectedStatus"></span></div>
+    <div class="row"><span class="k">Task available:</span> <span class="v" id="attachmentProbeAvailable"></span></div>
+    <div class="row"><span class="k">Current task status:</span> <span class="v" id="attachmentProbeStatus"></span></div>
+    <div class="row"><span class="k">Current attachments:</span> <span class="v" id="attachmentProbeAttachmentsCount"></span></div>
+    <div class="row"><span class="k">Allowed mime types:</span> <span class="v" id="attachmentAllowedMimes"></span></div>
+    <div class="controls">
+      <label>file <input id="attachmentFileInput" type="file" /></label>
+    </div>
+    <div class="controls">
+      <button onclick="attachmentRequestUpload()">Request upload</button>
+      <button class="alt" onclick="attachmentUploadBinary()">Upload binary</button>
+      <button class="alt" onclick="attachmentFinalize()">Finalize</button>
+      <button class="alt" onclick="attachmentPollLastJob()">Poll job</button>
+    </div>
+    <div class="controls">
+      <button class="alt" onclick="attachmentCheckProbeState()">Refresh probe state</button>
+      <button class="alt" onclick="attachmentOpenView()">View</button>
+      <button class="alt" onclick="attachmentOpenDownload()">Download</button>
+      <button class="alt" onclick="attachmentDelete()">Delete</button>
+      <button onclick="attachmentRunFullFlow()">Run full probe</button>
+    </div>
+    <pre id="attachmentHarnessResult">Select a file to start the attachment harness.</pre>
+  </details>
+
+  <details class="card section collapsible">
+    <summary class="section-summary">
       <span>Info JSON</span>
       <span class="collapse-hint">show</span>
     </summary>

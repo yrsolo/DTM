@@ -105,7 +105,37 @@ class _FakeInfoSnapshotEngine:
                         "Prep",
                         (),
                         {
-                            "tasks_by_id": {"task-1": type("TaskView", (), {"sheet": type("Sheet", (), {"status": "work"})()})()},
+                            "tasks_by_id": {
+                                "task-1": type("TaskView", (), {"sheet": type("Sheet", (), {"status": "work"})()})(),
+                                "1111111111": type(
+                                    "TaskView",
+                                    (),
+                                    {
+                                        "sheet": type("Sheet", (), {"status": "test"})(),
+                                        "extra": type(
+                                            "Extra",
+                                            (),
+                                            {
+                                                "attachments": [
+                                                    type(
+                                                        "Attachment",
+                                                        (),
+                                                        {
+                                                            "attachment_id": "att-probe-1",
+                                                            "filename_display": "probe-brief.docx",
+                                                            "mime_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                                            "kind": "docx",
+                                                            "status": "ready",
+                                                            "snapshot_visible": True,
+                                                            "uploaded_at_utc": datetime.fromisoformat(now.replace("Z", "+00:00")),
+                                                        },
+                                                    )()
+                                                ]
+                                            },
+                                        )(),
+                                    },
+                                )(),
+                            },
                             "source_id": "sheet:test",
                             "raw_source_hash": "sha256:test",
                             "built_at_utc": datetime.fromisoformat(now.replace("Z", "+00:00")),
@@ -349,6 +379,8 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertIn("Queue State", response.get("body", ""))
         self.assertIn("Recent Jobs", response.get("body", ""))
         self.assertIn("Last Render Job", response.get("body", ""))
+        self.assertIn("Attachment Harness", response.get("body", ""))
+        self.assertIn("Run full probe", response.get("body", ""))
 
     def test_info_json_contains_telegram_block(self) -> None:
         event = _fixture_event()
@@ -364,6 +396,10 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertIn("build", payload)
         self.assertIn("jobs", payload)
         self.assertIn("renderDebug", payload)
+        self.assertIn("attachmentsHarness", payload)
+        self.assertEqual(payload["attachmentsHarness"]["probeTaskId"], "1111111111")
+        self.assertTrue(payload["attachmentsHarness"]["probeTaskAvailable"])
+        self.assertEqual(payload["attachmentsHarness"]["probeAttachmentsTotal"], 1)
         self.assertEqual(payload.get("build", {}).get("activeVersionId"), "d4etest")
 
     def test_v2_doc_contains_endpoints_query_and_response_fields(self) -> None:

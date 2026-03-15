@@ -5,6 +5,7 @@
 
 ## Done
 
+- `/info` now exposes Attachment Harness metadata and UI for the reserved probe task, with step-by-step browser diagnostics and documented reuse of the external auth attachment facade under `/ops/auth/attachments/*`
 - Attachment `request-upload` now returns structured JSON error details (`artifact`, `step`, `reason`, echoed inputs, missing field marker) so frontend can distinguish intake validation from task/storage issues
 - Attachment upload contract now returns additive diagnostics (`signedMethod`, `signedContentType`, `uploadUrlHost/path`, expiry, browser preflight note) to debug presigned browser upload failures without changing finalize flow
 - Morning reminders now skip weekend delivery while preserving Friday -> Monday next-workday selection

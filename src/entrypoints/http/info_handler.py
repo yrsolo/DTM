@@ -26,6 +26,7 @@ from src.observability.bottlenecks import (
 )
 from src.observability.buffered_metrics import metrics_sink_name, remote_metrics_enabled
 from src.snapshot_engine.engine import build_snapshot_engine
+from src.services.attachments.contracts import SUPPORTED_ATTACHMENT_MIME_TYPES
 from src.worker.model import JobStatusRecord
 
 
@@ -150,6 +151,12 @@ class InfoHandler:
             prefix = public_path[: -len(normalized_path)].rstrip("/")
             return prefix if prefix.startswith("/") else f"/{prefix}" if prefix else ""
         return ""
+
+    @staticmethod
+    def _join_ui_path(base_path: str, suffix: str) -> str:
+        base = str(base_path or "").rstrip("/")
+        tail = "/" + str(suffix or "").lstrip("/")
+        return f"{base}{tail}" if base else tail
 
     def _storage_stats(self, bucket: str, root_prefix: str) -> dict[str, Any]:
         try:
@@ -312,6 +319,79 @@ class InfoHandler:
             "entrypoint": info.entrypoint,
             "serviceAccountId": info.service_account_id,
         }
+
+    def _attachments_harness_payload(self, req: HttpRequest, prep: Any | None = None) -> dict[str, Any]:
+        api_cfg = dict(getattr(self._ctx.cfg.runtime, "api", {}) or {})
+        enabled = bool(api_cfg.get("attachment_harness_enabled", True))
+        probe_task_id = str(api_cfg.get("attachment_harness_probe_task_id", "1111111111") or "").strip()
+        expected_status = str(api_cfg.get("attachment_harness_probe_task_status", "test") or "").strip().lower() or "test"
+        ui_base_path = self._resolve_ui_base_path(req)
+        browser_routes = {
+            "requestUpload": self._join_ui_path(ui_base_path, "/auth/attachments/request-upload"),
+            "finalize": self._join_ui_path(ui_base_path, "/auth/attachments/finalize"),
+            "delete": self._join_ui_path(ui_base_path, "/auth/attachments/delete"),
+            "jobStatusTemplate": self._join_ui_path(ui_base_path, "/auth/attachments/jobs/{job_id}"),
+            "viewTemplate": self._join_ui_path(ui_base_path, "/auth/attachments/{attachment_id}/view"),
+            "downloadTemplate": self._join_ui_path(ui_base_path, "/auth/attachments/{attachment_id}/download"),
+        }
+        backend_routes = {
+            "requestUpload": self._join_ui_path(ui_base_path, "/admin/task-attachments/request-upload"),
+            "finalize": self._join_ui_path(ui_base_path, "/admin/task-attachments/finalize"),
+            "delete": self._join_ui_path(ui_base_path, "/admin/task-attachments/delete"),
+            "jobStatusTemplate": self._join_ui_path(ui_base_path, "/admin/jobs/{job_id}"),
+            "viewTemplate": self._join_ui_path(ui_base_path, "/api/task-attachments/{attachment_id}/view"),
+            "downloadTemplate": self._join_ui_path(ui_base_path, "/api/task-attachments/{attachment_id}/download"),
+        }
+        payload: dict[str, Any] = {
+            "enabled": enabled,
+            "probeTaskId": probe_task_id,
+            "probeTaskExpectedStatus": expected_status,
+            "probeTaskAvailable": False,
+            "probeTaskStatus": "",
+            "probeAttachmentsTotal": 0,
+            "probeAttachments": [],
+            "allowedMimeTypes": sorted(str(item) for item in SUPPORTED_ATTACHMENT_MIME_TYPES),
+            "browserRoutes": browser_routes,
+            "backendRoutes": backend_routes,
+            "authFacadeRequired": True,
+            "notes": [
+                "Reserved probe task must exist in the current snapshot.",
+                "Browser upload goes directly to the returned Object Storage uploadUrl.",
+                "Finalize is async: wait for terminal job state before checking attachment readiness.",
+                "Use probeAttachments in this payload as the backend-owned publication check for the reserved task.",
+            ],
+        }
+        if prep is None or not probe_task_id:
+            return payload
+        probe_view = getattr(prep, "tasks_by_id", {}).get(probe_task_id)
+        if probe_view is None:
+            payload["failureReason"] = "probe_task_unavailable"
+            return payload
+        payload["probeTaskAvailable"] = True
+        payload["probeTaskStatus"] = str(getattr(getattr(probe_view, "sheet", None), "status", "") or "").strip().lower()
+        extra = getattr(probe_view, "extra", None)
+        attachments = list(getattr(extra, "attachments", []) or [])
+        projected = []
+        for item in attachments:
+            attachment_id = str(getattr(item, "attachment_id", "") or getattr(item, "id", "") or "").strip()
+            projected.append(
+                {
+                    "id": attachment_id,
+                    "name": str(getattr(item, "filename_display", "") or getattr(item, "filename", "") or "").strip(),
+                    "mime": str(getattr(item, "mime_type", "") or getattr(item, "mime", "") or "").strip(),
+                    "kind": str(getattr(item, "kind", "") or "").strip(),
+                    "status": str(getattr(item, "status", "") or "").strip(),
+                    "snapshotVisible": bool(getattr(item, "snapshot_visible", False)),
+                    "uploadedAt": _iso(getattr(item, "uploaded_at_utc", None)),
+                    "links": {
+                        "view": browser_routes["viewTemplate"].replace("{attachment_id}", attachment_id),
+                        "download": browser_routes["downloadTemplate"].replace("{attachment_id}", attachment_id),
+                    },
+                }
+            )
+        payload["probeAttachments"] = projected
+        payload["probeAttachmentsTotal"] = len(projected)
+        return payload
 
     def _metrics_labels(self, *, env_name: str, view: str) -> dict[str, str]:
         return {
@@ -506,6 +586,10 @@ class InfoHandler:
                 "apiDomain": api_domain,
                 "uiBasePath": ui_base_path,
             },
+            "attachmentsHarness": {
+                "enabled": bool(self._ctx.cfg.runtime.api.get("attachment_harness_enabled", True)),
+                "detailDeferred": True,
+            },
             "bottlenecks": {
                 "profilingLevel": resolve_bottleneck_metrics_level(self._ctx),
                 "stageMetricsEnabled": is_stage_metrics_enabled(self._ctx),
@@ -622,6 +706,7 @@ class InfoHandler:
         payload["build"] = build_payload
         payload["jobs"] = jobs_payload
         payload["renderDebug"] = render_debug
+        payload["attachmentsHarness"] = self._attachments_harness_payload(req, prep)
         payload["bottlenecks"] = {
             "profilingLevel": resolve_bottleneck_metrics_level(self._ctx),
             "stageMetricsEnabled": is_stage_metrics_enabled(self._ctx),

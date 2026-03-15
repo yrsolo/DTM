@@ -80,6 +80,15 @@ Operator notes:
   - `POST /admin/commands/cleanup-task-attachments`
   - default TTL is `86400`
 - `test` contour smoke is verified; `prod` smoke requires manual production release workflow before verification because pushing `main` alone does not deploy the live function
+- `/info` now includes `Attachment Harness` for the reserved probe task:
+  - request upload contract
+  - direct browser upload to storage
+  - finalize
+  - poll worker job
+  - verify probe-task attachment state
+  - test `view` / `download`
+  - delete and verify disappearance
+- browser-safe harness buttons depend on the existing external auth attachment facade under `/ops/auth/attachments/*` or `/test/ops/auth/attachments/*`
 
 ## 7) Render safety
 
