@@ -11,6 +11,7 @@
 
 ## Done
 - Docs IA refresh completed: active docs moved into `product/`, `architecture/`, `integrations/`, `operations/`, and `reference/`, with archive folders now indexed by local `README.md`.
+- Legacy `.doc` preview converter wave completed: external converter integrated, preview job added, and `.doc` view/download split behavior documented.
 - Attachment upload allowlist now includes `.doc` (`application/msword`) and `.pdf` (`application/pdf`) alongside existing `docx` and image formats.
 - Recent completed campaigns were archived under `work/archive/campaigns/`.
 - Latest archived closeouts include the 2026-03-12 execution wave, 2026-03-14 attachment/people/audit waves, and the completed attachment cleanup wave.

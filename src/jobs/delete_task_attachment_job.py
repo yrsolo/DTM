@@ -36,11 +36,18 @@ class DeleteTaskAttachmentJob:
                 build_attachment_storage(self._ctx).delete_object(key=record.storage_key)
             except AppError as error:
                 delete_warning = error.code
+            preview_warning = ""
+            preview_key = str(getattr(record, "derived_preview_ref", "") or "").strip()
+            if preview_key:
+                try:
+                    build_attachment_storage(self._ctx).delete_object(key=preview_key)
+                except AppError as error:
+                    preview_warning = error.code
             metadata_store.mark_deleted(
                 task_id=task_id,
                 attachment_id=attachment_id,
                 deleted_by_user_id=deleted_by,
-                warning=delete_warning,
+                warning=delete_warning or preview_warning,
             )
             result = engine.delete_attachment(task_id=task_id, attachment_id=attachment_id)
             try:
@@ -50,6 +57,9 @@ class DeleteTaskAttachmentJob:
                 result["warnings"].append("frontend_response_cache_invalidation_failed")
             if delete_warning:
                 result["warnings"] = [delete_warning]
+            if preview_warning:
+                result["warnings"] = list(result.get("warnings", []) or [])
+                result["warnings"].append(preview_warning)
             return result
         except AppError as error:
             return {

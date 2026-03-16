@@ -5,6 +5,8 @@
 ## Done
 
 - Docs IA refresh completed: `docs/` is now reorganized by reader intent with Russian onboarding READMEs, relative repo links, and archive folder indexes.
+- Legacy `.doc` preview converter wave completed: `.doc` view now resolves to PDF preview while download returns original, with async preview job and updated operator harness.
+- Converter shared token is now wired from Lockbox key `SHARED_TOKEN` into `DOC_PREVIEW_CONVERTER_SHARED_TOKEN`.
 - Attachment upload allowlist now includes `.doc` (`application/msword`) and `.pdf` (`application/pdf`) alongside existing `docx` and image formats.
 - Recent attachment wave is complete on `test`: upload, finalize, worker attach, publication, view/download, delete, cache invalidation, and `/test/ops/info` verification harness are all live and documented.
 - Attachment cleanup wave is complete: stale `pending_upload`, `uploaded_unverified`, and `deleted` metadata is cleaned via hidden `cleanup_task_attachments` command with 24h TTL and single-pass prep rebuild semantics.

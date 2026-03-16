@@ -286,6 +286,13 @@
       if (value === 'pending_upload' || value === 'uploaded_unverified') return 'pending';
       return 'hidden';
     }
+    function attachmentPreviewClass(state){
+      const value = String(state || '').trim().toLowerCase();
+      if (value === 'ready') return 'ready';
+      if (value === 'pending') return 'pending';
+      if (value === 'failed') return 'hidden';
+      return 'hidden';
+    }
     function attachmentOpenBrowserRoute(url, step, attachmentId){
       const value = String(url || '').trim();
       if (!value) {
@@ -345,9 +352,14 @@
         const visibilityBadge = document.createElement('span');
         visibilityBadge.className = 'attachment-badge ' + (((item || {}).snapshotVisible) ? 'visible' : 'hidden');
         visibilityBadge.textContent = ((item || {}).snapshotVisible) ? 'visible in snapshot' : 'hidden from snapshot';
+        const previewState = String((item || {}).previewState || '').trim();
+        const previewBadge = document.createElement('span');
+        previewBadge.className = 'attachment-badge ' + attachmentPreviewClass(previewState);
+        previewBadge.textContent = previewState ? ('preview=' + previewState) : 'preview=none';
         badges.appendChild(kindBadge);
         badges.appendChild(statusBadge);
         badges.appendChild(visibilityBadge);
+        badges.appendChild(previewBadge);
 
         head.appendChild(title);
         head.appendChild(badges);
@@ -592,6 +604,7 @@
           id: String((item || {}).id || ''),
           name: String((item || {}).name || ''),
           status: String((item || {}).status || ''),
+          previewState: String((item || {}).previewState || ''),
           snapshotVisible: !!((item || {}).snapshotVisible),
         }));
         const expectedStatus = String(config.probeTaskExpectedStatus || '');

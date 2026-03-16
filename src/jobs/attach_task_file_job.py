@@ -10,6 +10,8 @@ from src.snapshot_engine import build_snapshot_engine
 from src.snapshot_engine.model import AttachmentMeta
 from src.services.attachments.policy import build_attachment_capabilities, infer_attachment_kind
 from src.services.attachments.contracts import ATTACHMENT_STATUS_READY
+from src.commands.model import Command
+from src.commands.types import GENERATE_ATTACHMENT_PREVIEW
 
 
 class AttachTaskFileJob:
@@ -39,6 +41,14 @@ class AttachTaskFileJob:
             mime_type = self._require_text(payload, "mime")
             size_bytes = self._parse_size(payload)
             kind = infer_attachment_kind(mime_type)
+            doc_preview_state = "none"
+            producer = self._ctx.deps.get("command_queue_producer")
+            status_store = self._ctx.deps.get("job_status_store")
+            converter_configured = self._ctx.deps.get("doc_preview_converter") is not None
+            preview_queue_available = producer is not None and status_store is not None
+            preview_enabled = converter_configured and preview_queue_available
+            if kind == "doc":
+                doc_preview_state = "pending" if preview_enabled else "failed"
             attachment = AttachmentMeta(
                 id=attachment_id,
                 attachment_id=attachment_id,
@@ -60,13 +70,43 @@ class AttachTaskFileJob:
                 preview_capabilities=build_attachment_capabilities(kind),
                 status=ATTACHMENT_STATUS_READY,
                 snapshot_visible=True,
+                preview_state=doc_preview_state,
             )
             engine = build_snapshot_engine(self._ctx)
             metadata_store = engine.get_attachment_metadata_store()
             lookup = metadata_store.get_by_attachment_id(attachment_id)
             if lookup is not None:
                 metadata_store.mark_ready(task_id=task_id, attachment_id=attachment_id)
+                if kind == "doc":
+                    if preview_enabled:
+                        metadata_store.mark_preview_pending(task_id=task_id, attachment_id=attachment_id)
+                    else:
+                        error_code = "doc_preview_converter_unconfigured" if not converter_configured else "doc_preview_queue_unavailable"
+                        metadata_store.mark_preview_failed(
+                            task_id=task_id,
+                            attachment_id=attachment_id,
+                            error_code=error_code,
+                            error_message="Doc preview pipeline is unavailable.",
+                        )
             result = engine.attach_file_metadata(task_id=task_id, attachment=attachment)
+            if kind == "doc":
+                if preview_enabled:
+                    preview_cmd = Command(
+                        job_id=uuid4().hex,
+                        type=GENERATE_ATTACHMENT_PREVIEW,
+                        created_at_utc=datetime.now(timezone.utc),
+                        requested_by=cmd.requested_by,
+                        payload={"task_id": task_id, "attachment_id": attachment_id},
+                    )
+                    producer.send(preview_cmd)
+                    status_store.put_queued(preview_cmd)
+                    result["preview_job_id"] = preview_cmd.job_id
+                else:
+                    result["warnings"] = list(result.get("warnings", []) or [])
+                    if not converter_configured:
+                        result["warnings"].append("doc_preview_converter_unconfigured")
+                    elif not preview_queue_available:
+                        result["warnings"].append("doc_preview_queue_unavailable")
             try:
                 invalidate_default_frontend_responses(engine)
             except AppError:

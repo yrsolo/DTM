@@ -227,6 +227,7 @@ class InfoHandler:
             "render_designers_sheet",
             "group_query_reply",
             "attach_task_file",
+            "generate_attachment_preview",
         ):
             try:
                 record = status_store.get_latest(command_type)
@@ -381,6 +382,8 @@ class InfoHandler:
                     "mime": str(getattr(item, "mime_type", "") or getattr(item, "mime", "") or "").strip(),
                     "kind": str(getattr(item, "kind", "") or "").strip(),
                     "status": str(getattr(item, "status", "") or "").strip(),
+                    "previewState": str(getattr(item, "preview_state", "") or "").strip(),
+                    "derivedPreviewRef": str(getattr(item, "derived_preview_ref", "") or "").strip(),
                     "snapshotVisible": bool(getattr(item, "snapshot_visible", False)),
                     "uploadedAt": _iso(getattr(item, "uploaded_at_utc", None)),
                     "links": {

@@ -186,6 +186,45 @@ class AttachmentMetadataStore:
             warnings=warnings,
         )
 
+    def mark_preview_pending(self, *, task_id: str, attachment_id: str) -> AttachmentMeta:
+        return self._update_fields(
+            task_id=task_id,
+            attachment_id=attachment_id,
+            preview_state="pending",
+        )
+
+    def mark_preview_ready(
+        self,
+        *,
+        task_id: str,
+        attachment_id: str,
+        derived_preview_ref: str,
+    ) -> AttachmentMeta:
+        return self._update_fields(
+            task_id=task_id,
+            attachment_id=attachment_id,
+            preview_state="ready",
+            derived_preview_ref=str(derived_preview_ref or "").strip(),
+            error_code="",
+            error_message="",
+        )
+
+    def mark_preview_failed(
+        self,
+        *,
+        task_id: str,
+        attachment_id: str,
+        error_code: str,
+        error_message: str,
+    ) -> AttachmentMeta:
+        return self._update_fields(
+            task_id=task_id,
+            attachment_id=attachment_id,
+            preview_state="failed",
+            error_code=str(error_code or "").strip(),
+            error_message=str(error_message or "").strip(),
+        )
+
     def _update_status(self, *, task_id: str, attachment_id: str, status: str, snapshot_visible: bool, **changes) -> AttachmentMeta:
         task_key = str(task_id or "").strip()
         lookup = str(attachment_id or "").strip()
@@ -206,6 +245,32 @@ class AttachmentMetadataStore:
             payload.update(changes)
             payload["status"] = status
             payload["snapshot_visible"] = bool(snapshot_visible)
+            payload["task_id"] = task_key
+            updated_item = AttachmentMeta.from_dict(payload)
+            updated_list.append(updated_item)
+        if updated_item is None:
+            raise UserError("Attachment was not found.", code="attachment_not_found")
+        self._put(self._replace_task_item(snapshot, task_id=task_key, attachments=self._sort(updated_list), now=now))
+        return updated_item
+
+    def _update_fields(self, *, task_id: str, attachment_id: str, **changes) -> AttachmentMeta:
+        task_key = str(task_id or "").strip()
+        lookup = str(attachment_id or "").strip()
+        if not task_key or not lookup:
+            raise UserError("attachment_id and task_id are required", code="attachment_lookup_required")
+        snapshot = self._snapshot()
+        existing = dict(snapshot.items_by_task_id or {}).get(task_key)
+        if existing is None:
+            raise UserError("Attachment was not found.", code="attachment_not_found")
+        now = datetime.now(timezone.utc)
+        updated_list: list[AttachmentMeta] = []
+        updated_item: AttachmentMeta | None = None
+        for item in list(existing.attachments or []):
+            if str(item.attachment_id) != lookup:
+                updated_list.append(item)
+                continue
+            payload = dict(item.to_dict())
+            payload.update(changes)
             payload["task_id"] = task_key
             updated_item = AttachmentMeta.from_dict(payload)
             updated_list.append(updated_item)

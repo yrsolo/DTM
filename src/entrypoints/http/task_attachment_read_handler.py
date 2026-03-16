@@ -45,6 +45,13 @@ class TaskAttachmentReadHandler:
             )
             result = resolver.resolve(attachment_id=attachment_id, access=access, download=(action == "download"))
         except AppError as error:
-            status = 403 if error.code == "attachment_access_forbidden" else 404 if error.code == "attachment_not_found" else 503
+            if error.code == "attachment_access_forbidden":
+                status = 403
+            elif error.code == "attachment_not_found":
+                status = 404
+            elif error.code == "attachment_preview_pending":
+                status = 409
+            else:
+                status = 503
             return error_response(status, code=error.code, message=str(error))
         return HttpResponse(status=302, body="", headers={"Location": result.url, "Cache-Control": "no-store"})

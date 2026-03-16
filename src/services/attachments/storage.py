@@ -46,13 +46,19 @@ class AttachmentStorage:
         *,
         key: str,
         mime_type: str,
+        sign_content_type: bool = True,
         expires_in_seconds: int = 900,
     ) -> dict[str, Any]:
         client = self._client()
+        params = {"Bucket": self.bucket, "Key": key}
+        headers: dict[str, str] = {}
+        if sign_content_type:
+            params["ContentType"] = mime_type
+            headers["Content-Type"] = mime_type
         try:
             upload_url = client.generate_presigned_url(
                 "put_object",
-                Params={"Bucket": self.bucket, "Key": key, "ContentType": mime_type},
+                Params=params,
                 ExpiresIn=int(expires_in_seconds),
                 HttpMethod="PUT",
             )
@@ -61,9 +67,23 @@ class AttachmentStorage:
         return {
             "method": "PUT",
             "uploadUrl": upload_url,
-            "headers": {"Content-Type": mime_type},
+            "headers": headers,
             "expiresIn": int(expires_in_seconds),
         }
+
+    def generate_preview_upload_contract(
+        self,
+        *,
+        key: str,
+        mime_type: str = "application/pdf",
+        expires_in_seconds: int = 900,
+    ) -> dict[str, Any]:
+        return self.generate_upload_contract(
+            key=key,
+            mime_type=mime_type,
+            sign_content_type=False,
+            expires_in_seconds=expires_in_seconds,
+        )
 
     def head_object(self, *, key: str) -> dict[str, Any]:
         client = self._client()

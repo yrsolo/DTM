@@ -19,6 +19,7 @@ class _FakeAttachmentStore:
                 status="ready",
                 snapshot_visible=True,
                 storage_key="attachments/test/task-1/a1-spec-final.docx",
+                kind="docx",
             ),
         )
 
@@ -26,6 +27,37 @@ class _FakeAttachmentStore:
 class _FakeSnapshotEngine:
     def get_attachment_metadata_store(self):
         return _FakeAttachmentStore()
+
+
+class _FakeDocAttachmentStore:
+    def __init__(self, *, preview_state: str, derived_preview_ref: str = "") -> None:
+        self._preview_state = preview_state
+        self._derived_preview_ref = derived_preview_ref
+
+    def get_by_attachment_id(self, attachment_id):  # noqa: ANN001
+        if attachment_id != "doc-1":
+            return None
+        return (
+            "task-1",
+            SimpleNamespace(
+                attachment_id="doc-1",
+                filename_display="legacy.doc",
+                status="ready",
+                snapshot_visible=True,
+                storage_key="attachments/test/task-1/doc-1-legacy.doc",
+                kind="doc",
+                preview_state=self._preview_state,
+                derived_preview_ref=self._derived_preview_ref,
+            ),
+        )
+
+
+class _FakeDocEngine:
+    def __init__(self, store) -> None:  # noqa: ANN001
+        self._store = store
+
+    def get_attachment_metadata_store(self):
+        return self._store
 
 
 class _FakeStorage:
@@ -111,6 +143,100 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
 
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 404)
+
+    def test_view_doc_preview_redirects_when_ready(self) -> None:
+        import src.entrypoints.http.task_attachment_read_handler as module
+
+        original_engine = module.build_snapshot_engine
+        original_storage = module.build_attachment_storage
+        doc_store = _FakeDocAttachmentStore(preview_state="ready", derived_preview_ref="attachments/test/task-1/doc-1/preview.pdf")
+        module.build_snapshot_engine = lambda _ctx: _FakeDocEngine(doc_store)  # type: ignore[assignment]
+        module.build_attachment_storage = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
+        try:
+            handler = TaskAttachmentReadHandler(_FakeCtx())
+            allowed = handler.handle(
+                HttpRequest(
+                    method="GET",
+                    path="/test/ops/api/task-attachments/doc-1/view",
+                    headers={
+                        "X-DTM-Proxy-Secret": "proxy-secret-test",
+                        "x-dtm-access-mode": "full",
+                        "x-dtm-authenticated": "1",
+                        "x-dtm-contour": "test",
+                        "x-dtm-user-status": "approved",
+                    },
+                    is_http_event=True,
+                )
+            )
+        finally:
+            module.build_snapshot_engine = original_engine  # type: ignore[assignment]
+            module.build_attachment_storage = original_storage  # type: ignore[assignment]
+
+        self.assertIsNotNone(allowed)
+        self.assertEqual(allowed.status, 302)
+        self.assertIn("/view/attachments/test/task-1/doc-1/preview.pdf", allowed.headers["Location"])
+
+    def test_view_doc_preview_returns_pending_when_not_ready(self) -> None:
+        import src.entrypoints.http.task_attachment_read_handler as module
+
+        original_engine = module.build_snapshot_engine
+        original_storage = module.build_attachment_storage
+        doc_store = _FakeDocAttachmentStore(preview_state="pending")
+        module.build_snapshot_engine = lambda _ctx: _FakeDocEngine(doc_store)  # type: ignore[assignment]
+        module.build_attachment_storage = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
+        try:
+            handler = TaskAttachmentReadHandler(_FakeCtx())
+            response = handler.handle(
+                HttpRequest(
+                    method="GET",
+                    path="/test/ops/api/task-attachments/doc-1/view",
+                    headers={
+                        "X-DTM-Proxy-Secret": "proxy-secret-test",
+                        "x-dtm-access-mode": "full",
+                        "x-dtm-authenticated": "1",
+                        "x-dtm-contour": "test",
+                        "x-dtm-user-status": "approved",
+                    },
+                    is_http_event=True,
+                )
+            )
+        finally:
+            module.build_snapshot_engine = original_engine  # type: ignore[assignment]
+            module.build_attachment_storage = original_storage  # type: ignore[assignment]
+
+        self.assertIsNotNone(response)
+        self.assertEqual(response.status, 409)
+
+    def test_view_doc_preview_returns_unavailable_when_failed(self) -> None:
+        import src.entrypoints.http.task_attachment_read_handler as module
+
+        original_engine = module.build_snapshot_engine
+        original_storage = module.build_attachment_storage
+        doc_store = _FakeDocAttachmentStore(preview_state="failed")
+        module.build_snapshot_engine = lambda _ctx: _FakeDocEngine(doc_store)  # type: ignore[assignment]
+        module.build_attachment_storage = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
+        try:
+            handler = TaskAttachmentReadHandler(_FakeCtx())
+            response = handler.handle(
+                HttpRequest(
+                    method="GET",
+                    path="/test/ops/api/task-attachments/doc-1/view",
+                    headers={
+                        "X-DTM-Proxy-Secret": "proxy-secret-test",
+                        "x-dtm-access-mode": "full",
+                        "x-dtm-authenticated": "1",
+                        "x-dtm-contour": "test",
+                        "x-dtm-user-status": "approved",
+                    },
+                    is_http_event=True,
+                )
+            )
+        finally:
+            module.build_snapshot_engine = original_engine  # type: ignore[assignment]
+            module.build_attachment_storage = original_storage  # type: ignore[assignment]
+
+        self.assertIsNotNone(response)
+        self.assertEqual(response.status, 503)
 
 
 if __name__ == "__main__":
