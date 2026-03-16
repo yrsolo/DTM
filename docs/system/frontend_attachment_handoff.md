@@ -66,6 +66,16 @@ Test:
 
 These auth routes are expected to forward to backend-owned routes with trusted headers and proxy secret.
 
+## Supported upload formats
+
+Current upload mime allowlist:
+- `application/vnd.openxmlformats-officedocument.wordprocessingml.document` (`.docx`)
+- `application/msword` (`.doc`)
+- `application/pdf` (`.pdf`)
+- `image/jpeg` (`.jpg`, `.jpeg`)
+- `image/png` (`.png`)
+- `image/webp` (`.webp`)
+
 ## Canonical upload flow
 
 ### 1. Request upload contract

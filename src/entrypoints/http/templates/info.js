@@ -246,7 +246,9 @@
       const mime = String((file || {}).type || '').trim();
       if (mime) return mime;
       const name = String((file || {}).name || '').toLowerCase();
+      if (name.endsWith('.doc')) return 'application/msword';
       if (name.endsWith('.docx')) return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      if (name.endsWith('.pdf')) return 'application/pdf';
       if (name.endsWith('.png')) return 'image/png';
       if (name.endsWith('.jpg') || name.endsWith('.jpeg')) return 'image/jpeg';
       if (name.endsWith('.webp')) return 'image/webp';

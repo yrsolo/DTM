@@ -86,13 +86,22 @@ class _FakeAttachmentStore:
 
     def create_pending(self, **kwargs):
         attachment_id = kwargs["attachment_id"]
+        mime_type = kwargs["mime_type"]
+        if mime_type == "application/pdf":
+            kind = "pdf"
+        elif mime_type == "application/msword":
+            kind = "doc"
+        elif mime_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+            kind = "docx"
+        else:
+            kind = "image"
         record = SimpleNamespace(
             task_id=kwargs["task_id"],
             attachment_id=attachment_id,
             filename_display=kwargs["filename"],
-            mime_type=kwargs["mime_type"],
+            mime_type=mime_type,
             size_bytes=kwargs["size_bytes"],
-            kind="docx",
+            kind=kind,
             storage_key=kwargs["storage_key"],
             preview="",
         )
@@ -128,13 +137,15 @@ class _FakeSnapshotEngine:
 
 
 class _FakeBoto3Client:
+    content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
     def generate_presigned_url(self, *args, **kwargs):
         return "https://example.test/upload"
 
     def head_object(self, *args, **kwargs):
         return {
             "ContentLength": 128,
-            "ContentType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "ContentType": self.content_type,
             "ETag": '"etag-1"',
             "VersionId": "v1",
         }
@@ -453,6 +464,82 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
         self.assertEqual(response.status, 202)
         self.assertEqual(len(producer.commands), 1)
         self.assertEqual(producer.commands[0].type, "delete_task_attachment")
+
+    def test_admin_queue_handler_returns_upload_contract_for_pdf(self) -> None:
+        import src.entrypoints.http.admin_task_attachments_handler as module
+
+        original_build_snapshot_engine = module.build_snapshot_engine
+        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        try:
+            handler = AdminTaskAttachmentsHandler(_FakeCtx())
+            with patch.dict(sys.modules, {"boto3": _FakeBoto3Module()}):
+                response = handler.handle(
+                    HttpRequest(
+                        method="POST",
+                        path="/admin/task-attachments/request-upload",
+                        body={
+                            "task_id": "task-1",
+                            "filename": "spec-final.pdf",
+                            "mime": "application/pdf",
+                            "size": 128,
+                            "uploaded_by": "tester",
+                        },
+                        headers={
+                            "X-DTM-Proxy-Secret": "proxy-secret-test",
+                            "x-dtm-access-mode": "full",
+                            "x-dtm-authenticated": "1",
+                            "x-dtm-contour": "test",
+                            "x-dtm-user-status": "approved",
+                        },
+                        is_http_event=True,
+                    )
+                )
+        finally:
+            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+        self.assertIsNotNone(response)
+        self.assertEqual(response.status, 200)
+        payload = json.loads(response.body)
+        self.assertEqual(payload["mime"], "application/pdf")
+        self.assertEqual(payload["kind"], "pdf")
+        self.assertEqual(payload["headers"]["Content-Type"], "application/pdf")
+
+    def test_admin_queue_handler_returns_upload_contract_for_legacy_doc(self) -> None:
+        import src.entrypoints.http.admin_task_attachments_handler as module
+
+        original_build_snapshot_engine = module.build_snapshot_engine
+        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        try:
+            handler = AdminTaskAttachmentsHandler(_FakeCtx())
+            with patch.dict(sys.modules, {"boto3": _FakeBoto3Module()}):
+                response = handler.handle(
+                    HttpRequest(
+                        method="POST",
+                        path="/admin/task-attachments/request-upload",
+                        body={
+                            "task_id": "task-1",
+                            "filename": "spec-final.doc",
+                            "mime": "application/msword",
+                            "size": 128,
+                            "uploaded_by": "tester",
+                        },
+                        headers={
+                            "X-DTM-Proxy-Secret": "proxy-secret-test",
+                            "x-dtm-access-mode": "full",
+                            "x-dtm-authenticated": "1",
+                            "x-dtm-contour": "test",
+                            "x-dtm-user-status": "approved",
+                        },
+                        is_http_event=True,
+                    )
+                )
+        finally:
+            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+        self.assertIsNotNone(response)
+        self.assertEqual(response.status, 200)
+        payload = json.loads(response.body)
+        self.assertEqual(payload["mime"], "application/msword")
+        self.assertEqual(payload["kind"], "doc")
+        self.assertEqual(payload["headers"]["Content-Type"], "application/msword")
 
     def test_job_status_handler_reads_status(self) -> None:
         status_store = _FakeStatusStore()

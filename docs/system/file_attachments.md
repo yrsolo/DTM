@@ -66,6 +66,14 @@ The handler validates:
 - mime type is supported
 - filename is normalized into a safe storage key
 
+Current supported upload mime types:
+- `application/vnd.openxmlformats-officedocument.wordprocessingml.document` (`.docx`)
+- `application/msword` (`.doc`)
+- `application/pdf` (`.pdf`)
+- `image/jpeg` (`.jpg`, `.jpeg`)
+- `image/png` (`.png`)
+- `image/webp` (`.webp`)
+
 Current direct-upload contract details:
 - backend signs exact `PUT`
 - backend signs exact `Content-Type`
