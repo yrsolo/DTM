@@ -5,7 +5,7 @@
 - last_verified_at: 2026-03-15
 - verified_by: Codex
 - evidence:
-  - `docs/system/file_attachments.md`
+  - `docs/integrations/attachments/backend-flow.md`
   - `src/entrypoints/http/admin_task_attachments_handler.py`
   - `src/entrypoints/http/task_attachment_read_handler.py`
   - deployed `test` contour

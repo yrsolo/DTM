@@ -9,6 +9,7 @@ Single source of truth for campaign lifecycle state.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## Done
+- `CAM-2026-03-16-DOCS-IA-REFRESH-V1` completed and archived after the docs information architecture refresh and link normalization wave.
 - Recent completed campaigns were archived under `work/archive/campaigns/`.
 - Latest archived closeouts include the 2026-03-12 execution wave, 2026-03-14 attachment/people/audit waves, and the completed attachment cleanup wave.
 
