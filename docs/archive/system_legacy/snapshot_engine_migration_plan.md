@@ -22,6 +22,6 @@ Historical rollback note:
 - hard cutover required explicit owner decision and separate change set
 
 Current readers should use:
-- `docs/system/architecture.md`
-- `docs/system/runbook.md`
-- `docs/snapshot_engine/README.md`
+- `docs/architecture/runtime/architecture.md`
+- `docs/operations/runbook.md`
+- `docs/architecture/snapshot-engine/README.md`

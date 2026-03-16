@@ -364,6 +364,8 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertEqual(payload["attachmentsHarness"]["probeTaskStatus"], "test")
         self.assertEqual(payload["attachmentsHarness"]["probeAttachmentsTotal"], 1)
         self.assertIn("/auth/attachments/request-upload", payload["attachmentsHarness"]["browserRoutes"]["requestUpload"])
+        self.assertIn("application/pdf", payload["attachmentsHarness"]["allowedMimeTypes"])
+        self.assertIn("application/msword", payload["attachmentsHarness"]["allowedMimeTypes"])
         self.assertEqual(payload["queue"]["policy"]["retryModel"], "queue_driven")
         self.assertEqual(payload["telemetry"]["metricsClient"], "_MetricsRecorder")
         self.assertEqual(payload["telemetry"]["metricsDeliveryMode"], "buffered")

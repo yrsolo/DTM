@@ -5,7 +5,7 @@ Active campaign details are tracked in:
 - `work/now/tasks.md`
 
 Current state:
-- no active campaign (all selected campaigns closed).
+- lifecycle state is tracked in `work/now/campaign.md`; blocked execution may exist even when there is no `in progress` campaign.
 
 Definition of Done for closure:
 1. Scope goals are completed.

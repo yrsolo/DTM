@@ -9,20 +9,12 @@ Single source of truth for campaign lifecycle state.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## Done
-- CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1
-- CAM-2026-03-14-TASK-ATTACHMENTS-V1
-- CAM-2026-03-14-PEOPLE-SNAPSHOT-AND-SECRET-API-V1
-- CAM-2026-03-14-ARCHITECTURE-AUDIT-AND-ROADMAP-V1
-- CAM-2026-03-12-DIRECT-API-TRUSTWORTHY-DIAGNOSTICS-V1
-- CAM-2026-03-12-DIRECT-API-OUTER-LATENCY-DECOMPOSITION-V1
-- CAM-2026-03-12-BOTTLENECK-ANALYTICS-V1
-- CAM-2026-03-12-BROWSER-AUTH-AND-MASKED-ACCESS-V1
-- CAM-2026-03-12-METRICS-HOTPATH-AND-READ-PERF-V1
-- CAM-2026-03-12-RUNTIME-DEPLANNERIZE-AND-BOOTSTRAP-HARDENING-V1
-- CAM-2026-03-12-DOC-CODE-REALIGN-V1
+- `CAM-2026-03-16-DOCS-IA-REFRESH-V1` completed and archived after the docs information architecture refresh and link normalization wave.
+- Recent completed campaigns were archived under `work/archive/campaigns/`.
+- Latest archived closeouts include the 2026-03-12 execution wave, 2026-03-14 attachment/people/audit waves, and the completed attachment cleanup wave.
 
 ## Planned
-- CAM-2026-03-15-TASK-ATTACHMENTS-ORPHAN-CLEANUP-V1
+- none
 
 ## Parked
 - CAM-2026-03-09-RUNTIME-DEPLANNERIZE-V1 (obsolete / already substantially delivered)

@@ -1,32 +1,46 @@
-# Designers Task Manager (DTM)
+# Designers Task Manager
 
-DTM is a snapshot-first, queue-backed automation service for design-team planning around Google Sheets.
+DTM is a lightweight operations hub for design teams that need one place to keep tasks, people, deadlines, reminders, and file flows in sync without building a heavy bespoke PM stack.
 
-Current runtime shape:
-- reads tasks and people data from Google Sheets,
-- builds Raw/Prep snapshots in Object Storage,
-- serves browser/API reads from prepared snapshots,
-- runs heavy mutations asynchronously through queue-backed jobs,
-- renders Sheets views and sends Telegram reminders from the same snapshot contour.
+It sits on top of familiar tools, keeps reads fast and predictable, and pushes expensive or risky work into controlled async jobs.
 
-Current runtime defaults:
-- `index.py` is a thin shell,
-- read paths are browser-safe and side-effect free,
-- `/info` is summary-first by default,
-- browser auth and masking stay at the HTTP boundary,
-- render/refresh/reminder work happens through async commands or explicit runtime modes.
+## What DTM gives you
 
-Start here:
-- [docs/system/architecture.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/architecture.md)
-- [docs/system/module_map.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/module_map.md)
-- [docs/system/config.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/config.md)
-- [docs/system/runbook.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/runbook.md)
-- [docs/system/browser_auth_runbook.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/system/browser_auth_runbook.md)
+- A browser-safe operational API over prepared task data
+- Snapshot-based reads that stay stable under load
+- Queue-backed mutations for refresh, renders, reminders, and attachments
+- Operator tooling in `/info` for diagnostics and live contour checks
+- File attachment flow with upload, finalize, view, download, and delete
+- Google Sheets as the practical source system for task operations
 
-Documentation/process maps:
-- [docs/README.md](/n:/PROJECTS/python/SCRIPT/DTM/docs/README.md)
-- [work/README.md](/n:/PROJECTS/python/SCRIPT/DTM/work/README.md)
-- [work/now/README.md](/n:/PROJECTS/python/SCRIPT/DTM/work/now/README.md)
+## Who it is for
 
-Legacy and migration-era material is intentionally kept out of the current narrative.
-If historical detail is needed, use `docs/archive/*` and `work/archive/*`.
+- Design operations teams
+- Managers coordinating designers through Sheets-centric workflows
+- Engineers supporting internal planning and reminder automations
+- Operators who need clear runbooks and observable async flows
+
+## Architecture tags
+
+`snapshot-first` `queue-backed` `google-sheets` `browser-safe-reads` `async-mutations` `object-storage` `serverless`
+
+## Where to go next
+
+- [Документация по проекту](docs/README.md)
+- [Быстрый обзор продукта](docs/product/README.md)
+- [Архитектура и устройство runtime](docs/architecture/README.md)
+- [Интеграции и внешние контуры](docs/integrations/README.md)
+- [Эксплуатация и наблюдаемость](docs/operations/README.md)
+- [Справочные схемы и контракты](docs/reference/README.md)
+- [Текущее execution-tracking пространство](work/README.md)
+
+## Project posture
+
+DTM deliberately prefers:
+
+- deterministic read paths over live query improvisation
+- explicit async jobs over hidden side effects
+- small browser-facing contracts over generic passthrough APIs
+- operational clarity over cleverness
+
+If you need the historical migration story or legacy investigations, use [docs/archive/README.md](docs/archive/README.md) and [work/archive/README.md](work/archive/README.md).
