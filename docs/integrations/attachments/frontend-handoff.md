@@ -210,6 +210,9 @@ Not exposed:
 - bucket internals
 - raw storage URL
 
+Capability note:
+- legacy `.doc` uses `pdf_preview` instead of `doc_view` to signal preview-via-PDF behavior
+
 ### View
 
 Use:
@@ -218,6 +221,12 @@ Use:
 Expected behavior:
 - backend/auth route returns redirect flow to short-lived storage read URL
 
+Legacy `.doc` split behavior:
+- `view` returns derived PDF preview only
+- `download` returns original `.doc`
+- when preview is still generating, `view` returns `409` (`attachment_preview_pending`)
+- when preview failed/unavailable, `view` returns `503` (`attachment_preview_unavailable`)
+
 ### Download
 
 Use:
@@ -225,6 +234,9 @@ Use:
 
 Expected behavior:
 - backend/auth route returns redirect flow to short-lived storage read URL
+
+Legacy `.doc`:
+- always downloads original `.doc`
 
 Frontend should not attempt to construct storage URLs manually.
 
@@ -345,6 +357,7 @@ For read-path failures:
 - log exact `view` / `download` auth route used
 - log final response status / redirect behavior
 - do not replace backend-provided links with frontend-generated URLs
+ - for `.doc` view, treat `409/503` as preview lifecycle signals
 
 ## What has been live-confirmed on `test`
 

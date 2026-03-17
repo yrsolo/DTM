@@ -8,6 +8,7 @@ GROUP_QUERY_REPLY = "group_query_reply"
 ATTACH_TASK_FILE = "attach_task_file"
 DELETE_TASK_ATTACHMENT = "delete_task_attachment"
 CLEANUP_TASK_ATTACHMENTS = "cleanup_task_attachments"
+GENERATE_ATTACHMENT_PREVIEW = "generate_attachment_preview"
 
 SUPPORTED_COMMAND_TYPES = frozenset(
     {
@@ -19,5 +20,6 @@ SUPPORTED_COMMAND_TYPES = frozenset(
         ATTACH_TASK_FILE,
         DELETE_TASK_ATTACHMENT,
         CLEANUP_TASK_ATTACHMENTS,
+        GENERATE_ATTACHMENT_PREVIEW,
     }
 )

@@ -42,7 +42,7 @@ def build_attachment_capabilities(kind: str) -> list[str]:
     if str(kind or "").strip() == ATTACHMENT_KIND_DOCX:
         return ["browser_view", "download", "docx_view"]
     if str(kind or "").strip() == ATTACHMENT_KIND_DOC:
-        return ["browser_view", "download", "doc_view"]
+        return ["browser_view", "download", "pdf_preview"]
     if str(kind or "").strip() == ATTACHMENT_KIND_PDF:
         return ["browser_view", "download", "pdf_view"]
     if str(kind or "").strip() == ATTACHMENT_KIND_IMAGE:

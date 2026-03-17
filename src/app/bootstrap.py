@@ -19,6 +19,7 @@ from config import (
 from src.app.context import AppContext
 from src.config.loader import load_config
 from src.infra.yc_iam import get_iam_token
+from src.infra.doc_preview_converter import DocPreviewConverter
 from src.observability import (
     BufferedMetricsClient,
     CompositeMetricsClient,
@@ -82,6 +83,13 @@ def build_app_context() -> AppContext:
         "metrics_sink": NoopMetricsClient(),
         "structured_logger": structured_logger,
     }
+    doc_preview_converter_url = os.getenv("DOC_PREVIEW_CONVERTER_URL", "").strip()
+    doc_preview_converter_token = os.getenv("DOC_PREVIEW_CONVERTER_SHARED_TOKEN", "").strip()
+    if doc_preview_converter_url:
+        deps["doc_preview_converter"] = DocPreviewConverter(
+            base_url=doc_preview_converter_url,
+            shared_token=doc_preview_converter_token,
+        )
     ctx = AppContext(cfg=cfg, deps=deps)
     monitoring_cfg = cfg.runtime.monitoring
     prometheus_cfg = cfg.runtime.prometheus
@@ -150,6 +158,7 @@ def build_app_context() -> AppContext:
         from src.jobs.attach_task_file_job import AttachTaskFileJob
         from src.jobs.cleanup_task_attachments_job import CleanupTaskAttachmentsJob
         from src.jobs.delete_task_attachment_job import DeleteTaskAttachmentJob
+        from src.jobs.generate_attachment_preview_job import GenerateAttachmentPreviewJob
         from src.worker.dispatcher import CommandDispatcher
         from src.worker.status_store import S3JobStatusStore
         from src.worker.worker import Worker
@@ -180,6 +189,7 @@ def build_app_context() -> AppContext:
             attach_task_file_job=AttachTaskFileJob(ctx),
             delete_task_attachment_job=DeleteTaskAttachmentJob(ctx),
             cleanup_task_attachments_job=CleanupTaskAttachmentsJob(ctx),
+            generate_attachment_preview_job=GenerateAttachmentPreviewJob(ctx),
         )
         deps["job_status_store"] = status_store
         deps["command_queue_producer"] = producer

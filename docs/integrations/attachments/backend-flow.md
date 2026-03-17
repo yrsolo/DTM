@@ -146,6 +146,9 @@ Behavior:
 Object Storage key scheme:
 - `attachments/{env}/{task_id}/{attachment_id}-{filename}`
 
+Derived preview key scheme (legacy `.doc` only):
+- `attachments/{env}/{task_id}/{attachment_id}/preview.pdf`
+
 Binary payloads:
 - are uploaded directly to Object Storage
 - are never placed into queue payloads
@@ -176,6 +179,8 @@ Canonical metadata model includes:
 - `error_message`
 - `snapshot_visible`
 - `preview_capabilities`
+- `preview_state` (`none | pending | ready | failed`)
+- `derived_preview_ref` (preview object key when ready)
 - future enrichment fields reserved for later waves
 
 ## Worker/job behavior
@@ -184,6 +189,7 @@ Command type:
 - `attach_task_file`
 - `delete_task_attachment`
 - `cleanup_task_attachments`
+- `generate_attachment_preview` (legacy `.doc` PDF preview)
 
 Runtime path:
 - `AdminTaskAttachmentsHandler` serves canonical request-upload/finalize/delete routes
@@ -201,6 +207,13 @@ Worker responsibilities:
 6. best-effort invalidate exact default frontend response cache entries after successful attach/delete mutation
 7. revoke readability and remove metadata during delete
 8. remove stale non-ready/deleted metadata during cleanup with one bulk prep rebuild
+9. for legacy `.doc`, enqueue `generate_attachment_preview` after successful attach
+
+Legacy `.doc` preview job:
+- converts `.doc` to PDF via external converter (source_url -> target_url)
+- writes preview object to derived preview key
+- updates `preview_state` and `derived_preview_ref`
+- does not affect original `.doc` download path
 
 ## Read path behavior
 
@@ -224,6 +237,12 @@ Read routes:
 - `GET /ops/api/task-attachments/{attachment_id}/view`
 - `GET /ops/api/task-attachments/{attachment_id}/download`
 - same routes under `/test`
+
+Legacy `.doc` split semantics:
+- `download` always returns the original `.doc` object
+- `view` returns the derived PDF preview only
+- if preview is still generating: `409` with `attachment_preview_pending`
+- if preview failed/unavailable: `503` with `attachment_preview_unavailable`
 
 Security and visibility rules:
 - only `ready` + `snapshot_visible` attachments are published into task payloads

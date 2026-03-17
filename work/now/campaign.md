@@ -10,6 +10,7 @@ Single source of truth for campaign lifecycle state.
 
 ## Done
 - `CAM-2026-03-16-DOCS-IA-REFRESH-V1` completed and archived after the docs information architecture refresh and link normalization wave.
+- `CAM-2026-03-16-DOC-PREVIEW-CONVERTER-V1` completed and archived after the legacy `.doc` preview split-flow and converter integration.
 - Recent completed campaigns were archived under `work/archive/campaigns/`.
 - Latest archived closeouts include the 2026-03-12 execution wave, 2026-03-14 attachment/people/audit waves, and the completed attachment cleanup wave.
 

@@ -20,7 +20,10 @@ class _FakeMetadataStore:
             return None
         return (
             "task-1",
-            SimpleNamespace(storage_key="attachments/test/task-1/a1-spec-final.docx"),
+            SimpleNamespace(
+                storage_key="attachments/test/task-1/a1-spec-final.docx",
+                derived_preview_ref="attachments/test/task-1/a1/preview.pdf",
+            ),
         )
 
     def mark_delete_pending(self, **kwargs):  # noqa: ANN001
@@ -99,7 +102,10 @@ class DeleteTaskAttachmentJobTestCase(unittest.TestCase):
 
         self.assertEqual(result["status"], "ok")
         self.assertEqual(engine.delete_calls, [("task-1", "a1")])
-        self.assertEqual(storage.deleted_keys, ["attachments/test/task-1/a1-spec-final.docx"])
+        self.assertEqual(
+            storage.deleted_keys,
+            ["attachments/test/task-1/a1-spec-final.docx", "attachments/test/task-1/a1/preview.pdf"],
+        )
         self.assertEqual(engine.metadata_store.pending_calls[0]["deleted_by_user_id"], "tester")
         self.assertEqual(engine.metadata_store.deleted_calls[0]["attachment_id"], "a1")
         self.assertEqual(

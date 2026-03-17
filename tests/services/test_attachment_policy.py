@@ -17,7 +17,7 @@ class AttachmentPolicyTestCase(unittest.TestCase):
         self.assertEqual(infer_attachment_kind("application/msword"), "doc")
         self.assertEqual(
             build_attachment_capabilities("doc"),
-            ["browser_view", "download", "doc_view"],
+            ["browser_view", "download", "pdf_preview"],
         )
 
 
