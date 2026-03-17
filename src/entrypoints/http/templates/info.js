@@ -65,7 +65,24 @@
       lastJobPayload: null,
       lastAttachmentId: '',
       logEntries: [],
+      stepStates: {},
+      stepPayloads: {},
+      selectedStepId: '',
+      lastJobKind: '',
     };
+    const attachmentStepOrder = [
+      {id: 'request-upload', label: 'request upload'},
+      {id: 'upload-binary', label: 'upload binary'},
+      {id: 'finalize', label: 'finalize'},
+      {id: 'attach-job', label: 'attach job'},
+      {id: 'preview-job', label: 'preview job'},
+      {id: 'frontend-check-after-attach', label: 'frontend check'},
+      {id: 'view', label: 'view'},
+      {id: 'download', label: 'download'},
+      {id: 'delete', label: 'delete'},
+      {id: 'delete-job', label: 'delete job'},
+      {id: 'frontend-check-after-delete', label: 'frontend check'},
+    ];
     function nowTimeLabel(){
       const value = new Date();
       const hh = String(value.getHours()).padStart(2, '0');
@@ -87,6 +104,83 @@
     }
     function attachmentClearLog(){
       attachmentResetLog();
+      attachmentResetStepStates();
+    }
+    function attachmentResetStepStates(){
+      attachmentHarnessState.stepStates = {};
+      attachmentHarnessState.stepPayloads = {};
+      attachmentHarnessState.selectedStepId = '';
+      attachmentHarnessState.lastJobKind = '';
+      const stepNode = document.getElementById('attachmentHarnessStepResult');
+      if (stepNode) stepNode.textContent = 'Select a step to inspect JSON.';
+      renderAttachmentStepPipeline();
+    }
+    function attachmentSetSelectedStep(stepId){
+      attachmentHarnessState.selectedStepId = String(stepId || '').trim();
+      const payload = attachmentHarnessState.stepPayloads[attachmentHarnessState.selectedStepId];
+      const stepNode = document.getElementById('attachmentHarnessStepResult');
+      if (stepNode) {
+        if (!attachmentHarnessState.selectedStepId) {
+          stepNode.textContent = 'Select a step to inspect JSON.';
+        } else if (payload === undefined) {
+          stepNode.textContent = 'No JSON recorded for ' + attachmentHarnessState.selectedStepId + '.';
+        } else {
+          stepNode.textContent = pretty(payload);
+        }
+      }
+      renderAttachmentStepPipeline();
+    }
+    function attachmentNormalizeStatus(status, payload){
+      if (payload && typeof payload === 'object' && payload.status) {
+        const jobStatus = String(payload.status || '').toLowerCase();
+        if (jobStatus === 'accepted' || jobStatus === 'running') return 'running';
+        if (jobStatus === 'success') return 'success';
+        if (jobStatus === 'failed_retryable' || jobStatus === 'failed_terminal') return 'failed';
+      }
+      if (typeof status === 'number') {
+        if (status >= 200 && status < 300) return 'success';
+        if (status >= 400) return 'failed';
+      }
+      const text = String(status || '').toLowerCase();
+      if (!text) return 'idle';
+      if (text === 'accepted' || text === 'running' || text === 'pending') return 'running';
+      if (text === 'success' || text === 'ok' || text === 'opened') return 'success';
+      if (text === 'failed' || text === 'blocked' || text === 'error' || text === 'failed_retryable' || text === 'failed_terminal') return 'failed';
+      const asNum = Number(text);
+      if (!Number.isNaN(asNum)) {
+        if (asNum >= 200 && asNum < 300) return 'success';
+        if (asNum >= 400) return 'failed';
+      }
+      return 'idle';
+    }
+    function attachmentSetStepState(stepId, status, payload){
+      if (!stepId) return;
+      const normalized = attachmentNormalizeStatus(status, payload);
+      attachmentHarnessState.stepStates[stepId] = normalized;
+      if (payload !== undefined) {
+        attachmentHarnessState.stepPayloads[stepId] = payload;
+      }
+      if (!attachmentHarnessState.selectedStepId) {
+        attachmentSetSelectedStep(stepId);
+      } else {
+        renderAttachmentStepPipeline();
+      }
+    }
+    function renderAttachmentStepPipeline(){
+      const host = document.getElementById('attachmentPipelineSteps');
+      if (!host) return;
+      host.innerHTML = '';
+      for (const step of attachmentStepOrder) {
+        const state = attachmentHarnessState.stepStates[step.id] || 'idle';
+        const stepNode = document.createElement('div');
+        stepNode.className = 'attachment-step ' + (state !== 'idle' ? state : '');
+        if (attachmentHarnessState.selectedStepId === step.id) {
+          stepNode.className += ' selected';
+        }
+        stepNode.textContent = step.label;
+        stepNode.addEventListener('click', () => attachmentSetSelectedStep(step.id));
+        host.appendChild(stepNode);
+      }
     }
     async function copyOutput(targetId, button){
       const node = document.getElementById(targetId);
@@ -236,6 +330,7 @@
         attachmentHarnessState.logEntries = attachmentHarnessState.logEntries.slice(-40);
       }
       renderAttachmentLog();
+      attachmentSetStepState(String(step || ''), status, payload);
     }
     function attachmentSelectedFile(){
       const input = document.getElementById('attachmentFileInput');
@@ -467,6 +562,7 @@
         attachmentHarnessState.lastJobPayload = null;
         attachmentHarnessState.lastAttachmentId = String(((attachmentHarnessState.requestUpload || {}).attachment_id) || '');
         attachmentResetLog();
+        attachmentResetStepStates();
         attachmentSetSelectedId(attachmentHarnessState.lastAttachmentId);
         attachmentSetResult('request-upload', response.status, payload);
       } catch (error) {
@@ -550,6 +646,7 @@
           }),
         });
         attachmentHarnessState.finalizeResult = response.ok && payload && typeof payload === 'object' ? payload : null;
+        attachmentHarnessState.lastJobKind = 'attach';
         attachmentSetResult('finalize', response.status, payload);
       } catch (error) {
         attachmentSetResult('finalize', 'failed', {message: String((error || {}).message || error || 'unknown_error')});
@@ -557,20 +654,20 @@
         attachmentTimer.stop();
       }
     }
-    async function attachmentPollJob(jobId){
+    async function attachmentPollJob(jobId, stepName){
       attachmentTimer.start();
       try {
         const config = attachmentCurrentConfig();
         const template = String((((config.browserRoutes || {}).jobStatusTemplate) || '')).trim();
         if (!template || !jobId) {
-          attachmentSetResult('job-status', 'blocked', {reason: 'job_id_required'});
+          attachmentSetResult(String(stepName || 'job-status'), 'blocked', {reason: 'job_id_required'});
           return null;
         }
         const url = template.replace('{job_id}', encodeURIComponent(String(jobId)));
         for (let attempt = 0; attempt < 60; attempt += 1) {
           const {response, payload} = await attachmentFetchJson(url, {cache:'no-store', credentials:'include'});
           attachmentHarnessState.lastJobPayload = payload;
-          attachmentSetResult('job-status', response.status, payload);
+          attachmentSetResult(String(stepName || 'job-status'), response.status, payload);
           if (response.ok && payload && typeof payload === 'object') {
             const status = String(payload.status || '').toLowerCase();
             if (status === 'success' || status === 'failed_retryable' || status === 'failed_terminal') {
@@ -581,7 +678,7 @@
         }
         return null;
       } catch (error) {
-        attachmentSetResult('job-status', 'failed', {message: String((error || {}).message || error || 'unknown_error')});
+        attachmentSetResult(String(stepName || 'job-status'), 'failed', {message: String((error || {}).message || error || 'unknown_error')});
         return null;
       } finally {
         attachmentTimer.stop();
@@ -590,7 +687,8 @@
     async function attachmentPollLastJob(){
       const finalizePayload = attachmentHarnessState.finalizeResult || {};
       const jobId = String(finalizePayload.job_id || finalizePayload.jobId || '');
-      return attachmentPollJob(jobId);
+      const stepName = attachmentHarnessState.lastJobKind === 'delete' ? 'delete-job' : 'attach-job';
+      return attachmentPollJob(jobId, stepName);
     }
     async function attachmentCheckProbeState(expectedVisible, stepLabel){
       attachmentTimer.start();
@@ -693,6 +791,7 @@
         attachmentSetResult(String(stepName || 'delete'), response.status, payload);
         if (response.ok && payload && typeof payload === 'object') {
           attachmentHarnessState.finalizeResult = payload;
+          attachmentHarnessState.lastJobKind = 'delete';
         }
       } catch (error) {
         attachmentSetResult(String(stepName || 'delete'), 'failed', {message: String((error || {}).message || error || 'unknown_error')});
@@ -709,6 +808,11 @@
       const finalizePayload = attachmentHarnessState.finalizeResult || {};
       if (!finalizePayload.job_id && !finalizePayload.jobId) return;
       await attachmentPollLastJob();
+      const attachJobPayload = attachmentHarnessState.lastJobPayload || {};
+      const previewJobId = String(((attachJobPayload.summary || {}).preview_job_id) || '').trim();
+      if (previewJobId) {
+        await attachmentPollJob(previewJobId, 'preview-job');
+      }
       const visible = await attachmentCheckProbeState(true, 'frontend-check-after-attach');
       if (!visible) return;
       await attachmentOpenView();
@@ -885,4 +989,5 @@
     }
     refreshApiRequestUrl();
     installCopyButtons();
+    attachmentResetStepStates();
     loadInfo();

@@ -203,7 +203,20 @@ __INFO_CSS__
       <button onclick="attachmentRunFullFlow()">Run full probe</button>
       <button class="alt" onclick="attachmentClearLog()">Clear log</button>
     </div>
-    <pre id="attachmentHarnessResult">Select a file to start the attachment harness.</pre>
+    <div class="attachment-pipeline-layout">
+      <div class="attachment-pipeline">
+        <div class="attachment-pipeline-title">Attachment flow</div>
+        <div id="attachmentPipelineSteps" class="attachment-pipeline-steps"></div>
+      </div>
+      <div class="attachment-step-json">
+        <div class="attachment-pipeline-title">Selected step JSON</div>
+        <pre id="attachmentHarnessStepResult">Select a step to inspect JSON.</pre>
+      </div>
+    </div>
+    <div class="attachment-log">
+      <div class="attachment-pipeline-title">All JSON (latest)</div>
+      <pre id="attachmentHarnessResult">Select a file to start the attachment harness.</pre>
+    </div>
   </details>
 
   <details class="card section collapsible">
