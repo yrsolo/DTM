@@ -5,11 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from src.contexts.snapshot.public import get_snapshot_engine
-from src.notify import GroupQueryFormatter, ReminderUseCase
-from src.telegram.command_router import TelegramCommandRouter
-from src.telegram.parser import TelegramUpdateParser
-from src.telegram.sender import TelegramSender
-from src.telegram.webhook import TelegramWebhookHandler
+from .internal import TelegramCommandRouter, TelegramSender, TelegramUpdateParser, TelegramWebhookHandler
+from .internal.group_query_formatter import GroupQueryFormatter
+from .internal.group_query_usecase import GroupQueryUseCase
 
 
 @dataclass(frozen=True, slots=True)
@@ -35,7 +33,7 @@ class TelegramInteractionModule:
         return get_snapshot_engine(ctx)
 
     def build_usecase(self, snapshot_engine):
-        return ReminderUseCase(snapshot_engine)
+        return GroupQueryUseCase(snapshot_engine)
 
     def build_group_query_formatter(self):
         return GroupQueryFormatter()
@@ -47,9 +45,9 @@ class TelegramInteractionModule:
         )
 
     def build_request(self, **kwargs):
-        from src.notify.model import ReminderRequest
+        from .internal.group_query_request import GroupQueryRequest
 
-        return ReminderRequest(**kwargs)
+        return GroupQueryRequest(**kwargs)
 
 
 def get_module() -> TelegramInteractionModule:

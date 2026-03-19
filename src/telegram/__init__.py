@@ -1,8 +1,11 @@
-from .command_router import TelegramCommandRouter
-from .model import ParsedTelegramUpdate, RoutedTelegramCommand
-from .parser import TelegramUpdateParser
-from .sender import TelegramSender
-from .webhook import TelegramWebhookHandler
+from src.contexts.telegram_interaction.internal import (
+    ParsedTelegramUpdate,
+    RoutedTelegramCommand,
+    TelegramCommandRouter,
+    TelegramSender,
+    TelegramUpdateParser,
+    TelegramWebhookHandler,
+)
 
 __all__ = [
     "ParsedTelegramUpdate",

@@ -291,6 +291,21 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
+    def test_reminders_and_telegram_context_modules_do_not_import_old_clusters(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "contexts" / "reminders" / "module.py",
+            ROOT / "src" / "contexts" / "telegram_interaction" / "module.py",
+        ]
+        for file_path in _python_files(target_paths):
+            content = file_path.read_text(encoding="utf-8")
+            if "from src.notify" in content or "import src.notify" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+                continue
+            if "from src.telegram" in content or "import src.telegram" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
 
 if __name__ == "__main__":
     unittest.main()

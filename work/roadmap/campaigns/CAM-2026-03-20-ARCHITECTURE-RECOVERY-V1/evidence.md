@@ -23,6 +23,7 @@
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P03-T001`
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P04-T001`
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P05-T001`
+- [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P06-T001`
 
 ## Verification
 - Command:
@@ -41,3 +42,5 @@
 - 2026-03-20: added a recovery guardrail that fails if active HTTP entrypoints re-introduce direct `src.services.attachments` imports.
 - 2026-03-20: attachment mutation jobs no longer import HTTP cache helpers directly; default frontend cache invalidation now enters through `src.platform.runtime.frontend_cache_invalidation`, with a guardrail banning `src.entrypoints.http.frontend_response_cache` imports from jobs.
 - 2026-03-20: active reminder and group-query execution paths no longer import `src.notify` or `src.telegram` directly in `send_reminders_job`, `group_query_reply_job`, and `planner_runtime_entry`; those paths now build requests and senders through owning context public surfaces.
+- 2026-03-20: `src.notify/*` is now compatibility-only; owning reminder implementation lives under `src.contexts.reminders.internal/*`, and the reminders context module builds from its own internal package instead of the old technical root.
+- 2026-03-20: `src.telegram/*` is now compatibility-only; owning telegram implementation lives under `src.contexts.telegram_interaction.internal/*`, and the telegram interaction context module now builds parser/router/sender/webhook/group-query pieces from its own internal package.

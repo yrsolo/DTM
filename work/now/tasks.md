@@ -1,6 +1,6 @@
 # Active Tasks
 
-- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1: architecture-recovery canon is now the active roadmap; attachment HTTP and cache bridges are removed from active paths, and the next active slice is moving reminder ownership further inward from `src.notify`.
+- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1: architecture-recovery canon is now the active roadmap; reminders and telegram interaction own their internal implementation stacks, and the next hard slice is the `snapshot`/`rendering` boundary.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done

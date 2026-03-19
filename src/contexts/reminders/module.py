@@ -10,8 +10,9 @@ from src.adapters.llm_google import AsyncGoogleLLMChatAgent
 from src.adapters.llm_openai import AsyncOpenAIChatAgent
 from src.adapters.llm_yandex import AsyncYandexLLMChatAgent
 from src.adapters.telegram import TelegramNotifier
-from src.notify import ReminderFormatter, ReminderJob, ReminderUseCase
 from src.contexts.snapshot.public import get_snapshot_engine
+
+from .internal import ReminderFormatter, ReminderJob, ReminderUseCase
 
 
 @dataclass(frozen=True, slots=True)
@@ -98,7 +99,7 @@ class RemindersModule:
         return ReminderJob(**kwargs)
 
     def build_request(self, **kwargs):
-        from src.notify.model import ReminderRequest
+        from .internal.model import ReminderRequest
 
         return ReminderRequest(**kwargs)
 
