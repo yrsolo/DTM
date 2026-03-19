@@ -13,7 +13,7 @@ from src.contexts.rendering.public import (
     get_writer,
 )
 from src.observability.batching import MetricsBatchCollector, add_flush_metrics
-from src.render.target_guard import RenderTarget, validate_render_target
+from src.contexts.rendering.internal.target_guard import RenderTarget, validate_render_target
 
 
 build_snapshot_engine = _get_rendering_snapshot_engine

@@ -306,6 +306,30 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
+    def test_rendering_context_module_does_not_import_old_render_cluster(self) -> None:
+        file_path = ROOT / "src" / "contexts" / "rendering" / "module.py"
+        content = file_path.read_text(encoding="utf-8")
+        self.assertNotIn("from src.render", content)
+        self.assertNotIn("import src.render", content)
+
+    def test_attachments_context_module_does_not_import_old_attachments_cluster(self) -> None:
+        file_path = ROOT / "src" / "contexts" / "attachments" / "module.py"
+        content = file_path.read_text(encoding="utf-8")
+        self.assertNotIn("from src.services.attachments", content)
+        self.assertNotIn("import src.services.attachments", content)
+
+    def test_active_render_jobs_do_not_import_old_render_target_guard(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "jobs" / "render_timeline_job.py",
+            ROOT / "src" / "jobs" / "render_designers_job.py",
+        ]
+        for file_path in _python_files(target_paths):
+            content = file_path.read_text(encoding="utf-8")
+            if "src.render.target_guard" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
 
 if __name__ == "__main__":
     unittest.main()

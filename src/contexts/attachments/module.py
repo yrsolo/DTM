@@ -6,11 +6,8 @@ from dataclasses import dataclass
 
 from src.app.context import AppContext
 from src.contexts.snapshot.public import get_snapshot_engine
-from src.services.attachments import (
-    AttachmentFinalizeService,
-    AttachmentReadResolver,
-    build_attachment_storage,
-)
+
+from .internal import AttachmentFinalizeService, AttachmentReadResolver, build_attachment_storage
 
 
 @dataclass(slots=True)

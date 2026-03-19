@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from src.app.context import AppContext
-from src.services.attachments.contracts import SUPPORTED_ATTACHMENT_MIME_TYPES
+
+from .internal.contracts import SUPPORTED_ATTACHMENT_MIME_TYPES
 
 from .module import get_module
 

@@ -6,7 +6,8 @@ from dataclasses import dataclass
 
 from src.contexts.snapshot.contracts import Window
 from src.contexts.snapshot.public import get_snapshot_engine
-from src.render import DesignersRenderUseCase, GoogleSheetsPlanWriter, RenderJob, RenderRequest, RenderUseCase, SheetTarget
+
+from .internal import DesignersRenderUseCase, GoogleSheetsPlanWriter, RenderJob, RenderRequest, RenderUseCase, SheetTarget
 
 
 @dataclass(frozen=True, slots=True)
