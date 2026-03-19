@@ -49,3 +49,4 @@
 - active bootstrap no longer depends on legacy `config.constants`; base runtime deps are now resolved directly from `load_config()` plus bootstrap-owned env loading
 - `P14` config centralization is now backed by bootstrap input tests plus an active-path guardrail that blocks reintroduction of legacy `config` imports
 - active runtime paths (`app`, `entrypoint`, `platform`, `contexts`, `entrypoints`, `jobs`, `services`, `render`, `notify`, `entrypoints_adapters`) were re-verified to contain no `src.legacy` imports before entering `P15`
+- runtime architecture docs were re-aligned to the current ownership reality: `src/contexts/*` and `src/platform/*` are now documented as the active refactor contour, while `src/render/*`, `src/notify/*`, and `src/telegram/*` remain transitional implementation detail layers behind those context boundaries

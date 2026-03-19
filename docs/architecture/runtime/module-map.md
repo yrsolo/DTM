@@ -11,6 +11,7 @@ Governing policy:
 | Path | Role | Responsibility | State | Notes |
 |---|---|---|---|---|
 | `index.py` | Entrypoint | Thin runtime shell for cloud events | OK | Lazy bootstrap and dispatch only. |
+| `src/entrypoint/*` | Entrypoint | Target thin entrypoint layer for parsed request routing | OK | New modular-monolith intake surface. |
 | `src/entrypoints/index_dispatcher.py` | Entrypoint | Classify event shape and delegate to the correct shell | OK | Canonical top-level router. |
 | `src/entrypoints/http/*` | Entrypoint | HTTP parsing, access boundary, handlers, response translation | OK | Canonical browser/API boundary. |
 | `src/entrypoints/queue/*` | Entrypoint | Queue-trigger transport shell | OK | Canonical worker intake boundary. |
@@ -21,6 +22,13 @@ Governing policy:
 
 | Path | Role | Responsibility | State | Notes |
 |---|---|---|---|---|
+| `src/platform/*` | Platform | Runtime wiring, queue/runtime orchestration, bootstrap delegation | OK | Platform owns transport/runtime only. |
+| `src/contexts/attachments/*` | Context | Attachment lifecycle and attachment access policy | OK | First fully extracted context. |
+| `src/contexts/reminders/*` | Context | Reminder execution ownership and public facade | OK | Trigger intake stays platform-owned. |
+| `src/contexts/snapshot/*` | Context | Snapshot public API, contracts, and legacy bridge ownership | OK | Canonical cross-context snapshot surface. |
+| `src/contexts/rendering/*` | Context | Rendering ownership and snapshot-boundary enforcement | OK | Depends on `snapshot.public` or contracts only. |
+| `src/contexts/telegram_interaction/*` | Context | Telegram interaction ownership and command routing facade | OK | Owns `group_query_reply`. |
+| `src/contexts/access_api/*` | Context | Browser-facing read surface ownership and access policy facade | OK | Frontend/public API now routes through context surface. |
 | `src/core/models/*` | Domain | Canonical domain DTOs | OK | Pure contracts only. |
 | `src/core/normalize/*` | Domain | Normalization, parsing, inference rules | OK | Pure business logic. |
 | `src/core/rules/*` | Domain | Domain rules and invariants | OK | Keep pure and tested. |
@@ -29,8 +37,9 @@ Governing policy:
 | `src/worker/*` | Application | Worker dispatcher, execution, status persistence | OK | Canonical async mutation runner. |
 | `src/jobs/*` | Application | Concrete snapshot/render/reminder jobs | OK | Canonical mutation jobs. |
 | `src/services/access/*` | Application | Access context masking and payload transforms | OK | Browser access policy lives at the boundary. |
-| `src/notify/*` | Application | Reminder formatting and delivery orchestration | Frozen | Operational but not target for redesign in this wave. |
-| `src/telegram/*` | Adapter/Application boundary | Telegram parsing, routing, webhook intake, sender | Frozen | Operational but not target for redesign in this wave. |
+| `src/render/*` | Application detail | Rendering implementation behind context-owned boundaries | Transitional | Active, but no longer the ownership root. |
+| `src/notify/*` | Application detail | Reminder implementation behind context-owned boundaries | Transitional | Active, but no longer the ownership root. |
+| `src/telegram/*` | Adapter/Application detail | Telegram implementation behind context-owned boundaries | Transitional | Active, but no longer the ownership root. |
 | `src/observability/*` | Support | Metrics, logging, timing, trace helpers | OK | Shared observability layer. |
 | `src/config/*` | Support | Typed config schema and loader | OK | Canonical config source of truth. |
 | `src/app/bootstrap.py` | Support | Composition root and dependency assembly | OK | Bootstrap only; no business logic. |
@@ -56,6 +65,7 @@ If a reader needs that history, current docs should point there instead of retel
 ## Immediate guidance
 
 - Keep `index.py` thin.
+- Treat `src/contexts/*` and `src/platform/*` as the canonical target ownership map for active refactor work.
 - Treat `src/snapshot_engine/*` as the canonical read-side runtime.
 - Keep browser auth and masking at the HTTP/access boundary.
 - Keep refresh/render/reminder work in async jobs or explicit runtime modes.

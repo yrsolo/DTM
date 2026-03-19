@@ -65,14 +65,17 @@ Target formula:
 - hot paths must avoid uncontrolled synchronous metric spam
 - default user paths must avoid heavy diagnostics by default
 
-### Telegram/reminder is frozen
-- keep it operational if needed
-- do not use it as the model for new architecture during this wave
-- do not spend primary effort on redesign there unless break/fix is required
+### Context-first extraction is now the active path
+- `attachments`, `reminders`, `snapshot`, `rendering`, `telegram_interaction`, and `access_api` are first-class contexts for active refactor work
+- older implementation folders may remain in place temporarily, but ownership now sits behind `src/contexts/*`
+- new work should reinforce context facades and boundaries, not reopen transport-first or adapter-first ownership
 
 ## Boundary guidance
 
 Canonical active areas:
+- `src/contexts/*`
+- `src/platform/*`
+- `src/entrypoint/*`
 - `src/snapshot_engine/*`
 - `src/entrypoints/http/*`
 - `src/jobs/*`
@@ -82,12 +85,10 @@ Canonical active areas:
 
 Transitional areas:
 - `src/entrypoints/runtime/planner_runtime_entry.py`
-- old root `core/*`
-- legacy compatibility helpers still pulled by active runtime
-
-Frozen-but-not-target areas:
 - `src/telegram/*`
 - `src/notify/*`
+- old root `core/*`
+- legacy compatibility helpers still kept as reference or implementation detail behind context/module boundaries
 
 ## Refactor governance note
 
