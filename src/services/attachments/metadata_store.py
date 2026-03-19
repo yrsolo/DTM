@@ -11,8 +11,8 @@ from src.services.attachments.contracts import (
     ATTACHMENT_STATUS_UPLOADED_UNVERIFIED,
 )
 from src.services.attachments.policy import build_attachment_capabilities, infer_attachment_kind
+from src.contexts.snapshot.contracts import AttachmentMeta, ExtraSnapshot, TaskExtra
 from src.services.errors import UserError
-from src.snapshot_engine.model import AttachmentMeta, ExtraSnapshot, TaskExtra
 
 
 class AttachmentMetadataStore:

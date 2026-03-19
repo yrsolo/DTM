@@ -8,7 +8,6 @@ from src.contexts.telegram_interaction.public import (
 )
 from src.notify import ReminderRequest
 from src.telegram.sender import TelegramSender
-from src.snapshot_engine import build_snapshot_engine
 
 
 build_snapshot_engine = _get_group_query_snapshot_engine

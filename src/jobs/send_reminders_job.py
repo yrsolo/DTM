@@ -11,7 +11,6 @@ from src.contexts.reminders.public import (
 )
 from src.observability import timed
 from src.notify import ReminderJob, ReminderRequest
-from src.snapshot_engine import build_snapshot_engine
 
 
 build_snapshot_engine = _get_reminders_snapshot_engine

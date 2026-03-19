@@ -40,3 +40,4 @@
 - rendering-owned jobs now depend on `src.contexts.snapshot.public` / `src.contexts.snapshot.contracts` instead of direct `src.snapshot_engine` imports
 - browser-facing HTTP handlers now route through `src.contexts.access_api.public`
 - active snapshot consumers in HTTP/job entry modules now enter through `src.contexts.snapshot.public`
+- active `entrypoints/jobs/services` no longer import `src.snapshot_engine*` directly; remaining snapshot coupling is now concentrated in shared domain/usecase layers (`src/render/*`, `src/notify/*`, `src/entrypoints_adapters/*`) and context module builders

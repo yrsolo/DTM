@@ -17,6 +17,10 @@ from src.entrypoints.http.response_utils import error_response, json_response
 build_snapshot_engine = _get_snapshot_engine
 
 
+def get_people_snapshot(ctx):
+    return build_snapshot_engine(ctx).get_people_snapshot()
+
+
 def _header_map(headers: dict[str, object] | None) -> dict[str, str]:
     result: dict[str, str] = {}
     for key, value in dict(headers or {}).items():
@@ -92,7 +96,7 @@ class PeopleSnapshotHandler:
                 details={"reason": "invalid_secret"},
             )
         try:
-            snapshot = build_snapshot_engine(self._ctx).get_people_snapshot()
+            snapshot = get_people_snapshot(self._ctx)
         except Exception as error:
             return error_response(
                 503,

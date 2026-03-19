@@ -5,9 +5,9 @@ from uuid import uuid4
 
 from src.app.context import AppContext
 from src.contexts.attachments.public import get_attachment_snapshot_engine
+from src.contexts.snapshot.contracts import AttachmentMeta
 from src.entrypoints.http.frontend_response_cache import invalidate_default_frontend_responses
 from src.services.errors import AppError, UserError
-from src.snapshot_engine.model import AttachmentMeta
 from src.services.attachments.policy import build_attachment_capabilities, infer_attachment_kind
 from src.services.attachments.contracts import ATTACHMENT_STATUS_READY
 from src.commands.model import Command

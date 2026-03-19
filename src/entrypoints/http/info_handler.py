@@ -33,6 +33,28 @@ from src.worker.model import JobStatusRecord
 build_snapshot_engine = _get_snapshot_engine
 
 
+def get_prep_snapshot(ctx):
+    engine = build_snapshot_engine(ctx)
+    getter = getattr(engine, "get_prep_snapshot", None)
+    if callable(getter):
+        return getter()
+    cache = getattr(engine, "_prep_cache", None)
+    if cache is not None and callable(getattr(cache, "get", None)):
+        return cache.get()
+    return None
+
+
+def get_raw_snapshot(ctx):
+    engine = build_snapshot_engine(ctx)
+    getter = getattr(engine, "get_raw_snapshot", None)
+    if callable(getter):
+        return getter()
+    cache = getattr(engine, "_raw_cache", None)
+    if cache is not None and callable(getattr(cache, "get", None)):
+        return cache.get()
+    return None
+
+
 def _human_size(value: int) -> str:
     size = float(max(0, int(value)))
     units = ["B", "KB", "MB", "GB", "TB"]
@@ -613,9 +635,8 @@ class InfoHandler:
         raw = None
         snapshot_error = ""
         try:
-            engine = build_snapshot_engine(self._ctx)
-            prep = engine._prep_cache.get()  # noqa: SLF001
-            raw = engine._raw_cache.get()  # noqa: SLF001
+            prep = get_prep_snapshot(self._ctx)
+            raw = get_raw_snapshot(self._ctx)
         except Exception as exc:  # pragma: no cover - safety for optional deps/runtime config
             snapshot_error = str(exc)
         status_counts: dict[str, int] = {}

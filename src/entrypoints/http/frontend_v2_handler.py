@@ -41,6 +41,18 @@ from src.services.access.masking import masking_version_for_hour
 build_snapshot_engine = _get_snapshot_engine
 
 
+def get_prep_snapshot(ctx):
+    return build_snapshot_engine(ctx).get_prep_snapshot()
+
+
+def get_response_cache_store(ctx):
+    return build_snapshot_engine(ctx).get_response_cache_store()
+
+
+def query_frontend_v2(ctx, query):
+    return build_snapshot_engine(ctx).frontend_v2(query)
+
+
 def _path_matches(path: str, candidates: set[str]) -> bool:
     normalized = normalize_path(path)
     if normalized in candidates:
@@ -253,7 +265,7 @@ class FrontendV2Handler:
         query_hash = build_default_frontend_cache_query_hash()
         payload: dict[str, object]
         prep_started = time.perf_counter()
-        prep = snapshot_engine.get_prep_snapshot()
+        prep = get_prep_snapshot(self._ctx)
         _record_stage("prep_snapshot_access", prep_started)
         if prep is None:
             _emit_stages(
@@ -276,7 +288,7 @@ class FrontendV2Handler:
                 message="Frontend data source is temporarily unavailable.",
                 details={"source": "snapshot", "errorType": "prep_snapshot_unavailable"},
             )
-        cache_store = snapshot_engine.get_response_cache_store()
+        cache_store = get_response_cache_store(self._ctx)
         if cache_eligible and cache_store is not None:
             cache_key = default_frontend_cache_key(route_class=route_class, access_mode=access.mode)
             cache_labels = {
@@ -355,7 +367,7 @@ class FrontendV2Handler:
 
         try:
             payload_build_started = time.perf_counter()
-            payload = snapshot_engine.frontend_v2(frontend_query)
+            payload = query_frontend_v2(self._ctx, frontend_query)
             _record_stage("frontend_payload_build", payload_build_started)
         except Exception as error:
             _emit_stages(

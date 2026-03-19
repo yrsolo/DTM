@@ -6,30 +6,38 @@ from dataclasses import dataclass
 from time import perf_counter
 from typing import Any
 
-from src.adapters.llm_google import AsyncGoogleLLMChatAgent
-from src.adapters.llm_openai import AsyncOpenAIChatAgent
-from src.adapters.llm_yandex import AsyncYandexLLMChatAgent
-from src.adapters.telegram import TelegramNotifier
 from src.app.bootstrap import build_app_context
+from src.contexts.reminders.public import (
+    get_enhancer as _get_reminders_enhancer,
+    get_formatter as _get_reminders_formatter,
+    get_job_runner as _get_reminder_job_runner,
+    get_sender as _get_reminders_sender,
+    get_snapshot_engine as _get_reminders_snapshot_engine,
+    get_usecase as _get_reminders_usecase,
+)
+from src.contexts.rendering.public import (
+    get_designers_usecase as _get_designers_usecase,
+    get_render_job as _get_render_job,
+    get_request as _get_render_request,
+    get_snapshot_engine as _get_rendering_snapshot_engine,
+    get_timeline_usecase as _get_timeline_usecase,
+    get_window,
+    get_writer as _get_render_writer,
+)
+from src.contexts.snapshot.public import get_snapshot_engine as _get_snapshot_engine
 from src.entrypoints.jobs.quality_report_job import print_quality_report as _print_quality_report
 from src.entrypoints.jobs.runtime_context_job import RuntimeContextRequest, resolve_runtime_context
 from src.entrypoints.jobs.timer_job import TimerJob
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES, is_legacy_mode
-from src.notify import ReminderFormatter, ReminderJob, ReminderRequest, ReminderUseCase
-from src.render import (
-    DesignersRenderUseCase,
-    GoogleSheetsPlanWriter,
-    RenderJob,
-    RenderRequest,
-    RenderUseCase,
-    SheetTarget,
-)
+from src.notify import ReminderJob, ReminderRequest
 from src.render.target_guard import RenderTarget, validate_render_target
 from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
 from src.services.timer_pipeline import RunRequest as TimerRunRequest
 from src.services.timer_pipeline import TimerPipeline
-from src.snapshot_engine import build_snapshot_engine
-from src.snapshot_engine.model import Window
+
+
+build_snapshot_engine = _get_snapshot_engine
+ReminderJob = ReminderJob
 
 
 def _resolve_standard_run_mode(
@@ -52,53 +60,7 @@ def _resolve_standard_run_mode(
 
 
 def _build_notify_enhancer(*, ctx: Any, mock_external: bool):
-    if bool(mock_external):
-        return None
-    cfg = ctx.cfg
-    deps = ctx.deps
-    provider = str(cfg.llm.llm.get("provider_default", "openai")).strip().lower()
-    model_openai = str(cfg.llm.models.get("openai_default", "")).strip()
-    model_google = str(cfg.llm.models.get("google_default", "")).strip()
-    model_yandex = str(cfg.llm.models.get("yandex_default_uri", "")).strip()
-    timeout = float(cfg.llm.http.get("timeout_seconds_default", 25))
-    retry_attempts = int(cfg.llm.http.get("retry_attempts_default", 2))
-    retry_backoff = float(cfg.llm.http.get("retry_backoff_seconds_default", 0.8))
-    proxy_url = str(deps.get("proxy_url", "")).strip()
-    proxy_map = {"https://": proxy_url, "http://": proxy_url} if proxy_url else {}
-    if provider == "google":
-        api_key = str(deps.get("google_llm_api_key", "")).strip()
-        if not api_key:
-            return None
-        return AsyncGoogleLLMChatAgent(
-            api_key=api_key,
-            model=model_google,
-            timeout_seconds=timeout,
-            retry_attempts=retry_attempts,
-            retry_backoff_seconds=retry_backoff,
-        )
-    if provider == "yandex":
-        api_key = str(deps.get("yandex_llm_api_key", "")).strip()
-        if not api_key or not model_yandex:
-            return None
-        return AsyncYandexLLMChatAgent(
-            api_key=api_key,
-            model_uri=model_yandex,
-            timeout_seconds=timeout,
-            retry_attempts=retry_attempts,
-            retry_backoff_seconds=retry_backoff,
-        )
-    api_key = str(deps.get("openai_token", "")).strip()
-    if not api_key:
-        return None
-    return AsyncOpenAIChatAgent(
-        api_key=api_key,
-        proxies=proxy_map,
-        model=model_openai,
-        organization=str(deps.get("org_token", "")).strip() or None,
-        timeout_seconds=timeout,
-        retry_attempts=retry_attempts,
-        retry_backoff_seconds=retry_backoff,
-    )
+    return _get_reminders_enhancer(ctx, mock_external=mock_external)
 
 
 @dataclass(frozen=True)
@@ -160,20 +122,14 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
 
     if normalized_mode in {"reminder_v2", "reminders-only", "morning", "test"}:
         snapshot_engine = build_snapshot_engine(app_context)
-        usecase = ReminderUseCase(snapshot_engine)
-        formatter = ReminderFormatter(
-            timezone_name=str(cfg.runtime.runtime.timezone or "Europe/Moscow"),
-            hidden_stage_names=tuple(cfg.mapping.hidden_stage_names or ()),
-        )
-        sender = TelegramNotifier(
-            bot_token=str(deps.get("tg_bot_token", "")),
-            default_chat_id=deps.get("default_chat_id"),
-        )
+        usecase = _get_reminders_usecase(snapshot_engine)
+        formatter = _get_reminders_formatter(app_context)
+        sender = _get_reminders_sender(app_context)
         notify_cfg = cfg.runtime.notify
         llm_mode = str(notify_cfg.llm_mode_default or "provider")
         mock_llm = bool(mock_external or llm_mode == "draft_only" or runtime_env == "test")
         enhancer = _build_notify_enhancer(ctx=app_context, mock_external=mock_llm)
-        reminder_result = await ReminderJob(
+        reminder_result = await _get_reminder_job_runner(
             usecase=usecase,
             formatter=formatter,
             sender=sender,
@@ -225,8 +181,8 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
 
     if normalized_mode in {"timer", "test", "render_v2"}:
         render_started = perf_counter()
-        snapshot_engine = build_snapshot_engine(app_context)
-        render_usecase = RenderUseCase(
+        snapshot_engine = _get_rendering_snapshot_engine(app_context)
+        render_usecase = _get_timeline_usecase(
             snapshot_engine,
             timezone_name=str(cfg.runtime.runtime.timezone or "Europe/Moscow"),
         )
@@ -270,16 +226,14 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
                 "duration_ms": int((perf_counter() - render_started) * 1000),
                 "summary": {"task_row_issue_count": 0},
             }
-        writer = GoogleSheetsPlanWriter(
+        writer = _get_render_writer(
             GoogleSheetsService(key_json, dry_run=dry_run),
-            SheetTarget(
-                spreadsheet_name=current_sheet_info.spreadsheet_name,
-                worksheet_name=target_worksheet,
-            ),
+            spreadsheet_name=current_sheet_info.spreadsheet_name,
+            worksheet_name=target_worksheet,
         )
-        render_result = RenderJob(render_usecase, writer).run(
-            RenderRequest(
-                window=Window(start=None, end=None, mode="intersects"),
+        render_result = _get_render_job(render_usecase, writer).run(
+            _get_render_request(
+                window=get_window(start=None, end=None, mode="intersects"),
                 statuses=["work", "pre_done"],
             )
         )
@@ -315,20 +269,18 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
                 "duration_ms": int((perf_counter() - render_started) * 1000),
                 "summary": {"task_row_issue_count": 0},
             }
-        designers_usecase = DesignersRenderUseCase(
+        designers_usecase = _get_designers_usecase(
             snapshot_engine,
             timezone_name=str(cfg.runtime.runtime.timezone or "Europe/Moscow"),
         )
-        designers_writer = GoogleSheetsPlanWriter(
+        designers_writer = _get_render_writer(
             GoogleSheetsService(key_json, dry_run=dry_run),
-            SheetTarget(
-                spreadsheet_name=current_sheet_info.spreadsheet_name,
-                worksheet_name=designers_target_worksheet,
-            ),
+            spreadsheet_name=current_sheet_info.spreadsheet_name,
+            worksheet_name=designers_target_worksheet,
         )
-        designers_result = RenderJob(designers_usecase, designers_writer).run(
-            RenderRequest(
-                window=Window(start=None, end=None, mode="intersects"),
+        designers_result = _get_render_job(designers_usecase, designers_writer).run(
+            _get_render_request(
+                window=get_window(start=None, end=None, mode="intersects"),
                 statuses=["work", "pre_done"],
             )
         )
