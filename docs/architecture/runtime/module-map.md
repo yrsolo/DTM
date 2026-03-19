@@ -4,6 +4,7 @@ This document maps the modules that matter for the active runtime contour.
 
 Governing policy:
 - [architecture-values.md](architecture-values.md)
+- [modular-monolith-v2.md](modular-monolith-v2.md)
 
 ## Active runtime entrypoints
 
@@ -59,3 +60,4 @@ If a reader needs that history, current docs should point there instead of retel
 - Keep browser auth and masking at the HTTP/access boundary.
 - Keep refresh/render/reminder work in async jobs or explicit runtime modes.
 - Treat archive modules and docs as reference-only, not as active architecture.
+- Use `modular-monolith-v2.md` and companion ownership docs as the canonical target map for future extraction waves.

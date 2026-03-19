@@ -1,6 +1,7 @@
 # Active Tasks
 
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
+- CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1: modular-monolith refactor umbrella campaign is opened as the canonical architecture and sequencing source for future extraction waves.
 
 ## Done
 
@@ -20,3 +21,4 @@
 - Working plans and evidence must live only in `work/roadmap/campaigns/<CAMPAIGN>/`.
 - Telegram/reminder/group-query remains frozen for this wave unless break/fix work is required.
 - Latest bottleneck follow-up remains historical context only; current live execution focus is the blocked `prod` smoke for the attachment contour.
+- Future child campaigns for the modular-monolith wave must start from `docs/architecture/runtime/modular-monolith-v2.md` and the master campaign trust gate.

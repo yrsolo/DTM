@@ -29,6 +29,7 @@ It sits on top of familiar tools, keeps reads fast and predictable, and pushes e
 - [Документация по проекту](docs/README.md)
 - [Быстрый обзор продукта](docs/product/README.md)
 - [Архитектура и устройство runtime](docs/architecture/README.md)
+- [Master text для modular-monolith refactor wave](docs/architecture/runtime/modular-monolith-v2.md)
 - [Интеграции и внешние контуры](docs/integrations/README.md)
 - [Эксплуатация и наблюдаемость](docs/operations/README.md)
 - [Справочные схемы и контракты](docs/reference/README.md)

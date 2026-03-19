@@ -3,7 +3,7 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
-- none
+- CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1
 
 ## Blocked
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1

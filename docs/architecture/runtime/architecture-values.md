@@ -2,6 +2,9 @@
 
 This document is normative for architecture decisions in this repository.
 
+For the modular-monolith refactor wave, read this together with:
+- [modular-monolith-v2.md](modular-monolith-v2.md)
+
 ## Purpose
 
 This file defines the architectural values and target shape of DTM for active design and implementation decisions.
@@ -51,6 +54,7 @@ Target formula:
 - bootstrap loads config, wires dependencies, and assembles context
 - bootstrap must not execute business logic
 - bootstrap must not create global runtime state at import time
+- during the modular-monolith refactor wave, old bootstrap may delegate only and must not become the new central ownership layer
 
 ### Import-time side effects are a bug
 - no module-level production `AppContext` construction in active runtime entry modules
@@ -84,3 +88,8 @@ Transitional areas:
 Frozen-but-not-target areas:
 - `src/telegram/*`
 - `src/notify/*`
+
+## Refactor governance note
+
+- `modular-monolith-v2.md` is the master text for future refactor campaigns
+- child campaigns should refresh trust against current code before decomposition

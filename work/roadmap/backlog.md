@@ -1,7 +1,7 @@
 # Backlog
 
 ## In Progress
-- none
+- CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1
 
 ## Blocked
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
@@ -22,6 +22,7 @@
 ## Notes
 - Current live execution focus is the blocked `prod` confirmation step for `CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1`.
 - `agent/intructions/DTM-test/**` is reference-only and not part of execution/archive lifecycle.
+- `CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1` is the canonical umbrella campaign for the modular-monolith refactor wave; child campaigns should be opened only after trust-gate refresh against the master text and current code.
 - Separate follow-ups remain outside this campaign:
   - `/info` build metadata 404 in `yc_function_info.py`
   - notify enqueue path inconsistency on test
