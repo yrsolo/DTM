@@ -97,6 +97,11 @@ class RemindersModule:
     def build_job_runner(self, **kwargs):
         return ReminderJob(**kwargs)
 
+    def build_request(self, **kwargs):
+        from src.notify.model import ReminderRequest
+
+        return ReminderRequest(**kwargs)
+
 
 def get_module() -> RemindersModule:
     """Return the local module instance for the reminders context."""

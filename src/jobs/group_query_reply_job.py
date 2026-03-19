@@ -2,16 +2,23 @@ from __future__ import annotations
 
 from src.app.context import AppContext
 from src.contexts.telegram_interaction.public import (
+    build_group_query_request as _build_group_query_request,
+    get_sender as _get_group_query_sender,
     get_group_query_formatter as _get_group_query_formatter,
     get_snapshot_engine as _get_group_query_snapshot_engine,
     get_usecase as _get_group_query_usecase,
 )
-from src.notify import ReminderRequest
-from src.telegram.sender import TelegramSender
 
 
 build_snapshot_engine = _get_group_query_snapshot_engine
-TelegramSender = TelegramSender
+
+
+def _make_group_query_request(**kwargs):
+    return _build_group_query_request(**kwargs)
+
+
+def _build_group_query_sender(ctx: AppContext):
+    return _get_group_query_sender(ctx)
 
 
 class GroupQueryReplyJob:
@@ -22,7 +29,7 @@ class GroupQueryReplyJob:
         snapshot_engine = build_snapshot_engine(self._ctx)
         usecase = _get_group_query_usecase(snapshot_engine)
         groups, today, next_workday = usecase.select(
-            ReminderRequest(
+            _make_group_query_request(
                 mode="group_query",
                 statuses=list(cmd.payload.get("statuses", ["work", "pre_done"])),
                 include_today=bool(cmd.payload.get("include_today", True)),
@@ -41,10 +48,7 @@ class GroupQueryReplyJob:
                 today=today,
                 next_workday=next_workday,
             )
-        sender = TelegramSender(
-            bot_token=str(self._ctx.deps.get("tg_bot_token", "")),
-            default_chat_id=self._ctx.deps.get("default_chat_id"),
-        )
+        sender = _build_group_query_sender(self._ctx)
         await sender.send_message(cmd.payload.get("chat_id"), reply, parse_mode=None)
         return {
             "artifact": "group_query_reply",

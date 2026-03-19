@@ -8,6 +8,7 @@ from uuid import uuid4
 from src.commands.model import Command, RequestedBy
 from src.commands.types import ATTACH_TASK_FILE, DELETE_TASK_ATTACHMENT
 from src.contexts.attachments.public import (
+    get_attachment_finalize_service,
     get_attachment_snapshot_engine,
     get_attachment_storage,
 )
@@ -15,11 +16,11 @@ from src.entrypoints.http.access_context import resolve_access_context
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response, json_response, path_matches
-from src.services.attachments import AttachmentFinalizeService
 from src.services.errors import AppError
 
 build_snapshot_engine = get_attachment_snapshot_engine
 build_attachment_storage = get_attachment_storage
+build_attachment_finalize_service = get_attachment_finalize_service
 
 
 class AdminTaskAttachmentsHandler:
@@ -298,10 +299,7 @@ class AdminTaskAttachmentsHandler:
             return error_response(400, code="uploaded_by_required", message="uploaded_by is required.")
         try:
             engine = build_snapshot_engine(self._ctx)
-            finalize = AttachmentFinalizeService(
-                storage=build_attachment_storage(self._ctx),
-                metadata_store=engine.get_attachment_metadata_store(),
-            )
+            finalize = build_attachment_finalize_service(self._ctx)
             verified = finalize.finalize(task_id=task_id, attachment_id=attachment_id)
             lookup = engine.get_attachment_metadata_store().get_by_attachment_id(attachment_id)
             if lookup is None:

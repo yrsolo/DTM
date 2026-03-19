@@ -256,6 +256,41 @@ class GuardrailsV0TestCase(unittest.TestCase):
         self.assertNotIn("from src.jobs", content)
         self.assertNotIn("import src.jobs", content)
 
+    def test_http_entrypoints_do_not_import_attachments_services_directly(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "entrypoints" / "http",
+        ]
+        for file_path in _python_files(target_paths):
+            content = file_path.read_text(encoding="utf-8")
+            if "src.services.attachments" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_jobs_do_not_import_http_frontend_cache_helpers(self) -> None:
+        offenders: list[str] = []
+        for file_path in _python_files([ROOT / "src" / "jobs"]):
+            content = file_path.read_text(encoding="utf-8")
+            if "src.entrypoints.http.frontend_response_cache" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_active_reminder_and_group_query_paths_do_not_import_old_clusters_directly(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "jobs" / "send_reminders_job.py",
+            ROOT / "src" / "jobs" / "group_query_reply_job.py",
+            ROOT / "src" / "entrypoints" / "runtime" / "planner_runtime_entry.py",
+        ]
+        for file_path in _python_files(target_paths):
+            content = file_path.read_text(encoding="utf-8")
+            if "from src.notify" in content or "import src.notify" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+                continue
+            if "from src.telegram" in content or "import src.telegram" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
 
 if __name__ == "__main__":
     unittest.main()

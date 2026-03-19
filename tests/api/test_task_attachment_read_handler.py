@@ -66,6 +66,19 @@ class _FakeStorage:
         return f"https://example.test/{action}/{key}"
 
 
+class _FakeResolver:
+    def __init__(self, *, store) -> None:  # noqa: ANN001
+        self._store = store
+
+    def resolve(self, *, attachment_id, access, download):  # noqa: ANN001
+        from src.services.attachments.read_resolver import AttachmentReadResolver
+
+        return AttachmentReadResolver(
+            metadata_store=self._store,
+            storage=_FakeStorage(),
+        ).resolve(attachment_id=attachment_id, access=access, download=download)
+
+
 class _FakeCtx:
     def __init__(self) -> None:
         self.deps = {"browser_auth_proxy_secret": "proxy-secret-test"}
@@ -81,10 +94,8 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
     def test_view_requires_trusted_full_approved_access(self) -> None:
         import src.entrypoints.http.task_attachment_read_handler as module
 
-        original_engine = module.build_snapshot_engine
-        original_storage = module.build_attachment_storage
-        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
-        module.build_attachment_storage = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
+        original_resolver = module.build_attachment_read_resolver
+        module.build_attachment_read_resolver = lambda _ctx: _FakeResolver(store=_FakeAttachmentStore())  # type: ignore[assignment]
         try:
             handler = TaskAttachmentReadHandler(_FakeCtx())
             denied = handler.handle(
@@ -105,8 +116,7 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
                 )
             )
         finally:
-            module.build_snapshot_engine = original_engine  # type: ignore[assignment]
-            module.build_attachment_storage = original_storage  # type: ignore[assignment]
+            module.build_attachment_read_resolver = original_resolver  # type: ignore[assignment]
 
         self.assertIsNotNone(denied)
         self.assertEqual(denied.status, 403)
@@ -117,10 +127,8 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
     def test_download_returns_404_for_unknown_attachment(self) -> None:
         import src.entrypoints.http.task_attachment_read_handler as module
 
-        original_engine = module.build_snapshot_engine
-        original_storage = module.build_attachment_storage
-        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
-        module.build_attachment_storage = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
+        original_resolver = module.build_attachment_read_resolver
+        module.build_attachment_read_resolver = lambda _ctx: _FakeResolver(store=_FakeAttachmentStore())  # type: ignore[assignment]
         try:
             handler = TaskAttachmentReadHandler(_FakeCtx())
             response = handler.handle(
@@ -138,8 +146,7 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
                 )
             )
         finally:
-            module.build_snapshot_engine = original_engine  # type: ignore[assignment]
-            module.build_attachment_storage = original_storage  # type: ignore[assignment]
+            module.build_attachment_read_resolver = original_resolver  # type: ignore[assignment]
 
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 404)
@@ -147,11 +154,9 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
     def test_view_doc_preview_redirects_when_ready(self) -> None:
         import src.entrypoints.http.task_attachment_read_handler as module
 
-        original_engine = module.build_snapshot_engine
-        original_storage = module.build_attachment_storage
+        original_resolver = module.build_attachment_read_resolver
         doc_store = _FakeDocAttachmentStore(preview_state="ready", derived_preview_ref="attachments/test/task-1/doc-1/preview.pdf")
-        module.build_snapshot_engine = lambda _ctx: _FakeDocEngine(doc_store)  # type: ignore[assignment]
-        module.build_attachment_storage = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
+        module.build_attachment_read_resolver = lambda _ctx: _FakeResolver(store=doc_store)  # type: ignore[assignment]
         try:
             handler = TaskAttachmentReadHandler(_FakeCtx())
             allowed = handler.handle(
@@ -169,8 +174,7 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
                 )
             )
         finally:
-            module.build_snapshot_engine = original_engine  # type: ignore[assignment]
-            module.build_attachment_storage = original_storage  # type: ignore[assignment]
+            module.build_attachment_read_resolver = original_resolver  # type: ignore[assignment]
 
         self.assertIsNotNone(allowed)
         self.assertEqual(allowed.status, 302)
@@ -179,11 +183,9 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
     def test_view_doc_preview_returns_pending_when_not_ready(self) -> None:
         import src.entrypoints.http.task_attachment_read_handler as module
 
-        original_engine = module.build_snapshot_engine
-        original_storage = module.build_attachment_storage
+        original_resolver = module.build_attachment_read_resolver
         doc_store = _FakeDocAttachmentStore(preview_state="pending")
-        module.build_snapshot_engine = lambda _ctx: _FakeDocEngine(doc_store)  # type: ignore[assignment]
-        module.build_attachment_storage = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
+        module.build_attachment_read_resolver = lambda _ctx: _FakeResolver(store=doc_store)  # type: ignore[assignment]
         try:
             handler = TaskAttachmentReadHandler(_FakeCtx())
             response = handler.handle(
@@ -201,8 +203,7 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
                 )
             )
         finally:
-            module.build_snapshot_engine = original_engine  # type: ignore[assignment]
-            module.build_attachment_storage = original_storage  # type: ignore[assignment]
+            module.build_attachment_read_resolver = original_resolver  # type: ignore[assignment]
 
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 409)
@@ -210,11 +211,9 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
     def test_view_doc_preview_returns_unavailable_when_failed(self) -> None:
         import src.entrypoints.http.task_attachment_read_handler as module
 
-        original_engine = module.build_snapshot_engine
-        original_storage = module.build_attachment_storage
+        original_resolver = module.build_attachment_read_resolver
         doc_store = _FakeDocAttachmentStore(preview_state="failed")
-        module.build_snapshot_engine = lambda _ctx: _FakeDocEngine(doc_store)  # type: ignore[assignment]
-        module.build_attachment_storage = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
+        module.build_attachment_read_resolver = lambda _ctx: _FakeResolver(store=doc_store)  # type: ignore[assignment]
         try:
             handler = TaskAttachmentReadHandler(_FakeCtx())
             response = handler.handle(
@@ -232,8 +231,7 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
                 )
             )
         finally:
-            module.build_snapshot_engine = original_engine  # type: ignore[assignment]
-            module.build_attachment_storage = original_storage  # type: ignore[assignment]
+            module.build_attachment_read_resolver = original_resolver  # type: ignore[assignment]
 
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 503)

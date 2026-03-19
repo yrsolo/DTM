@@ -11,6 +11,11 @@ from typing import Any
 from src.entrypoints.http.access_context import AccessContext
 from src.entrypoints.http.dto import HttpRequest
 from src.entrypoints.http.event_parser import normalize_path
+from src.platform.runtime.frontend_cache_invalidation import (
+    default_frontend_cache_key,
+    default_frontend_cache_keys,
+    invalidate_default_frontend_cache_store,
+)
 
 
 DEFAULT_FRONTEND_CACHE_STATUSES = ("work", "pre_done", "done", "wait")
@@ -49,25 +54,8 @@ def resolve_frontend_route_class(req: HttpRequest, access: AccessContext) -> str
         return "bff"
     return "api"
 
-
-def default_frontend_cache_key(*, route_class: str, access_mode: str) -> str:
-    return f"frontend_v2/default/{route_class}/{access_mode}"
-
-
-def default_frontend_cache_keys() -> list[str]:
-    keys: list[str] = []
-    for route_class in ("api", "bff"):
-        for access_mode in ("masked", "full"):
-            keys.append(default_frontend_cache_key(route_class=route_class, access_mode=access_mode))
-    return keys
-
-
 def invalidate_default_frontend_responses(snapshot_engine: Any) -> None:
-    cache_store = snapshot_engine.get_response_cache_store()
-    if cache_store is None:
-        return
-    for cache_key in default_frontend_cache_keys():
-        cache_store.delete(cache_key)
+    invalidate_default_frontend_cache_store(snapshot_engine.get_response_cache_store())
 
 
 def build_default_frontend_cache_query_hash() -> str:

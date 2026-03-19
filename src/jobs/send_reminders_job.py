@@ -2,19 +2,19 @@ from __future__ import annotations
 
 from src.app.context import AppContext
 from src.contexts.reminders.public import (
+    build_reminder_request as _build_reminder_request,
     get_enhancer as _get_reminders_enhancer,
     get_formatter as _get_reminders_formatter,
+    get_job_runner as _get_reminder_job_runner,
     get_sender as _get_reminders_sender,
     get_snapshot_engine as _get_reminders_snapshot_engine,
     get_today_in_runtime_timezone as _get_today_in_runtime_timezone,
     get_usecase as _get_reminders_usecase,
 )
 from src.observability import timed
-from src.notify import ReminderJob, ReminderRequest
 
 
 build_snapshot_engine = _get_reminders_snapshot_engine
-ReminderJob = ReminderJob
 _today_in_runtime_timezone = _get_today_in_runtime_timezone
 
 
@@ -23,7 +23,11 @@ def _build_notify_enhancer(ctx: AppContext, *, mock_external: bool):
 
 
 def _build_reminder_job_runner(**kwargs):
-    return ReminderJob(**kwargs)
+    return _get_reminder_job_runner(**kwargs)
+
+
+def _make_reminder_request(**kwargs):
+    return _build_reminder_request(**kwargs)
 
 
 class SendRemindersJob:
@@ -80,7 +84,7 @@ class SendRemindersJob:
                 runtime_env=str(self._ctx.cfg.runtime.runtime.env_default),
                 mock_llm=mock_llm,
             ).run(
-                ReminderRequest(
+                _make_reminder_request(
                     mode=mode,
                     statuses=list(cmd.payload.get("statuses", ["work", "pre_done"])),
                     include_today=bool(cmd.payload.get("include_today", True)),

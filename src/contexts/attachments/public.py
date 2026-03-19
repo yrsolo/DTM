@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from src.app.context import AppContext
+from src.services.attachments.contracts import SUPPORTED_ATTACHMENT_MIME_TYPES
 
 from .module import get_module
 
@@ -35,6 +36,12 @@ def get_attachment_read_resolver(ctx: AppContext):
     """Return the context-owned read resolver."""
 
     return get_public_api(ctx).read_resolver()
+
+
+def get_supported_attachment_mime_types() -> frozenset[str]:
+    """Return the public mime-type contract owned by the attachments context."""
+
+    return SUPPORTED_ATTACHMENT_MIME_TYPES
 
 
 def get_attachment_snapshot_engine(ctx: AppContext):

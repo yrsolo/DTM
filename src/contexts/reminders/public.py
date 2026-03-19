@@ -39,6 +39,10 @@ def get_job_runner(**kwargs):
     return get_module().build_job_runner(**kwargs)
 
 
+def build_reminder_request(**kwargs):
+    return get_module().build_request(**kwargs)
+
+
 def get_send_reminders_job(ctx):
     """Return the owning reminder job runner."""
 

@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from src.contexts.reminders.public import (
+    build_reminder_request as _build_reminder_request,
     get_enhancer as _get_reminders_enhancer,
     get_formatter as _get_reminders_formatter,
     get_job_runner as _get_reminder_job_runner,
@@ -17,7 +18,6 @@ from src.entrypoints.jobs.quality_report_job import print_quality_report as _pri
 from src.entrypoints.jobs.runtime_context_job import RuntimeContextRequest, resolve_runtime_context
 from src.entrypoints.jobs.timer_job import TimerJob
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES, is_legacy_mode
-from src.notify import ReminderJob, ReminderRequest
 from src.platform.app_context import build_runtime_app_context
 from src.platform.runtime.render_runtime import run_render_runtime
 from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
@@ -26,7 +26,6 @@ from src.services.timer_pipeline import TimerPipeline
 
 
 build_snapshot_engine = _get_snapshot_engine
-ReminderJob = ReminderJob
 
 
 def _resolve_standard_run_mode(
@@ -88,7 +87,7 @@ async def _run_reminder_mode(
         runtime_env=runtime_env,
         mock_llm=mock_llm,
     ).run(
-        ReminderRequest(
+        _build_reminder_request(
             mode=normalized_mode,
             statuses=["work", "pre_done"],
             include_today=True,

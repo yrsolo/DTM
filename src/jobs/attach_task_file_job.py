@@ -6,12 +6,12 @@ from uuid import uuid4
 from src.app.context import AppContext
 from src.contexts.attachments.public import get_attachment_snapshot_engine
 from src.contexts.snapshot.contracts import AttachmentMeta
-from src.entrypoints.http.frontend_response_cache import invalidate_default_frontend_responses
 from src.services.errors import AppError, UserError
 from src.services.attachments.policy import build_attachment_capabilities, infer_attachment_kind
 from src.services.attachments.contracts import ATTACHMENT_STATUS_READY
 from src.commands.model import Command
 from src.commands.types import GENERATE_ATTACHMENT_PREVIEW
+from src.platform.runtime.frontend_cache_invalidation import invalidate_default_frontend_cache_store
 
 build_snapshot_engine = get_attachment_snapshot_engine
 
@@ -110,7 +110,7 @@ class AttachTaskFileJob:
                     elif not preview_queue_available:
                         result["warnings"].append("doc_preview_queue_unavailable")
             try:
-                invalidate_default_frontend_responses(engine)
+                invalidate_default_frontend_cache_store(engine.get_response_cache_store())
             except AppError:
                 result["warnings"] = list(result.get("warnings", []) or [])
                 result["warnings"].append("frontend_response_cache_invalidation_failed")

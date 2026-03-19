@@ -56,7 +56,7 @@ class GroupQueryReplyJobTestCase(unittest.TestCase):
         import src.jobs.group_query_reply_job as module
 
         orig_build_snapshot_engine = module.build_snapshot_engine
-        orig_sender = module.TelegramSender
+        orig_build_sender = module._build_group_query_sender
         try:
             today = date.today()
             prep = PrepSnapshot(
@@ -71,7 +71,7 @@ class GroupQueryReplyJobTestCase(unittest.TestCase):
             )
             sender = _FakeSender()
             module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine(prep)  # type: ignore[assignment]
-            module.TelegramSender = lambda **kwargs: sender  # type: ignore[assignment]
+            module._build_group_query_sender = lambda _ctx: sender  # type: ignore[assignment]
 
             ctx = AppContext(cfg=SimpleNamespace(), deps={"tg_bot_token": "x", "default_chat_id": "0"})
             cmd = Command(
@@ -89,7 +89,7 @@ class GroupQueryReplyJobTestCase(unittest.TestCase):
             self.assertNotIn("Чужая задача", sender.sent[0][1])
         finally:
             module.build_snapshot_engine = orig_build_snapshot_engine  # type: ignore[assignment]
-            module.TelegramSender = orig_sender  # type: ignore[assignment]
+            module._build_group_query_sender = orig_build_sender  # type: ignore[assignment]
 
 
 if __name__ == "__main__":

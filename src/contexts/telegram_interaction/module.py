@@ -46,6 +46,11 @@ class TelegramInteractionModule:
             default_chat_id=ctx.deps.get("default_chat_id"),
         )
 
+    def build_request(self, **kwargs):
+        from src.notify.model import ReminderRequest
+
+        return ReminderRequest(**kwargs)
+
 
 def get_module() -> TelegramInteractionModule:
     """Return the local module instance for the telegram interaction context."""

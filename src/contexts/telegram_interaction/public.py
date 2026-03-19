@@ -39,6 +39,10 @@ def get_sender(ctx):
     return get_module().build_sender(ctx)
 
 
+def build_group_query_request(**kwargs):
+    return get_module().build_request(**kwargs)
+
+
 def get_group_query_reply_job(ctx):
     """Return the owning Telegram interaction job runner for group-query replies."""
 

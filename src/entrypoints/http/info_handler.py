@@ -11,6 +11,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 from src.app.context import AppContext
+from src.contexts.attachments.public import get_supported_attachment_mime_types
 from src.contexts.snapshot.public import get_snapshot_engine as _get_snapshot_engine
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
@@ -26,11 +27,11 @@ from src.observability.bottlenecks import (
     resolve_bottleneck_metrics_level,
 )
 from src.observability.buffered_metrics import metrics_sink_name, remote_metrics_enabled
-from src.services.attachments.contracts import SUPPORTED_ATTACHMENT_MIME_TYPES
 from src.worker.model import JobStatusRecord
 
 
 build_snapshot_engine = _get_snapshot_engine
+get_attachment_mime_types = get_supported_attachment_mime_types
 
 
 def get_prep_snapshot(ctx):
@@ -376,7 +377,7 @@ class InfoHandler:
             "probeTaskStatus": "",
             "probeAttachmentsTotal": 0,
             "probeAttachments": [],
-            "allowedMimeTypes": sorted(str(item) for item in SUPPORTED_ATTACHMENT_MIME_TYPES),
+            "allowedMimeTypes": sorted(str(item) for item in get_attachment_mime_types()),
             "browserRoutes": browser_routes,
             "backendRoutes": backend_routes,
             "authFacadeRequired": True,
