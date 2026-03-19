@@ -32,13 +32,15 @@
 
 ## Rollout evidence
 - pushed refs:
-  - `origin/dev -> db30731`
-  - `origin/test -> db30731`
+  - `origin/dev -> db89bd7`
+  - `origin/test -> db89bd7`
 - workflow:
   - file: `.github/workflows/deploy_yc_function_main.yml`
-  - run_id: `23309016853`
+  - final_run_id: `23309148335`
   - result: `success`
-  - url: `https://github.com/yrsolo/DTM/actions/runs/23309016853`
+  - url: `https://github.com/yrsolo/DTM/actions/runs/23309148335`
+  - notes:
+    - initial rollout run `23309016853` also succeeded on pre-closeout SHA `db30731`
 
 ## Closeout
 - The outdated deploy guard no longer blocks the approved thin-entrypoint contour.
