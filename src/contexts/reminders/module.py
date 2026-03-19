@@ -11,7 +11,7 @@ from src.adapters.llm_openai import AsyncOpenAIChatAgent
 from src.adapters.llm_yandex import AsyncYandexLLMChatAgent
 from src.adapters.telegram import TelegramNotifier
 from src.notify import ReminderFormatter, ReminderJob, ReminderUseCase
-from src.snapshot_engine import build_snapshot_engine
+from src.contexts.snapshot.public import get_snapshot_engine
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,7 +21,7 @@ class RemindersModule:
     name: str = "reminders"
 
     def build_snapshot_engine(self, ctx):
-        return build_snapshot_engine(ctx)
+        return get_snapshot_engine(ctx)
 
     def build_usecase(self, snapshot_engine):
         return ReminderUseCase(snapshot_engine)

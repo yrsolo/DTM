@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta
 
-from src.snapshot_engine.engine import SnapshotEngine
-from src.snapshot_engine.model import TaskView
+from src.contexts.snapshot.contracts import TaskView
 
 from .model import ReminderGroup, ReminderRequest
 
@@ -36,7 +35,7 @@ def _milestone_days(task: TaskView) -> set[date]:
 class ReminderUseCase:
     """Selection and grouping parity for reminder_v2."""
 
-    def __init__(self, engine: SnapshotEngine):
+    def __init__(self, engine):  # noqa: ANN001
         self._engine = engine
 
     def select(self, req: ReminderRequest) -> tuple[list[ReminderGroup], date, date]:

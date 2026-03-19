@@ -5,8 +5,7 @@ from datetime import date, datetime
 from typing import Iterable
 
 from src.app.timezone_utils import format_sheet_timestamp, now_in_timezone, today_in_timezone
-from src.snapshot_engine.engine import SnapshotEngine
-from src.snapshot_engine.model import TaskView
+from src.contexts.snapshot.contracts import TaskView
 from utils.func import GetColor
 
 from .model import RenderCell, RenderPlan, RenderRequest
@@ -80,7 +79,7 @@ class _DesignerTask:
 class DesignersRenderUseCase:
     """Build designers sheet plan with legacy-compatible layout."""
 
-    def __init__(self, engine: SnapshotEngine, timezone_name: str = "Europe/Moscow"):
+    def __init__(self, engine, timezone_name: str = "Europe/Moscow"):  # noqa: ANN001
         self._engine = engine
         self._color = GetColor()
         self._timezone_name = str(timezone_name or "Europe/Moscow").strip() or "Europe/Moscow"

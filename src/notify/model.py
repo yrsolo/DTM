@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
 
-from src.snapshot_engine.model import TaskView
+from src.contexts.snapshot.contracts import TaskView
 
 
 @dataclass(frozen=True)

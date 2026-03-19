@@ -5,12 +5,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from src.app.context import AppContext
+from src.contexts.snapshot.public import get_snapshot_engine
 from src.services.attachments import (
     AttachmentFinalizeService,
     AttachmentReadResolver,
     build_attachment_storage,
 )
-from src.snapshot_engine import build_snapshot_engine
 
 
 @dataclass(slots=True)
@@ -21,7 +21,7 @@ class AttachmentsModule:
     name: str = "attachments"
 
     def snapshot_engine(self):
-        return build_snapshot_engine(self.ctx)
+        return get_snapshot_engine(self.ctx)
 
     def metadata_store(self):
         return self.snapshot_engine().get_attachment_metadata_store()

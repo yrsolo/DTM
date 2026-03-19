@@ -1,5 +1,27 @@
 """Contracts for the snapshot context."""
 
-from src.snapshot_engine.model import AttachmentMeta, ExtraSnapshot, TaskExtra, Window
+from dataclasses import dataclass
+from datetime import date
 
-__all__ = ["AttachmentMeta", "ExtraSnapshot", "TaskExtra", "Window"]
+from src.snapshot_engine.model import AttachmentMeta, ExtraSnapshot, TaskExtra, TaskView, Window
+
+
+@dataclass(frozen=True)
+class SnapshotFrontendQuery:
+    statuses: list[str]
+    designer: str
+    limit: int
+    include_people: bool
+    window_enabled: bool
+    window_start: date | None
+    window_end: date | None
+    window_mode: str = "intersects"
+
+__all__ = [
+    "AttachmentMeta",
+    "ExtraSnapshot",
+    "SnapshotFrontendQuery",
+    "TaskExtra",
+    "TaskView",
+    "Window",
+]

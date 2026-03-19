@@ -60,10 +60,22 @@ class GuardrailsV0TestCase(unittest.TestCase):
     def test_contexts_do_not_reach_into_other_contexts(self) -> None:
         offenders: list[str] = []
         allowed_cross_imports = {
+            "attachments": {
+                "src.contexts.snapshot.public",
+                "src.contexts.snapshot.contracts",
+            },
+            "reminders": {
+                "src.contexts.snapshot.public",
+                "src.contexts.snapshot.contracts",
+            },
             "rendering": {
                 "src.contexts.snapshot.public",
                 "src.contexts.snapshot.contracts",
-            }
+            },
+            "telegram_interaction": {
+                "src.contexts.snapshot.public",
+                "src.contexts.snapshot.contracts",
+            },
         }
         for file_path in _python_files([ROOT / "src" / "contexts"]):
             content = file_path.read_text(encoding="utf-8")
@@ -105,6 +117,49 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 offenders.append(str(file_path.relative_to(ROOT)))
             if "from src.snapshot_engine.model" in content or "import src.snapshot_engine.model" in content:
                 offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_snapshot_engine_imports_stay_inside_snapshot_boundary(self) -> None:
+        offenders: list[str] = []
+        allowed_roots = {
+            ROOT / "src" / "snapshot_engine",
+            ROOT / "src" / "contexts" / "snapshot",
+        }
+        for file_path in _python_files([ROOT / "src"]):
+            if any(root in file_path.parents or file_path == root for root in allowed_roots):
+                continue
+            content = file_path.read_text(encoding="utf-8")
+            if (
+                "from src.snapshot_engine" in content
+                or "import src.snapshot_engine" in content
+            ):
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_render_notify_adapters_import_snapshot_only_through_context_surface(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "render",
+            ROOT / "src" / "notify",
+            ROOT / "src" / "entrypoints_adapters",
+        ]
+        allowed_snapshot_imports = {
+            "from src.contexts.snapshot.public import",
+            "import src.contexts.snapshot.public",
+            "from src.contexts.snapshot.contracts import",
+            "import src.contexts.snapshot.contracts",
+        }
+        for file_path in _python_files(target_paths):
+            content = file_path.read_text(encoding="utf-8")
+            if "src.snapshot_engine" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+                continue
+            for line in content.splitlines():
+                if "src.contexts.snapshot" not in line:
+                    continue
+                if not any(marker in line for marker in allowed_snapshot_imports):
+                    offenders.append(str(file_path.relative_to(ROOT)))
+                    break
         self.assertEqual(offenders, [])
 
 

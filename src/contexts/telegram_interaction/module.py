@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from src.contexts.snapshot.public import get_snapshot_engine
 from src.notify import GroupQueryFormatter, ReminderUseCase
-from src.snapshot_engine import build_snapshot_engine
 from src.telegram.command_router import TelegramCommandRouter
 from src.telegram.parser import TelegramUpdateParser
 from src.telegram.sender import TelegramSender
@@ -32,7 +32,7 @@ class TelegramInteractionModule:
         )
 
     def build_snapshot_engine(self, ctx):
-        return build_snapshot_engine(ctx)
+        return get_snapshot_engine(ctx)
 
     def build_usecase(self, snapshot_engine):
         return ReminderUseCase(snapshot_engine)

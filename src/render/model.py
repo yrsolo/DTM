@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from src.snapshot_engine.model import Window
+from src.contexts.snapshot.contracts import Window
 
 
 @dataclass(frozen=True)

@@ -5,8 +5,7 @@ from datetime import date, datetime, timedelta
 from typing import Iterable
 
 from src.app.timezone_utils import format_sheet_timestamp, now_in_timezone, today_in_timezone
-from src.snapshot_engine.engine import SnapshotEngine
-from src.snapshot_engine.model import TaskView
+from src.contexts.snapshot.contracts import TaskView
 from utils.func import GetColor, RGBColor
 
 from .model import RenderBorder, RenderCell, RenderPlan, RenderRequest
@@ -82,7 +81,7 @@ def _iter_days_half_open(start: date, end_exclusive: date) -> Iterable[date]:
 class RenderUseCase:
     """Build Gantt-like render plan from snapshot tasks."""
 
-    def __init__(self, engine: SnapshotEngine, timezone_name: str = "Europe/Moscow"):
+    def __init__(self, engine, timezone_name: str = "Europe/Moscow"):  # noqa: ANN001
         self._engine = engine
         self._color = GetColor()
         self._timezone_name = str(timezone_name or "Europe/Moscow").strip() or "Europe/Moscow"
