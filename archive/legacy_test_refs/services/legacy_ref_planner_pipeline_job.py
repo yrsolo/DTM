@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from src.legacy.entrypoints.jobs.planner_pipeline_job import (
+from src.archive.legacy_runtime.entrypoints.jobs.planner_pipeline_job import (
     PlannerPipelineContext,
     PlannerPipelineRequest,
     run_planner_pipeline,

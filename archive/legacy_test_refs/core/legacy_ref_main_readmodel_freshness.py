@@ -6,7 +6,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
-from src.legacy.entrypoints.jobs.readmodel_freshness import build_readmodel_freshness_marker
+from src.archive.legacy_runtime.entrypoints.jobs.readmodel_freshness import build_readmodel_freshness_marker
 
 
 class MainReadmodelFreshnessTestCase(unittest.TestCase):

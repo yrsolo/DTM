@@ -5,7 +5,7 @@ from __future__ import annotations
 import unittest
 from types import SimpleNamespace
 
-from src.legacy.entrypoints.jobs.source_switch_job import SourceSwitchRequest, apply_task_source_switches
+from src.archive.legacy_runtime.entrypoints.jobs.source_switch_job import SourceSwitchRequest, apply_task_source_switches
 
 
 class MainSourceSwitchTestCase(unittest.TestCase):

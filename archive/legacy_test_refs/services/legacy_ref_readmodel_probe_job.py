@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from src.legacy.entrypoints.jobs.readmodel_probe_job import (
+from src.archive.legacy_runtime.entrypoints.jobs.readmodel_probe_job import (
     ReadmodelProbeRequest,
     run_readmodel_freshness_probe,
 )

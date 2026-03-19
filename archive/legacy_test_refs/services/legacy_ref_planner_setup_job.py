@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import unittest
 
-from src.legacy.entrypoints.jobs.planner_setup_job import PlannerRuntimeBuildRequest, build_planner_runtime
-from src.legacy.entrypoints.jobs.source_switch_job import SourceSwitchRequest
+from src.archive.legacy_runtime.entrypoints.jobs.planner_setup_job import PlannerRuntimeBuildRequest, build_planner_runtime
+from src.archive.legacy_runtime.entrypoints.jobs.source_switch_job import SourceSwitchRequest
 
 
 class _Deps:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from src.legacy.entrypoints.jobs.legacy_store_write_job import LegacyStoreWriteRequest, run_legacy_store_write
+from src.archive.legacy_runtime.entrypoints.jobs.legacy_store_write_job import LegacyStoreWriteRequest, run_legacy_store_write
 
 
 class _StoreStub:

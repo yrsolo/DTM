@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 from unittest.mock import patch
 
-from src.legacy.entrypoints.jobs.source_switch_job import SourceSwitchRequest, apply_task_source_switches
+from src.archive.legacy_runtime.entrypoints.jobs.source_switch_job import SourceSwitchRequest, apply_task_source_switches
 
 
 class _PlannerStub:
@@ -16,7 +16,7 @@ class _PlannerStub:
 
 
 class SourceSwitchJobTestCase(unittest.TestCase):
-    @patch("src.legacy.entrypoints.jobs.source_switch_job.YdbOperationalTaskRepository")
+    @patch("src.archive.legacy_runtime.entrypoints.jobs.source_switch_job.YdbOperationalTaskRepository")
     def test_applies_render_and_notify_ydb_switches(self, repo_cls) -> None:  # noqa: ANN001
         repo_instance = object()
         repo_cls.return_value = repo_instance
@@ -48,7 +48,7 @@ class SourceSwitchJobTestCase(unittest.TestCase):
         self.assertTrue(any("render_source_switch=applied source=ydb" in line for line in logs))
         self.assertTrue(any("notify_source_switch=applied source=ydb" in line for line in logs))
 
-    @patch("src.legacy.entrypoints.jobs.source_switch_job.YdbOperationalTaskRepository")
+    @patch("src.archive.legacy_runtime.entrypoints.jobs.source_switch_job.YdbOperationalTaskRepository")
     def test_no_switch_when_policy_does_not_require_ydb(self, repo_cls) -> None:  # noqa: ANN001
         planner = _PlannerStub()
         render_switched, notify_switched = apply_task_source_switches(

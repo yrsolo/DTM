@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from src.legacy.services.usecases.planner_runtime import run_planner_use_case
+from src.archive.legacy_runtime.usecases.planner_runtime import run_planner_use_case
 
 
 class _PlannerStub:
