@@ -1,12 +1,13 @@
 # Active Tasks
 
+- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1: architecture-recovery canon is now the active roadmap; next waves must remove bridges aggressively and move ownership inward.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done
 
 - CAM-2026-03-19-MODULARITY-AUDIT-V1 completed: code-verified audit now scores each context for autonomy and records the next decoupling moves.
 - CAM-2026-03-19-TEST-ROLLOUT-UNBLOCK-V1 completed: deploy guardrails now accept the active thin-entrypoint contour, and the current `dev` head was deployed to `test` successfully.
-- CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1 completed: modular-monolith refactor umbrella campaign delivered the target runtime contour, config/guardrail hardening, and removal of `src.legacy` from the supported import graph.
+- CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1 completed: modular-monolith refactor umbrella campaign delivered phase-one modularity and now acts as historical precedent for architecture recovery.
 - Docs IA refresh completed: `docs/` is now reorganized by reader intent with Russian onboarding READMEs, relative repo links, and archive folder indexes.
 - Legacy `.doc` preview converter wave completed: `.doc` view now resolves to PDF preview while download returns original, with async preview job and updated operator harness.
 - Info attachment harness now includes step pipeline visualization, per-step JSON panel, and preview-job stage tracking.
@@ -21,7 +22,6 @@
 
 - `agent/intructions/DTM-test/**` is reference-only input and must not be used as execution tracking.
 - Working plans and evidence must live only in `work/roadmap/campaigns/<CAMPAIGN>/`.
-- Freeze on Telegram/reminder/group-query work is lifted for `CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1`; active extraction may continue until a new blocker is recorded.
 - Latest bottleneck follow-up remains historical context only; current live execution focus is the blocked `prod` smoke for the attachment contour.
-- Future child campaigns for the modular-monolith wave must start from `docs/architecture/runtime/modular-monolith-v2.md` and the master campaign trust gate.
-- Modular-monolith umbrella campaign is complete; remaining issues now belong to separate follow-up campaigns.
+- Future architecture-recovery child campaigns must start from `docs/architecture/recovery/README.md` and the new umbrella campaign trust gate.
+- Modular-monolith umbrella campaign is complete and superseded as the primary canon.

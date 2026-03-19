@@ -3,7 +3,7 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
-- none
+- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1
 
 ## Blocked
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
@@ -11,7 +11,7 @@ Single source of truth for campaign lifecycle state.
 ## Done
 - `CAM-2026-03-19-MODULARITY-AUDIT-V1` completed after recording a code-verified module autonomy audit and decoupling plan.
 - `CAM-2026-03-19-TEST-ROLLOUT-UNBLOCK-V1` completed after aligning the deploy guard with the active entrypoint contour and successfully rolling `dev` into `test`.
-- `CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1` completed after the modular-monolith refactor wave, config/guardrail hardening, and legacy namespace removal.
+- `CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1` completed as the previous architecture wave and now serves as historical precedent rather than the current canon.
 - `CAM-2026-03-16-DOCS-IA-REFRESH-V1` completed and archived after the docs information architecture refresh and link normalization wave.
 - `CAM-2026-03-16-DOC-PREVIEW-CONVERTER-V1` completed and archived after the legacy `.doc` preview split-flow and converter integration.
 - Recent completed campaigns were archived under `work/archive/campaigns/`.

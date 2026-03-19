@@ -1,5 +1,8 @@
 # Modular Monolith V2
 
+> Superseded on 2026-03-20 by `docs/architecture/recovery/README.md`.
+> Keep this file as historical precedent for the previous modular-monolith wave, not as the current normative canon.
+
 This document is the normative master text for the DTM modular-monolith refactor wave.
 
 It supersedes chat memory as the working architectural brief for future campaign starts. When future campaign plans need the target shape, migration order, or boundary rules, start here.
@@ -171,4 +174,3 @@ Future campaign starts should use this reading order:
 7. `docs/architecture/runtime/guardrails-v2.md`
 8. relevant `docs/modules/<context>.md`
 9. current code paths and current campaign `evidence.md`
-
