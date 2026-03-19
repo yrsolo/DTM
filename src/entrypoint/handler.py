@@ -13,11 +13,13 @@ async def handle(
     event: Any,
     _context: Any,
     *,
-    get_dispatcher,
+    get_http_shell,
+    get_worker_shell,
+    get_trigger_shell,
     triggers: dict[str, str] | None = None,
     telegram_webhook_path: str = "/telegram",
 ) -> dict[str, Any]:
-    """Route by explicit mode and delegate to the transitional dispatcher."""
+    """Route by explicit mode and delegate directly to top-level shells."""
 
     parsed = parse_request(
         event,
@@ -30,11 +32,18 @@ async def handle(
         case (
             Mode.HTTP_ACCESS_API
             | Mode.TELEGRAM_WEBHOOK
-            | Mode.QUEUE_WORKER
-            | Mode.TRIGGER_TIMER
-            | Mode.TRIGGER_MORNING
         ):
-            return await get_dispatcher().handle(event, _context)
+            return await get_http_shell().handle(
+                event if isinstance(event, dict) else {},
+                parsed.payload,
+                True,
+            )
+        case Mode.QUEUE_WORKER:
+            return await get_worker_shell().handle_queue_event(event)
+        case Mode.TRIGGER_TIMER:
+            return await get_trigger_shell().handle_trigger("timer", event)
+        case Mode.TRIGGER_MORNING:
+            return await get_trigger_shell().handle_trigger("morning", event)
         case Mode.UNKNOWN:
             return unknown_route_response()
         case _:

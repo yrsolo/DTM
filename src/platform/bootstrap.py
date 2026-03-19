@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 from src.app.bootstrap import build_app_context
+from src.entrypoints.http.http_shell import HttpShell
 from src.entrypoints.index_dispatcher import IndexDispatcher
+from src.entrypoints.queue.worker_shell import WorkerShell
+from src.entrypoints.runtime.runtime_shell import RuntimeShell
+from src.entrypoints.triggers.trigger_shell import TriggerShell
 
 
 class LazyMapping:
@@ -51,6 +55,10 @@ class LazyMapping:
 
 _APP_CONTEXT = None
 _APP_DISPATCHER = None
+_RUNTIME_SHELL = None
+_HTTP_SHELL = None
+_WORKER_SHELL = None
+_TRIGGER_SHELL = None
 
 
 def get_app_context():
@@ -82,6 +90,42 @@ def get_dispatcher() -> IndexDispatcher:
         ctx = get_app_context()
         _APP_DISPATCHER = IndexDispatcher(ctx, triggers=APP_TRIGGERS)
     return _APP_DISPATCHER
+
+
+def get_runtime_shell() -> RuntimeShell:
+    """Build the shared runtime shell lazily for the top entry path."""
+
+    global _RUNTIME_SHELL
+    if _RUNTIME_SHELL is None:
+        _RUNTIME_SHELL = RuntimeShell(get_app_context())
+    return _RUNTIME_SHELL
+
+
+def get_http_shell() -> HttpShell:
+    """Build the shared HTTP shell lazily for the top entry path."""
+
+    global _HTTP_SHELL
+    if _HTTP_SHELL is None:
+        _HTTP_SHELL = HttpShell(get_app_context(), runtime_shell=get_runtime_shell())
+    return _HTTP_SHELL
+
+
+def get_worker_shell() -> WorkerShell:
+    """Build the shared worker shell lazily for the top entry path."""
+
+    global _WORKER_SHELL
+    if _WORKER_SHELL is None:
+        _WORKER_SHELL = WorkerShell(get_app_context())
+    return _WORKER_SHELL
+
+
+def get_trigger_shell() -> TriggerShell:
+    """Build the shared trigger shell lazily for the top entry path."""
+
+    global _TRIGGER_SHELL
+    if _TRIGGER_SHELL is None:
+        _TRIGGER_SHELL = TriggerShell(get_app_context(), runtime_shell=get_runtime_shell())
+    return _TRIGGER_SHELL
 
 
 APP_DEPS = LazyMapping(get_deps)

@@ -36,7 +36,9 @@ INDEX_ALLOWED_IMPORTS = {
     "src.entrypoint.handler.handle",
     "src.platform.bootstrap.APP_TRIGGERS",
     "src.platform.bootstrap.get_app_context",
-    "src.platform.bootstrap.get_dispatcher",
+    "src.platform.bootstrap.get_http_shell",
+    "src.platform.bootstrap.get_trigger_shell",
+    "src.platform.bootstrap.get_worker_shell",
 }
 
 
