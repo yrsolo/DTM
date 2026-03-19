@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
-from src.legacy.entrypoints.jobs.source_switch_job import SourceSwitchRequest
+from src.archive.legacy_runtime.entrypoints.jobs.source_switch_job import SourceSwitchRequest
 
 
 @dataclass(frozen=True)

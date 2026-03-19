@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
-from src.legacy.core.bootstrap import PlannerDependencies, build_planner_dependencies
+from src.archive.legacy_runtime.core.bootstrap import PlannerDependencies, build_planner_dependencies
 from core.task_query_adapter import build_task_query_context, query_source_tasks
 
 

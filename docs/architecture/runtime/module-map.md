@@ -55,8 +55,8 @@ Governing policy:
 ## Historical or archive-only areas
 
 These are not part of the canonical runtime story:
-- `src/legacy/*`
 - `src/archive/legacy_runtime/*`
+- `archive/legacy_test_refs/*`
 - `old/v1/*`
 - planner-era extraction plans and compatibility notes under `docs/archive/system_legacy/modules/*`
 - legacy YDB/readmodel/schema material under `docs/archive/system_legacy/ydb_schema.md`

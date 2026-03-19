@@ -33,4 +33,6 @@ These guardrails should be introduced before the first fully extracted context s
 
 Current enforced baseline in the active runtime:
 - active runtime paths may not import `src.legacy`
+- active runtime paths may not import `src.archive.legacy_runtime`
 - active runtime paths may not import the legacy `config` package
+- default tests may not import legacy or archived-legacy namespaces

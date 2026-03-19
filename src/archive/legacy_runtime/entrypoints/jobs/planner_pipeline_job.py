@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Awaitable, Callable
 
-from src.legacy.entrypoints.jobs.legacy_store_write_job import LegacyStoreWriteRequest
+from src.archive.legacy_runtime.entrypoints.jobs.legacy_store_write_job import LegacyStoreWriteRequest
 
 
 @dataclass(frozen=True)

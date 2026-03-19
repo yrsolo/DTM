@@ -29,8 +29,8 @@ from src.adapters.google_sheets.task_repository import GoogleSheetsTaskRepositor
 from core.sheet_renderer import ServiceSheetRenderAdapter
 from src.config.loader import load_config
 from core.task_timing_processor import TaskTimingProcessor
-from src.legacy.services.calendar_runtime import CalendarManager, TaskCalendarManager
-from src.legacy.services.render.task_table_runtime import TaskManager
+from src.archive.legacy_runtime.services.calendar_runtime import CalendarManager, TaskCalendarManager
+from src.archive.legacy_runtime.services.render.task_table_runtime import TaskManager
 
 if TYPE_CHECKING:
     from src.config.schema import AppConfig

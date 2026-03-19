@@ -105,4 +105,4 @@ There is still a transitional runtime adapter involved in that path, but it is n
 Historical planner-era entrypoint stories and deeper legacy runtime detail are archive-only.
 If needed, use:
 - `docs/archive/system_legacy/modules/*`
-- `src/legacy/*`
+- `src/archive/legacy_runtime/*`
