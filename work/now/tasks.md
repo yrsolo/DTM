@@ -1,10 +1,10 @@
 # Active Tasks
 
-- CAM-2026-03-19-TEST-ROLLOUT-UNBLOCK-V1: align deploy guardrails with the active runtime contour, then roll current `dev` head into `test`.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done
 
+- CAM-2026-03-19-TEST-ROLLOUT-UNBLOCK-V1 completed: deploy guardrails now accept the active thin-entrypoint contour, and the current `dev` head was deployed to `test` successfully.
 - CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1 completed: modular-monolith refactor umbrella campaign delivered the target runtime contour, config/guardrail hardening, and removal of `src.legacy` from the supported import graph.
 - Docs IA refresh completed: `docs/` is now reorganized by reader intent with Russian onboarding READMEs, relative repo links, and archive folder indexes.
 - Legacy `.doc` preview converter wave completed: `.doc` view now resolves to PDF preview while download returns original, with async preview job and updated operator harness.

@@ -1,7 +1,7 @@
 # Backlog
 
 ## In Progress
-- CAM-2026-03-19-TEST-ROLLOUT-UNBLOCK-V1
+- none
 
 ## Blocked
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
@@ -10,6 +10,7 @@
 - none
 
 ## Done
+- CAM-2026-03-19-TEST-ROLLOUT-UNBLOCK-V1 completed: the test deploy guard was aligned with the modular-monolith entrypoint and the latest `dev` head was rolled into `test`.
 - CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1 completed: modular-monolith refactor umbrella wave delivered the target contour and removed the supported legacy namespace.
 - Docs IA refresh completed: active docs moved into `product/`, `architecture/`, `integrations/`, `operations/`, and `reference/`, with archive folders now indexed by local `README.md`.
 - Legacy `.doc` preview converter wave completed: external converter integrated, preview job added, and `.doc` view/download split behavior documented.
