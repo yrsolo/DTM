@@ -3,15 +3,19 @@
 from __future__ import annotations
 
 from src.commands.yandex_mq import YandexMessageQueueProducer
-from src.jobs.attach_task_file_job import AttachTaskFileJob
-from src.jobs.cleanup_task_attachments_job import CleanupTaskAttachmentsJob
-from src.jobs.delete_task_attachment_job import DeleteTaskAttachmentJob
-from src.jobs.generate_attachment_preview_job import GenerateAttachmentPreviewJob
-from src.jobs.group_query_reply_job import GroupQueryReplyJob
-from src.jobs.render_designers_job import RenderDesignersJob
-from src.jobs.render_timeline_job import RenderTimelineJob
-from src.jobs.send_reminders_job import SendRemindersJob
-from src.jobs.update_snapshot_job import UpdateSnapshotJob
+from src.contexts.attachments.public import (
+    get_attach_task_file_job,
+    get_cleanup_task_attachments_job,
+    get_delete_task_attachment_job,
+    get_generate_attachment_preview_job,
+)
+from src.contexts.reminders.public import get_send_reminders_job
+from src.contexts.rendering.public import (
+    get_render_designers_job,
+    get_render_timeline_job,
+)
+from src.contexts.snapshot.public import get_update_snapshot_job
+from src.contexts.telegram_interaction.public import get_group_query_reply_job
 from src.worker.dispatcher import CommandDispatcher
 from src.worker.status_store import S3JobStatusStore
 from src.worker.worker import Worker
@@ -58,15 +62,15 @@ def build_queue_runtime(ctx, deps: dict) -> dict:
         aws_secret_access_key=deps.get("aws_secret_access_key"),
     )
     dispatcher = CommandDispatcher(
-        update_snapshot_job=UpdateSnapshotJob(ctx),
-        send_reminders_job=SendRemindersJob(ctx),
-        render_timeline_job=RenderTimelineJob(ctx),
-        render_designers_job=RenderDesignersJob(ctx),
-        group_query_reply_job=GroupQueryReplyJob(ctx),
-        attach_task_file_job=AttachTaskFileJob(ctx),
-        delete_task_attachment_job=DeleteTaskAttachmentJob(ctx),
-        cleanup_task_attachments_job=CleanupTaskAttachmentsJob(ctx),
-        generate_attachment_preview_job=GenerateAttachmentPreviewJob(ctx),
+        update_snapshot_job=get_update_snapshot_job(ctx),
+        send_reminders_job=get_send_reminders_job(ctx),
+        render_timeline_job=get_render_timeline_job(ctx),
+        render_designers_job=get_render_designers_job(ctx),
+        group_query_reply_job=get_group_query_reply_job(ctx),
+        attach_task_file_job=get_attach_task_file_job(ctx),
+        delete_task_attachment_job=get_delete_task_attachment_job(ctx),
+        cleanup_task_attachments_job=get_cleanup_task_attachments_job(ctx),
+        generate_attachment_preview_job=get_generate_attachment_preview_job(ctx),
     )
     worker = Worker(
         status_store=status_store,

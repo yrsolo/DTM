@@ -41,3 +41,35 @@ def get_attachment_snapshot_engine(ctx: AppContext):
     """Return the transitional snapshot engine dependency for attachments."""
 
     return get_public_api(ctx).snapshot_engine()
+
+
+def get_attach_task_file_job(ctx: AppContext):
+    """Return the owning attachment job runner for attach-file mutations."""
+
+    from src.jobs.attach_task_file_job import AttachTaskFileJob
+
+    return AttachTaskFileJob(ctx)
+
+
+def get_delete_task_attachment_job(ctx: AppContext):
+    """Return the owning attachment job runner for delete mutations."""
+
+    from src.jobs.delete_task_attachment_job import DeleteTaskAttachmentJob
+
+    return DeleteTaskAttachmentJob(ctx)
+
+
+def get_cleanup_task_attachments_job(ctx: AppContext):
+    """Return the owning attachment job runner for cleanup mutations."""
+
+    from src.jobs.cleanup_task_attachments_job import CleanupTaskAttachmentsJob
+
+    return CleanupTaskAttachmentsJob(ctx)
+
+
+def get_generate_attachment_preview_job(ctx: AppContext):
+    """Return the owning attachment job runner for preview generation."""
+
+    from src.jobs.generate_attachment_preview_job import GenerateAttachmentPreviewJob
+
+    return GenerateAttachmentPreviewJob(ctx)

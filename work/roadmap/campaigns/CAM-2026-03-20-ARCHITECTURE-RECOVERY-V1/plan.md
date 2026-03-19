@@ -5,7 +5,7 @@ Replace the modular-monolith V2 canon with the new architecture-recovery canon a
 
 ## Status
 - in progress: 2026-03-20
-- current phase: P03 break bootstrap gravity
+- current phase: P04 attachments as a true first-class module
 
 ## Phases
 

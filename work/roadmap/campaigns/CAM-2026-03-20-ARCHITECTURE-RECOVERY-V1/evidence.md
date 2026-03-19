@@ -20,6 +20,7 @@
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P01-T002`
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P01-T003`
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P02-T001`
+- [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P03-T001`
 
 ## Verification
 - Command:
@@ -33,3 +34,4 @@
 - This campaign opens the architecture-recovery canon only.
 - Later phases must remove or hard-deprecate at least one old path per wave.
 - 2026-03-20: active top path no longer routes through `IndexDispatcher`; the dispatcher stays only as transitional compatibility code.
+- 2026-03-20: `platform.runtime.queue_bootstrap` no longer wires domain jobs through direct `src.jobs/*` imports; job assembly now enters through owning context facades.

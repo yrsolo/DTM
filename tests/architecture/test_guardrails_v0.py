@@ -250,6 +250,12 @@ class GuardrailsV0TestCase(unittest.TestCase):
                     break
         self.assertEqual(offenders, [])
 
+    def test_platform_queue_bootstrap_does_not_import_jobs_directly(self) -> None:
+        file_path = ROOT / "src" / "platform" / "runtime" / "queue_bootstrap.py"
+        content = file_path.read_text(encoding="utf-8")
+        self.assertNotIn("from src.jobs", content)
+        self.assertNotIn("import src.jobs", content)
+
 
 if __name__ == "__main__":
     unittest.main()

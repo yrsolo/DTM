@@ -36,6 +36,14 @@ def query_frontend_v2(ctx, query):
     return get_module().query_frontend_v2(ctx, query)
 
 
+def get_update_snapshot_job(ctx):
+    """Return the owning snapshot update job runner."""
+
+    from src.jobs.update_snapshot_job import UpdateSnapshotJob
+
+    return UpdateSnapshotJob(ctx)
+
+
 __all__ = [
     "Window",
     "get_people_snapshot",
@@ -44,5 +52,6 @@ __all__ = [
     "get_raw_snapshot",
     "get_response_cache_store",
     "get_snapshot_engine",
+    "get_update_snapshot_job",
     "query_frontend_v2",
 ]

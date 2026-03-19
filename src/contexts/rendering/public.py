@@ -37,3 +37,19 @@ def get_writer(service, *, spreadsheet_name, worksheet_name):
 
 def get_render_job(usecase, writer):
     return get_module().build_job(usecase, writer)
+
+
+def get_render_timeline_job(ctx):
+    """Return the owning rendering job runner for timeline sheets."""
+
+    from src.jobs.render_timeline_job import RenderTimelineJob
+
+    return RenderTimelineJob(ctx)
+
+
+def get_render_designers_job(ctx):
+    """Return the owning rendering job runner for designers sheets."""
+
+    from src.jobs.render_designers_job import RenderDesignersJob
+
+    return RenderDesignersJob(ctx)

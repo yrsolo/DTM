@@ -2,6 +2,7 @@
 
 from src.entrypoint.handler import handle as handle_entrypoint
 from src.platform.bootstrap import (
+    APP_DEPS,
     APP_TRIGGERS,
     get_app_context,
     get_http_shell,

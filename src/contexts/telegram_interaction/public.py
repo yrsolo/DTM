@@ -37,3 +37,11 @@ def get_group_query_formatter():
 
 def get_sender(ctx):
     return get_module().build_sender(ctx)
+
+
+def get_group_query_reply_job(ctx):
+    """Return the owning Telegram interaction job runner for group-query replies."""
+
+    from src.jobs.group_query_reply_job import GroupQueryReplyJob
+
+    return GroupQueryReplyJob(ctx)
