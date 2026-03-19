@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.legacy.app import planner_bootstrap as _impl
+from src.archive.legacy_runtime import planner_bootstrap as _impl
 
 PlannerDependencies = _impl.PlannerDependencies
 build_planner_dependencies = _impl.build_planner_dependencies
