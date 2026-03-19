@@ -19,6 +19,6 @@
 
 - `agent/intructions/DTM-test/**` is reference-only input and must not be used as execution tracking.
 - Working plans and evidence must live only in `work/roadmap/campaigns/<CAMPAIGN>/`.
-- Telegram/reminder/group-query remains frozen for this wave unless break/fix work is required.
+- Freeze on Telegram/reminder/group-query work is lifted for `CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1`; active extraction may continue until a new blocker is recorded.
 - Latest bottleneck follow-up remains historical context only; current live execution focus is the blocked `prod` smoke for the attachment contour.
 - Future child campaigns for the modular-monolith wave must start from `docs/architecture/runtime/modular-monolith-v2.md` and the master campaign trust gate.

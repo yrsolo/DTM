@@ -1,9 +1,18 @@
 from __future__ import annotations
 
 from src.app.context import AppContext
-from src.notify import GroupQueryFormatter, ReminderRequest, ReminderUseCase
-from src.snapshot_engine import build_snapshot_engine
+from src.contexts.telegram_interaction.public import (
+    get_group_query_formatter as _get_group_query_formatter,
+    get_snapshot_engine as _get_group_query_snapshot_engine,
+    get_usecase as _get_group_query_usecase,
+)
+from src.notify import ReminderRequest
 from src.telegram.sender import TelegramSender
+from src.snapshot_engine import build_snapshot_engine
+
+
+build_snapshot_engine = _get_group_query_snapshot_engine
+TelegramSender = TelegramSender
 
 
 class GroupQueryReplyJob:
@@ -12,7 +21,7 @@ class GroupQueryReplyJob:
 
     async def run(self, cmd):
         snapshot_engine = build_snapshot_engine(self._ctx)
-        usecase = ReminderUseCase(snapshot_engine)
+        usecase = _get_group_query_usecase(snapshot_engine)
         groups, today, next_workday = usecase.select(
             ReminderRequest(
                 mode="group_query",
@@ -21,7 +30,7 @@ class GroupQueryReplyJob:
                 include_next_workday=bool(cmd.payload.get("include_next_workday", True)),
             )
         )
-        formatter = GroupQueryFormatter()
+        formatter = _get_group_query_formatter()
         action = str(cmd.payload.get("action", "tasks")).strip().lower() or "tasks"
         requester_name = str(cmd.payload.get("requester_name", "")).strip()
         if action == "deadlines":

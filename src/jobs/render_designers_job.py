@@ -3,11 +3,19 @@ from __future__ import annotations
 from time import perf_counter
 
 from src.app.context import AppContext
+from src.contexts.rendering.public import (
+    get_designers_usecase,
+    get_render_job,
+    get_request,
+    get_snapshot_engine as _get_rendering_snapshot_engine,
+    get_window,
+    get_writer,
+)
 from src.observability.batching import MetricsBatchCollector, add_flush_metrics
-from src.render import DesignersRenderUseCase, GoogleSheetsPlanWriter, RenderJob, RenderRequest, SheetTarget
 from src.render.target_guard import RenderTarget, validate_render_target
-from src.snapshot_engine import build_snapshot_engine
-from src.snapshot_engine.model import Window
+
+
+build_snapshot_engine = _get_rendering_snapshot_engine
 
 
 class RenderDesignersJob:
@@ -22,7 +30,7 @@ class RenderDesignersJob:
 
         wall_clock_started = perf_counter()
         snapshot_engine = build_snapshot_engine(self._ctx)
-        usecase = DesignersRenderUseCase(
+        usecase = get_designers_usecase(
             snapshot_engine,
             timezone_name=str(self._ctx.cfg.runtime.runtime.timezone or "Europe/Moscow"),
         )
@@ -49,13 +57,14 @@ class RenderDesignersJob:
                 "warnings": list(target_warnings),
                 "error": {"code": "render_target_unsafe"},
             }
-        writer = GoogleSheetsPlanWriter(
+        writer = get_writer(
             GoogleSheetsService(str(self._ctx.deps.get("key_json", "")), dry_run=bool(cmd.payload.get("dry_run", False))),
-            SheetTarget(spreadsheet_name=sheet_info.spreadsheet_name, worksheet_name=target_worksheet),
+            spreadsheet_name=sheet_info.spreadsheet_name,
+            worksheet_name=target_worksheet,
         )
-        result = RenderJob(usecase, writer).run(
-            RenderRequest(
-                window=Window(start=None, end=None, mode="intersects"),
+        result = get_render_job(usecase, writer).run(
+            get_request(
+                window=get_window(start=None, end=None, mode="intersects"),
                 statuses=list(cmd.payload.get("statuses", ["work", "pre_done"])),
             )
         )

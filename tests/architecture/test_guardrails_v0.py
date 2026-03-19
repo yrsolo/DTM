@@ -17,6 +17,10 @@ def _python_files(paths: list[Path]) -> list[Path]:
     for path in paths:
         if not path.exists():
             continue
+        if path.is_file():
+            if path.suffix == ".py":
+                result.append(path)
+            continue
         result.extend(sorted(path.rglob("*.py")))
     return result
 
@@ -55,6 +59,12 @@ class GuardrailsV0TestCase(unittest.TestCase):
 
     def test_contexts_do_not_reach_into_other_contexts(self) -> None:
         offenders: list[str] = []
+        allowed_cross_imports = {
+            "rendering": {
+                "src.contexts.snapshot.public",
+                "src.contexts.snapshot.contracts",
+            }
+        }
         for file_path in _python_files([ROOT / "src" / "contexts"]):
             content = file_path.read_text(encoding="utf-8")
             for context_name in (
@@ -66,9 +76,35 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 "telegram_interaction",
             ):
                 self_import = f"src.contexts.{context_name}"
+                owner_context = next(
+                    (name for name in ("access_api", "attachments", "reminders", "rendering", "snapshot", "telegram_interaction") if f"\\{name}\\" in str(file_path)),
+                    "",
+                )
                 if self_import in content and context_name not in str(file_path):
+                    allowed = allowed_cross_imports.get(owner_context, set())
+                    if any(marker in content for marker in allowed):
+                        cleaned = content
+                        for marker in allowed:
+                            cleaned = cleaned.replace(marker, "")
+                        if self_import not in cleaned:
+                            continue
                     offenders.append(str(file_path.relative_to(ROOT)))
                     break
+        self.assertEqual(offenders, [])
+
+    def test_rendering_depends_only_on_snapshot_public_contracts(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "contexts" / "rendering",
+            ROOT / "src" / "jobs" / "render_timeline_job.py",
+            ROOT / "src" / "jobs" / "render_designers_job.py",
+        ]
+        for file_path in _python_files(target_paths):
+            content = file_path.read_text(encoding="utf-8")
+            if "from src.snapshot_engine" in content or "import src.snapshot_engine" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+            if "from src.snapshot_engine.model" in content or "import src.snapshot_engine.model" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
 

@@ -14,15 +14,15 @@ from src.entrypoints.http.info_handler import InfoHandler
 from src.entrypoints.http.job_status_handler import JobStatusHandler
 from src.entrypoints.http.people_snapshot_handler import PeopleSnapshotHandler
 from src.entrypoints.http.task_attachment_read_handler import TaskAttachmentReadHandler
+from src.contexts.telegram_interaction.public import get_webhook_handler
 from src.observability.bottlenecks import append_response_headers
-from src.telegram.webhook import TelegramWebhookHandler
 
 
 class HttpRouter:
     """Route table based HTTP router."""
 
     def __init__(self, ctx: AppContext) -> None:
-        self._telegram_webhook_handler = TelegramWebhookHandler(ctx)
+        self._telegram_webhook_handler = get_webhook_handler(ctx)
         self._admin_task_attachments_handler = AdminTaskAttachmentsHandler(ctx)
         self._admin_queue_handler = AdminQueueHandler(ctx)
         self._job_status_handler = JobStatusHandler(ctx)

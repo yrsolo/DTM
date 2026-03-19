@@ -22,6 +22,7 @@
   - owner-provided split/campaign docs are treated as target intent, not as executable truth by themselves
   - this campaign is the canonical umbrella for the modular-monolith refactor wave
   - child campaign decomposition must follow the rule in `plan.md` and `docs/architecture/runtime/modular-monolith-v2.md`
+  - owner explicitly lifted the temporary Telegram/reminder/group-query freeze on 2026-03-19; extraction can continue inside this umbrella campaign
 
 ## Planned early verification
 - mode routing tests
@@ -34,3 +35,6 @@
 ## Notes
 - current blocked operational focus remains `CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1`
 - this campaign opens the normative architecture and tracking shell for future implementation waves
+- `send_reminders` now routes through `src.contexts.reminders.public`
+- Telegram webhook/router and `group_query_reply` now route through `src.contexts.telegram_interaction.public`
+- rendering-owned jobs now depend on `src.contexts.snapshot.public` / `src.contexts.snapshot.contracts` instead of direct `src.snapshot_engine` imports
