@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from src.app.context import AppContext
+from src.contexts.attachments.public import get_attachment_snapshot_engine, get_attachment_storage
 from src.entrypoints.http.frontend_response_cache import invalidate_default_frontend_responses
-from src.services.attachments import build_attachment_storage
 from src.services.errors import AppError, UserError
-from src.snapshot_engine import build_snapshot_engine
+
+build_snapshot_engine = get_attachment_snapshot_engine
+build_attachment_storage = get_attachment_storage
 
 
 class DeleteTaskAttachmentJob:

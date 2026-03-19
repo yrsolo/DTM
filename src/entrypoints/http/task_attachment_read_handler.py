@@ -1,12 +1,24 @@
 from __future__ import annotations
 
+from src.contexts.attachments.public import (
+    get_attachment_read_resolver,
+    get_attachment_snapshot_engine,
+    get_attachment_storage,
+)
 from src.entrypoints.http.access_context import resolve_access_context
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response
-from src.services.attachments import AttachmentReadResolver, build_attachment_storage
+from src.services.attachments import AttachmentReadResolver
 from src.services.errors import AppError
-from src.snapshot_engine import build_snapshot_engine
+
+
+def build_snapshot_engine(ctx):
+    return get_attachment_snapshot_engine(ctx)
+
+
+def build_attachment_storage(ctx):
+    return get_attachment_storage(ctx)
 
 
 class TaskAttachmentReadHandler:
