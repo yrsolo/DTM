@@ -45,3 +45,4 @@
 - active planner/runtime entrypoints now cross the bootstrap boundary through `src.platform.bootstrap` instead of importing `src.app.bootstrap` directly
 - `src.app.__init__` no longer re-exports bootstrap, which removes an import-time coupling path from light app utilities into heavy runtime wiring
 - planner runtime now has characterization coverage for unsupported mode, reminder-only short-circuit, and render-v2 unsafe-target blocking flow
+- `render_v2` runtime orchestration now reuses `RenderTimelineJob` and `RenderDesignersJob` as canonical per-sheet executors instead of duplicating the happy-path inside `planner_runtime_entry`
