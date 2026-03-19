@@ -4,6 +4,7 @@
 
 ## Done
 
+- CAM-2026-03-19-MODULARITY-AUDIT-V1 completed: code-verified audit now scores each context for autonomy and records the next decoupling moves.
 - CAM-2026-03-19-TEST-ROLLOUT-UNBLOCK-V1 completed: deploy guardrails now accept the active thin-entrypoint contour, and the current `dev` head was deployed to `test` successfully.
 - CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1 completed: modular-monolith refactor umbrella campaign delivered the target runtime contour, config/guardrail hardening, and removal of `src.legacy` from the supported import graph.
 - Docs IA refresh completed: `docs/` is now reorganized by reader intent with Russian onboarding READMEs, relative repo links, and archive folder indexes.

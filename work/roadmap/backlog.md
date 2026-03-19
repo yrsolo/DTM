@@ -10,6 +10,7 @@
 - none
 
 ## Done
+- CAM-2026-03-19-MODULARITY-AUDIT-V1 completed: current module autonomy and the remaining coupling hotspots are now documented in the active runtime docs.
 - CAM-2026-03-19-TEST-ROLLOUT-UNBLOCK-V1 completed: the test deploy guard was aligned with the modular-monolith entrypoint and the latest `dev` head was rolled into `test`.
 - CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1 completed: modular-monolith refactor umbrella wave delivered the target contour and removed the supported legacy namespace.
 - Docs IA refresh completed: active docs moved into `product/`, `architecture/`, `integrations/`, `operations/`, and `reference/`, with archive folders now indexed by local `README.md`.

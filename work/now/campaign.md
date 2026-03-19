@@ -9,6 +9,7 @@ Single source of truth for campaign lifecycle state.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## Done
+- `CAM-2026-03-19-MODULARITY-AUDIT-V1` completed after recording a code-verified module autonomy audit and decoupling plan.
 - `CAM-2026-03-19-TEST-ROLLOUT-UNBLOCK-V1` completed after aligning the deploy guard with the active entrypoint contour and successfully rolling `dev` into `test`.
 - `CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1` completed after the modular-monolith refactor wave, config/guardrail hardening, and legacy namespace removal.
 - `CAM-2026-03-16-DOCS-IA-REFRESH-V1` completed and archived after the docs information architecture refresh and link normalization wave.
