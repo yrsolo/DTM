@@ -42,3 +42,4 @@
 - active snapshot consumers in HTTP/job entry modules now enter through `src.contexts.snapshot.public`
 - `src.render.*`, `src.notify.*`, `src.entrypoints_adapters.*`, and context module builders now depend on `src.contexts.snapshot.public` / `src.contexts.snapshot.contracts` instead of direct `src.snapshot_engine.*` imports
 - direct `src.snapshot_engine.*` imports are now expected to stay inside `src/snapshot_engine/**` and `src/contexts/snapshot/**` only; guardrails enforce this boundary
+- active planner/runtime entrypoints now cross the bootstrap boundary through `src.platform.bootstrap` instead of importing `src.app.bootstrap` directly

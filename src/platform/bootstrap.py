@@ -86,4 +86,3 @@ def get_dispatcher() -> IndexDispatcher:
 
 APP_DEPS = LazyMapping(get_deps)
 APP_TRIGGERS = LazyMapping(get_triggers)
-

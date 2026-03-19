@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from time import perf_counter
 from typing import Any
 
-from src.app.bootstrap import build_app_context
 from src.contexts.reminders.public import (
     get_enhancer as _get_reminders_enhancer,
     get_formatter as _get_reminders_formatter,
@@ -30,6 +29,7 @@ from src.entrypoints.jobs.runtime_context_job import RuntimeContextRequest, reso
 from src.entrypoints.jobs.timer_job import TimerJob
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES, is_legacy_mode
 from src.notify import ReminderJob, ReminderRequest
+from src.platform.app_context import build_runtime_app_context
 from src.render.target_guard import RenderTarget, validate_render_target
 from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
 from src.services.timer_pipeline import RunRequest as TimerRunRequest
@@ -75,7 +75,7 @@ class PlannerRuntimeRequest:
 
 async def run_planner_runtime(request: PlannerRuntimeRequest):
     """Run planner runtime mode through shared entry logic."""
-    app_context = request.app_context or build_app_context()
+    app_context = request.app_context or build_runtime_app_context()
     deps = app_context.deps
     cfg = app_context.cfg
     pipeline_cfg = cfg.runtime.pipeline

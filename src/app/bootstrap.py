@@ -18,32 +18,14 @@ from config import (
 )
 from src.app.context import AppContext
 from src.config.loader import load_config
-from src.infra.yc_iam import get_iam_token
 from src.infra.doc_preview_converter import DocPreviewConverter
 from src.observability import (
-    BufferedMetricsClient,
-    CompositeMetricsClient,
     NoopMetricsClient,
     StdoutJsonLogger,
-    YandexManagedPrometheusRemoteWriteClient,
-    YandexMonitoringMetricsClient,
 )
+from src.platform.infra.monitoring_bootstrap import build_metrics_dependencies
+from src.platform.runtime.queue_bootstrap import build_queue_runtime
 from src.services.mappers.task_payload_mapper import TaskPayloadMapper
-
-
-def _resolve_env_prefix(value: str, env_name: str) -> str:
-    token = "{env}"
-    cleaned = str(value or "").strip()
-    if token in cleaned:
-        return cleaned.replace(token, str(env_name or "").strip().lower() or "dev")
-    return cleaned
-
-
-def _resolve_queue_url(cfg) -> str:
-    env_name = str(cfg.runtime.runtime.env_default or "").strip().lower()
-    if env_name == "prod":
-        return str(cfg.runtime.queue.prod_queue_url or "").strip()
-    return str(cfg.runtime.queue.test_queue_url or "").strip()
 
 
 def build_app_context() -> AppContext:
@@ -91,115 +73,6 @@ def build_app_context() -> AppContext:
             shared_token=doc_preview_converter_token,
         )
     ctx = AppContext(cfg=cfg, deps=deps)
-    monitoring_cfg = cfg.runtime.monitoring
-    prometheus_cfg = cfg.runtime.prometheus
-
-    def _iam_token_provider() -> str:
-        return get_iam_token(
-            deps.get("yc_sa_json_credentials"),
-            deps.get("yc_sa_key_file"),
-            timeout_seconds=4.0,
-        )
-
-    metrics_delivery_mode = str(cfg.runtime.runtime.metrics_delivery_mode or "").strip().lower() or "buffered"
-    metrics_sink = NoopMetricsClient()
-    metrics_clients = []
-    if bool(monitoring_cfg.enabled) and str(monitoring_cfg.backend).strip().lower() == "yandex_monitoring":
-        folder_id = str(monitoring_cfg.folder_id).strip() or str(cfg.deploy.yandex_cloud.folder_id).strip()
-        metrics_clients.append(
-            YandexMonitoringMetricsClient(
-                folder_id=folder_id,
-                iam_token_provider=_iam_token_provider,
-                logger=structured_logger,
-                endpoint_write=str(monitoring_cfg.endpoint_write).strip(),
-                service_label=str(monitoring_cfg.service).strip() or "dtm",
-                namespace=str(monitoring_cfg.namespace).strip() or "dtm",
-            )
-        )
-    if bool(prometheus_cfg.enabled):
-        backend_name = str(prometheus_cfg.backend or "").strip().lower()
-        if backend_name == "yandex_managed_prometheus":
-            prometheus_api_key = str(deps.get("yandex_prometheus_api_key") or "").strip()
-            if not prometheus_api_key:
-                raise ValueError(
-                    "YANDEX_PROMETHEUS_API_KEY or YMP_API_KEY is required "
-                    "when prometheus.backend=yandex_managed_prometheus and prometheus.enabled=true"
-                )
-            metrics_clients.append(
-                YandexManagedPrometheusRemoteWriteClient(
-                    endpoint_write=str(prometheus_cfg.endpoint_write).strip(),
-                    api_key=prometheus_api_key,
-                    logger=structured_logger,
-                    service_label=str(prometheus_cfg.service).strip() or "dtm",
-                    namespace=str(prometheus_cfg.namespace).strip() or "dtm",
-                    timeout_seconds=float(prometheus_cfg.timeout_seconds),
-                )
-            )
-        else:
-            raise ValueError(f"Unsupported prometheus backend: {backend_name}")
-    if len(metrics_clients) == 1:
-        metrics_sink = metrics_clients[0]
-    elif len(metrics_clients) > 1:
-        metrics_sink = CompositeMetricsClient(metrics_clients)
-    deps["metrics_sink"] = metrics_sink
-    if metrics_delivery_mode == "off":
-        deps["metrics_client"] = NoopMetricsClient()
-        deps["metrics_sink"] = NoopMetricsClient()
-    else:
-        deps["metrics_client"] = BufferedMetricsClient(metrics_sink)
-    queue_cfg = cfg.runtime.queue
-    if bool(queue_cfg.enabled):
-        from src.commands.yandex_mq import YandexMessageQueueProducer
-        from src.jobs.render_designers_job import RenderDesignersJob
-        from src.jobs.render_timeline_job import RenderTimelineJob
-        from src.jobs.send_reminders_job import SendRemindersJob
-        from src.jobs.update_snapshot_job import UpdateSnapshotJob
-        from src.jobs.group_query_reply_job import GroupQueryReplyJob
-        from src.jobs.attach_task_file_job import AttachTaskFileJob
-        from src.jobs.cleanup_task_attachments_job import CleanupTaskAttachmentsJob
-        from src.jobs.delete_task_attachment_job import DeleteTaskAttachmentJob
-        from src.jobs.generate_attachment_preview_job import GenerateAttachmentPreviewJob
-        from src.worker.dispatcher import CommandDispatcher
-        from src.worker.status_store import S3JobStatusStore
-        from src.worker.worker import Worker
-
-        bucket = str(cfg.runtime.snapshot_engine.bucket).strip()
-        endpoint_url = str(cfg.db.object_storage.get("endpoint_url_default", "")).strip() or None
-        env_name = str(cfg.runtime.runtime.env_default or "").strip().lower() or "dev"
-        status_store = S3JobStatusStore(
-            bucket=bucket,
-            endpoint_url=endpoint_url,
-            aws_access_key_id=deps.get("aws_access_key_id"),
-            aws_secret_access_key=deps.get("aws_secret_access_key"),
-            status_prefix=_resolve_env_prefix(str(queue_cfg.status_prefix), env_name),
-            latest_prefix=_resolve_env_prefix(str(queue_cfg.latest_prefix), env_name),
-        )
-        producer = YandexMessageQueueProducer(
-            queue_url=_resolve_queue_url(cfg),
-            endpoint_url=str(queue_cfg.endpoint_url or "").strip() or None,
-            aws_access_key_id=deps.get("aws_access_key_id"),
-            aws_secret_access_key=deps.get("aws_secret_access_key"),
-        )
-        dispatcher = CommandDispatcher(
-            update_snapshot_job=UpdateSnapshotJob(ctx),
-            send_reminders_job=SendRemindersJob(ctx),
-            render_timeline_job=RenderTimelineJob(ctx),
-            render_designers_job=RenderDesignersJob(ctx),
-            group_query_reply_job=GroupQueryReplyJob(ctx),
-            attach_task_file_job=AttachTaskFileJob(ctx),
-            delete_task_attachment_job=DeleteTaskAttachmentJob(ctx),
-            cleanup_task_attachments_job=CleanupTaskAttachmentsJob(ctx),
-            generate_attachment_preview_job=GenerateAttachmentPreviewJob(ctx),
-        )
-        deps["job_status_store"] = status_store
-        deps["command_queue_producer"] = producer
-        deps["command_dispatcher"] = dispatcher
-        deps["command_worker"] = Worker(
-            status_store=status_store,
-            dispatcher=dispatcher,
-            logger=ctx.log,
-            metrics=deps.get("metrics_client"),
-            structured_logger=deps.get("structured_logger"),
-            env_name=str(cfg.runtime.runtime.env_default),
-        )
+    deps.update(build_metrics_dependencies(ctx, deps, structured_logger=structured_logger))
+    deps.update(build_queue_runtime(ctx, deps))
     return ctx

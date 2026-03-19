@@ -57,6 +57,18 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
+    def test_active_entrypoints_do_not_import_app_bootstrap_directly(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "entrypoint",
+            ROOT / "src" / "entrypoints",
+        ]
+        for file_path in _python_files(target_paths):
+            content = file_path.read_text(encoding="utf-8")
+            if "from src.app.bootstrap import" in content or "import src.app.bootstrap" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
     def test_contexts_do_not_reach_into_other_contexts(self) -> None:
         offenders: list[str] = []
         allowed_cross_imports = {
