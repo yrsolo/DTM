@@ -1,5 +1,6 @@
 # Active Tasks
 
+- CAM-2026-03-19-TEST-ROLLOUT-UNBLOCK-V1: align deploy guardrails with the active runtime contour, then roll current `dev` head into `test`.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done

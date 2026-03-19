@@ -1,7 +1,7 @@
 """Yandex Cloud entrypoint with thin top-level dispatch."""
 
 from src.entrypoint.handler import handle as handle_entrypoint
-from src.platform.bootstrap import APP_DEPS, APP_TRIGGERS, get_app_context, get_dispatcher
+from src.platform.bootstrap import APP_TRIGGERS, get_app_context, get_dispatcher
 
 
 def _get_app_context():
