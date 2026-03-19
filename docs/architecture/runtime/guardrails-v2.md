@@ -20,6 +20,7 @@ Governing source:
 - `os.getenv` grep/test gate
 - active-path no-legacy-import gate
 - snapshot/rendering boundary test
+- active-path no-legacy-config-import gate
 
 ## Boundary-specific rule
 
@@ -30,3 +31,6 @@ Governing source:
 
 These guardrails should be introduced before the first fully extracted context so migration velocity does not silently recreate the old coupling pattern.
 
+Current enforced baseline in the active runtime:
+- active runtime paths may not import `src.legacy`
+- active runtime paths may not import the legacy `config` package

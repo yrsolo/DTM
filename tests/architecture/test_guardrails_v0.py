@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 import unittest
 
 
@@ -39,6 +40,47 @@ class GuardrailsV0TestCase(unittest.TestCase):
         for file_path in _python_files(TARGET_DIRS):
             content = file_path.read_text(encoding="utf-8")
             if "src.legacy" in content or "from src.legacy" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_active_runtime_paths_do_not_import_legacy_namespace(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "app",
+            ROOT / "src" / "entrypoint",
+            ROOT / "src" / "platform",
+            ROOT / "src" / "contexts",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "jobs",
+            ROOT / "src" / "services",
+            ROOT / "src" / "render",
+            ROOT / "src" / "notify",
+            ROOT / "src" / "entrypoints_adapters",
+        ]
+        for file_path in _python_files(target_paths):
+            content = file_path.read_text(encoding="utf-8")
+            if "src.legacy" in content or "from src.legacy" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_active_runtime_paths_do_not_import_legacy_config_package(self) -> None:
+        offenders: list[str] = []
+        import_patterns = (
+            re.compile(r"^\s*from\s+config(?:\s+import|\.)", re.MULTILINE),
+            re.compile(r"^\s*import\s+config(?:\s|$|\.)", re.MULTILINE),
+        )
+        target_paths = [
+            ROOT / "src" / "app",
+            ROOT / "src" / "entrypoint",
+            ROOT / "src" / "platform",
+            ROOT / "src" / "contexts",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "jobs",
+            ROOT / "src" / "services",
+        ]
+        for file_path in _python_files(target_paths):
+            content = file_path.read_text(encoding="utf-8")
+            if any(pattern.search(content) for pattern in import_patterns):
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 

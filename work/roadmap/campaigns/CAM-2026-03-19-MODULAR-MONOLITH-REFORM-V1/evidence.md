@@ -46,3 +46,6 @@
 - `src.app.__init__` no longer re-exports bootstrap, which removes an import-time coupling path from light app utilities into heavy runtime wiring
 - planner runtime now has characterization coverage for unsupported mode, reminder-only short-circuit, and render-v2 unsafe-target blocking flow
 - `render_v2` runtime orchestration now reuses `RenderTimelineJob` and `RenderDesignersJob` as canonical per-sheet executors instead of duplicating the happy-path inside `planner_runtime_entry`
+- active bootstrap no longer depends on legacy `config.constants`; base runtime deps are now resolved directly from `load_config()` plus bootstrap-owned env loading
+- `P14` config centralization is now backed by bootstrap input tests plus an active-path guardrail that blocks reintroduction of legacy `config` imports
+- active runtime paths (`app`, `entrypoint`, `platform`, `contexts`, `entrypoints`, `jobs`, `services`, `render`, `notify`, `entrypoints_adapters`) were re-verified to contain no `src.legacy` imports before entering `P15`
