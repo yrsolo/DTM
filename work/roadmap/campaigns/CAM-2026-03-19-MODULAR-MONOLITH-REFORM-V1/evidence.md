@@ -39,3 +39,4 @@
 - Telegram webhook/router and `group_query_reply` now route through `src.contexts.telegram_interaction.public`
 - rendering-owned jobs now depend on `src.contexts.snapshot.public` / `src.contexts.snapshot.contracts` instead of direct `src.snapshot_engine` imports
 - browser-facing HTTP handlers now route through `src.contexts.access_api.public`
+- active snapshot consumers in HTTP/job entry modules now enter through `src.contexts.snapshot.public`

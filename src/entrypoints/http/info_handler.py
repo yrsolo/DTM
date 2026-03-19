@@ -11,6 +11,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 from src.app.context import AppContext
+from src.contexts.snapshot.public import get_snapshot_engine as _get_snapshot_engine
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import html_response, json_response
@@ -25,9 +26,11 @@ from src.observability.bottlenecks import (
     resolve_bottleneck_metrics_level,
 )
 from src.observability.buffered_metrics import metrics_sink_name, remote_metrics_enabled
-from src.snapshot_engine.engine import build_snapshot_engine
 from src.services.attachments.contracts import SUPPORTED_ATTACHMENT_MIME_TYPES
 from src.worker.model import JobStatusRecord
+
+
+build_snapshot_engine = _get_snapshot_engine
 
 
 def _human_size(value: int) -> str:

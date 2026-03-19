@@ -14,11 +14,14 @@ from src.commands.types import (
     SEND_REMINDERS,
     UPDATE_SNAPSHOT,
 )
+from src.contexts.snapshot.public import get_snapshot_engine as _get_snapshot_engine
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response, json_response
 from src.entrypoints.triggers.trigger_plan import planned_trigger_commands, resolve_trigger_mode_by_id
-from src.snapshot_engine import build_snapshot_engine
+
+
+build_snapshot_engine = _get_snapshot_engine
 
 
 class AdminQueueHandler:

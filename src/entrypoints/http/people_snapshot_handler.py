@@ -8,10 +8,13 @@ from datetime import datetime, timezone
 from hmac import compare_digest
 
 from src.app.context import AppContext
+from src.contexts.snapshot.public import get_snapshot_engine as _get_snapshot_engine
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response, json_response
-from src.snapshot_engine import build_snapshot_engine
+
+
+build_snapshot_engine = _get_snapshot_engine
 
 
 def _header_map(headers: dict[str, object] | None) -> dict[str, str]:

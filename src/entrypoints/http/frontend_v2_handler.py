@@ -5,6 +5,7 @@ from __future__ import annotations
 import time
 
 from src.app.context import AppContext
+from src.contexts.snapshot.public import get_snapshot_engine as _get_snapshot_engine
 from src.entrypoints.http.access_context import resolve_access_context
 from src.entrypoints.http.frontend_response_cache import (
     build_default_frontend_cache_query_hash,
@@ -35,7 +36,9 @@ from src.observability.bottlenecks import (
 )
 from src.services.access import mask_frontend_payload
 from src.services.access.masking import masking_version_for_hour
-from src.snapshot_engine import build_snapshot_engine
+
+
+build_snapshot_engine = _get_snapshot_engine
 
 
 def _path_matches(path: str, candidates: set[str]) -> bool:
