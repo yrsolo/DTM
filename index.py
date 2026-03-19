@@ -1,6 +1,7 @@
 """Yandex Cloud entrypoint with thin top-level dispatch."""
 
 from src.app.bootstrap import build_app_context
+from src.entrypoint.handler import handle as handle_entrypoint
 from src.entrypoints.index_dispatcher import IndexDispatcher
 
 
@@ -80,4 +81,10 @@ APP_TRIGGERS = _LazyMapping(_get_triggers)
 
 async def handler(event, _):
     """Yandex Cloud handler."""
-    return await _get_dispatcher().handle(event, _)
+    return await handle_entrypoint(
+        event,
+        _,
+        get_dispatcher=_get_dispatcher,
+        triggers=APP_TRIGGERS,
+        telegram_webhook_path=_get_app_context().cfg.runtime.telegram.webhook_path,
+    )
