@@ -1,10 +1,10 @@
 # Active Tasks
 
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
-- CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1: modular-monolith refactor umbrella campaign is opened as the canonical architecture and sequencing source for future extraction waves.
 
 ## Done
 
+- CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1 completed: modular-monolith refactor umbrella campaign delivered the target runtime contour, config/guardrail hardening, and removal of `src.legacy` from the supported import graph.
 - Docs IA refresh completed: `docs/` is now reorganized by reader intent with Russian onboarding READMEs, relative repo links, and archive folder indexes.
 - Legacy `.doc` preview converter wave completed: `.doc` view now resolves to PDF preview while download returns original, with async preview job and updated operator harness.
 - Info attachment harness now includes step pipeline visualization, per-step JSON panel, and preview-job stage tracking.
@@ -22,5 +22,4 @@
 - Freeze on Telegram/reminder/group-query work is lifted for `CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1`; active extraction may continue until a new blocker is recorded.
 - Latest bottleneck follow-up remains historical context only; current live execution focus is the blocked `prod` smoke for the attachment contour.
 - Future child campaigns for the modular-monolith wave must start from `docs/architecture/runtime/modular-monolith-v2.md` and the master campaign trust gate.
-- Modular-monolith umbrella campaign has advanced through `P14` config centralization and is now in `P15` safe legacy/polish hardening.
-- `P15b` legacy namespace removal is complete: `src.legacy` and `tests.legacy` no longer exist as importable namespaces; legacy code remains only under `src/archive/legacy_runtime/*` and `archive/legacy_test_refs/*`.
+- Modular-monolith umbrella campaign is complete; remaining issues now belong to separate follow-up campaigns.

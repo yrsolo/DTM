@@ -51,3 +51,14 @@
 - active runtime paths (`app`, `entrypoint`, `platform`, `contexts`, `entrypoints`, `jobs`, `services`, `render`, `notify`, `entrypoints_adapters`) were re-verified to contain no `src.legacy` imports before entering `P15`
 - runtime architecture docs were re-aligned to the current ownership reality: `src/contexts/*` and `src/platform/*` are now documented as the active refactor contour, while `src/render/*`, `src/notify/*`, and `src/telegram/*` remain transitional implementation detail layers behind those context boundaries
 - `P15b` legacy namespace removal is complete: `src.legacy` and `tests.legacy` were removed from the tree, remaining legacy runtime code lives only under `src/archive/legacy_runtime/*`, and archived legacy tests live under `archive/legacy_test_refs/*` outside the default test contour
+
+## Closeout
+
+- campaign status: completed
+- delivered outcome:
+  - modular-monolith target contour is active
+  - active runtime no longer depends on legacy namespace paths
+  - legacy runtime code is archive-only
+- remaining work:
+  - `/info` build metadata 404
+  - notify enqueue inconsistency on test

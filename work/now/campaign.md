@@ -3,12 +3,13 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
-- CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1
+- none
 
 ## Blocked
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## Done
+- `CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1` completed after the modular-monolith refactor wave, config/guardrail hardening, and legacy namespace removal.
 - `CAM-2026-03-16-DOCS-IA-REFRESH-V1` completed and archived after the docs information architecture refresh and link normalization wave.
 - `CAM-2026-03-16-DOC-PREVIEW-CONVERTER-V1` completed and archived after the legacy `.doc` preview split-flow and converter integration.
 - Recent completed campaigns were archived under `work/archive/campaigns/`.
