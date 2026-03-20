@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DTM Info</title>
+  <style>
+__INFO_CSS__
+  </style>
+</head>
+<body>
+  <h1>DTM Info Dashboard</h1>
+  <div class="grid">
+    <div class="card">
+      <h2>Snapshot Meta</h2>
+      <div class="row"><span class="k">Env:</span> <span class="v" id="env"></span></div>
+      <div class="row"><span class="k">Bucket:</span> <span class="v" id="bucket"></span></div>
+      <div class="row"><span class="k">SourceId:</span> <span class="v" id="sourceId"></span></div>
+      <div class="row"><span class="k">SourceHash:</span> <span class="v" id="sourceHash"></span></div>
+      <div class="row"><span class="k">Raw fetched:</span> <span class="v" id="rawFetchedAt"></span></div>
+      <div class="row"><span class="k">Prep built:</span> <span class="v" id="prepBuiltAt"></span></div>
+    </div>
+    <div class="card">
+      <h2>Records</h2>
+      <div class="row"><span class="k">Total tasks:</span> <span class="v" id="tasksTotal"></span></div>
+      <div class="row"><span class="k">By status:</span> <span class="v" id="statusCounts"></span></div>
+    </div>
+    <div class="card">
+      <h2>Storage</h2>
+      <div class="row"><span class="k">Objects:</span> <span class="v" id="objectsTotal"></span></div>
+      <div class="row"><span class="k">Size bytes:</span> <span class="v" id="bytesTotal"></span></div>
+      <div class="row"><span class="k">Size human:</span> <span class="v" id="bytesHuman"></span></div>
+      <div class="row"><span class="k">Breakdown:</span> <span class="v" id="sizeBreakdown"></span></div>
+    </div>
+    <div class="card" id="functionBuildCard">
+      <h2>Function Build</h2>
+      <div class="row"><span class="k">Function:</span> <span class="v" id="buildFunctionName"></span></div>
+      <div class="row"><span class="k">Version:</span> <span class="v" id="buildVersionId"></span></div>
+      <div class="row"><span class="k">Deployed:</span> <span class="v" id="buildDeployedAt"></span></div>
+      <div class="row"><span class="k">Runtime:</span> <span class="v" id="buildRuntime"></span></div>
+      <div class="row"><span class="k">Memory/timeout:</span> <span class="v" id="buildResources"></span></div>
+      <div class="row"><span class="k">Entrypoint:</span> <span class="v" id="buildEntrypoint"></span></div>
+    </div>
+    <div class="card">
+      <h2>Queue State</h2>
+      <div class="row"><span class="k">Name:</span> <span class="v" id="queueName"></span></div>
+      <div class="row"><span class="k">Visible:</span> <span class="v" id="queueVisible"></span></div>
+      <div class="row"><span class="k">In flight:</span> <span class="v" id="queueInflight"></span></div>
+      <div class="row"><span class="k">Delayed:</span> <span class="v" id="queueDelayed"></span></div>
+      <div class="row"><span class="k">DLQ:</span> <span class="v" id="queueDlq"></span></div>
+      <div class="row"><span class="k">Error:</span> <span class="v" id="queueError"></span></div>
+    </div>
+    <div class="card">
+      <h2>Bottleneck Profiling</h2>
+      <div class="row"><span class="k">Level:</span> <span class="v" id="bottleneckLevel"></span></div>
+      <div class="row"><span class="k">Stage metrics:</span> <span class="v" id="bottleneckStageEnabled"></span></div>
+      <div class="row"><span class="k">Debug metrics:</span> <span class="v" id="bottleneckDebugEnabled"></span></div>
+      <div class="row"><span class="k">Recent traces:</span> <span class="v" id="bottleneckTraceCount"></span></div>
+    </div>
+  </div>
+
+  <details class="card section collapsible">
+    <summary class="section-summary">
+      <span>Bottleneck Diagnostics</span>
+      <span class="collapse-hint">show</span>
+    </summary>
+    <pre id="bottleneckDiagnostics">{"recentApiTraces":[]}</pre>
+  </details>
+
+  <details class="card section collapsible">
+    <summary class="section-summary">
+      <span>Jobs & Render Debug</span>
+      <span class="collapse-hint">show</span>
+    </summary>
+    <div class="grid collapsible-grid">
+      <div class="subcard">
+        <h2>Recent Jobs</h2>
+        <pre id="recentJobs">[]</pre>
+      </div>
+      <div class="subcard">
+        <h2>Last Errors</h2>
+        <pre id="recentErrors">[]</pre>
+      </div>
+      <div class="subcard">
+        <h2>Last Render Job</h2>
+        <pre id="lastRenderJob">{}</pre>
+      </div>
+      <div class="subcard">
+        <h2>Render Debug</h2>
+        <pre id="renderDebug">{}</pre>
+      </div>
+    </div>
+  </details>
+
+  <details class="card section collapsible">
+    <summary class="section-summary">
+      <span>Admin Actions</span>
+      <span class="collapse-hint">show</span>
+    </summary>
+    <div class="hline">
+      <span class="section-note">Queue-backed admin actions</span>
+      <span class="timer" id="adminTimer">00:00.0</span>
+    </div>
+    <button onclick="enqueueAdminCommand('/admin/commands/update-snapshot', {force_refresh:true,dry_run:false})">Force snapshot refresh</button>
+    <button onclick="enqueueAdminCommand('/admin/commands/render-timeline', {statuses:['work','pre_done'],dry_run:false})">Force render table</button>
+    <div class="controls">
+      <label>trigger_id <input id="triggerIdValue" type="text" value="a1smsif4rc82qbj1e3hf" /></label>
+      <button class="alt" onclick="enqueueTriggerEmulation()">Emulate trigger</button>
+    </div>
+    <button onclick="enqueueAdminCommand('/admin/commands/send-reminders', {mode:'test',statuses:['work','pre_done'],include_today:true,include_next_workday:true,force_test_chat:true,mock_external:false})">Notify test chat</button>
+    <button onclick="enqueueAdminCommand('/admin/commands/send-reminders', {mode:'morning',statuses:['work','pre_done'],include_today:true,include_next_workday:true,force_test_chat:false,mock_external:false})">Notify designer chats</button>
+    <pre id="adminResult">Готово к запуску действий.</pre>
+  </details>
+
+  <details class="card section collapsible">
+    <summary class="section-summary">
+      <span>API Request Builder</span>
+      <span class="collapse-hint">show</span>
+    </summary>
+    <div class="hline">
+      <span class="section-note">Manual frontend API query builder</span>
+      <span class="timer" id="apiTimer">00:00.0</span>
+    </div>
+    <div class="controls">
+      <label><input id="includePeople" type="checkbox" checked /> include_people</label>
+    </div>
+    <div class="controls">
+      <span class="k">access mode:</span>
+      <label><input id="accessFull" type="radio" name="accessMode" checked /> full (with cookie)</label>
+      <label><input id="accessMasked" type="radio" name="accessMode" /> masked (omit cookie)</label>
+    </div>
+    <div class="controls">
+      <span class="k">target route:</span>
+      <label><input id="routeBff" type="radio" name="apiRoute" checked /> browser proxy (/bff/api)</label>
+      <label><input id="routeDirect" type="radio" name="apiRoute" /> direct backend (/api)</label>
+    </div>
+    <div class="controls">
+      <label>limit <input id="limitValue" type="number" min="1" max="2000" value="200" /></label>
+      <button class="alt small" onclick="setLimit(20)">20</button>
+      <button class="alt small" onclick="setLimit(100)">100</button>
+      <button class="alt small" onclick="setLimit(200)">200</button>
+      <button class="alt small" onclick="setLimit(500)">500</button>
+    </div>
+    <div class="controls">
+      <span class="k">statuses:</span>
+      <label><input id="stWork" type="checkbox" checked /> work</label>
+      <label><input id="stPreDone" type="checkbox" checked /> pre_done</label>
+      <label><input id="stWait" type="checkbox" /> wait</label>
+      <label><input id="stDone" type="checkbox" /> done</label>
+    </div>
+    <div class="controls">
+      <label>window start <input id="windowStart" type="date" /></label>
+      <label>window end <input id="windowEnd" type="date" /></label>
+      <button class="alt small" onclick="setWindowPreset(7)">next 7d</button>
+      <button class="alt small" onclick="setWindowPreset(14)">next 14d</button>
+      <button class="alt small" onclick="clearWindow()">clear window</button>
+    </div>
+    <div class="controls">
+      <button onclick="sendApiBuilder()">Send</button>
+      <button class="alt" onclick="applyApiPreset('active20')">Preset: Active 20</button>
+      <button class="alt" onclick="applyApiPreset('done20')">Preset: Done 20</button>
+      <button class="alt" onclick="applyApiPreset('all100')">Preset: All 100</button>
+      <button class="alt" onclick="applyApiPreset('window14')">Preset: Window 14d</button>
+    </div>
+    <div class="row"><span class="k">Request URL:</span></div>
+    <pre id="apiRequestUrl"></pre>
+    <div class="row"><span class="k">Route:</span> <span class="v" id="apiRouteMode">browser proxy (/bff/api)</span></div>
+    <div class="row"><span class="k">Fetch mode:</span> <span class="v" id="apiAccessMode">full / credentials=include</span></div>
+    <pre id="apiResult">Соберите параметры и нажмите Send.</pre>
+  </details>
+
+  <details class="card section collapsible">
+    <summary class="section-summary">
+      <span>Attachment Harness</span>
+      <span class="collapse-hint">show</span>
+    </summary>
+    <div class="hline">
+      <span class="section-note">Reserved probe task attachment flow</span>
+      <span class="timer" id="attachmentTimer">00:00.0</span>
+    </div>
+    <div class="row"><span class="k">Probe task:</span> <span class="v" id="attachmentProbeTaskId"></span></div>
+    <div class="row"><span class="k">Expected status:</span> <span class="v" id="attachmentProbeExpectedStatus"></span></div>
+    <div class="row"><span class="k">Task available:</span> <span class="v" id="attachmentProbeAvailable"></span></div>
+    <div class="row"><span class="k">Current task status:</span> <span class="v" id="attachmentProbeStatus"></span></div>
+    <div class="row"><span class="k">Current attachments:</span> <span class="v" id="attachmentProbeAttachmentsCount"></span></div>
+    <div class="row"><span class="k">Allowed mime types:</span> <span class="v" id="attachmentAllowedMimes"></span></div>
+    <div class="row"><span class="k">Selected attachment:</span> <span class="v" id="attachmentSelectedId"></span></div>
+    <div id="attachmentProbeAttachmentsList" class="attachment-list"></div>
+    <div class="controls">
+      <label>file <input id="attachmentFileInput" type="file" /></label>
+    </div>
+    <div class="controls">
+      <button onclick="attachmentRequestUpload()">Request upload</button>
+      <button class="alt" onclick="attachmentUploadBinary()">Upload binary</button>
+      <button class="alt" onclick="attachmentFinalize()">Finalize</button>
+      <button class="alt" onclick="attachmentPollLastJob()">Poll job</button>
+    </div>
+    <div class="controls">
+      <button class="alt" onclick="attachmentCheckProbeState()">Refresh probe state</button>
+      <button class="alt" onclick="attachmentOpenView()">View</button>
+      <button class="alt" onclick="attachmentOpenDownload()">Download</button>
+      <button class="alt" onclick="attachmentDelete()">Delete</button>
+      <button onclick="attachmentRunFullFlow()">Run full probe</button>
+      <button class="alt" onclick="attachmentClearLog()">Clear log</button>
+    </div>
+    <div class="attachment-pipeline-layout">
+      <div class="attachment-pipeline">
+        <div class="attachment-pipeline-title">Attachment flow</div>
+        <div id="attachmentPipelineSteps" class="attachment-pipeline-steps"></div>
+      </div>
+      <div class="attachment-step-json">
+        <div class="attachment-pipeline-title">Selected step JSON</div>
+        <pre id="attachmentHarnessStepResult">Select a step to inspect JSON.</pre>
+      </div>
+    </div>
+    <div class="attachment-log">
+      <div class="attachment-pipeline-title">All JSON (latest)</div>
+      <pre id="attachmentHarnessResult">Select a file to start the attachment harness.</pre>
+    </div>
+  </details>
+
+  <details class="card section collapsible">
+    <summary class="section-summary">
+      <span>Payload JSON</span>
+      <span class="collapse-hint">show</span>
+    </summary>
+    <pre id="infoResult">__INFO_PAYLOAD_JSON__</pre>
+  </details>
+
+  <details class="card section collapsible" id="grafanaSection">
+    <summary class="section-summary">
+      <span>Grafana Dashboard</span>
+      <span class="collapse-hint">show</span>
+    </summary>
+    <div class="hline">
+      <span class="section-note">Embedded observability dashboard</span>
+      <a id="grafanaLink" class="v" href="#" target="_blank" rel="noreferrer" style="display:none">open</a>
+    </div>
+    <div id="grafanaEmpty" class="muted">Grafana embed URL is not configured.</div>
+    <iframe id="grafanaFrame" src="" allowfullscreen style="display:none"></iframe>
+  </details>
+
+  <script>
+__INFO_JS__
+  </script>
+</body>
+</html>

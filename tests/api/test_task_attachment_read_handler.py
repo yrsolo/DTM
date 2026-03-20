@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 from types import SimpleNamespace
 
+from src.contexts.access_api.internal import task_attachment_read_handler as access_task_attachment_read_module
 from src.entrypoints.http.dto import HttpRequest
 from src.entrypoints.http.task_attachment_read_handler import TaskAttachmentReadHandler
 
@@ -95,7 +96,9 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
         import src.entrypoints.http.task_attachment_read_handler as module
 
         original_resolver = module.build_attachment_read_resolver
+        original_access_resolver = access_task_attachment_read_module.build_attachment_read_resolver
         module.build_attachment_read_resolver = lambda _ctx: _FakeResolver(store=_FakeAttachmentStore())  # type: ignore[assignment]
+        access_task_attachment_read_module.build_attachment_read_resolver = module.build_attachment_read_resolver  # type: ignore[assignment]
         try:
             handler = TaskAttachmentReadHandler(_FakeCtx())
             denied = handler.handle(
@@ -117,6 +120,7 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
             )
         finally:
             module.build_attachment_read_resolver = original_resolver  # type: ignore[assignment]
+            access_task_attachment_read_module.build_attachment_read_resolver = original_access_resolver  # type: ignore[assignment]
 
         self.assertIsNotNone(denied)
         self.assertEqual(denied.status, 403)
@@ -128,7 +132,9 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
         import src.entrypoints.http.task_attachment_read_handler as module
 
         original_resolver = module.build_attachment_read_resolver
+        original_access_resolver = access_task_attachment_read_module.build_attachment_read_resolver
         module.build_attachment_read_resolver = lambda _ctx: _FakeResolver(store=_FakeAttachmentStore())  # type: ignore[assignment]
+        access_task_attachment_read_module.build_attachment_read_resolver = module.build_attachment_read_resolver  # type: ignore[assignment]
         try:
             handler = TaskAttachmentReadHandler(_FakeCtx())
             response = handler.handle(
@@ -147,6 +153,7 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
             )
         finally:
             module.build_attachment_read_resolver = original_resolver  # type: ignore[assignment]
+            access_task_attachment_read_module.build_attachment_read_resolver = original_access_resolver  # type: ignore[assignment]
 
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 404)
@@ -155,8 +162,10 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
         import src.entrypoints.http.task_attachment_read_handler as module
 
         original_resolver = module.build_attachment_read_resolver
+        original_access_resolver = access_task_attachment_read_module.build_attachment_read_resolver
         doc_store = _FakeDocAttachmentStore(preview_state="ready", derived_preview_ref="attachments/test/task-1/doc-1/preview.pdf")
         module.build_attachment_read_resolver = lambda _ctx: _FakeResolver(store=doc_store)  # type: ignore[assignment]
+        access_task_attachment_read_module.build_attachment_read_resolver = module.build_attachment_read_resolver  # type: ignore[assignment]
         try:
             handler = TaskAttachmentReadHandler(_FakeCtx())
             allowed = handler.handle(
@@ -175,6 +184,7 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
             )
         finally:
             module.build_attachment_read_resolver = original_resolver  # type: ignore[assignment]
+            access_task_attachment_read_module.build_attachment_read_resolver = original_access_resolver  # type: ignore[assignment]
 
         self.assertIsNotNone(allowed)
         self.assertEqual(allowed.status, 302)
@@ -184,8 +194,10 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
         import src.entrypoints.http.task_attachment_read_handler as module
 
         original_resolver = module.build_attachment_read_resolver
+        original_access_resolver = access_task_attachment_read_module.build_attachment_read_resolver
         doc_store = _FakeDocAttachmentStore(preview_state="pending")
         module.build_attachment_read_resolver = lambda _ctx: _FakeResolver(store=doc_store)  # type: ignore[assignment]
+        access_task_attachment_read_module.build_attachment_read_resolver = module.build_attachment_read_resolver  # type: ignore[assignment]
         try:
             handler = TaskAttachmentReadHandler(_FakeCtx())
             response = handler.handle(
@@ -204,6 +216,7 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
             )
         finally:
             module.build_attachment_read_resolver = original_resolver  # type: ignore[assignment]
+            access_task_attachment_read_module.build_attachment_read_resolver = original_access_resolver  # type: ignore[assignment]
 
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 409)
@@ -212,8 +225,10 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
         import src.entrypoints.http.task_attachment_read_handler as module
 
         original_resolver = module.build_attachment_read_resolver
+        original_access_resolver = access_task_attachment_read_module.build_attachment_read_resolver
         doc_store = _FakeDocAttachmentStore(preview_state="failed")
         module.build_attachment_read_resolver = lambda _ctx: _FakeResolver(store=doc_store)  # type: ignore[assignment]
+        access_task_attachment_read_module.build_attachment_read_resolver = module.build_attachment_read_resolver  # type: ignore[assignment]
         try:
             handler = TaskAttachmentReadHandler(_FakeCtx())
             response = handler.handle(
@@ -232,6 +247,7 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
             )
         finally:
             module.build_attachment_read_resolver = original_resolver  # type: ignore[assignment]
+            access_task_attachment_read_module.build_attachment_read_resolver = original_access_resolver  # type: ignore[assignment]
 
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 503)

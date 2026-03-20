@@ -45,6 +45,7 @@ src/contexts/access_api/
 
 ## Transitional extraction notes
 
-- current implementation is spread across frontend handlers, access masking, and frontend query adapters
-- the extraction target is one clean browser-facing context, not a transport folder with scattered policy
-
+- owning handler implementation now lives under `src/contexts/access_api/internal/*`
+- `src/contexts/access_api/module.py` builds frontend root, frontend v2, info, people snapshot, and attachment read handlers from the context-owned internal package
+- `src/entrypoints/http/frontend_compat_handlers.py`, `src/entrypoints/http/frontend_v2_handler.py`, `src/entrypoints/http/info_handler.py`, `src/entrypoints/http/people_snapshot_handler.py`, and `src/entrypoints/http/task_attachment_read_handler.py` are compatibility wrappers only
+- remaining extraction target is thinner transport parsing and response translation around the already-moved access-api ownership center

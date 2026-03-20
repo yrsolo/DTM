@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from src.entrypoints.http.frontend_compat_handlers import FrontendRootHandler
-from src.entrypoints.http.frontend_v2_handler import FrontendV2Handler
-from src.entrypoints.http.info_handler import InfoHandler
-from src.entrypoints.http.people_snapshot_handler import PeopleSnapshotHandler
-from src.entrypoints.http.task_attachment_read_handler import TaskAttachmentReadHandler
+from .internal.frontend_root_handler import FrontendRootHandler
+from .internal.frontend_v2_handler import FrontendV2Handler
+from .internal.info_handler import InfoHandler
+from .internal.people_snapshot_handler import PeopleSnapshotHandler
+from .internal.task_attachment_read_handler import TaskAttachmentReadHandler
 
 
 @dataclass(frozen=True, slots=True)

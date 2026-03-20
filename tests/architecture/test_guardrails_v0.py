@@ -148,6 +148,12 @@ class GuardrailsV0TestCase(unittest.TestCase):
     def test_contexts_do_not_reach_into_other_contexts(self) -> None:
         offenders: list[str] = []
         allowed_cross_imports = {
+            "access_api": {
+                "src.contexts.attachments.public",
+                "src.contexts.attachments.contracts",
+                "src.contexts.snapshot.public",
+                "src.contexts.snapshot.contracts",
+            },
             "attachments": {
                 "src.contexts.snapshot.public",
                 "src.contexts.snapshot.contracts",
@@ -317,6 +323,15 @@ class GuardrailsV0TestCase(unittest.TestCase):
         content = file_path.read_text(encoding="utf-8")
         self.assertNotIn("from src.services.attachments", content)
         self.assertNotIn("import src.services.attachments", content)
+
+    def test_access_api_context_module_does_not_import_old_http_handlers(self) -> None:
+        file_path = ROOT / "src" / "contexts" / "access_api" / "module.py"
+        content = file_path.read_text(encoding="utf-8")
+        self.assertNotIn("from src.entrypoints.http.frontend_compat_handlers", content)
+        self.assertNotIn("from src.entrypoints.http.frontend_v2_handler", content)
+        self.assertNotIn("from src.entrypoints.http.info_handler", content)
+        self.assertNotIn("from src.entrypoints.http.people_snapshot_handler", content)
+        self.assertNotIn("from src.entrypoints.http.task_attachment_read_handler", content)
 
     def test_active_render_jobs_do_not_import_old_render_target_guard(self) -> None:
         offenders: list[str] = []

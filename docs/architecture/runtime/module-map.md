@@ -13,7 +13,7 @@ Governing policy:
 | `index.py` | Entrypoint | Thin runtime shell for cloud events | OK | Lazy bootstrap and dispatch only. |
 | `src/entrypoint/*` | Entrypoint | Target thin entrypoint layer for parsed request routing | OK | New modular-monolith intake surface. |
 | `src/entrypoints/index_dispatcher.py` | Entrypoint | Classify event shape and delegate to the correct shell | OK | Canonical top-level router. |
-| `src/entrypoints/http/*` | Entrypoint | HTTP parsing, access boundary, handlers, response translation | OK | Canonical browser/API boundary. |
+| `src/entrypoints/http/*` | Entrypoint | HTTP parsing, transport routing, and compatibility wrappers over context-owned handlers | OK | Browser/API transport boundary; access-api-owned handlers now live under `src/contexts/access_api/internal/*`. |
 | `src/entrypoints/queue/*` | Entrypoint | Queue-trigger transport shell | OK | Canonical worker intake boundary. |
 | `src/entrypoints/triggers/*` | Entrypoint | Scheduled-trigger intake and queue fan-out | OK | Canonical trigger boundary. |
 | `src/entrypoints/runtime/*` | Entrypoint | Explicit runtime-mode bridge for local/manual execution | OK | Includes the transitional adapter used by local/runtime shells. |
@@ -28,7 +28,7 @@ Governing policy:
 | `src/contexts/snapshot/*` | Context | Snapshot public API, contracts, and legacy bridge ownership | OK | Canonical cross-context snapshot surface. |
 | `src/contexts/rendering/*` | Context | Rendering ownership and snapshot-boundary enforcement | OK | Depends on `snapshot.public` or contracts only. |
 | `src/contexts/telegram_interaction/*` | Context | Telegram interaction ownership and command routing facade | OK | Owns `group_query_reply`. |
-| `src/contexts/access_api/*` | Context | Browser-facing read surface ownership and access policy facade | OK | Frontend/public API now routes through context surface. |
+| `src/contexts/access_api/*` | Context | Browser-facing read surface ownership and access policy facade | OK | Owns frontend root, frontend v2, info, people snapshot, and attachment read handlers. |
 | `src/core/models/*` | Domain | Canonical domain DTOs | OK | Pure contracts only. |
 | `src/core/normalize/*` | Domain | Normalization, parsing, inference rules | OK | Pure business logic. |
 | `src/core/rules/*` | Domain | Domain rules and invariants | OK | Keep pure and tested. |
@@ -68,7 +68,7 @@ If a reader needs that history, current docs should point there instead of retel
 - Keep `index.py` thin.
 - Treat `src/contexts/*` and `src/platform/*` as the canonical target ownership map for active refactor work.
 - Treat `src/snapshot_engine/*` as the canonical read-side runtime.
-- Keep browser auth and masking at the HTTP/access boundary.
+- Keep browser auth, read shaping, and masking inside `access_api`; keep `src/entrypoints/http/*` transport-only.
 - Keep refresh/render/reminder work in async jobs or explicit runtime modes.
 - Treat archive modules and docs as reference-only, not as active architecture.
 - Use `modular-monolith-v2.md` and companion ownership docs as the canonical target map for future extraction waves.
