@@ -14,24 +14,20 @@ def get_public_api():
     return get_module()
 
 
-def get_snapshot_engine(ctx):
-    return get_module().build_engine(ctx)
-
-
 def get_read_capability(ctx):
-    return get_module().build_read_capability(ctx)
+    return get_module().read_capability(ctx)
 
 
 def get_attachment_capability(ctx):
-    return get_module().build_attachment_capability(ctx)
+    return get_module().attachment_capability(ctx)
 
 
 def get_query_capability(ctx):
-    return get_module().build_query_capability(ctx)
+    return get_module().query_capability(ctx)
 
 
 def get_update_capability(ctx):
-    return get_module().build_update_capability(ctx)
+    return get_module().update_capability(ctx)
 
 
 def get_prep_snapshot(ctx):
@@ -78,7 +74,6 @@ __all__ = [
     "get_raw_snapshot",
     "get_read_capability",
     "get_response_cache_store",
-    "get_snapshot_engine",
     "get_update_capability",
     "get_update_snapshot_job",
     "query_frontend_v2",

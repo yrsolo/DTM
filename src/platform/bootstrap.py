@@ -9,49 +9,6 @@ from src.entrypoints.runtime.runtime_shell import RuntimeShell
 from src.entrypoints.triggers.trigger_shell import TriggerShell
 
 
-class LazyMapping:
-    """Lazy mutable mapping kept for runtime/test compatibility."""
-
-    def __init__(self, getter):
-        self._getter = getter
-
-    def _mapping(self):
-        return self._getter()
-
-    def __getitem__(self, key):
-        return self._mapping()[key]
-
-    def __setitem__(self, key, value) -> None:
-        self._mapping()[key] = value
-
-    def __delitem__(self, key) -> None:
-        del self._mapping()[key]
-
-    def __iter__(self):
-        return iter(self._mapping())
-
-    def __len__(self) -> int:
-        return len(self._mapping())
-
-    def get(self, key, default=None):
-        return self._mapping().get(key, default)
-
-    def keys(self):
-        return self._mapping().keys()
-
-    def items(self):
-        return self._mapping().items()
-
-    def values(self):
-        return self._mapping().values()
-
-    def clear(self) -> None:
-        self._mapping().clear()
-
-    def update(self, *args, **kwargs) -> None:
-        self._mapping().update(*args, **kwargs)
-
-
 _APP_CONTEXT = None
 _RUNTIME_SHELL = None
 _HTTP_SHELL = None
@@ -68,14 +25,14 @@ def get_app_context():
     return _APP_CONTEXT
 
 
-def get_triggers():
-    """Expose the mutable trigger mapping through the lazy app context."""
+def get_trigger_modes():
+    """Return the mutable trigger mapping through the runtime boundary."""
 
     return get_app_context().cfg.runtime.triggers
 
 
-def get_deps():
-    """Expose mutable deps through the lazy app context."""
+def get_runtime_deps():
+    """Return the mutable runtime dependency bag through the platform boundary."""
 
     return get_app_context().deps
 
@@ -120,7 +77,3 @@ def get_trigger_shell() -> TriggerShell:
     if _TRIGGER_SHELL is None:
         _TRIGGER_SHELL = TriggerShell(get_app_context(), runtime_shell=get_runtime_shell())
     return _TRIGGER_SHELL
-
-
-APP_DEPS = LazyMapping(get_deps)
-APP_TRIGGERS = LazyMapping(get_triggers)

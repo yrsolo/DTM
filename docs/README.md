@@ -5,8 +5,8 @@
 ## Start here
 
 - [product/README.md](product/README.md) â€” Ð±Ñ‹ÑÑ‚Ñ€Ñ‹Ð¹ Ð²Ñ…Ð¾Ð´: Ñ‡Ñ‚Ð¾ ÑÑ‚Ð¾ Ð·Ð° ÑÐ¸ÑÑ‚ÐµÐ¼Ð° Ð¸ ÐºÐ°ÐºÐ¸Ðµ Ð·Ð°Ð´Ð°Ñ‡Ð¸ Ð¾Ð½Ð° Ñ€ÐµÑˆÐ°ÐµÑ‚
-- [architecture/README.md](architecture/README.md) â€” ÐºÐ°Ðº ÑƒÑÑ‚Ñ€Ð¾ÐµÐ½ Ñ‚ÐµÐºÑƒÑ‰Ð¸Ð¹ runtime
 - [architecture/module-first-recovery/README.md](architecture/module-first-recovery/README.md) â€” active normative canon Ð´Ð»Ñ architecture decisions Ð² current module-first contour
+- [architecture/README.md](architecture/README.md) â€” ÐºÐ°Ðº ÑƒÑÑ‚Ñ€Ð¾ÐµÐ½ Ñ‚ÐµÐºÑƒÑ‰Ð¸Ð¹ runtime
 - [operations/README.md](operations/README.md) â€” ÐºÐ°Ðº ÑÑ‚Ð¾ Ð·Ð°Ð¿ÑƒÑÐºÐ°Ñ‚ÑŒ, Ð¿Ñ€Ð¾Ð²ÐµÑ€ÑÑ‚ÑŒ Ð¸ ÑÐ¾Ð¿Ñ€Ð¾Ð²Ð¾Ð¶Ð´Ð°Ñ‚ÑŒ
 - [reference/README.md](reference/README.md) â€” ÑÑƒÑ…Ð¸Ðµ ÐºÐ¾Ð½Ñ‚Ñ€Ð°ÐºÑ‚Ñ‹, Ñ€ÐµÐ¶Ð¸Ð¼Ñ‹, ÐºÐ¾Ð½Ñ„Ð¸Ð³Ð¸ Ð¸ ÑÑ…ÐµÐ¼Ñ‹
 
@@ -32,7 +32,7 @@
 ## Ð¡Ñ‚Ñ€ÑƒÐºÑ‚ÑƒÑ€Ð°
 
 - [product/README.md](product/README.md) â€” Ð»Ñ‘Ð³ÐºÐ¸Ð¹ Ð²ÐµÑ€Ñ…Ð½Ð¸Ð¹ ÑÐ»Ð¾Ð¹ Ð¿Ñ€Ð¾ Ð¿Ñ€Ð¾Ð´ÑƒÐºÑ‚ Ð¸ Ð²Ð¾Ð·Ð¼Ð¾Ð¶Ð½Ð¾ÑÑ‚Ð¸
-- [architecture/README.md](architecture/README.md) â€” ÑƒÑÑ‚Ñ€Ð¾Ð¹ÑÑ‚Ð²Ð¾ ÑÐ¸ÑÑ‚ÐµÐ¼Ñ‹, runtime Ð¸ snapshot engine
+- [architecture/README.md](architecture/README.md) â€” ÑƒÑÑ‚Ñ€Ð¾Ð¹ÑÑ‚Ð²Ð¾ ÑÐ¸ÑÑ‚ÐµÐ¼Ñ‹, runtime Ð¸ snapshot read-model
 - [integrations/README.md](integrations/README.md) â€” browser auth, attachments, Telegram Ð¸ Ð²Ð½ÐµÑˆÐ½Ð¸Ðµ ÐºÐ¾Ð½Ñ‚ÑƒÑ€Ñ‹
 - [operations/README.md](operations/README.md) â€” runbook, observability, infra
 - [reference/README.md](reference/README.md) â€” ÐºÐ¾Ð½Ñ„Ð¸Ð³, ÐºÐ¾Ð½Ñ‚Ñ€Ð°ÐºÑ‚Ñ‹, Ñ€ÐµÐ¶Ð¸Ð¼Ñ‹, ÑÑ…ÐµÐ¼Ñ‹ ÑÑ‚Ð°Ñ‚ÑƒÑÐ¾Ð²

@@ -20,6 +20,7 @@ from src.entrypoints.http.admin_task_attachments_handler import AdminTaskAttachm
 from src.entrypoints.http.admin_queue_handler import AdminQueueHandler
 from src.entrypoints.http.dto import HttpRequest
 from src.entrypoints.http.job_status_handler import JobStatusHandler
+from src.platform import bootstrap as runtime_bootstrap
 from src.worker.model import JobStatusRecord
 
 
@@ -573,9 +574,10 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
         self.assertFalse(payload["retryable"])
 
     def test_index_routes_message_queue_event_to_worker(self) -> None:
-        original_worker = index.APP_DEPS.get("command_worker")
+        runtime_deps = runtime_bootstrap.get_runtime_deps()
+        original_worker = runtime_deps.get("command_worker")
         fake_worker = _FakeWorker()
-        index.APP_DEPS["command_worker"] = fake_worker
+        runtime_deps["command_worker"] = fake_worker
         try:
             event = {
                 "messages": [
@@ -598,7 +600,7 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
             }
             response = asyncio.run(index.handler(event, None))
         finally:
-            index.APP_DEPS["command_worker"] = original_worker
+            runtime_deps["command_worker"] = original_worker
         self.assertEqual(response["statusCode"], 200)
         payload = json.loads(response["body"])
         self.assertEqual(payload["artifact"], "command_worker")
@@ -606,23 +608,25 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
         self.assertEqual(len(fake_worker.messages), 1)
 
     def test_index_enqueues_trigger_event_when_queue_is_configured(self) -> None:
-        original_producer = index.APP_DEPS.get("command_queue_producer")
-        original_status_store = index.APP_DEPS.get("job_status_store")
-        original_triggers = dict(index.APP_TRIGGERS)
+        runtime_deps = runtime_bootstrap.get_runtime_deps()
+        trigger_modes = runtime_bootstrap.get_trigger_modes()
+        original_producer = runtime_deps.get("command_queue_producer")
+        original_status_store = runtime_deps.get("job_status_store")
+        original_triggers = dict(trigger_modes)
         producer = _FakeProducer()
         status_store = _FakeStatusStore()
-        index.APP_DEPS["command_queue_producer"] = producer
-        index.APP_DEPS["job_status_store"] = status_store
-        index.APP_TRIGGERS.clear()
-        index.APP_TRIGGERS["trigger-1"] = "timer"
+        runtime_deps["command_queue_producer"] = producer
+        runtime_deps["job_status_store"] = status_store
+        trigger_modes.clear()
+        trigger_modes["trigger-1"] = "timer"
         try:
             event = {"messages": [{"details": {"trigger_id": "trigger-1"}}]}
             response = asyncio.run(index.handler(event, None))
         finally:
-            index.APP_DEPS["command_queue_producer"] = original_producer
-            index.APP_DEPS["job_status_store"] = original_status_store
-            index.APP_TRIGGERS.clear()
-            index.APP_TRIGGERS.update(original_triggers)
+            runtime_deps["command_queue_producer"] = original_producer
+            runtime_deps["job_status_store"] = original_status_store
+            trigger_modes.clear()
+            trigger_modes.update(original_triggers)
         self.assertEqual(response["statusCode"], 200)
         payload = json.loads(response["body"])
         self.assertEqual(payload["artifact"], "command_batch_enqueued")

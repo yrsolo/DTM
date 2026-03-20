@@ -16,31 +16,31 @@ class RenderingModule:
 
     name: str = "rendering"
 
-    def build_snapshot_read_capability(self, ctx):
+    def snapshot_read_capability(self, ctx):
         return get_read_capability(ctx)
 
-    def build_timeline_usecase(self, snapshot_read, *, timezone_name: str):
+    def timeline_usecase(self, snapshot_read, *, timezone_name: str):
         return RenderUseCase(snapshot_read, timezone_name=timezone_name)
 
-    def build_designers_usecase(self, snapshot_read, *, timezone_name: str):
+    def designers_usecase(self, snapshot_read, *, timezone_name: str):
         return DesignersRenderUseCase(snapshot_read, timezone_name=timezone_name)
 
-    def build_window(self, *, start=None, end=None, mode: str = "intersects"):
+    def window(self, *, start=None, end=None, mode: str = "intersects"):
         return Window(start=start, end=end, mode=mode)
 
-    def build_request(self, *, window, statuses):
+    def request(self, *, window, statuses):
         return RenderRequest(window=window, statuses=list(statuses))
 
-    def build_sheet_target(self, *, spreadsheet_name, worksheet_name):
+    def sheet_target(self, *, spreadsheet_name, worksheet_name):
         return SheetTarget(spreadsheet_name=spreadsheet_name, worksheet_name=worksheet_name)
 
-    def build_writer(self, service, *, spreadsheet_name, worksheet_name):
+    def writer(self, service, *, spreadsheet_name, worksheet_name):
         return GoogleSheetsPlanWriter(
             service,
-            self.build_sheet_target(spreadsheet_name=spreadsheet_name, worksheet_name=worksheet_name),
+            self.sheet_target(spreadsheet_name=spreadsheet_name, worksheet_name=worksheet_name),
         )
 
-    def build_job(self, usecase, writer):
+    def job(self, usecase, writer):
         return RenderJob(usecase, writer)
 
 

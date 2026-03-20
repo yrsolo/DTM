@@ -44,6 +44,7 @@ class HandlerTopPathTestCase(unittest.IsolatedAsyncioTestCase):
             get_http_shell=lambda: http_shell,
             get_worker_shell=lambda: worker_shell,
             get_trigger_shell=lambda: trigger_shell,
+            get_trigger_modes=lambda: {},
         )
 
         self.assertEqual(response["body"], "http")
@@ -73,6 +74,7 @@ class HandlerTopPathTestCase(unittest.IsolatedAsyncioTestCase):
             get_http_shell=lambda: http_shell,
             get_worker_shell=lambda: worker_shell,
             get_trigger_shell=lambda: trigger_shell,
+            get_trigger_modes=lambda: {},
         )
 
         self.assertEqual(response["body"], "queue")
@@ -92,7 +94,7 @@ class HandlerTopPathTestCase(unittest.IsolatedAsyncioTestCase):
             get_http_shell=lambda: http_shell,
             get_worker_shell=lambda: worker_shell,
             get_trigger_shell=lambda: trigger_shell,
-            triggers={"trigger-1": "timer"},
+            get_trigger_modes=lambda: {"trigger-1": "timer"},
         )
 
         self.assertEqual(response["body"], "timer")
@@ -107,6 +109,7 @@ class HandlerTopPathTestCase(unittest.IsolatedAsyncioTestCase):
             get_http_shell=lambda: (_ for _ in ()).throw(AssertionError("http shell should not be used")),
             get_worker_shell=lambda: (_ for _ in ()).throw(AssertionError("worker shell should not be used")),
             get_trigger_shell=lambda: (_ for _ in ()).throw(AssertionError("trigger shell should not be used")),
+            get_trigger_modes=lambda: (_ for _ in ()).throw(AssertionError("trigger modes should not be resolved")),
             get_telegram_webhook_path=lambda: (_ for _ in ()).throw(
                 AssertionError("telegram webhook path should not be resolved")
             ),
@@ -126,6 +129,7 @@ class HandlerTopPathTestCase(unittest.IsolatedAsyncioTestCase):
             get_http_shell=lambda: http_shell,
             get_worker_shell=lambda: worker_shell,
             get_trigger_shell=lambda: trigger_shell,
+            get_trigger_modes=lambda: {},
             get_telegram_webhook_path=lambda: calls.append("resolved") or "/custom-telegram",
         )
 

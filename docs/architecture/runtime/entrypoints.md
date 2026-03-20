@@ -106,7 +106,4 @@ Local/manual runtime uses the same canonical runtime shell family and is not a s
 
 ## Archive pointer
 
-Historical planner-era entrypoint stories and deeper legacy runtime detail are archive-only.
-If needed, use:
-- `docs/archive/system_legacy/modules/*`
-- `src/archive/legacy_runtime/*`
+Historical entrypoint detail lives in `docs/archive/*` and `src/archive/*`.

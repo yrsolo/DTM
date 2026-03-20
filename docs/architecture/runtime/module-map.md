@@ -46,23 +46,13 @@ Governing policy:
 | `src/adapters/telegram.py` | Adapter | Telegram delivery integration | OK | Used by notify and group-query flows. |
 | `src/adapters/llm_*` | Adapter | Optional LLM enhancement providers | OK | Optional edge integrations only. |
 
-## Historical or archive-only areas
+## Historical material
 
-These are not part of the canonical runtime story:
-- `src/archive/legacy_runtime/*`
-- removed compatibility-only roots formerly used during recovery:
-  - `src/jobs/*`
-  - `src/render/*`
-  - `src/notify/*`
-  - `src/telegram/*`
-  - `src/services/attachments/*`
-  - `src/snapshot_engine/*`
-- `archive/legacy_test_refs/*`
+Historical or archive-only detail stays outside the canonical runtime story.
+If needed, use:
+- `docs/archive/*`
+- `src/archive/*`
 - `old/v1/*`
-- planner-era extraction plans and compatibility notes under `docs/archive/system_legacy/modules/*`
-- legacy YDB/readmodel/schema material under `docs/archive/system_legacy/ydb_schema.md`
-
-If a reader needs that history, current docs should point there instead of retelling it here.
 
 ## Immediate guidance
 

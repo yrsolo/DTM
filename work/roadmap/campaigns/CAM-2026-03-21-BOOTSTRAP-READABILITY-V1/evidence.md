@@ -19,12 +19,21 @@
     - `tests/api/test_command_queue_foundation.py`
     - `src/entrypoints/runtime/planner_runtime_entry.py`
   - trust_level: `high`
-  - notes: enough code evidence exists to identify the blocker without starting a risky broad rewrite
+  - notes: enough code evidence exists to finish the readability pass without changing runtime behavior
 
-## Blocker
+## Completed Tasks
 
-- `APP_DEPS`, `APP_TRIGGERS`, `build_runtime_app_context`, and shell getters currently act as stable public seams for active tests and entry helpers
-- removing or heavily reshaping them would no longer be a local beauty cleanup; it would become a broader DX and test-contract rewrite
-- this needs an explicit owner choice between:
-  - preserving these seams as an accepted imperfection
-  - or allowing a wider cleanup that updates the dependent test surface
+- [x] `CAM-2026-03-21-BOOTSTRAP-READABILITY-V1-P01-T001` remove mutable bootstrap seams from `index.py` and the nearest active tests
+- [x] `CAM-2026-03-21-BOOTSTRAP-READABILITY-V1-P02-T001` replace `APP_DEPS` / `APP_TRIGGERS` with explicit runtime getters
+- [x] `CAM-2026-03-21-BOOTSTRAP-READABILITY-V1-P03-T001` verify the top path, command queue, info/API, and import-safety contours after the cleanup
+
+## Verification
+
+- `python -m unittest tests.entrypoint.test_handler tests.api.test_frontend_api_routing tests.api.test_info_observability tests.api.test_command_queue_foundation tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.entrypoints.test_planner_runtime_entry -v`
+- `rg -n "APP_DEPS|APP_TRIGGERS|_get_app_context|LazyMapping|get_deps\\(|get_triggers\\(" src tests docs work index.py`
+
+## Verdict
+
+- before: bootstrap readability was held back by mutable top-level seams and stale top-path mutation points that made the runtime contour look heavier than it really was
+- after: the active top path now uses explicit platform getters, `index.py` no longer exports bootstrap mutation seams, and `src/platform/bootstrap.py` reads as neutral lazy runtime glue
+- next worst thing: historical/runtime references were still slightly too visible from active runtime docs

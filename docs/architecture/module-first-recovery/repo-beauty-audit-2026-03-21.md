@@ -11,25 +11,29 @@ Important framing:
 ## Executive Summary
 
 Overall scores:
-- repo beauty/readability: `7.8/10`
-- architecture transparency: `8.1/10`
-- showcase readiness: `7.4/10`
+- repo beauty/readability: `8.6/10`
+- architecture transparency: `8.7/10`
+- showcase readiness: `8.4/10`
 
 Short verdict:
-- what already feels excellent: the top-level architecture story, the module-first active tree, the removal of old competing roots, the active test layout, and the attachment publication scenario
-- what still feels compromised: a few migration-era names and docstrings, bootstrap still reading as heavier than ideal, some active docs still sounding more like engineering notes than a finished system, and a small amount of leftover structural noise around â€œhelper/builder/capabilityâ€ naming
+- what already feels excellent: the top-level architecture story, the module-first active tree, the removal of old competing roots, the active test layout, the attachment publication scenario, and the first-hop reading path from repo root into code
+- what still feels compromised: mostly low-signal taste issues inside some module internals and a little unavoidable operational weight in platform/runtime helpers
 
 Bottom line:
 - the repo no longer reads like an unfinished rescue
 - it now reads like a serious and coherent module-first monolith
-- but it does not yet read like a fully curated â€œshowcase-gradeâ€ codebase
+- it is close to showcase-grade, with the remaining gaps now concentrated in low-signal polish rather than structural readability defects
 
 Progress note:
 - the beauty backlog now executes through [beauty-wave-method.md](beauty-wave-method.md)
 - `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1` removed eager app-context access from the top path
 - `CAM-2026-03-21-ACTIVE-NAMING-CLEANUP-V1` removed migration-shaped wording from active module surfaces and access-api query aliases
 - `CAM-2026-03-21-DOCS-VOICE-UNIFICATION-V1` removed the most visible future-facing and transitional wording from active docs
-- the next queued smell is `CAM-2026-03-21-BOOTSTRAP-READABILITY-V1`
+- `CAM-2026-03-21-BOOTSTRAP-READABILITY-V1` removed mutable bootstrap seams from the top path and narrowed bootstrap to explicit runtime getters
+- `CAM-2026-03-21-ACTIVE-HISTORY-SEPARATION-V1` pushed archive/history references behind compact opt-in pointers in active runtime docs
+- `CAM-2026-03-21-MODULE-POLISH-V1` removed the loudest builder-shaped naming from active module surfaces
+- `CAM-2026-03-21-SHOWCASE-POLISH-V1` aligned root/top-level docs with the active canon and removed stale first-hop architecture pointers
+- no remaining high-signal beauty smell is queued; the rest is optional taste-level curation
 
 ## Evaluation Rubric
 
@@ -53,17 +57,17 @@ Evaluated dimensions:
 
 | Area | Score | Why it already works | What still feels unfinished | Severity | Recommended cleanup wave |
 |---|---:|---|---|---|---|
-| top path | 8/10 | `index.py -> src/entrypoint/handler.py -> platform/runtime -> owning module` is real and short | `index.py` still performs an eager app-context lookup for the Telegram webhook path | low | top-path elegance |
-| platform/runtime | 7/10 | runtime is clearly neutral and no longer pretends to own domain logic | `src/platform/bootstrap.py` and related shell getters still read slightly heavier than the ideal â€œthin runtime glueâ€ | medium | bootstrap readability |
+| top path | 9/10 | `index.py -> src/entrypoint/handler.py -> platform/runtime -> owning module` is real, short, and now reads naturally from the repo root | only small runtime ceremony remains around shell/context suppliers | low | showcase polish |
+| platform/runtime | 8/10 | runtime is clearly neutral and no longer pretends to own domain logic | bootstrap still has a little unavoidable coordination weight, but no longer reads like a mini control center | low | showcase polish |
 | snapshot | 8/10 | snapshot now clearly owns the read-model and its internal engine lives inside the context | naming still mixes â€œmodule/capability/engineâ€ in a way that reads more technical than elegant | medium | naming cleanup |
 | attachments | 8/10 | strongest product-facing scenario, strongest ownership story, strongest context narrative | module/builders are clean, but some internal naming still reflects assembly rather than the feature story | low | module polish |
-| access_api | 7/10 | browser ownership is explicit and active handlers now live in the context | some builder docstrings and handler names still sound infrastructural rather than presentation-owned | medium | module polish |
-| reminders | 7/10 | compact module story and reserve-vs-active distinction is clear | module still reads more as a builder surface than a beautiful application slice | low | module polish |
-| rendering | 7/10 | boundaries are honest and active tests make the slice easy to verify | public/building names still emphasize plumbing over domain story | low | naming cleanup |
-| telegram_interaction | 7/10 | reserve capability framing is now clear and appropriate | still aesthetically close to reminder-era internals and not fully â€œshowcase elegantâ€ | low | showcase polish |
-| docs IA | 8/10 | `docs/` now has clear reader-intent structure and the active canon is obvious | some active docs still read like engineering transition notes rather than calm final documentation | medium | docs voice unification |
-| active tests | 8/10 | `tests/contexts/*` is a strong signal that ownership is real | naming and grouping are good, but there is still some cross-era seam language in a few tests | low | naming cleanup |
-| archive/history isolation | 7/10 | active tree is much cleaner and the worst historical clutter is gone | archive/history references are still a little too visible in some architecture pages | medium | active/history separation |
+| access_api | 8/10 | browser ownership is explicit and active handlers now live in the context | still slightly infrastructural in a few internal names, but the public/module surface now reads cleanly | low | showcase polish |
+| reminders | 8/10 | compact module story and reserve-vs-active distinction is clear | a few internal helper names still sound more operational than showcase-grade | low | showcase polish |
+| rendering | 8/10 | boundaries are honest and active tests make the slice easy to verify | internals are still more technical than expressive, but the module/public surface is now calm | low | showcase polish |
+| telegram_interaction | 8/10 | reserve capability framing is now clear and appropriate | internal helper tone is still a little more operational than elegant | low | showcase polish |
+| docs IA | 9/10 | `docs/` now has clear reader-intent structure and top-level entry docs point first to the active canon and active product story | only low-signal tone differences remain in deeper pages | low | showcase polish |
+| active tests | 8/10 | `tests/contexts/*` is a strong signal that ownership is real | a few helper names still reflect operational seams rather than showcase polish | low | showcase polish |
+| archive/history isolation | 8/10 | active tree is much cleaner and the worst historical clutter is gone | some explicit history pointers remain, but they are now compact and intentionally out of the main path | low | showcase polish |
 
 ## Active Contour Findings
 
@@ -173,10 +177,10 @@ Current default classification:
 | top-path elegance | `must fix` | the first impression still carries small ceremonial overhead in `index.py` |
 | active naming cleanup | `must fix` | migration-era and builder-shaped language is still visible in active surfaces |
 | docs voice unification | `must fix` | active docs should read like finished system docs before external review |
-| bootstrap readability | `nice to have` | important for elegance, but no longer hides ownership in a serious way |
-| active/history separation | `nice to have` | still worth cleaning, but the active contour is already mostly safe |
-| module polish | `nice to have` | the modules are already structurally honest |
-| showcase polish | `accepted imperfection` until earlier waves close | should happen only after the higher-signal smells are gone |
+| bootstrap readability | `must fix` | composition root aesthetics mattered enough to be worth closing before external review |
+| active/history separation | `must fix` | active readers should stay in active docs by default |
+| module polish | `must fix` | active module surfaces should sound canonical, not assembled |
+| showcase polish | `must fix` | a showcase repo should present the active story cleanly from the very first page |
 
 ## Sequential Improvement Waves
 
@@ -214,7 +218,7 @@ Current default classification:
 - acceptance criteria: bootstrap still works as glue, but no longer feels visually heavier than the modules it serves
 - risk level: medium
 - safe independently: yes
-- current execution status: `blocked for owner decision` via `CAM-2026-03-21-BOOTSTRAP-READABILITY-V1`
+- current execution status: `done`
 
 ### Wave 5. Active/History Separation
 - goal: make archive/history materially less visible from active reading paths
@@ -223,6 +227,7 @@ Current default classification:
 - acceptance criteria: active readers are rarely pulled into historical material unless they explicitly want history
 - risk level: low
 - safe independently: yes
+- current execution status: `done`
 
 ### Wave 6. Module Polish
 - goal: make each active module read like a finished slice rather than a technically correct builder surface
@@ -231,6 +236,7 @@ Current default classification:
 - acceptance criteria: each module feels intentionally authored and presentation-ready
 - risk level: medium
 - safe independently: yes
+- current execution status: `done`
 
 ### Wave 7. Showcase Polish
 - goal: make the repo feel like a polished pet project rather than a successful refactor diary
@@ -239,6 +245,7 @@ Current default classification:
 - acceptance criteria: an external reader can understand the architecture and also feel that the repo has been deliberately curated
 - risk level: low
 - safe independently: yes
+- current execution status: `done`
 
 ## Stop Rule
 

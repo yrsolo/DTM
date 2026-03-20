@@ -14,23 +14,23 @@ def get_public_api():
 
 
 def get_snapshot_read_capability(ctx):
-    return get_module().build_snapshot_read_capability(ctx)
+    return get_module().snapshot_read_capability(ctx)
 
 
 def get_usecase(snapshot_read):
-    return get_module().build_usecase(snapshot_read)
+    return get_module().usecase(snapshot_read)
 
 
 def get_formatter(ctx):
-    return get_module().build_formatter(ctx)
+    return get_module().formatter(ctx)
 
 
 def get_sender(ctx):
-    return get_module().build_sender(ctx)
+    return get_module().sender(ctx)
 
 
 def get_enhancer(ctx, *, mock_external: bool):
-    return get_module().build_enhancer(ctx, mock_external=mock_external)
+    return get_module().enhancer(ctx, mock_external=mock_external)
 
 
 def get_today_in_runtime_timezone(ctx):
@@ -38,11 +38,11 @@ def get_today_in_runtime_timezone(ctx):
 
 
 def get_job_runner(**kwargs):
-    return get_module().build_job_runner(**kwargs)
+    return get_module().job_runner(**kwargs)
 
 
-def build_reminder_request(**kwargs):
-    return get_module().build_request(**kwargs)
+def make_reminder_request(**kwargs):
+    return get_module().request(**kwargs)
 
 
 def get_send_reminders_job(ctx):

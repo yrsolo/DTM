@@ -21,25 +21,25 @@ class RemindersModule:
 
     name: str = "reminders"
 
-    def build_snapshot_read_capability(self, ctx):
+    def snapshot_read_capability(self, ctx):
         return get_read_capability(ctx)
 
-    def build_usecase(self, snapshot_read):
+    def usecase(self, snapshot_read):
         return ReminderUseCase(snapshot_read)
 
-    def build_formatter(self, ctx):
+    def formatter(self, ctx):
         return ReminderFormatter(
             timezone_name=str(ctx.cfg.runtime.runtime.timezone or "Europe/Moscow"),
             hidden_stage_names=tuple(ctx.cfg.mapping.hidden_stage_names or ()),
         )
 
-    def build_sender(self, ctx):
+    def sender(self, ctx):
         return TelegramNotifier(
             bot_token=str(ctx.deps.get("tg_bot_token", "")),
             default_chat_id=ctx.deps.get("default_chat_id"),
         )
 
-    def build_enhancer(self, ctx, *, mock_external: bool):
+    def enhancer(self, ctx, *, mock_external: bool):
         if bool(mock_external):
             return None
         cfg = ctx.cfg
@@ -95,10 +95,10 @@ class RemindersModule:
         except Exception:
             return datetime.now().date()
 
-    def build_job_runner(self, **kwargs):
+    def job_runner(self, **kwargs):
         return ReminderJob(**kwargs)
 
-    def build_request(self, **kwargs):
+    def request(self, **kwargs):
         from .internal.model import ReminderRequest
 
         return ReminderRequest(**kwargs)

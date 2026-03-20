@@ -6,13 +6,13 @@ from dataclasses import dataclass
 from typing import Any
 
 from src.contexts.reminders.public import (
-    build_reminder_request as _build_reminder_request,
     get_enhancer as _get_reminders_enhancer,
     get_formatter as _get_reminders_formatter,
     get_job_runner as _get_reminder_job_runner,
     get_sender as _get_reminders_sender,
     get_snapshot_read_capability as _get_reminders_snapshot_read_capability,
     get_usecase as _get_reminders_usecase,
+    make_reminder_request as _make_reminder_request,
 )
 from src.entrypoints.jobs.quality_report_job import print_quality_report as _print_quality_report
 from src.entrypoints.jobs.runtime_context_job import RuntimeContextRequest, resolve_runtime_context
@@ -87,7 +87,7 @@ async def _run_reminder_mode(
         runtime_env=runtime_env,
         mock_llm=mock_llm,
     ).run(
-        _build_reminder_request(
+        _make_reminder_request(
             mode=normalized_mode,
             statuses=["work", "pre_done"],
             include_today=True,

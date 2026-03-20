@@ -17,13 +17,13 @@ async def handle(
     get_worker_shell,
     get_trigger_shell,
     get_telegram_webhook_path=lambda: "/telegram",
-    triggers: dict[str, str] | None = None,
+    get_trigger_modes=lambda: {},
 ) -> dict[str, Any]:
     """Route by explicit mode and delegate directly to top-level shells."""
 
     parsed = parse_request(
         event,
-        triggers=triggers,
+        get_trigger_modes=get_trigger_modes,
         get_telegram_webhook_path=get_telegram_webhook_path,
     )
     match parsed.mode:

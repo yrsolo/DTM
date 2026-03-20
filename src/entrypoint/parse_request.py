@@ -41,7 +41,7 @@ def _trigger_id(event: Any) -> str:
 def parse_request(
     event: Any,
     *,
-    triggers: dict[str, str] | None = None,
+    get_trigger_modes=None,
     get_telegram_webhook_path=None,
 ) -> ParsedRequest:
     """Classify the incoming event into an explicit top-level mode."""
@@ -82,7 +82,7 @@ def parse_request(
             raw_event_hints={"event_type": "http"},
         )
 
-    trigger_lookup = dict(triggers or {})
+    trigger_lookup = dict(get_trigger_modes() or {}) if callable(get_trigger_modes) else {}
     trigger_id = _trigger_id(event)
     trigger_mode = str(trigger_lookup.get(trigger_id, "")).strip().lower()
     if trigger_mode == "timer":

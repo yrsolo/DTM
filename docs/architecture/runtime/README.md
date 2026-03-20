@@ -22,11 +22,10 @@ This folder contains active runtime reference docs and descriptive evidence abou
 - [trigger-orchestration-v2.md](trigger-orchestration-v2.md)
 - [bootstrap-discipline-v2.md](bootstrap-discipline-v2.md)
 - [guardrails-v2.md](guardrails-v2.md)
-- [modular-monolith-v2.md](modular-monolith-v2.md) - historical predecessor only
 
 ## When to use this folder
 
-Use this folder when you need the current runtime map, descriptive evidence, or historical architecture context.
+Use this folder when you need the current runtime map or descriptive runtime evidence.
 
 Current active reading path for architecture work:
 - `docs/architecture/module-first-recovery/README.md`
@@ -34,3 +33,6 @@ Current active reading path for architecture work:
 - `module-map.md`
 - `modularity-audit-2026-03-19.md`
 - ownership and guardrail docs
+
+History stays available, but outside the default active path:
+- [modular-monolith-v2.md](modular-monolith-v2.md) - historical predecessor only

@@ -16,7 +16,7 @@ from .module import get_module
 
 
 def get_public_api(ctx: AppContext):
-    """Return the local module builder without leaking internals."""
+    """Return the local module surface without leaking internals."""
 
     return get_module(ctx)
 

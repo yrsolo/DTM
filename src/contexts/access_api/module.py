@@ -18,22 +18,22 @@ class AccessApiModule:
 
     name: str = "access_api"
 
-    def build_browser_routes_handler(self, ctx):
+    def browser_routes(self, ctx):
         return BrowserRoutesHandler(ctx)
 
-    def build_frontend_root_handler(self, ctx):
+    def frontend_root_handler(self, ctx):
         return FrontendRootHandler(ctx)
 
-    def build_frontend_v2_handler(self, ctx):
+    def frontend_v2_handler(self, ctx):
         return FrontendV2Handler(ctx)
 
-    def build_info_handler(self, ctx):
+    def info_handler(self, ctx):
         return InfoHandler(ctx)
 
-    def build_people_snapshot_handler(self, ctx):
+    def people_snapshot_handler(self, ctx):
         return PeopleSnapshotHandler(ctx)
 
-    def build_task_attachment_read_handler(self, ctx):
+    def task_attachment_read_handler(self, ctx):
         return TaskAttachmentReadHandler(ctx)
 
 

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from src.app.context import AppContext
 from src.contexts.reminders.public import (
-    build_reminder_request as _build_reminder_request,
     get_enhancer as _get_reminders_enhancer,
     get_formatter as _get_reminders_formatter,
     get_job_runner as _get_reminder_job_runner,
@@ -10,6 +9,7 @@ from src.contexts.reminders.public import (
     get_snapshot_read_capability as _get_reminders_snapshot_read_capability,
     get_today_in_runtime_timezone as _get_today_in_runtime_timezone,
     get_usecase as _get_reminders_usecase,
+    make_reminder_request as _make_reminder_request_from_module,
 )
 from src.observability import timed
 
@@ -27,7 +27,7 @@ def _build_reminder_job_runner(**kwargs):
 
 
 def _make_reminder_request(**kwargs):
-    return _build_reminder_request(**kwargs)
+    return _make_reminder_request_from_module(**kwargs)
 
 
 class SendRemindersJob:

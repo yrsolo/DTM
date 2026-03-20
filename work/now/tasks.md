@@ -1,10 +1,13 @@
 # Active Tasks
 
-- CAM-2026-03-21-BOOTSTRAP-READABILITY-V1: blocked pending owner choice on whether bootstrap public test seams (`APP_DEPS`, `APP_TRIGGERS`, `build_runtime_app_context`, shell getters) should be preserved as accepted imperfection or cleaned up with broader dependent-test rewiring.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done
 
+- CAM-2026-03-21-SHOWCASE-POLISH-V1 completed: root and top-level docs now point first to the active product story and module-first canon, and the repo has an explicit clean first-hop reading path.
+- CAM-2026-03-21-MODULE-POLISH-V1 completed: active module methods now read as handlers/capabilities/requests/jobs instead of generic builders, and the dead broad `get_snapshot_engine()` alias is gone from the active snapshot surface.
+- CAM-2026-03-21-ACTIVE-HISTORY-SEPARATION-V1 completed: active runtime docs now keep history available only as compact opt-in pointers instead of foregrounding predecessor material.
+- CAM-2026-03-21-BOOTSTRAP-READABILITY-V1 completed: mutable bootstrap seams were removed from `index.py`, dependent tests now use explicit runtime getters, and bootstrap reads as neutral lazy glue instead of a mini control center.
 - CAM-2026-03-21-DOCS-VOICE-UNIFICATION-V1 completed: active docs stopped framing the canon as material for future refactor campaigns and replaced the most visible transitional section names with calm current-system language.
 - CAM-2026-03-21-ACTIVE-NAMING-CLEANUP-V1 completed: active module docstrings now describe present ownership, and access-api query-owned paths now use `get_snapshot_query_capability` naming instead of broad snapshot-engine wording.
 - CAM-2026-03-21-TOP-PATH-ELEGANCE-V1 completed: `index.py` no longer resolves app context eagerly just to classify Telegram HTTP requests, `handler.py` stayed the single obvious top router, and the nearest top-path docs/checks were aligned.
@@ -32,5 +35,5 @@
 - Working plans and evidence must live only in `work/roadmap/campaigns/<CAMPAIGN>/`.
 - Latest bottleneck follow-up remains historical context only; current live execution focus is the blocked `prod` smoke for the attachment contour.
 - Future architecture child campaigns must start from `docs/architecture/module-first-recovery/README.md` and the new umbrella campaign trust gate.
-- Future beauty child campaigns must execute through `docs/architecture/module-first-recovery/beauty-wave-method.md` and close one smell at a time.
+- Future beauty child campaigns must execute through `docs/architecture/module-first-recovery/beauty-wave-method.md`, close one smell at a time, and start from the queued `CAM-2026-03-21-SHOWCASE-POLISH-V1` only if extra presentation curation is still desired.
 - Modular-monolith umbrella campaign is complete and superseded as the primary canon.

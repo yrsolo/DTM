@@ -133,6 +133,13 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
+    def test_index_does_not_export_bootstrap_mutation_seams(self) -> None:
+        file_path = ROOT / "index.py"
+        content = file_path.read_text(encoding="utf-8")
+        self.assertNotIn("APP_DEPS", content)
+        self.assertNotIn("APP_TRIGGERS", content)
+        self.assertNotIn("def _get_app_context", content)
+
     def test_active_entrypoints_do_not_import_app_bootstrap_directly(self) -> None:
         offenders: list[str] = []
         target_paths = [

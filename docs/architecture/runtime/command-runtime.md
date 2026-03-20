@@ -101,6 +101,4 @@ Transport shells:
 
 Local/manual runtime stays inside the same canonical shell family and is not a separate architectural center.
 
-Historical runtime detail is archive-only:
-- `src/archive/legacy_runtime/`
-- `docs/archive/system_legacy/modules/*`
+Historical runtime detail lives in `docs/archive/*` and `src/archive/*`.

@@ -23,6 +23,7 @@ from src.entrypoints.http.frontend_query_params import parse_bool
 from src.entrypoints.http.runtime_mode import extract_force_refresh, extract_run_mode
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES
 from src.observability.bottlenecks import RECENT_API_STAGE_EVENTS, RECENT_DIRECT_API_OUTER_TRACES
+from src.platform import bootstrap as runtime_bootstrap
 from src.services.access.masking import BRAND_DICTIONARY, DESIGNER_DICTIONARY, FORMAT_DICTIONARY, SHOW_DICTIONARY
 from src.contexts.snapshot.internal.engine.model import PeopleSnapshot, PersonView
 from src.worker.model import JobStatusRecord
@@ -224,10 +225,12 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self._orig_access_info_get_function_build_info = access_info_handler_module.get_function_build_info
         self._orig_info_storage_stats = access_info_handler_module.InfoHandler._storage_stats
         self._orig_access_info_storage_stats = access_info_handler_module.InfoHandler._storage_stats
-        self._orig_job_status_store = index.APP_DEPS.get("job_status_store")
-        self._orig_metrics_client = index.APP_DEPS.get("metrics_client")
-        self._orig_browser_auth_proxy_secret = index.APP_DEPS.get("browser_auth_proxy_secret")
-        self._orig_bottleneck_metrics_level = index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level
+        self._runtime_deps = runtime_bootstrap.get_runtime_deps()
+        self._runtime_cfg = runtime_bootstrap.get_app_context().cfg.runtime.runtime
+        self._orig_job_status_store = self._runtime_deps.get("job_status_store")
+        self._orig_metrics_client = self._runtime_deps.get("metrics_client")
+        self._orig_browser_auth_proxy_secret = self._runtime_deps.get("browser_auth_proxy_secret")
+        self._orig_bottleneck_metrics_level = self._runtime_cfg.bottleneck_metrics_level
         self._orig_recent_stage_traces = list(RECENT_API_STAGE_EVENTS._events)  # type: ignore[attr-defined]
         self._orig_recent_outer_traces = list(RECENT_DIRECT_API_OUTER_TRACES._events)  # type: ignore[attr-defined]
         self._metrics = _MetricsRecorder()
@@ -305,10 +308,10 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
             "bytesHuman": "1.00 KB",
             "byPrefix": {"raw": 100, "prep": 200, "extra": 300, "attachments": 400, "jobs": 24},
         }
-        index.APP_DEPS["job_status_store"] = _FakeInfoStatusStore()
-        index.APP_DEPS["metrics_client"] = self._metrics
-        index.APP_DEPS["browser_auth_proxy_secret"] = "proxy-secret-test"
-        index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level = "stages"
+        self._runtime_deps["job_status_store"] = _FakeInfoStatusStore()
+        self._runtime_deps["metrics_client"] = self._metrics
+        self._runtime_deps["browser_auth_proxy_secret"] = "proxy-secret-test"
+        self._runtime_cfg.bottleneck_metrics_level = "stages"
         RECENT_API_STAGE_EVENTS._events.clear()  # type: ignore[attr-defined]
         RECENT_DIRECT_API_OUTER_TRACES._events.clear()  # type: ignore[attr-defined]
 
@@ -319,10 +322,10 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         access_info_handler_module.get_queue_live_stats = self._orig_access_info_get_queue_live_stats  # type: ignore[assignment]
         access_info_handler_module.get_function_build_info = self._orig_access_info_get_function_build_info  # type: ignore[assignment]
         access_info_handler_module.InfoHandler._storage_stats = self._orig_access_info_storage_stats  # type: ignore[assignment]
-        index.APP_DEPS["job_status_store"] = self._orig_job_status_store
-        index.APP_DEPS["metrics_client"] = self._orig_metrics_client
-        index.APP_DEPS["browser_auth_proxy_secret"] = self._orig_browser_auth_proxy_secret
-        index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level = self._orig_bottleneck_metrics_level
+        self._runtime_deps["job_status_store"] = self._orig_job_status_store
+        self._runtime_deps["metrics_client"] = self._orig_metrics_client
+        self._runtime_deps["browser_auth_proxy_secret"] = self._orig_browser_auth_proxy_secret
+        self._runtime_cfg.bottleneck_metrics_level = self._orig_bottleneck_metrics_level
         RECENT_API_STAGE_EVENTS._events.clear()  # type: ignore[attr-defined]
         RECENT_API_STAGE_EVENTS._events.extend(self._orig_recent_stage_traces)  # type: ignore[attr-defined]
         RECENT_DIRECT_API_OUTER_TRACES._events.clear()  # type: ignore[attr-defined]
@@ -812,7 +815,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertGreaterEqual(traces[0]["functionTotalMs"], traces[0]["routerTotalMs"])
 
     def test_direct_api_response_has_no_outer_debug_headers_when_profiling_off(self) -> None:
-        index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level = "off"
+        self._runtime_cfg.bottleneck_metrics_level = "off"
         event = _fixture_event()
         event["pathParams"]["proxy"] = "api/v2/frontend"
         event["params"]["proxy"] = "api/v2/frontend"
@@ -826,7 +829,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertNotIn("X-DTM-Trace-Id", response.get("headers", {}))
 
     def test_direct_api_response_has_extended_outer_debug_headers_in_debug_mode(self) -> None:
-        index._get_app_context().cfg.runtime.runtime.bottleneck_metrics_level = "debug"
+        self._runtime_cfg.bottleneck_metrics_level = "debug"
         event = _fixture_event()
         event["pathParams"]["proxy"] = "api/v2/frontend"
         event["params"]["proxy"] = "api/v2/frontend"
