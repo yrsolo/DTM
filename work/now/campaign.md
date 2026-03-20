@@ -9,13 +9,14 @@ Single source of truth for campaign lifecycle state.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## Done
+- CAM-2026-03-21-FINAL-AESTHETIC-CLOSEOUT-V1 completed after removing the thin runtime app-context alias boundary, renaming the last `_build_*` helper seams, and closing the beauty backlog as complete rather than still mid-polish.
 - CAM-2026-03-21-SHOWCASE-POLISH-V1 completed after aligning root and top-level docs with the active canon, adding a clean first-hop reading path, and removing stale top-level architecture pointers.
-- CAM-2026-03-21-MODULE-POLISH-V1 completed after renaming the loudest builder-shaped active module methods to role-true names and removing the dead broad snapshot-engine alias from the active public surface.
+- CAM-2026-03-21-MODULE-POLISH-V1 completed after renaming the loudest assembly-first active module methods to role-true names and removing the dead broad snapshot-engine alias from the active public surface.
 - CAM-2026-03-21-ACTIVE-HISTORY-SEPARATION-V1 completed after pushing historical/runtime predecessor references behind compact opt-in pointers in active runtime docs.
 - CAM-2026-03-21-BOOTSTRAP-READABILITY-V1 completed after removing mutable bootstrap seams from `index.py`, switching dependent tests to explicit runtime getters, and leaving `src/platform/bootstrap.py` as neutral lazy runtime glue.
 - CAM-2026-03-21-DOCS-VOICE-UNIFICATION-V1 completed after removing the most visible future-facing and transitional wording from active docs so they read like current-system documentation.
 - CAM-2026-03-21-ACTIVE-NAMING-CLEANUP-V1 completed after rewriting active module docstrings in present-tense ownership language and renaming access-api query aliases away from broad snapshot-engine wording.
-- CAM-2026-03-21-TOP-PATH-ELEGANCE-V1 completed after removing eager app-context access from `index.py`, keeping `src/entrypoint/handler.py` as the single top router, and aligning the closest top-path docs and tests.
+- CAM-2026-03-21-TOP-PATH-ELEGANCE-V1 completed after removing the eager top-path context lookup from `index.py`, keeping `src/entrypoint/handler.py` as the single top router, and aligning the closest top-path docs and tests.
 - CAM-2026-03-21-REPO-BEAUTY-AUDIT-V1 completed after publishing the beauty assessment, the sequential backlog, and the smell-driven beauty-wave method used to execute the next curation steps.
 - Pre-audit idealization wave completed as a safe polish pass over the active contour: docs, capability naming, and readability guardrails were aligned before external review.
 - `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1` completed after replacing the active canon with module-first recovery, finishing the delta-audit-driven cleanup, moving snapshot internals under the snapshot context, removing `src/jobs/*`, and aligning active tests with module ownership under `tests/contexts/*`.

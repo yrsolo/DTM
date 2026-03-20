@@ -5,7 +5,7 @@
 - source: `docs/architecture/module-first-recovery/repo-beauty-audit-2026-03-21.md`
   - last_verified_at: `2026-03-21`
   - verified_by: `Codex`
-  - evidence: beauty audit marks active naming cleanup as priority `2` and `must fix`
+  - evidence: beauty audit marks active naming cleanup as priority `2` and `required`
   - trust_level: `high`
   - notes: this wave executes directly from the beauty backlog
 

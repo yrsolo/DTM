@@ -7,7 +7,7 @@ Target ideal:
 - `index.py -> src/entrypoint/handler.py -> one shell` reads as the obvious system entry path
 
 Kill criteria:
-- no eager app-context access remains in the top path
+- no eager top-path context lookup remains in the top path
 - no stale glue helpers remain in `index.py`
 - `index.py` reads as a thin entrypoint, not a relay with ceremony
 
@@ -29,7 +29,7 @@ Non-goals:
 - `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1-P01-T002` confirm the exact smell and pass/fail kill criteria against `index.py`, `src/entrypoint/handler.py`, and the runtime glue they depend on
 
 ### P02 - Remove top-path ceremony
-- `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1-P02-T001` remove eager app-context access or stale helper seams from `index.py` where they no longer buy clarity
+- `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1-P02-T001` remove eager top-path context lookup or stale helper seams from `index.py` where they no longer buy clarity
 - `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1-P02-T002` keep `src/entrypoint/handler.py` as the single obvious top router without adding new ceremony
 
 ### P03 - Sync docs, checks, and closeout

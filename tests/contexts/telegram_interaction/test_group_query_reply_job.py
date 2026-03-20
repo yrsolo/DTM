@@ -56,7 +56,7 @@ class GroupQueryReplyJobTestCase(unittest.TestCase):
         import src.contexts.telegram_interaction.internal.job_runner as module
 
         orig_get_snapshot_capability = module.get_snapshot_capability
-        orig_build_sender = module._build_group_query_sender
+        orig_make_sender = module._make_group_query_sender
         try:
             today = date.today()
             prep = PrepSnapshot(
@@ -71,7 +71,7 @@ class GroupQueryReplyJobTestCase(unittest.TestCase):
             )
             sender = _FakeSender()
             module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine(prep)  # type: ignore[assignment]
-            module._build_group_query_sender = lambda _ctx: sender  # type: ignore[assignment]
+            module._make_group_query_sender = lambda _ctx: sender  # type: ignore[assignment]
 
             ctx = AppContext(cfg=SimpleNamespace(), deps={"tg_bot_token": "x", "default_chat_id": "0"})
             cmd = Command(
@@ -89,7 +89,7 @@ class GroupQueryReplyJobTestCase(unittest.TestCase):
             self.assertNotIn("Ð§ÑƒÐ¶Ð°Ñ Ð·Ð°Ð´Ð°Ñ‡Ð°", sender.sent[0][1])
         finally:
             module.get_snapshot_capability = orig_get_snapshot_capability  # type: ignore[assignment]
-            module._build_group_query_sender = orig_build_sender  # type: ignore[assignment]
+            module._make_group_query_sender = orig_make_sender  # type: ignore[assignment]
 
 
 if __name__ == "__main__":

@@ -23,7 +23,7 @@
   - notes: the remaining smell was naming/curation only; ownership and behavior were already stable
 
 ## Completed Tasks
-- [x] `CAM-2026-03-21-MODULE-POLISH-V1-P01-T001` rename the most visible builder-shaped module methods to role-true names in active module surfaces
+- [x] `CAM-2026-03-21-MODULE-POLISH-V1-P01-T001` rename the most visible assembly-first module methods to role-true names in active module surfaces
 - [x] `CAM-2026-03-21-MODULE-POLISH-V1-P02-T001` remove the dead broad snapshot-engine alias from the active public surface
 - [x] `CAM-2026-03-21-MODULE-POLISH-V1-P03-T001` verify reminder, telegram, planner-runtime, and guardrail contours after the rename pass
 

@@ -40,7 +40,7 @@ Do not mix multiple smell categories in one wave.
 
 Every issue touched by beauty work must be labeled as one of:
 
-- `must fix`
+- `required`
 - `nice to have`
 - `accepted imperfection`
 
@@ -91,7 +91,7 @@ Its default smell is:
 - residual ceremony in `index.py` and the closest entrypoint contour
 
 Its default kill criteria are:
-- no eager app-context access remains in the top path
+- no top-path context lookup remains in the top path
 - no stale glue helpers remain in `index.py`
 - `index.py -> src/entrypoint/handler.py -> one shell` reads without explanation
 

@@ -17,7 +17,7 @@ def _make_group_query_request(**kwargs):
     return _make_group_query_request_from_module(**kwargs)
 
 
-def _build_group_query_sender(ctx: AppContext):
+def _make_group_query_sender(ctx: AppContext):
     return _get_group_query_sender(ctx)
 
 
@@ -48,7 +48,7 @@ class GroupQueryReplyJob:
                 today=today,
                 next_workday=next_workday,
             )
-        sender = _build_group_query_sender(self._ctx)
+        sender = _make_group_query_sender(self._ctx)
         await sender.send_message(cmd.payload.get("chat_id"), reply, parse_mode=None)
         return {
             "artifact": "group_query_reply",

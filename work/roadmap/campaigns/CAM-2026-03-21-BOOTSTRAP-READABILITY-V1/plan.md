@@ -7,7 +7,7 @@ Target ideal:
 - bootstrap remains a composition root and stable runtime seam, but visually reads like neutral glue rather than a mini control center
 
 Kill criteria:
-- `index.py` no longer exposes bootstrap mutation seams or eager app-context access
+- `index.py` no longer exposes bootstrap mutation seams or an eager top-path context lookup
 - runtime tests and entry helpers consume explicit platform getters instead of mutable top-level globals
 - `src/platform/bootstrap.py` reads as neutral lazy runtime glue, not a mini control center
 

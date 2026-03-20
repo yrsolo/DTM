@@ -101,12 +101,12 @@ class SendRemindersJobTestCase(unittest.TestCase):
         import src.contexts.reminders.internal.job_runner as module
 
         original_get_snapshot_capability = module.get_snapshot_capability
-        original_build_job_runner = module._build_reminder_job_runner
+        original_make_job_runner = module._make_reminder_job_runner
         original_today = module._today_in_runtime_timezone
         _FakeReminderJob.last_request = None
         _FakeReminderJob.run_calls = 0
         module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
-        module._build_reminder_job_runner = lambda **kwargs: _FakeReminderJob(**kwargs)  # type: ignore[assignment]
+        module._make_reminder_job_runner = lambda **kwargs: _FakeReminderJob(**kwargs)  # type: ignore[assignment]
         module._today_in_runtime_timezone = lambda _ctx: date(2026, 3, 7)  # type: ignore[assignment]
         try:
             result = asyncio.run(
@@ -122,7 +122,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
             )
         finally:
             module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
-            module._build_reminder_job_runner = original_build_job_runner  # type: ignore[assignment]
+            module._make_reminder_job_runner = original_make_job_runner  # type: ignore[assignment]
             module._today_in_runtime_timezone = original_today  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
@@ -135,11 +135,11 @@ class SendRemindersJobTestCase(unittest.TestCase):
         import src.contexts.reminders.internal.job_runner as module
 
         original_get_snapshot_capability = module.get_snapshot_capability
-        original_build_job_runner = module._build_reminder_job_runner
+        original_make_job_runner = module._make_reminder_job_runner
         original_today = module._today_in_runtime_timezone
         _FakeReminderJob.run_calls = 0
         module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
-        module._build_reminder_job_runner = lambda **kwargs: _FakeReminderJob(**kwargs)  # type: ignore[assignment]
+        module._make_reminder_job_runner = lambda **kwargs: _FakeReminderJob(**kwargs)  # type: ignore[assignment]
         module._today_in_runtime_timezone = lambda _ctx: date(2026, 3, 8)  # type: ignore[assignment]
         try:
             result = asyncio.run(
@@ -155,7 +155,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
             )
         finally:
             module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
-            module._build_reminder_job_runner = original_build_job_runner  # type: ignore[assignment]
+            module._make_reminder_job_runner = original_make_job_runner  # type: ignore[assignment]
             module._today_in_runtime_timezone = original_today  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
@@ -166,12 +166,12 @@ class SendRemindersJobTestCase(unittest.TestCase):
         import src.contexts.reminders.internal.job_runner as module
 
         original_get_snapshot_capability = module.get_snapshot_capability
-        original_build_job_runner = module._build_reminder_job_runner
+        original_make_job_runner = module._make_reminder_job_runner
         original_today = module._today_in_runtime_timezone
         _FakeReminderJob.last_request = None
         _FakeReminderJob.run_calls = 0
         module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
-        module._build_reminder_job_runner = lambda **kwargs: _FakeReminderJob(**kwargs)  # type: ignore[assignment]
+        module._make_reminder_job_runner = lambda **kwargs: _FakeReminderJob(**kwargs)  # type: ignore[assignment]
         module._today_in_runtime_timezone = lambda _ctx: date(2026, 3, 7)  # type: ignore[assignment]
         try:
             result = asyncio.run(
@@ -187,7 +187,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
             )
         finally:
             module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
-            module._build_reminder_job_runner = original_build_job_runner  # type: ignore[assignment]
+            module._make_reminder_job_runner = original_make_job_runner  # type: ignore[assignment]
             module._today_in_runtime_timezone = original_today  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
@@ -198,12 +198,12 @@ class SendRemindersJobTestCase(unittest.TestCase):
         import src.contexts.reminders.internal.job_runner as module
 
         original_get_snapshot_capability = module.get_snapshot_capability
-        original_build_job_runner = module._build_reminder_job_runner
+        original_make_job_runner = module._make_reminder_job_runner
         original_today = module._today_in_runtime_timezone
         _FakeReminderJob.last_request = None
         _FakeReminderJob.run_calls = 0
         module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
-        module._build_reminder_job_runner = lambda **kwargs: _FakeReminderJob(**kwargs)  # type: ignore[assignment]
+        module._make_reminder_job_runner = lambda **kwargs: _FakeReminderJob(**kwargs)  # type: ignore[assignment]
         module._today_in_runtime_timezone = lambda _ctx: date(2026, 3, 6)  # type: ignore[assignment]
         try:
             result = asyncio.run(
@@ -219,7 +219,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
             )
         finally:
             module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
-            module._build_reminder_job_runner = original_build_job_runner  # type: ignore[assignment]
+            module._make_reminder_job_runner = original_make_job_runner  # type: ignore[assignment]
             module._today_in_runtime_timezone = original_today  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")

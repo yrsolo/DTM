@@ -18,11 +18,11 @@ get_snapshot_capability = _get_reminders_snapshot_read_capability
 _today_in_runtime_timezone = _get_today_in_runtime_timezone
 
 
-def _build_notify_enhancer(ctx: AppContext, *, mock_external: bool):
+def _make_notify_enhancer(ctx: AppContext, *, mock_external: bool):
     return _get_reminders_enhancer(ctx, mock_external=mock_external)
 
 
-def _build_reminder_job_runner(**kwargs):
+def _make_reminder_job_runner(**kwargs):
     return _get_reminder_job_runner(**kwargs)
 
 
@@ -73,12 +73,12 @@ class SendRemindersJob:
                 "result": "finished",
             },
         ):
-            result = await _build_reminder_job_runner(
+            result = await _make_reminder_job_runner(
                 usecase=usecase,
                 formatter=formatter,
                 sender=sender,
                 helper_character=str(self._ctx.cfg.llm.assistant.get("helper_character", "")),
-                enhancer=_build_notify_enhancer(self._ctx, mock_external=mock_llm),
+                enhancer=_make_notify_enhancer(self._ctx, mock_external=mock_llm),
                 people_lookup=snapshot_engine,
                 default_chat_id=str(self._ctx.deps.get("default_chat_id", "")).strip(),
                 enhance_concurrency=int(notify_cfg.enhance_concurrency),

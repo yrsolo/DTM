@@ -10,13 +10,14 @@
 - none
 
 ## Done
+- CAM-2026-03-21-FINAL-AESTHETIC-CLOSEOUT-V1 completed after removing the thin runtime app-context alias boundary, renaming the last `_build_*` helper seams, and closing the beauty backlog as complete rather than still mid-polish.
 - CAM-2026-03-21-SHOWCASE-POLISH-V1 completed after aligning root and top-level docs with the active canon, adding a clean first-hop reading path, and removing stale top-level architecture pointers.
-- CAM-2026-03-21-MODULE-POLISH-V1 completed after renaming the loudest builder-shaped active module methods to role-true names and removing the dead broad snapshot-engine alias from the active public surface.
+- CAM-2026-03-21-MODULE-POLISH-V1 completed after renaming the loudest assembly-first active module methods to role-true names and removing the dead broad snapshot-engine alias from the active public surface.
 - CAM-2026-03-21-ACTIVE-HISTORY-SEPARATION-V1 completed after pushing historical/runtime predecessor references behind compact opt-in pointers in active runtime docs.
 - CAM-2026-03-21-BOOTSTRAP-READABILITY-V1 completed after removing mutable bootstrap seams from `index.py`, switching dependent tests to explicit runtime getters, and leaving `src/platform/bootstrap.py` as neutral lazy runtime glue.
 - CAM-2026-03-21-DOCS-VOICE-UNIFICATION-V1 completed after removing the most visible future-facing and transitional wording from the active docs contour.
 - CAM-2026-03-21-ACTIVE-NAMING-CLEANUP-V1 completed after moving active module docstrings to present-tense ownership language and renaming access-api query aliases to capability-true names.
-- CAM-2026-03-21-TOP-PATH-ELEGANCE-V1 completed after removing eager app-context access from the top path, keeping `handler.py` as the single obvious top router, and syncing the nearest entrypoint docs and checks.
+- CAM-2026-03-21-TOP-PATH-ELEGANCE-V1 completed after removing the eager top-path context lookup, keeping `handler.py` as the single obvious top router, and syncing the nearest entrypoint docs and checks.
 - CAM-2026-03-21-REPO-BEAUTY-AUDIT-V1 completed after publishing the beauty assessment, the sequential cleanup backlog, and the smell-driven method that now governs future curation waves.
 - Pre-audit idealization wave completed: active runtime docs now speak with one canon voice, stale migration language was removed from the active contour, dead `group_query_handler.py` was deleted, and capability naming in active paths was clarified.
 - CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1 completed: module-first canon is now the active architecture source, the delta audit was executed and closed, snapshot internals moved under the snapshot context, `src/jobs/*` was removed, and active tests now live under `tests/contexts/*`.

@@ -173,7 +173,7 @@ class PlannerRuntimeEntryTestCase(unittest.TestCase):
             return_value="sender",
         ), patch.object(
             module,
-            "_build_notify_enhancer",
+            "_make_notify_enhancer",
             return_value=None,
         ), patch.object(
             module,

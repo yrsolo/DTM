@@ -34,4 +34,4 @@
 
 - before: active runtime docs still exposed historical predecessor material too early, which distracted from the current runtime story
 - after: active runtime docs keep history available only as compact opt-in pointers while foregrounding the active module-first runtime story
-- next worst thing: the remaining active smell moved from history visibility to the tone of a few builder-shaped module surfaces
+- next worst thing: the remaining active smell moved from history visibility to the tone of a few assembly-first module surfaces
