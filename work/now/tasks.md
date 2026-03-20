@@ -1,9 +1,11 @@
 # Active Tasks
 
-- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1: architecture-recovery canon is now the active roadmap; active runtime no longer depends on `src.services.attachments`, `src.entrypoints.http.frontend_response_cache`, or `src.entrypoints.index_dispatcher`, `index.py` now reads directly through the thin entrypoint and shells, the main notify/telegram/render test contour reads through context-owned packages, old access-api HTTP wrappers are removed, and the next hard slice is the final policy for the remaining compatibility-only technical roots.
+- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1: architecture-recovery canon is now the active roadmap; active runtime no longer depends on `src.services.attachments`, `src.entrypoints.http.frontend_response_cache`, or `src.entrypoints.index_dispatcher`, `index.py` now reads directly through the thin entrypoint and shells, the main notify/telegram/render test contour reads through context-owned packages, old access-api HTTP wrappers are removed, old top-level `render` / `notify` / `telegram` / `services.attachments` roots are deleted, and the next hard slice is final closeout plus any remaining compatibility/archive policy in docs.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done
+
+- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1 completed: architecture-recovery canon is now the active source of truth, top-level competing roots were removed, and the runtime now reads through `entrypoint -> platform/runtime -> owning context`.
 
 - CAM-2026-03-19-MODULARITY-AUDIT-V1 completed: code-verified audit now scores each context for autonomy and records the next decoupling moves.
 - CAM-2026-03-19-TEST-ROLLOUT-UNBLOCK-V1 completed: deploy guardrails now accept the active thin-entrypoint contour, and the current `dev` head was deployed to `test` successfully.

@@ -47,8 +47,8 @@ src/contexts/rendering/
 
 ## Transitional extraction notes
 
-- current rendering logic is split across `src/render/*`, render jobs, and snapshot-engine-coupled code
+- owning rendering implementation now lives under `src/contexts/rendering/internal/*`
+- old `src/render/*` compatibility root has been removed; rendering is no longer split across a second top-level technical cluster
 - the hard anti-corruption boundary is mandatory:
   - `rendering` depends only on `snapshot.public` or snapshot contracts
   - direct snapshot-internal imports from rendering are forbidden
-

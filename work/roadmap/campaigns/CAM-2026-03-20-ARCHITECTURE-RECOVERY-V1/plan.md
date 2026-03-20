@@ -5,7 +5,8 @@ Replace the modular-monolith V2 canon with the new architecture-recovery canon a
 
 ## Status
 - in progress: 2026-03-20
-- current phase: P10 final structure and archive
+- done: 2026-03-20
+- current phase: P11 guardrails and done
 
 ## Phases
 
@@ -44,3 +45,10 @@ Replace the modular-monolith V2 canon with the new architecture-recovery canon a
 
 ### P11 - Guardrails and done
 - `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P11-T001` finalize review checklist, hard bans, and success closure
+
+## Closeout
+
+- recovery canon is now the only active architecture roadmap
+- active top path reads through `index.py`, `src/entrypoint/*`, `src/platform/*`, and owning contexts
+- competing top-level compatibility roots (`src/render`, `src/notify`, `src/telegram`, `src/services/attachments`, old HTTP access-api wrappers, old index dispatcher) are removed from the active graph
+- remaining follow-ups move out of this umbrella and into separate campaigns

@@ -28,6 +28,8 @@
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P07-T001`
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P08-T001`
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P09-T001`
+- [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P10-T001`
+- [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P11-T001`
 
 ## Verification
 - Command:
@@ -46,10 +48,10 @@
 - 2026-03-20: added a recovery guardrail that fails if active HTTP entrypoints re-introduce direct `src.services.attachments` imports.
 - 2026-03-20: attachment mutation jobs no longer import HTTP cache helpers directly; default frontend cache invalidation now enters through `src.platform.runtime.frontend_cache_invalidation`, with a guardrail banning `src.entrypoints.http.frontend_response_cache` imports from jobs.
 - 2026-03-20: active reminder and group-query execution paths no longer import `src.notify` or `src.telegram` directly in `send_reminders_job`, `group_query_reply_job`, and `planner_runtime_entry`; those paths now build requests and senders through owning context public surfaces.
-- 2026-03-20: `src.notify/*` is now compatibility-only; owning reminder implementation lives under `src.contexts.reminders.internal/*`, and the reminders context module builds from its own internal package instead of the old technical root.
-- 2026-03-20: `src.telegram/*` is now compatibility-only; owning telegram implementation lives under `src.contexts.telegram_interaction.internal/*`, and the telegram interaction context module now builds parser/router/sender/webhook/group-query pieces from its own internal package.
-- 2026-03-20: `src.render/*` is now compatibility-only; owning rendering implementation lives under `src.contexts.rendering.internal/*`, and the rendering context module now builds usecases/job/writer/target-guard from its own internal package.
-- 2026-03-20: `src.services.attachments/*` is now compatibility-only; owning attachment implementation lives under `src.contexts.attachments.internal/*`, and the attachments context module now builds storage/finalize/read/metadata pieces from its own internal package.
+- 2026-03-20: removed the old `src.notify/*` compatibility root; owning reminder implementation now lives only under `src.contexts.reminders.internal/*`.
+- 2026-03-20: removed the old `src.telegram/*` compatibility root; owning telegram implementation now lives only under `src.contexts.telegram_interaction.internal/*`.
+- 2026-03-20: removed the old `src.render/*` compatibility root; owning rendering implementation now lives only under `src.contexts.rendering.internal/*`.
+- 2026-03-20: removed the old `src.services.attachments/*` compatibility root; owning attachment implementation now lives only under `src.contexts.attachments.internal/*`.
 - 2026-03-20: active contexts no longer import `src.contexts.snapshot.public.get_snapshot_engine`; rendering, reminders, telegram interaction, attachments, runtime orchestration, and update flows now use snapshot-owned read/update/attachment/query capabilities instead of the broad engine surface.
 - 2026-03-20: active HTTP read handlers no longer depend on the broad snapshot engine surface directly; `frontend_v2_handler`, `info_handler`, and `people_snapshot_handler` now build against snapshot query capability, while `admin_queue_handler` reads snapshot state through `get_prep_snapshot` only.
 - 2026-03-20: `access_api` now owns frontend root, frontend v2, info, people snapshot, and attachment read handlers under `src.contexts.access_api.internal/*`; `src.contexts.access_api.module` builds from that internal package instead of `src.entrypoints.http.*`.
@@ -61,3 +63,5 @@
 - 2026-03-20: active `access_api` code no longer imports `src.entrypoints.http.frontend_response_cache`; the default frontend response cache helper now lives under `src.contexts.access_api.internal.frontend_response_cache`.
 - 2026-03-20: `src.platform.bootstrap` no longer imports `src.entrypoints.index_dispatcher`; the active top-level bootstrap now builds only thin shells and the old dispatcher remains isolated as compatibility code.
 - 2026-03-20: the main `notify` / `telegram` / `render` test contour now imports context-owned internal packages instead of the old technical roots, reducing wrapper-root pressure ahead of any future archive wave.
+- 2026-03-20: removed the remaining top-level compatibility-only technical roots `src/render/*`, `src/notify/*`, `src/telegram/*`, and `src/services/attachments/*`; active runtime and the primary test contour now read only through owning contexts and public/runtime surfaces.
+- 2026-03-20: final review checklist and recovery success criteria now match the active code map; this umbrella campaign is ready for closeout and future work should continue in separate follow-up campaigns.

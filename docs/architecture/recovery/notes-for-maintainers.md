@@ -24,5 +24,5 @@ The top path and queue routing should stay obvious to the eye.
 
 ## Do not let old clusters become architecture centers again
 
-Historical roots may survive only as temporary implementation zones or archive/reference zones.
-They are not acceptable as the place where new development naturally accumulates.
+Historical roots may survive only as archive/reference zones.
+If a compatibility root has already been removed, do not recreate it just to avoid touching the owning context.

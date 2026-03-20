@@ -73,8 +73,8 @@ Payload contract remains API v2 compatible (including `history`, `brand`, `forma
 - `history`: raw textual status from source sheet
 
 ## 5) Telegram group query/runtime
-- webhook intake: `src/telegram/webhook.py`
-- parser: `src/telegram/parser.py`
+- webhook intake: `src/contexts/telegram_interaction/internal/webhook.py`
+- parser: `src/contexts/telegram_interaction/internal/parser.py`
 - worker job: `src/jobs/group_query_reply_job.py`
 
 Execution order:
@@ -87,7 +87,7 @@ Execution order:
 No business selection or snapshot reads happen inline in webhook intake.
 
 ## 6) Reminder parity runtime
-- reminder modes (`reminder_v2`, `reminders-only`, `morning`, `test`) use `src/notify/*` parity contour.
+- reminder modes (`reminder_v2`, `reminders-only`, `morning`, `test`) use `src/contexts/reminders/internal/*` as the owning reminder contour.
 - candidate designers are selected only from tasks with milestones on:
   - today,
   - next workday (weekend-aware).

@@ -377,6 +377,22 @@ class GuardrailsV0TestCase(unittest.TestCase):
         offenders = [str(path.relative_to(ROOT)) for path in removed_paths if path.exists()]
         self.assertEqual(offenders, [])
 
+    def test_removed_technical_compatibility_roots_do_not_exist(self) -> None:
+        removed_paths = [
+            ROOT / "src" / "render",
+            ROOT / "src" / "notify",
+            ROOT / "src" / "telegram",
+            ROOT / "src" / "services" / "attachments",
+        ]
+        offenders: list[str] = []
+        for path in removed_paths:
+            if not path.exists():
+                continue
+            python_files = sorted(path.rglob("*.py"))
+            if python_files:
+                offenders.append(str(path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
     def test_active_render_jobs_do_not_import_old_render_target_guard(self) -> None:
         offenders: list[str] = []
         target_paths = [

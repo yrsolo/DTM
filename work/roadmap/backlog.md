@@ -1,7 +1,7 @@
 # Backlog
 
 ## In Progress
-- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1
+- none
 
 ## Blocked
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
@@ -10,6 +10,7 @@
 - none
 
 ## Done
+- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1 completed: recovery canon replaced the old roadmap, active runtime now reads through thin entrypoints/platform/contexts, and the competing technical roots were removed from the active graph.
 - CAM-2026-03-19-MODULARITY-AUDIT-V1 completed: current module autonomy and the remaining coupling hotspots are now documented in the active runtime docs.
 - CAM-2026-03-19-TEST-ROLLOUT-UNBLOCK-V1 completed: the test deploy guard was aligned with the modular-monolith entrypoint and the latest `dev` head was rolled into `test`.
 - CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1 completed: modular-monolith refactor umbrella wave delivered phase-one modularity and now serves as historical precedent for the recovery program.

@@ -37,5 +37,5 @@
 ## Structure
 
 - active docs match the active code map
-- old technical clusters are archived, demoted, or clearly deprecated
+- old technical clusters are archived, removed, or clearly marked as reference-only
 - the project root no longer presents competing architecture centers

@@ -36,9 +36,6 @@ Governing policy:
 | `src/worker/*` | Application | Worker dispatcher, execution, status persistence | OK | Canonical async mutation runner. |
 | `src/jobs/*` | Application | Concrete snapshot/render/reminder jobs | OK | Canonical mutation jobs. |
 | `src/services/access/*` | Application | Access context masking and payload transforms | OK | Browser access policy lives at the boundary. |
-| `src/render/*` | Application detail | Rendering implementation behind context-owned boundaries | Transitional | Active, but no longer the ownership root. |
-| `src/notify/*` | Application detail | Reminder implementation behind context-owned boundaries | Transitional | Active, but no longer the ownership root. |
-| `src/telegram/*` | Adapter/Application detail | Telegram implementation behind context-owned boundaries | Transitional | Active, but no longer the ownership root. |
 | `src/observability/*` | Support | Metrics, logging, timing, trace helpers | OK | Shared observability layer. |
 | `src/config/*` | Support | Typed config schema and loader | OK | Canonical config source of truth. |
 | `src/app/bootstrap.py` | Support | Composition root and dependency assembly | OK | Bootstrap only; no business logic. |
@@ -55,6 +52,11 @@ Governing policy:
 
 These are not part of the canonical runtime story:
 - `src/archive/legacy_runtime/*`
+- removed compatibility-only roots formerly used during recovery:
+  - `src/render/*`
+  - `src/notify/*`
+  - `src/telegram/*`
+  - `src/services/attachments/*`
 - `archive/legacy_test_refs/*`
 - `old/v1/*`
 - planner-era extraction plans and compatibility notes under `docs/archive/system_legacy/modules/*`

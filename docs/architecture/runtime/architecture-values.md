@@ -85,8 +85,6 @@ Canonical active areas:
 
 Transitional areas:
 - `src/entrypoints/runtime/planner_runtime_entry.py`
-- `src/telegram/*`
-- `src/notify/*`
 - old root `core/*`
 - legacy compatibility helpers still kept as reference or implementation detail behind context/module boundaries
 

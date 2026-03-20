@@ -10,10 +10,10 @@ Governing source:
 | Context | Owns | Current active areas to verify/migrate from |
 |---|---|---|
 | `snapshot` | ingestion, normalization, prepared state, query-facing state contracts | `src/core/*`, `src/services/sources/*`, `src/snapshot_engine/*`, `src/jobs/update_snapshot_job.py` |
-| `rendering` | timeline/designers render plans and sheet writeback | `src/render/*`, `src/jobs/render_*`, sheets render adapters |
-| `reminders` | reminder selection, payload building, styling, delivery orchestration | `src/notify/*`, `src/jobs/send_reminders_job.py` |
-| `telegram_interaction` | Telegram webhook intake, update parsing, update-to-command mapping, group/user interaction flows | `src/telegram/*`, `src/jobs/group_query_reply_job.py`, Telegram-related HTTP intake |
-| `attachments` | request upload, finalize, metadata lifecycle, preview lifecycle, delete lifecycle, read/view/download policy | `src/services/attachments/*`, attachment HTTP handlers, attachment jobs, attachment paths in snapshot engine |
+| `rendering` | timeline/designers render plans and sheet writeback | `src/contexts/rendering/internal/*`, `src/jobs/render_*`, sheets render adapters |
+| `reminders` | reminder selection, payload building, styling, delivery orchestration | `src/contexts/reminders/internal/*`, `src/jobs/send_reminders_job.py` |
+| `telegram_interaction` | Telegram webhook intake, update parsing, update-to-command mapping, group/user interaction flows | `src/contexts/telegram_interaction/internal/*`, `src/jobs/group_query_reply_job.py`, Telegram-related HTTP intake |
+| `attachments` | request upload, finalize, metadata lifecycle, preview lifecycle, delete lifecycle, read/view/download policy | `src/contexts/attachments/internal/*`, attachment HTTP handlers, attachment jobs, attachment paths in snapshot engine |
 | `access_api` | frontend-facing HTTP surface, masked/open access policy, browser-safe DTO assembly | `src/entrypoints/http/frontend_*`, access masking, browser-facing query adapters |
 
 ## Platform-owned surfaces
@@ -38,4 +38,3 @@ These surfaces are not first-class business contexts. They remain owned by platf
 - treat current folder layout as source material, not as the target map
 - preserve behavior first, then move ownership behind context facades
 - do not let transport folders define the conceptual architecture after this wave starts
-
