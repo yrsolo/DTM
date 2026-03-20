@@ -80,6 +80,12 @@ def get_deps():
     return get_app_context().deps
 
 
+def get_telegram_webhook_path() -> str:
+    """Expose the configured Telegram webhook path without widening the top path."""
+
+    return str(get_app_context().cfg.runtime.telegram.webhook_path or "/telegram")
+
+
 def get_runtime_shell() -> RuntimeShell:
     """Build the shared runtime shell lazily for the top entry path."""
 

@@ -45,10 +45,9 @@ src/contexts/access_api/
 - frontend/public API routes
 - masked/open access read surface
 
-## Transitional extraction notes
+## Active implementation notes
 
 - owning handler implementation now lives under `src/contexts/access_api/internal/*`
 - `src/contexts/access_api/module.py` builds frontend root, frontend v2, info, people snapshot, and attachment read handlers from the context-owned internal package
-- legacy HTTP handler wrappers have been removed; `src/entrypoints/http/*` remains transport-only and delegates through the access-api public facade
-- remaining extraction target is thinner transport parsing and response translation around the already-moved access-api ownership center
+- `src/entrypoints/http/*` remains transport-only and delegates through the access-api public facade
 - in the primary read-model scenario, `access_api` is the browser-facing finish line: attachment is considered delivered only when it appears in the cached main browser payload

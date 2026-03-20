@@ -8,7 +8,7 @@ This document describes only the active entrypoint/runtime boundary.
 
 Responsibilities:
 - accept event/context
-- lazily resolve runtime context
+- lazily resolve runtime shells and request-only runtime settings
 - delegate to the canonical entrypoint handler
 - avoid business logic and import-time side effects
 

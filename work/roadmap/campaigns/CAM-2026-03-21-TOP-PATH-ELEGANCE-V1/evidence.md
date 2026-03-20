@@ -33,10 +33,10 @@
 ## Completed Tasks
 - [x] `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1-P01-T001`
 - [x] `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1-P01-T002`
-- [ ] `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1-P02-T001`
-- [ ] `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1-P02-T002`
-- [ ] `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1-P03-T001`
-- [ ] `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1-P03-T002`
+- [x] `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1-P02-T001`
+- [x] `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1-P02-T002`
+- [x] `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1-P03-T001`
+- [x] `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1-P03-T002`
 
 ## Verification
 
@@ -45,12 +45,16 @@
   - `rg -n "get_app_context|telegram_webhook_path|handle_entrypoint|beauty-wave-method|TOP-PATH-ELEGANCE" index.py src/entrypoint docs work`
 
 - Trust-gate confirmation:
-  - current code still shows the target smell in `index.py` through eager app-context access for `telegram_webhook_path`
+  - current code showed the target smell in `index.py` through eager app-context access for `telegram_webhook_path`
   - `src/entrypoint/handler.py` remains the correct single top router
   - no additional discovery work is needed before the cleanup step starts
+
+- Executed checks:
+  - `python -m unittest tests.entrypoint.test_handler tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety -v`
+  - `rg -n "_get_app_context\\(\\)\\.cfg\\.runtime\\.telegram\\.webhook_path|telegram_webhook_path=|get_telegram_webhook_path|eager app-context" index.py src docs tests work`
 
 ## Verdict
 
 - before: `index.py` was thin in behavior but still carried visible ceremony through eager app-context access
-- after: pending
-- next worst thing: pending
+- after: `index.py` now passes a lazy runtime-owned webhook-path supplier and the top path no longer resolves app context eagerly just to classify HTTP requests
+- next worst thing: active module docstrings and a few access-api snapshot aliases still sound migration-shaped instead of canonical

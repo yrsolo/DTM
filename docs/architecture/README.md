@@ -4,7 +4,7 @@
 
 ## Start here
 
-- [module-first-recovery/README.md](module-first-recovery/README.md) â€” active normative canon Ð´Ð»Ñ Ð±ÑƒÐ´ÑƒÑ‰Ð¸Ñ… refactor campaigns
+- [module-first-recovery/README.md](module-first-recovery/README.md) â€” active normative canon Ð´Ð»Ñ current module-first runtime
 - [runtime/README.md](runtime/README.md) â€” Ñ‚ÐµÐºÑƒÑ‰Ð¸Ð¹ production-like runtime
 - [snapshot-engine/README.md](snapshot-engine/README.md) â€” read-side Ð¸ snapshot model
 - [future/README.md](future/README.md) â€” Ð¿Ñ€Ð¸Ð½ÑÑ‚Ñ‹Ðµ skeleton-Ð´Ð¾ÐºÑƒÐ¼ÐµÐ½Ñ‚Ñ‹ Ð½Ð° Ð±ÑƒÐ´ÑƒÑ‰Ð¸Ðµ Ð¿ÐµÑ€ÐµÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸

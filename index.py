@@ -6,6 +6,7 @@ from src.platform.bootstrap import (
     APP_TRIGGERS,
     get_app_context,
     get_http_shell,
+    get_telegram_webhook_path,
     get_trigger_shell,
     get_worker_shell,
 )
@@ -23,6 +24,6 @@ async def handler(event, _):
         get_http_shell=get_http_shell,
         get_worker_shell=get_worker_shell,
         get_trigger_shell=get_trigger_shell,
+        get_telegram_webhook_path=get_telegram_webhook_path,
         triggers=APP_TRIGGERS,
-        telegram_webhook_path=_get_app_context().cfg.runtime.telegram.webhook_path,
     )

@@ -1,4 +1,4 @@
-"""Local builder for the access API context."""
+"""Module surface for the access API context."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from .internal.task_attachment_read_handler import TaskAttachmentReadHandler
 
 @dataclass(frozen=True, slots=True)
 class AccessApiModule:
-    """Context-local builder bundle used during staged migration."""
+    """Own the browser-facing access API surface for the active runtime."""
 
     name: str = "access_api"
 
@@ -38,6 +38,6 @@ class AccessApiModule:
 
 
 def get_module() -> AccessApiModule:
-    """Return the local module instance for the access API context."""
+    """Return the canonical module surface for the access API context."""
 
     return AccessApiModule()

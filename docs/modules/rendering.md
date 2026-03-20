@@ -45,10 +45,10 @@ src/contexts/rendering/
 - no primary HTTP route ownership is expected here
 - rendering is primarily a command-driven context in this wave
 
-## Transitional extraction notes
+## Active implementation notes
 
 - owning rendering implementation now lives under `src/contexts/rendering/internal/*`
-- old `src/render/*` compatibility root has been removed; rendering is no longer split across a second top-level technical cluster
+- `rendering` is no longer split across a second top-level technical cluster
 - the hard anti-corruption boundary is mandatory:
   - `rendering` depends only on `snapshot.public` or snapshot contracts
   - direct snapshot-internal imports from rendering are forbidden

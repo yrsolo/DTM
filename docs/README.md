@@ -6,7 +6,7 @@
 
 - [product/README.md](product/README.md) â€” Ð±Ñ‹ÑÑ‚Ñ€Ñ‹Ð¹ Ð²Ñ…Ð¾Ð´: Ñ‡Ñ‚Ð¾ ÑÑ‚Ð¾ Ð·Ð° ÑÐ¸ÑÑ‚ÐµÐ¼Ð° Ð¸ ÐºÐ°ÐºÐ¸Ðµ Ð·Ð°Ð´Ð°Ñ‡Ð¸ Ð¾Ð½Ð° Ñ€ÐµÑˆÐ°ÐµÑ‚
 - [architecture/README.md](architecture/README.md) â€” ÐºÐ°Ðº ÑƒÑÑ‚Ñ€Ð¾ÐµÐ½ Ñ‚ÐµÐºÑƒÑ‰Ð¸Ð¹ runtime
-- [architecture/module-first-recovery/README.md](architecture/module-first-recovery/README.md) â€” active normative canon Ð´Ð»Ñ Ð±ÑƒÐ´ÑƒÑ‰Ð¸Ñ… refactor campaigns
+- [architecture/module-first-recovery/README.md](architecture/module-first-recovery/README.md) â€” active normative canon Ð´Ð»Ñ architecture decisions Ð² current module-first contour
 - [operations/README.md](operations/README.md) â€” ÐºÐ°Ðº ÑÑ‚Ð¾ Ð·Ð°Ð¿ÑƒÑÐºÐ°Ñ‚ÑŒ, Ð¿Ñ€Ð¾Ð²ÐµÑ€ÑÑ‚ÑŒ Ð¸ ÑÐ¾Ð¿Ñ€Ð¾Ð²Ð¾Ð¶Ð´Ð°Ñ‚ÑŒ
 - [reference/README.md](reference/README.md) â€” ÑÑƒÑ…Ð¸Ðµ ÐºÐ¾Ð½Ñ‚Ñ€Ð°ÐºÑ‚Ñ‹, Ñ€ÐµÐ¶Ð¸Ð¼Ñ‹, ÐºÐ¾Ð½Ñ„Ð¸Ð³Ð¸ Ð¸ ÑÑ…ÐµÐ¼Ñ‹
 
@@ -25,7 +25,7 @@
 
 - Ð±Ñ‹ÑÑ‚Ñ€Ð¾ Ð¿Ð¾Ð½ÑÑ‚ÑŒ, Ñ‡Ñ‚Ð¾ Ñ‚Ð°ÐºÐ¾Ðµ DTM Ð¸ Ð³Ð´Ðµ Ð¸ÑÐºÐ°Ñ‚ÑŒ Ð½ÑƒÐ¶Ð½ÑƒÑŽ Ñ‚ÐµÐ¼Ñƒ
 - Ñ€Ð°Ð·Ð¾Ð±Ñ€Ð°Ñ‚ÑŒÑÑ Ð² Ñ‚ÐµÐºÑƒÑ‰ÐµÐ¼ ÑƒÑÑ‚Ñ€Ð¾Ð¹ÑÑ‚Ð²Ðµ runtime Ð¸ Ð²Ð½ÐµÑˆÐ½Ð¸Ñ… ÐºÐ¾Ð½Ñ‚ÑƒÑ€Ð°Ñ…
-- Ð·Ð°Ð¿ÑƒÑÑ‚Ð¸Ñ‚ÑŒ Ð½Ð¾Ð²ÑƒÑŽ architecture/refactor campaign Ð¾Ñ‚ Ð·Ð°Ñ„Ð¸ÐºÑÐ¸Ñ€Ð¾Ð²Ð°Ð½Ð½Ð¾Ð³Ð¾ master text
+- Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚ÑŒ architecture work Ð¾Ñ‚ Ð·Ð°Ñ„Ð¸ÐºÑÐ¸Ñ€Ð¾Ð²Ð°Ð½Ð½Ð¾Ð³Ð¾ active canon
 - Ð½Ð°Ð¹Ñ‚Ð¸ Ñ€Ð°Ð±Ð¾Ñ‡Ð¸Ð¹ runbook Ð¸Ð»Ð¸ Ñ‚ÐµÑ…Ð½Ð¸Ñ‡ÐµÑÐºÐ¸Ð¹ ÐºÐ¾Ð½Ñ‚Ñ€Ð°ÐºÑ‚
 - Ð¿ÐµÑ€ÐµÐ¹Ñ‚Ð¸ Ð¸Ð· Ð¾Ð±Ð·Ð¾Ñ€Ð½Ð¾Ð³Ð¾ ÑƒÑ€Ð¾Ð²Ð½Ñ Ð² Ð³Ð»ÑƒÐ±Ð¾ÐºÐ¸Ð¹ Ð´Ð¾ÐºÑƒÐ¼ÐµÐ½Ñ‚ Ð¿Ð¾ ÑÑÑ‹Ð»ÐºÐ°Ð¼
 

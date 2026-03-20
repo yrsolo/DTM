@@ -44,7 +44,7 @@ src/contexts/reminders/
 - no primary HTTP routes are expected as the main ownership center in this wave
 - trigger intake remains platform-owned; reminder execution ownership remains here
 
-## Transitional extraction notes
+## Active implementation notes
 
 - reminders remain an active operational priority
 - keep behavior stable while separating reminder logic from trigger semantics and transport details

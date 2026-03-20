@@ -26,7 +26,10 @@ Bottom line:
 
 Progress note:
 - the beauty backlog now executes through [beauty-wave-method.md](beauty-wave-method.md)
-- the first active curation wave is `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1`
+- `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1` removed eager app-context access from the top path
+- `CAM-2026-03-21-ACTIVE-NAMING-CLEANUP-V1` removed migration-shaped wording from active module surfaces and access-api query aliases
+- `CAM-2026-03-21-DOCS-VOICE-UNIFICATION-V1` removed the most visible future-facing and transitional wording from active docs
+- the next queued smell is `CAM-2026-03-21-BOOTSTRAP-READABILITY-V1`
 
 ## Evaluation Rubric
 
@@ -184,7 +187,7 @@ Current default classification:
 - acceptance criteria: top path reads cleanly through `index.py -> handler -> runtime shell -> owning module` without extra explanatory baggage
 - risk level: low
 - safe independently: yes
-- current execution status: `in progress` via `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1`
+- current execution status: `done`
 
 ### Wave 2. Naming Cleanup
 - goal: make active names describe present ownership rather than extraction history or internal plumbing
@@ -193,6 +196,7 @@ Current default classification:
 - acceptance criteria: active names no longer sound like migration-era aliases or generic assembly artifacts
 - risk level: low
 - safe independently: yes
+- current execution status: `done`
 
 ### Wave 3. Docs Voice Unification
 - goal: make active docs sound like finished canon, not recovery commentary
@@ -201,6 +205,7 @@ Current default classification:
 - acceptance criteria: active docs read calmly and consistently, with history referenced only where needed
 - risk level: low
 - safe independently: yes
+- current execution status: `done`
 
 ### Wave 4. Bootstrap Readability
 - goal: reduce the feeling that bootstrap is a hidden coordination brain
@@ -209,6 +214,7 @@ Current default classification:
 - acceptance criteria: bootstrap still works as glue, but no longer feels visually heavier than the modules it serves
 - risk level: medium
 - safe independently: yes
+- current execution status: `blocked for owner decision` via `CAM-2026-03-21-BOOTSTRAP-READABILITY-V1`
 
 ### Wave 5. Active/History Separation
 - goal: make archive/history materially less visible from active reading paths

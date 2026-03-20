@@ -59,7 +59,7 @@ External callers should use the context facade only, not internal files.
 - attachment delete paths
 - attachment read/view/download paths
 
-## Transitional extraction notes
+## Active implementation notes
 
 - current implementation is spread across HTTP handlers, jobs, services, and snapshot-engine-facing pieces
 - preserve current behavior first, then consolidate into one context facade

@@ -89,5 +89,5 @@ Supporting areas:
 
 ## Refactor governance note
 
-- `docs/architecture/module-first-recovery/README.md` is the master text for future refactor campaigns
+- `docs/architecture/module-first-recovery/README.md` is the master text for active architecture decisions
 - child campaigns should refresh trust against current code before decomposition

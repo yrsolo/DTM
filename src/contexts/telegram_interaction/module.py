@@ -1,4 +1,4 @@
-"""Local builder for the telegram interaction context."""
+"""Module surface for the telegram interaction context."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from .internal.group_query_usecase import GroupQueryUseCase
 
 @dataclass(frozen=True, slots=True)
 class TelegramInteractionModule:
-    """Context-local builder bundle used during staged migration."""
+    """Own the reserve Telegram interaction contour and its runtime assembly."""
 
     name: str = "telegram_interaction"
 
@@ -51,6 +51,6 @@ class TelegramInteractionModule:
 
 
 def get_module() -> TelegramInteractionModule:
-    """Return the local module instance for the telegram interaction context."""
+    """Return the canonical module surface for the telegram interaction context."""
 
     return TelegramInteractionModule()

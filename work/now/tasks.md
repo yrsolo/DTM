@@ -1,10 +1,13 @@
 # Active Tasks
 
-- CAM-2026-03-21-TOP-PATH-ELEGANCE-V1: remove the remaining top-path ceremony around `index.py` so the first entrypoint path reads cleanly in 3-4 jumps with explicit kill criteria.
+- CAM-2026-03-21-BOOTSTRAP-READABILITY-V1: blocked pending owner choice on whether bootstrap public test seams (`APP_DEPS`, `APP_TRIGGERS`, `build_runtime_app_context`, shell getters) should be preserved as accepted imperfection or cleaned up with broader dependent-test rewiring.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done
 
+- CAM-2026-03-21-DOCS-VOICE-UNIFICATION-V1 completed: active docs stopped framing the canon as material for future refactor campaigns and replaced the most visible transitional section names with calm current-system language.
+- CAM-2026-03-21-ACTIVE-NAMING-CLEANUP-V1 completed: active module docstrings now describe present ownership, and access-api query-owned paths now use `get_snapshot_query_capability` naming instead of broad snapshot-engine wording.
+- CAM-2026-03-21-TOP-PATH-ELEGANCE-V1 completed: `index.py` no longer resolves app context eagerly just to classify Telegram HTTP requests, `handler.py` stayed the single obvious top router, and the nearest top-path docs/checks were aligned.
 - CAM-2026-03-21-REPO-BEAUTY-AUDIT-V1 completed: beauty audit published under the module-first canon, a decision-complete sequential backlog was recorded, and the smell-driven execution method for future curation waves is now documented.
 - Pre-audit idealization wave completed: active runtime docs now point only to the module-first canon, stale migration-era wording was removed from active narrative, dead `group_query_handler.py` was deleted, and active capability aliases now use capability-true names.
 - CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1 completed: module-first canon replaced the active recovery canon, the trust-gated delta audit drove the remaining cleanup, `src/snapshot_engine/*` moved under `src/contexts/snapshot/internal/engine/*`, `src/jobs/*` was removed, and active tests now live under `tests/contexts/*`.

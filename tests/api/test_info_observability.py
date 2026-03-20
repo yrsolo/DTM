@@ -113,8 +113,8 @@ class _MetricsRecorder:
 class InfoObservabilityTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self.module = access_info_handler_module
-        self.original_get_snapshot_capability = access_info_handler_module.get_snapshot_capability
-        self.original_access_get_snapshot_capability = access_info_handler_module.get_snapshot_capability
+        self.original_get_snapshot_query_capability = access_info_handler_module.get_snapshot_query_capability
+        self.original_access_get_snapshot_query_capability = access_info_handler_module.get_snapshot_query_capability
         self.original_get_queue_live_stats = access_info_handler_module.get_queue_live_stats
         self.original_access_get_queue_live_stats = access_info_handler_module.get_queue_live_stats
         self.original_get_function_build_info = access_info_handler_module.get_function_build_info
@@ -166,7 +166,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
                 "byPrefix": {"raw": 256, "prep": 256, "extra": 256, "attachments": 256, "jobs": 0},
             }
 
-        access_info_handler_module.get_snapshot_capability = _get_snapshot_capability  # type: ignore[assignment]
+        access_info_handler_module.get_snapshot_query_capability = _get_snapshot_capability  # type: ignore[assignment]
         access_info_handler_module.get_queue_live_stats = _get_queue_live_stats  # type: ignore[assignment]
         access_info_handler_module.get_function_build_info = _get_function_build_info  # type: ignore[assignment]
         access_info_handler_module.InfoHandler._storage_stats = _storage_stats  # type: ignore[assignment]
@@ -309,7 +309,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         )
 
     def tearDown(self) -> None:
-        access_info_handler_module.get_snapshot_capability = self.original_access_get_snapshot_capability  # type: ignore[assignment]
+        access_info_handler_module.get_snapshot_query_capability = self.original_access_get_snapshot_query_capability  # type: ignore[assignment]
         access_info_handler_module.get_queue_live_stats = self.original_access_get_queue_live_stats  # type: ignore[assignment]
         access_info_handler_module.get_function_build_info = self.original_access_get_function_build_info  # type: ignore[assignment]
         access_info_handler_module.InfoHandler._storage_stats = self.original_access_storage_stats  # type: ignore[assignment]

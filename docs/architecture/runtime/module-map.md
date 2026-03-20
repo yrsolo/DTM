@@ -67,9 +67,9 @@ If a reader needs that history, current docs should point there instead of retel
 ## Immediate guidance
 
 - Keep `index.py` thin.
-- Treat `src/contexts/*` and `src/platform/*` as the canonical target ownership map for active refactor work.
+- Treat `src/contexts/*` and `src/platform/*` as the canonical ownership map for the active runtime.
 - Treat `src/contexts/snapshot/internal/engine/*` as the canonical internal read-side runtime.
 - Keep browser auth, read shaping, and masking inside `access_api`; keep `src/entrypoints/http/*` transport-only.
 - Keep refresh/render/reminder work in async jobs or explicit runtime modes.
 - Treat archive modules and docs as reference-only, not as active architecture.
-- Use the module-first recovery canon and companion ownership docs as the canonical target map for future extraction waves.
+- Use the module-first recovery canon and companion ownership docs as the active ownership reference for current architecture work.

@@ -1,4 +1,4 @@
-"""Local builder for the rendering context."""
+"""Module surface for the rendering context."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from .internal import DesignersRenderUseCase, GoogleSheetsPlanWriter, RenderJob,
 
 @dataclass(frozen=True, slots=True)
 class RenderingModule:
-    """Context-local builder bundle used during staged migration."""
+    """Own the rendering use-cases built on top of snapshot read contracts."""
 
     name: str = "rendering"
 
@@ -45,6 +45,6 @@ class RenderingModule:
 
 
 def get_module() -> RenderingModule:
-    """Return the local module instance for the rendering context."""
+    """Return the canonical module surface for the rendering context."""
 
     return RenderingModule()

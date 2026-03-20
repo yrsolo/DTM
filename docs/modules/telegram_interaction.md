@@ -56,7 +56,7 @@ The following behavior must keep working:
 - `group_query_reply`
 - reminder delivery channel through Telegram where already used
 
-## Transitional extraction notes
+## Active implementation notes
 
 - current behavior spans Telegram parser/router/webhook modules and the group query reply job
 - command ownership is fixed now: `group_query_reply -> telegram_interaction`

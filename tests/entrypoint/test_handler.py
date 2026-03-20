@@ -107,9 +107,30 @@ class HandlerTopPathTestCase(unittest.IsolatedAsyncioTestCase):
             get_http_shell=lambda: (_ for _ in ()).throw(AssertionError("http shell should not be used")),
             get_worker_shell=lambda: (_ for _ in ()).throw(AssertionError("worker shell should not be used")),
             get_trigger_shell=lambda: (_ for _ in ()).throw(AssertionError("trigger shell should not be used")),
+            get_telegram_webhook_path=lambda: (_ for _ in ()).throw(
+                AssertionError("telegram webhook path should not be resolved")
+            ),
         )
 
         self.assertEqual(response, {"statusCode": 200, "body": "!HEALTHY!"})
+
+    async def test_resolves_telegram_webhook_path_only_for_http_events(self) -> None:
+        http_shell = _FakeHttpShell()
+        worker_shell = _FakeWorkerShell()
+        trigger_shell = _FakeTriggerShell()
+        calls: list[str] = []
+
+        response = await handle(
+            {"path": "/custom-telegram", "httpMethod": "POST"},
+            None,
+            get_http_shell=lambda: http_shell,
+            get_worker_shell=lambda: worker_shell,
+            get_trigger_shell=lambda: trigger_shell,
+            get_telegram_webhook_path=lambda: calls.append("resolved") or "/custom-telegram",
+        )
+
+        self.assertEqual(response["body"], "http")
+        self.assertEqual(calls, ["resolved"])
 
 
 if __name__ == "__main__":

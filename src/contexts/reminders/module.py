@@ -1,4 +1,4 @@
-"""Local builder for the reminders context."""
+"""Module surface for the reminders context."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from .internal import ReminderFormatter, ReminderJob, ReminderUseCase
 
 @dataclass(frozen=True, slots=True)
 class RemindersModule:
-    """Context-local builder bundle used during staged migration."""
+    """Own reminder delivery, formatting, and enhancement assembly."""
 
     name: str = "reminders"
 
@@ -105,6 +105,6 @@ class RemindersModule:
 
 
 def get_module() -> RemindersModule:
-    """Return the local module instance for the reminders context."""
+    """Return the canonical module surface for the reminders context."""
 
     return RemindersModule()

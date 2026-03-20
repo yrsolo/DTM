@@ -1,4 +1,4 @@
-"""Local builder for the attachments context."""
+"""Module surface for the attachments context."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from .internal import AttachmentFinalizeService, AttachmentReadResolver, build_a
 
 @dataclass(slots=True)
 class AttachmentsModule:
-    """Context-local builder for attachment capabilities."""
+    """Own attachment publication, storage, and read resolution assembly."""
 
     ctx: AppContext
     name: str = "attachments"
@@ -58,6 +58,6 @@ class AttachmentsModule:
 
 
 def get_module(ctx: AppContext) -> AttachmentsModule:
-    """Return the local attachments module builder."""
+    """Return the canonical module surface for the attachments context."""
 
     return AttachmentsModule(ctx=ctx)

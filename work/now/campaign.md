@@ -3,12 +3,16 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
-- CAM-2026-03-21-TOP-PATH-ELEGANCE-V1
+- none
 
 ## Blocked
+- CAM-2026-03-21-BOOTSTRAP-READABILITY-V1
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## Done
+- CAM-2026-03-21-DOCS-VOICE-UNIFICATION-V1 completed after removing the most visible future-facing and transitional wording from active docs so they read like current-system documentation.
+- CAM-2026-03-21-ACTIVE-NAMING-CLEANUP-V1 completed after rewriting active module docstrings in present-tense ownership language and renaming access-api query aliases away from broad snapshot-engine wording.
+- CAM-2026-03-21-TOP-PATH-ELEGANCE-V1 completed after removing eager app-context access from `index.py`, keeping `src/entrypoint/handler.py` as the single top router, and aligning the closest top-path docs and tests.
 - CAM-2026-03-21-REPO-BEAUTY-AUDIT-V1 completed after publishing the beauty assessment, the sequential backlog, and the smell-driven beauty-wave method used to execute the next curation steps.
 - Pre-audit idealization wave completed as a safe polish pass over the active contour: docs, capability naming, and readability guardrails were aligned before external review.
 - `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1` completed after replacing the active canon with module-first recovery, finishing the delta-audit-driven cleanup, moving snapshot internals under the snapshot context, removing `src/jobs/*`, and aligning active tests with module ownership under `tests/contexts/*`.

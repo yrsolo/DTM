@@ -212,12 +212,12 @@ def _shape_signature(value):  # noqa: ANN001
 
 class FrontendApiRoutingTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        self._orig_get_snapshot_capability = access_frontend_v2_module.get_snapshot_capability
-        self._orig_access_get_snapshot_capability = access_frontend_v2_module.get_snapshot_capability
-        self._orig_info_get_snapshot_capability = access_info_handler_module.get_snapshot_capability
-        self._orig_access_info_get_snapshot_capability = access_info_handler_module.get_snapshot_capability
-        self._orig_people_get_snapshot_capability = access_people_snapshot_handler_module.get_snapshot_capability
-        self._orig_access_people_get_snapshot_capability = access_people_snapshot_handler_module.get_snapshot_capability
+        self._orig_get_snapshot_query_capability = access_frontend_v2_module.get_snapshot_query_capability
+        self._orig_access_get_snapshot_query_capability = access_frontend_v2_module.get_snapshot_query_capability
+        self._orig_info_get_snapshot_query_capability = access_info_handler_module.get_snapshot_query_capability
+        self._orig_access_info_get_snapshot_query_capability = access_info_handler_module.get_snapshot_query_capability
+        self._orig_people_get_snapshot_query_capability = access_people_snapshot_handler_module.get_snapshot_query_capability
+        self._orig_access_people_get_snapshot_query_capability = access_people_snapshot_handler_module.get_snapshot_query_capability
         self._orig_info_get_queue_live_stats = access_info_handler_module.get_queue_live_stats
         self._orig_access_info_get_queue_live_stats = access_info_handler_module.get_queue_live_stats
         self._orig_info_get_function_build_info = access_info_handler_module.get_function_build_info
@@ -277,9 +277,9 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
                 ],
             }
         )
-        access_frontend_v2_module.get_snapshot_capability = lambda _ctx: self._engine  # type: ignore[assignment]
-        access_info_handler_module.get_snapshot_capability = lambda _ctx: _FakeInfoSnapshotEngine()  # type: ignore[assignment]
-        access_people_snapshot_handler_module.get_snapshot_capability = lambda _ctx: self._engine  # type: ignore[assignment]
+        access_frontend_v2_module.get_snapshot_query_capability = lambda _ctx: self._engine  # type: ignore[assignment]
+        access_info_handler_module.get_snapshot_query_capability = lambda _ctx: _FakeInfoSnapshotEngine()  # type: ignore[assignment]
+        access_people_snapshot_handler_module.get_snapshot_query_capability = lambda _ctx: self._engine  # type: ignore[assignment]
         access_info_handler_module.get_queue_live_stats = lambda **_kwargs: type(  # type: ignore[assignment]
             "QueueStats",
             (),
@@ -313,9 +313,9 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         RECENT_DIRECT_API_OUTER_TRACES._events.clear()  # type: ignore[attr-defined]
 
     def tearDown(self) -> None:
-        access_frontend_v2_module.get_snapshot_capability = self._orig_access_get_snapshot_capability  # type: ignore[assignment]
-        access_info_handler_module.get_snapshot_capability = self._orig_access_info_get_snapshot_capability  # type: ignore[assignment]
-        access_people_snapshot_handler_module.get_snapshot_capability = self._orig_access_people_get_snapshot_capability  # type: ignore[assignment]
+        access_frontend_v2_module.get_snapshot_query_capability = self._orig_access_get_snapshot_query_capability  # type: ignore[assignment]
+        access_info_handler_module.get_snapshot_query_capability = self._orig_access_info_get_snapshot_query_capability  # type: ignore[assignment]
+        access_people_snapshot_handler_module.get_snapshot_query_capability = self._orig_access_people_get_snapshot_query_capability  # type: ignore[assignment]
         access_info_handler_module.get_queue_live_stats = self._orig_access_info_get_queue_live_stats  # type: ignore[assignment]
         access_info_handler_module.get_function_build_info = self._orig_access_info_get_function_build_info  # type: ignore[assignment]
         access_info_handler_module.InfoHandler._storage_stats = self._orig_access_info_storage_stats  # type: ignore[assignment]
@@ -537,7 +537,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(payload.get("error", {}).get("code"), "unsupported_mode")
 
     def test_v2_returns_503_when_snapshot_source_unavailable(self) -> None:
-        access_frontend_v2_module.get_snapshot_capability = lambda _ctx: (_ for _ in ()).throw(RuntimeError("s3 down"))  # type: ignore[assignment]
+        access_frontend_v2_module.get_snapshot_query_capability = lambda _ctx: (_ for _ in ()).throw(RuntimeError("s3 down"))  # type: ignore[assignment]
         event = _fixture_event()
         event["pathParams"]["proxy"] = "api/v2/frontend"
         event["params"]["proxy"] = "api/v2/frontend"

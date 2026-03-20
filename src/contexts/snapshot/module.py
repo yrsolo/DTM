@@ -1,4 +1,4 @@
-"""Local builder for the snapshot context."""
+"""Module surface for the snapshot context."""
 
 from __future__ import annotations
 
@@ -111,7 +111,7 @@ class SnapshotUpdateCapability:
 
 @dataclass(frozen=True, slots=True)
 class SnapshotModule:
-    """Context-local builder bundle used during staged migration."""
+    """Own the snapshot read-model surface and exported capabilities."""
 
     name: str = "snapshot"
 
@@ -147,6 +147,6 @@ class SnapshotModule:
 
 
 def get_module() -> SnapshotModule:
-    """Return the local module instance for the snapshot context."""
+    """Return the canonical module surface for the snapshot context."""
 
     return SnapshotModule()
