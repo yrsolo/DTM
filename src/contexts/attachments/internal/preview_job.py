@@ -4,7 +4,11 @@ from datetime import datetime, timezone
 
 from src.app.context import AppContext
 from src.commands.model import Command
-from src.contexts.attachments.public import get_attachment_snapshot_capability, get_attachment_storage
+from src.contexts.attachments.public import (
+    get_attachment_snapshot_capability,
+    get_attachment_storage,
+    get_doc_preview_converter,
+)
 from src.platform.runtime.frontend_cache_invalidation import invalidate_default_frontend_cache_store
 from src.services.errors import AppError, TransientError, UserError
 
@@ -62,7 +66,7 @@ class GenerateAttachmentPreviewJob:
                     "skipped": True,
                     "reason": "preview_already_ready",
                 }
-            converter = self._ctx.deps.get("doc_preview_converter")
+            converter = get_doc_preview_converter(self._ctx)
             if converter is None:
                 metadata_store.mark_preview_failed(
                     task_id=task_id,

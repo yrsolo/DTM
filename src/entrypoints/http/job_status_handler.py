@@ -3,6 +3,7 @@ from __future__ import annotations
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response, json_response
+from src.platform.runtime.command_runtime import get_command_runtime
 
 
 class JobStatusHandler:
@@ -18,8 +19,8 @@ class JobStatusHandler:
         prefix = "/admin/jobs/"
         if not path.startswith(prefix):
             return None
-        status_store = self._ctx.deps.get("job_status_store")
-        if status_store is None:
+        command_runtime = get_command_runtime(self._ctx)
+        if command_runtime.status_store is None:
             return error_response(
                 503,
                 code="job_status_unavailable",
@@ -28,7 +29,7 @@ class JobStatusHandler:
         job_id = path[len(prefix) :].strip()
         if not job_id:
             return error_response(400, code="job_id_missing", message="Job id is required.")
-        record = status_store.get(job_id)
+        record = command_runtime.get(job_id)
         if record is None:
             return error_response(404, code="job_not_found", message="Job status was not found.")
         return json_response(

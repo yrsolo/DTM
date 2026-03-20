@@ -33,15 +33,17 @@ class QueueDispatchTestCase(unittest.TestCase):
         result = asyncio.run(
             dispatch_command(
                 _command("attach_task_file"),
-                update_snapshot_job=_FakeJob("update_snapshot"),
-                send_reminders_job=_FakeJob("send_reminders"),
-                render_timeline_job=_FakeJob("render_timeline"),
-                render_designers_job=_FakeJob("render_designers"),
-                group_query_reply_job=_FakeJob("group_query_reply"),
-                attach_task_file_job=attachments_job,
-                delete_task_attachment_job=_FakeJob("delete_task_attachment"),
-                cleanup_task_attachments_job=_FakeJob("cleanup_task_attachments"),
-                generate_attachment_preview_job=_FakeJob("generate_attachment_preview"),
+                command_handlers={
+                    "update_snapshot": _FakeJob("update_snapshot"),
+                    "send_reminders": _FakeJob("send_reminders"),
+                    "render_timeline_sheet": _FakeJob("render_timeline"),
+                    "render_designers_sheet": _FakeJob("render_designers"),
+                    "group_query_reply": _FakeJob("group_query_reply"),
+                    "attach_task_file": attachments_job,
+                    "delete_task_attachment": _FakeJob("delete_task_attachment"),
+                    "cleanup_task_attachments": _FakeJob("cleanup_task_attachments"),
+                    "generate_attachment_preview": _FakeJob("generate_attachment_preview"),
+                },
             )
         )
 
@@ -52,15 +54,17 @@ class QueueDispatchTestCase(unittest.TestCase):
         result = asyncio.run(
             dispatch_command(
                 _command("unknown_command"),
-                update_snapshot_job=_FakeJob("update_snapshot"),
-                send_reminders_job=_FakeJob("send_reminders"),
-                render_timeline_job=_FakeJob("render_timeline"),
-                render_designers_job=_FakeJob("render_designers"),
-                group_query_reply_job=_FakeJob("group_query_reply"),
-                attach_task_file_job=_FakeJob("attach_task_file"),
-                delete_task_attachment_job=_FakeJob("delete_task_attachment"),
-                cleanup_task_attachments_job=_FakeJob("cleanup_task_attachments"),
-                generate_attachment_preview_job=_FakeJob("generate_attachment_preview"),
+                command_handlers={
+                    "update_snapshot": _FakeJob("update_snapshot"),
+                    "send_reminders": _FakeJob("send_reminders"),
+                    "render_timeline_sheet": _FakeJob("render_timeline"),
+                    "render_designers_sheet": _FakeJob("render_designers"),
+                    "group_query_reply": _FakeJob("group_query_reply"),
+                    "attach_task_file": _FakeJob("attach_task_file"),
+                    "delete_task_attachment": _FakeJob("delete_task_attachment"),
+                    "cleanup_task_attachments": _FakeJob("cleanup_task_attachments"),
+                    "generate_attachment_preview": _FakeJob("generate_attachment_preview"),
+                },
             )
         )
 

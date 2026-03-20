@@ -26,6 +26,7 @@
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T003`
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T004`
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P03-T001`
+- [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P04-T001`
 
 ## Verification
 - Command:
@@ -50,9 +51,12 @@
 - Telegram is now treated as reserve capability, not a co-equal active architecture center
 - generic `src/jobs/*` no longer acts as an active execution center; active runtime and contexts now obtain runners through owning modules, while `src/jobs/*` remains compatibility-only
 - browser-facing read routes are now composed inside `access_api` via `BrowserRoutesHandler`, so `HttpRouter` no longer owns the frontend/info/people/attachment-read fanout directly
-- current code still meets the canon only partially because bootstrap/runtime assembly remains heavy: `app/bootstrap.py` and `queue_bootstrap.py` still know concrete module runners and env-resolved composition details
+- queue/worker orchestration is now bound through module-owned command handler maps instead of direct `src.jobs` fanout in platform bootstrap
+- attachment preview converter assembly moved out of `app/bootstrap.py` into the owning `attachments` module; bootstrap now carries raw runtime inputs instead of building the domain adapter directly
+- active entrypoints/contexts now use platform-owned `command_runtime` capability instead of reading `command_queue_producer`, `job_status_store`, and `command_worker` directly from the generic deps bag
+- bootstrap gravity is materially reduced, but the next microservice-facing gap is physical structure: `src.snapshot_engine` still exists as a top-level implementation zone instead of living under the `snapshot` context
 
 ## Notes
 - `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1` remains closed as phase-one precedent.
 - Structured delta audit is now recorded in `delta-audit.md`.
-- Recommended next code wave: break bootstrap gravity by deciding how much module-specific queue/runtime assembly may remain in `app/bootstrap.py` and `queue_bootstrap.py`.
+- Recommended next code wave: internalize `src.snapshot_engine` into the `snapshot` context or explicitly approve it as the last remaining top-level implementation island.

@@ -11,8 +11,13 @@ from src.contexts.attachments.contracts import (
     build_attachment_capabilities,
     infer_attachment_kind,
 )
-from src.contexts.attachments.public import get_attachment_snapshot_capability, get_attachment_storage
+from src.contexts.attachments.public import (
+    get_attachment_snapshot_capability,
+    get_attachment_storage,
+    get_doc_preview_converter,
+)
 from src.contexts.snapshot.contracts import AttachmentMeta
+from src.platform.runtime.command_runtime import get_command_runtime
 from src.platform.runtime.frontend_cache_invalidation import invalidate_default_frontend_cache_store
 from src.services.errors import AppError, TransientError, UserError
 
@@ -48,10 +53,9 @@ class AttachTaskFileJob:
             size_bytes = self._parse_size(payload)
             kind = infer_attachment_kind(mime_type)
             doc_preview_state = "none"
-            producer = self._ctx.deps.get("command_queue_producer")
-            status_store = self._ctx.deps.get("job_status_store")
-            converter_configured = self._ctx.deps.get("doc_preview_converter") is not None
-            preview_queue_available = producer is not None and status_store is not None
+            command_runtime = get_command_runtime(self._ctx)
+            converter_configured = get_doc_preview_converter(self._ctx) is not None
+            preview_queue_available = command_runtime.can_enqueue()
             preview_enabled = converter_configured and preview_queue_available
             if kind == "doc":
                 doc_preview_state = "pending" if preview_enabled else "failed"
@@ -108,8 +112,7 @@ class AttachTaskFileJob:
                         requested_by=cmd.requested_by,
                         payload={"task_id": task_id, "attachment_id": attachment_id},
                     )
-                    producer.send(preview_cmd)
-                    status_store.put_queued(preview_cmd)
+                    command_runtime.enqueue(preview_cmd)
                     result["preview_job_id"] = preview_cmd.job_id
                 else:
                     result["warnings"] = list(result.get("warnings", []) or [])
@@ -231,4 +234,3 @@ class CleanupTaskAttachmentsJob:
                 "status": "failed",
                 "error": {"code": error.code, "message": str(error)},
             }
-

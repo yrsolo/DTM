@@ -8,6 +8,7 @@ from src.entrypoints.http.dto import HttpRequest
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response, json_response
 from src.observability import timed
+from src.platform.runtime.command_runtime import get_command_runtime
 
 from .command_router import TelegramCommandRouter
 from .parser import TelegramUpdateParser
@@ -49,9 +50,8 @@ class TelegramWebhookHandler:
             if logger is not None:
                 logger.warning("telegram_update_rejected", reason="secret_mismatch")
             return error_response(403, code="telegram_webhook_forbidden", message="Telegram webhook secret token mismatch.")
-        producer = self._ctx.deps.get("command_queue_producer")
-        status_store = self._ctx.deps.get("job_status_store")
-        if producer is None or status_store is None:
+        command_runtime = get_command_runtime(self._ctx)
+        if not command_runtime.can_enqueue():
             return error_response(503, code="queue_unavailable", message="Command queue is not configured for current environment.")
         with timed(metrics, "dtm.telegram.enqueue_ms", {"env": env_name, "module": "telegram", "operation": "webhook", "result": "accepted"}):
             parsed = self._parser.parse(dict(req.body or {}))
@@ -65,8 +65,7 @@ class TelegramWebhookHandler:
                     metrics.counter("dtm.telegram.rejected_total", labels={"env": env_name, "module": "telegram", "operation": "route", "result": "unsupported_action"})
                 return json_response(200, {"artifact": "telegram_webhook", "status": "ignored", "reason": "unsupported_action"})
             cmd = Command(job_id=uuid4().hex, type=routed.command_type, created_at_utc=datetime.now(timezone.utc), requested_by=RequestedBy(source="telegram", user_id=parsed.user_id or None, chat_id=parsed.chat_id or None), payload=dict(routed.payload))
-            producer.send(cmd)
-            record = status_store.put_queued(cmd)
+            record = command_runtime.enqueue(cmd)
         if metrics is not None:
             metrics.counter("dtm.telegram.updates_total", labels={"env": env_name, "module": "telegram", "operation": "webhook", "result": "accepted"})
             metrics.counter("dtm.telegram.command_total", labels={"env": env_name, "module": "telegram", "operation": routed.command_name, "result": "accepted"})

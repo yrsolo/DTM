@@ -1,6 +1,6 @@
 # Active Tasks
 
-- CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1: module-first canon is now the active roadmap; the delta audit is recorded, active runtime no longer imports `src.jobs` directly, browser read routes are composed inside `access_api`, and the next blocker is bootstrap gravity in `app/bootstrap.py` plus `platform/runtime/queue_bootstrap.py`.
+- CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1: module-first canon is now the active roadmap; the delta audit is recorded, active runtime no longer imports `src.jobs` directly, browser read routes are composed inside `access_api`, bootstrap now delegates attachment converter assembly to the owning module, queue/status/worker access is grouped under platform-owned `command_runtime`, and the next blocker is the top-level `src.snapshot_engine` island.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done

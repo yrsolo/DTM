@@ -5,7 +5,7 @@ Replace the architecture-recovery canon with the stricter module-first canon and
 
 ## Status
 - in progress: 2026-03-20
-- current phase: P04 break bootstrap gravity
+- current phase: P07 snapshot/rendering hard boundary
 
 ## Phases
 

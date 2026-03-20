@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from src.commands.types import GROUP_QUERY_REPLY
+
 from .module import get_module
 
 
@@ -49,3 +51,9 @@ def get_group_query_reply_job(ctx):
     from .internal.job_runner import GroupQueryReplyJob
 
     return GroupQueryReplyJob(ctx)
+
+
+def get_command_handlers(ctx) -> dict[str, object]:
+    """Return the telegram-owned queue command handlers."""
+
+    return {GROUP_QUERY_REPLY: get_group_query_reply_job(ctx)}

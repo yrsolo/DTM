@@ -275,6 +275,33 @@ class GuardrailsV0TestCase(unittest.TestCase):
         self.assertNotIn("from src.jobs", content)
         self.assertNotIn("import src.jobs", content)
 
+    def test_active_paths_use_command_runtime_instead_of_queue_dep_keys(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "entrypoint",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "contexts",
+        ]
+        forbidden_markers = (
+            'deps.get("command_queue_producer"',
+            "deps.get('command_queue_producer'",
+            'deps.get("job_status_store"',
+            "deps.get('job_status_store'",
+            'deps.get("command_worker"',
+            "deps.get('command_worker'",
+        )
+        for file_path in _python_files(target_paths):
+            content = file_path.read_text(encoding="utf-8")
+            if any(marker in content for marker in forbidden_markers):
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_app_bootstrap_does_not_build_attachment_converter_directly(self) -> None:
+        file_path = ROOT / "src" / "app" / "bootstrap.py"
+        content = file_path.read_text(encoding="utf-8")
+        self.assertNotIn("from src.infra.doc_preview_converter import DocPreviewConverter", content)
+        self.assertNotIn("DocPreviewConverter(", content)
+
     def test_active_module_first_paths_do_not_import_jobs_directly(self) -> None:
         offenders: list[str] = []
         target_paths = [

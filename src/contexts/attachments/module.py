@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from src.app.context import AppContext
 from src.contexts.snapshot.public import get_attachment_capability
+from src.infra.doc_preview_converter import DocPreviewConverter
 
 from .internal import AttachmentFinalizeService, AttachmentReadResolver, build_attachment_storage
 
@@ -25,6 +26,23 @@ class AttachmentsModule:
 
     def storage(self):
         return build_attachment_storage(self.ctx)
+
+    def doc_preview_converter(self):
+        explicit = self.ctx.deps.get("doc_preview_converter")
+        if explicit is not None:
+            return explicit
+        cached = self.ctx.deps.get("attachments_doc_preview_converter")
+        if cached is not None:
+            return cached
+        base_url = str(self.ctx.deps.get("doc_preview_converter_url", "") or "").strip()
+        if not base_url:
+            return None
+        converter = DocPreviewConverter(
+            base_url=base_url,
+            shared_token=str(self.ctx.deps.get("doc_preview_converter_shared_token", "") or "").strip(),
+        )
+        self.ctx.deps["attachments_doc_preview_converter"] = converter
+        return converter
 
     def finalize_service(self) -> AttachmentFinalizeService:
         return AttachmentFinalizeService(

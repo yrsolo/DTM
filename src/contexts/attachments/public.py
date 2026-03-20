@@ -2,6 +2,12 @@
 
 from __future__ import annotations
 
+from src.commands.types import (
+    ATTACH_TASK_FILE,
+    CLEANUP_TASK_ATTACHMENTS,
+    DELETE_TASK_ATTACHMENT,
+    GENERATE_ATTACHMENT_PREVIEW,
+)
 from src.app.context import AppContext
 
 from .internal.contracts import SUPPORTED_ATTACHMENT_MIME_TYPES
@@ -37,6 +43,12 @@ def get_attachment_read_resolver(ctx: AppContext):
     """Return the context-owned read resolver."""
 
     return get_public_api(ctx).read_resolver()
+
+
+def get_doc_preview_converter(ctx: AppContext):
+    """Return the context-owned doc preview converter when configured."""
+
+    return get_public_api(ctx).doc_preview_converter()
 
 
 def get_supported_attachment_mime_types() -> frozenset[str]:
@@ -81,3 +93,14 @@ def get_generate_attachment_preview_job(ctx: AppContext):
     from .internal.preview_job import GenerateAttachmentPreviewJob
 
     return GenerateAttachmentPreviewJob(ctx)
+
+
+def get_command_handlers(ctx: AppContext) -> dict[str, object]:
+    """Return the attachment-owned queue command handlers."""
+
+    return {
+        ATTACH_TASK_FILE: get_attach_task_file_job(ctx),
+        DELETE_TASK_ATTACHMENT: get_delete_task_attachment_job(ctx),
+        CLEANUP_TASK_ATTACHMENTS: get_cleanup_task_attachments_job(ctx),
+        GENERATE_ATTACHMENT_PREVIEW: get_generate_attachment_preview_job(ctx),
+    }

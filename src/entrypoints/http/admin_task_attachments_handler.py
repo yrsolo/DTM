@@ -16,6 +16,7 @@ from src.entrypoints.http.access_context import resolve_access_context
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response, json_response, path_matches
+from src.platform.runtime.command_runtime import get_command_runtime
 from src.services.errors import AppError
 
 build_snapshot_engine = get_attachment_snapshot_capability
@@ -27,11 +28,8 @@ class AdminTaskAttachmentsHandler:
     def __init__(self, ctx) -> None:
         self._ctx = ctx
 
-    def _producer(self):
-        return self._ctx.deps.get("command_queue_producer")
-
-    def _status_store(self):
-        return self._ctx.deps.get("job_status_store")
+    def _command_runtime(self):
+        return get_command_runtime(self._ctx)
 
     @staticmethod
     def _upload_error_details(
@@ -74,9 +72,8 @@ class AdminTaskAttachmentsHandler:
         return error_response(403, code="forbidden", message="Forbidden.", details={"reason": "attachment_admin_forbidden"})
 
     def _enqueue(self, *, command_type: str, payload: dict, req: HttpRequest, artifact: str) -> HttpResponse:
-        producer = self._producer()
-        status_store = self._status_store()
-        if producer is None or status_store is None:
+        command_runtime = self._command_runtime()
+        if not command_runtime.can_enqueue():
             return error_response(503, code="queue_unavailable", message="Command queue is not configured for current environment.")
         cmd = Command(
             job_id=uuid4().hex,
@@ -85,8 +82,7 @@ class AdminTaskAttachmentsHandler:
             requested_by=self._requested_by(req),
             payload=dict(payload),
         )
-        producer.send(cmd)
-        record = status_store.put_queued(cmd)
+        record = command_runtime.enqueue(cmd)
         return json_response(
             202,
             {

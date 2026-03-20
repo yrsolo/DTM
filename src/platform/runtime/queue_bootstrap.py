@@ -3,19 +3,12 @@
 from __future__ import annotations
 
 from src.commands.yandex_mq import YandexMessageQueueProducer
-from src.contexts.attachments.public import (
-    get_attach_task_file_job,
-    get_cleanup_task_attachments_job,
-    get_delete_task_attachment_job,
-    get_generate_attachment_preview_job,
-)
-from src.contexts.reminders.public import get_send_reminders_job
-from src.contexts.rendering.public import (
-    get_render_designers_job,
-    get_render_timeline_job,
-)
-from src.contexts.snapshot.public import get_update_snapshot_job
-from src.contexts.telegram_interaction.public import get_group_query_reply_job
+from src.contexts.attachments.public import get_command_handlers as get_attachment_command_handlers
+from src.contexts.reminders.public import get_command_handlers as get_reminder_command_handlers
+from src.contexts.rendering.public import get_command_handlers as get_rendering_command_handlers
+from src.contexts.snapshot.public import get_command_handlers as get_snapshot_command_handlers
+from src.contexts.telegram_interaction.public import get_command_handlers as get_telegram_command_handlers
+from src.platform.runtime.command_runtime import CommandRuntime
 from src.worker.dispatcher import CommandDispatcher
 from src.worker.status_store import S3JobStatusStore
 from src.worker.worker import Worker
@@ -34,6 +27,16 @@ def _resolve_queue_url(cfg) -> str:
     if env_name == "prod":
         return str(cfg.runtime.queue.prod_queue_url or "").strip()
     return str(cfg.runtime.queue.test_queue_url or "").strip()
+
+
+def _build_command_handlers(ctx) -> dict[str, object]:
+    handlers: dict[str, object] = {}
+    handlers.update(get_snapshot_command_handlers(ctx))
+    handlers.update(get_reminder_command_handlers(ctx))
+    handlers.update(get_rendering_command_handlers(ctx))
+    handlers.update(get_telegram_command_handlers(ctx))
+    handlers.update(get_attachment_command_handlers(ctx))
+    return handlers
 
 
 def build_queue_runtime(ctx, deps: dict) -> dict:
@@ -61,17 +64,7 @@ def build_queue_runtime(ctx, deps: dict) -> dict:
         aws_access_key_id=deps.get("aws_access_key_id"),
         aws_secret_access_key=deps.get("aws_secret_access_key"),
     )
-    dispatcher = CommandDispatcher(
-        update_snapshot_job=get_update_snapshot_job(ctx),
-        send_reminders_job=get_send_reminders_job(ctx),
-        render_timeline_job=get_render_timeline_job(ctx),
-        render_designers_job=get_render_designers_job(ctx),
-        group_query_reply_job=get_group_query_reply_job(ctx),
-        attach_task_file_job=get_attach_task_file_job(ctx),
-        delete_task_attachment_job=get_delete_task_attachment_job(ctx),
-        cleanup_task_attachments_job=get_cleanup_task_attachments_job(ctx),
-        generate_attachment_preview_job=get_generate_attachment_preview_job(ctx),
-    )
+    dispatcher = CommandDispatcher(_build_command_handlers(ctx))
     worker = Worker(
         status_store=status_store,
         dispatcher=dispatcher,
@@ -80,7 +73,13 @@ def build_queue_runtime(ctx, deps: dict) -> dict:
         structured_logger=deps.get("structured_logger"),
         env_name=str(cfg.runtime.runtime.env_default),
     )
+    command_runtime = CommandRuntime(
+        producer=producer,
+        status_store=status_store,
+        worker=worker,
+    )
     return {
+        "command_runtime": command_runtime,
         "job_status_store": status_store,
         "command_queue_producer": producer,
         "command_dispatcher": dispatcher,

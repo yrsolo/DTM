@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from src.commands.types import SEND_REMINDERS
+
 from .module import get_module
 
 
@@ -49,3 +51,9 @@ def get_send_reminders_job(ctx):
     from .internal.job_runner import SendRemindersJob
 
     return SendRemindersJob(ctx)
+
+
+def get_command_handlers(ctx) -> dict[str, object]:
+    """Return the reminders-owned queue command handlers."""
+
+    return {SEND_REMINDERS: get_send_reminders_job(ctx)}

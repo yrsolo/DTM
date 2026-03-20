@@ -27,6 +27,7 @@ from src.observability.bottlenecks import (
     resolve_bottleneck_metrics_level,
 )
 from src.observability.buffered_metrics import metrics_sink_name, remote_metrics_enabled
+from src.platform.runtime.command_runtime import get_command_runtime
 from src.worker.model import JobStatusRecord
 
 
@@ -654,7 +655,7 @@ class InfoHandler:
         storage = self._storage_stats(str(snap_cfg.bucket), root_prefix)
         queue_url = str(queue_cfg.prod_queue_url if env_name == "prod" else queue_cfg.test_queue_url).strip()
         queue_name = queue_url.rstrip("/").rsplit("/", 1)[-1] if queue_url else ""
-        status_store = self._ctx.deps.get("job_status_store")
+        status_store = get_command_runtime(self._ctx).status_store
         jobs_payload = {
             "recent": [],
             "failedRecent": [],

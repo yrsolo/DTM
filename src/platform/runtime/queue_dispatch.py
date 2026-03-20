@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import Any
+from typing import Any, Mapping
 
 from src.commands.model import Command
 from src.commands.types import (
@@ -24,15 +24,7 @@ from src.worker.model import JobResult
 async def dispatch_command(
     command: Command,
     *,
-    update_snapshot_job: Any,
-    send_reminders_job: Any,
-    render_timeline_job: Any,
-    render_designers_job: Any,
-    group_query_reply_job: Any,
-    attach_task_file_job: Any,
-    delete_task_attachment_job: Any,
-    cleanup_task_attachments_job: Any,
-    generate_attachment_preview_job: Any,
+    command_handlers: Mapping[str, Any],
 ) -> JobResult:
     """Route a command explicitly by command type."""
 
@@ -45,33 +37,15 @@ async def dispatch_command(
             error={"code": "unsupported_command_type", "details": {"type": command.type}},
         )
 
-    match command.type:
-        case "update_snapshot":
-            job = update_snapshot_job
-        case "send_reminders":
-            job = send_reminders_job
-        case "render_timeline_sheet":
-            job = render_timeline_job
-        case "render_designers_sheet":
-            job = render_designers_job
-        case "group_query_reply":
-            job = group_query_reply_job
-        case "attach_task_file":
-            job = attach_task_file_job
-        case "delete_task_attachment":
-            job = delete_task_attachment_job
-        case "cleanup_task_attachments":
-            job = cleanup_task_attachments_job
-        case "generate_attachment_preview":
-            job = generate_attachment_preview_job
-        case _:
-            return JobResult(
-                success=False,
-                retryable=False,
-                failure_kind="terminal",
-                error_code="unsupported_command_type",
-                error={"code": "unsupported_command_type", "details": {"type": command.type}},
-            )
+    job = command_handlers.get(command.type)
+    if job is None:
+        return JobResult(
+            success=False,
+            retryable=False,
+            failure_kind="terminal",
+            error_code="unsupported_command_type",
+            error={"code": "unsupported_command_type", "details": {"type": command.type}},
+        )
 
     result = job.run(command)
     if inspect.isawaitable(result):
