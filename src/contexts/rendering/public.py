@@ -42,7 +42,7 @@ def get_render_job(usecase, writer):
 def get_render_timeline_job(ctx):
     """Return the owning rendering job runner for timeline sheets."""
 
-    from src.jobs.render_timeline_job import RenderTimelineJob
+    from .internal.job_runners import RenderTimelineJob
 
     return RenderTimelineJob(ctx)
 
@@ -50,6 +50,6 @@ def get_render_timeline_job(ctx):
 def get_render_designers_job(ctx):
     """Return the owning rendering job runner for designers sheets."""
 
-    from src.jobs.render_designers_job import RenderDesignersJob
+    from .internal.job_runners import RenderDesignersJob
 
     return RenderDesignersJob(ctx)

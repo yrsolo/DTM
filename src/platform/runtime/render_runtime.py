@@ -6,8 +6,7 @@ from time import perf_counter
 from types import SimpleNamespace
 from typing import Any
 
-from src.jobs.render_designers_job import RenderDesignersJob
-from src.jobs.render_timeline_job import RenderTimelineJob
+from src.contexts.rendering.internal.job_runners import RenderDesignersJob, RenderTimelineJob
 
 
 def _default_statuses(statuses: list[str] | None) -> list[str]:

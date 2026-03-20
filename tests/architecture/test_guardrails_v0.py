@@ -275,6 +275,20 @@ class GuardrailsV0TestCase(unittest.TestCase):
         self.assertNotIn("from src.jobs", content)
         self.assertNotIn("import src.jobs", content)
 
+    def test_active_module_first_paths_do_not_import_jobs_directly(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "entrypoint",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "platform",
+            ROOT / "src" / "contexts",
+        ]
+        for file_path in _python_files(target_paths):
+            content = file_path.read_text(encoding="utf-8")
+            if "from src.jobs" in content or "import src.jobs" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
     def test_http_entrypoints_do_not_import_attachments_services_directly(self) -> None:
         offenders: list[str] = []
         target_paths = [

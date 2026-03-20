@@ -11,6 +11,10 @@ def get_public_api():
     return get_module()
 
 
+def get_browser_routes_handler(ctx):
+    return get_module().build_browser_routes_handler(ctx)
+
+
 def get_frontend_root_handler(ctx):
     return get_module().build_frontend_root_handler(ctx)
 

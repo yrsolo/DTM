@@ -54,7 +54,7 @@ def get_attachment_snapshot_capability(ctx: AppContext):
 def get_attach_task_file_job(ctx: AppContext):
     """Return the owning attachment job runner for attach-file mutations."""
 
-    from src.jobs.attach_task_file_job import AttachTaskFileJob
+    from .internal.job_runners import AttachTaskFileJob
 
     return AttachTaskFileJob(ctx)
 
@@ -62,7 +62,7 @@ def get_attach_task_file_job(ctx: AppContext):
 def get_delete_task_attachment_job(ctx: AppContext):
     """Return the owning attachment job runner for delete mutations."""
 
-    from src.jobs.delete_task_attachment_job import DeleteTaskAttachmentJob
+    from .internal.job_runners import DeleteTaskAttachmentJob
 
     return DeleteTaskAttachmentJob(ctx)
 
@@ -70,7 +70,7 @@ def get_delete_task_attachment_job(ctx: AppContext):
 def get_cleanup_task_attachments_job(ctx: AppContext):
     """Return the owning attachment job runner for cleanup mutations."""
 
-    from src.jobs.cleanup_task_attachments_job import CleanupTaskAttachmentsJob
+    from .internal.job_runners import CleanupTaskAttachmentsJob
 
     return CleanupTaskAttachmentsJob(ctx)
 
@@ -78,6 +78,6 @@ def get_cleanup_task_attachments_job(ctx: AppContext):
 def get_generate_attachment_preview_job(ctx: AppContext):
     """Return the owning attachment job runner for preview generation."""
 
-    from src.jobs.generate_attachment_preview_job import GenerateAttachmentPreviewJob
+    from .internal.preview_job import GenerateAttachmentPreviewJob
 
     return GenerateAttachmentPreviewJob(ctx)

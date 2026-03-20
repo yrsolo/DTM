@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from .internal.browser_routes import BrowserRoutesHandler
 from .internal.frontend_root_handler import FrontendRootHandler
 from .internal.frontend_v2_handler import FrontendV2Handler
 from .internal.info_handler import InfoHandler
@@ -16,6 +17,9 @@ class AccessApiModule:
     """Context-local builder bundle used during staged migration."""
 
     name: str = "access_api"
+
+    def build_browser_routes_handler(self, ctx):
+        return BrowserRoutesHandler(ctx)
 
     def build_frontend_root_handler(self, ctx):
         return FrontendRootHandler(ctx)

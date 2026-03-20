@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 from src.app.context import AppContext
 from src.commands.model import Command, RequestedBy
-from src.jobs.cleanup_task_attachments_job import CleanupTaskAttachmentsJob
+from src.contexts.attachments.internal.job_runners import CleanupTaskAttachmentsJob
 
 
 class _FakeEngine:
@@ -34,7 +34,7 @@ class _FakeStorage:
 
 class CleanupTaskAttachmentsJobTestCase(unittest.TestCase):
     def test_cleanup_job_delegates_to_engine(self) -> None:
-        import src.jobs.cleanup_task_attachments_job as module
+        import src.contexts.attachments.internal.job_runners as module
 
         original_engine = module.build_snapshot_engine
         original_storage = module.build_attachment_storage

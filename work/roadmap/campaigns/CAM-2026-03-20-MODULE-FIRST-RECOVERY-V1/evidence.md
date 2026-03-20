@@ -21,10 +21,11 @@
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P01-T002`
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P01-T003`
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P01-T004`
-- [ ] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T001`
-- [ ] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T002`
-- [ ] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T003`
-- [ ] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T004`
+- [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T001`
+- [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T002`
+- [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T003`
+- [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T004`
+- [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P03-T001`
 
 ## Verification
 - Command:
@@ -33,12 +34,25 @@
   - `Get-Content docs/integrations/attachments/frontend-card-publication.md`
   - `Get-Content index.py`
   - `Get-Content src/entrypoint/handler.py`
+  - `Get-Content src/platform/bootstrap.py`
+  - `Get-Content src/entrypoints/http/router.py`
+  - `Get-Content src/contexts/access_api/module.py`
+  - `Get-Content src/contexts/attachments/module.py`
+  - `Get-Content src/platform/runtime/queue_bootstrap.py`
+  - `rg -n "src\\.jobs|HttpRouter|get_http_shell|get_worker_shell|get_trigger_shell" index.py src tests`
+  - `python -m unittest tests.jobs.test_attach_task_file_job tests.jobs.test_delete_task_attachment_job tests.jobs.test_cleanup_task_attachments_job tests.jobs.test_generate_attachment_preview_job tests.jobs.test_send_reminders_job tests.jobs.test_group_query_reply_job tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety -v`
+  - `python -m unittest tests.entrypoints.test_planner_runtime_entry tests.api.test_telegram_webhook_handler tests.render.test_render_v2 tests.render.test_designers_render_v2 tests.api.test_frontend_api_routing tests.api.test_info_observability tests.api.test_task_attachment_read_handler -v`
+  - `rg -n "from src\\.jobs|import src\\.jobs|src\\.jobs\\." src/contexts src/platform src/entrypoint src/entrypoints`
 - Result:
 - the new module-first canon introduces a stricter stance than the previous recovery set
 - attachment publication and the primary task-list read-model are now explicit governing scenarios
 - attachment readiness is treated as an operational signal that leads to task-list refetch, not as the canonical browser read artifact
 - Telegram is now treated as reserve capability, not a co-equal active architecture center
+- generic `src/jobs/*` no longer acts as an active execution center; active runtime and contexts now obtain runners through owning modules, while `src/jobs/*` remains compatibility-only
+- browser-facing read routes are now composed inside `access_api` via `BrowserRoutesHandler`, so `HttpRouter` no longer owns the frontend/info/people/attachment-read fanout directly
+- current code still meets the canon only partially because bootstrap/runtime assembly remains heavy: `app/bootstrap.py` and `queue_bootstrap.py` still know concrete module runners and env-resolved composition details
 
 ## Notes
 - `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1` remains closed as phase-one precedent.
-- No new code refactor should start under this campaign before the delta audit is recorded in the structured template format.
+- Structured delta audit is now recorded in `delta-audit.md`.
+- Recommended next code wave: break bootstrap gravity by deciding how much module-specific queue/runtime assembly may remain in `app/bootstrap.py` and `queue_bootstrap.py`.

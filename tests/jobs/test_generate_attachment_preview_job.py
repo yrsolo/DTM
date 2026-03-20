@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 from src.app.context import AppContext
 from src.commands.model import Command, RequestedBy
-from src.jobs.generate_attachment_preview_job import GenerateAttachmentPreviewJob
+from src.contexts.attachments.internal.preview_job import GenerateAttachmentPreviewJob
 from src.snapshot_engine.model import AttachmentMeta
 
 
@@ -99,7 +99,7 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
         )
 
     def test_generate_preview_success_marks_ready(self) -> None:
-        import src.jobs.generate_attachment_preview_job as module
+        import src.contexts.attachments.internal.preview_job as module
 
         record = self._make_record()
         store = _FakeMetadataStore(record)
@@ -132,7 +132,7 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
         self.assertEqual(len(engine.attach_calls), 1)
 
     def test_generate_preview_fails_when_unconfigured(self) -> None:
-        import src.jobs.generate_attachment_preview_job as module
+        import src.contexts.attachments.internal.preview_job as module
 
         record = self._make_record()
         store = _FakeMetadataStore(record)

@@ -46,6 +46,6 @@ def build_reminder_request(**kwargs):
 def get_send_reminders_job(ctx):
     """Return the owning reminder job runner."""
 
-    from src.jobs.send_reminders_job import SendRemindersJob
+    from .internal.job_runner import SendRemindersJob
 
     return SendRemindersJob(ctx)

@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 from src.app.context import AppContext
 from src.commands.model import Command, RequestedBy
-from src.jobs.send_reminders_job import SendRemindersJob
+from src.contexts.reminders.internal.job_runner import SendRemindersJob
 
 
 class _FakeReminderResult:
@@ -98,7 +98,7 @@ def _ctx():
 
 class SendRemindersJobTestCase(unittest.TestCase):
     def test_morning_skips_on_saturday(self) -> None:
-        import src.jobs.send_reminders_job as module
+        import src.contexts.reminders.internal.job_runner as module
 
         original_build_snapshot_engine = module.build_snapshot_engine
         original_build_job_runner = module._build_reminder_job_runner
@@ -132,7 +132,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
         self.assertEqual(_FakeReminderJob.run_calls, 0)
 
     def test_morning_skips_on_sunday(self) -> None:
-        import src.jobs.send_reminders_job as module
+        import src.contexts.reminders.internal.job_runner as module
 
         original_build_snapshot_engine = module.build_snapshot_engine
         original_build_job_runner = module._build_reminder_job_runner
@@ -163,7 +163,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
         self.assertEqual(_FakeReminderJob.run_calls, 0)
 
     def test_test_mode_still_runs_on_saturday(self) -> None:
-        import src.jobs.send_reminders_job as module
+        import src.contexts.reminders.internal.job_runner as module
 
         original_build_snapshot_engine = module.build_snapshot_engine
         original_build_job_runner = module._build_reminder_job_runner
@@ -195,7 +195,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
         self.assertEqual(_FakeReminderJob.last_request.mode, "test")
 
     def test_morning_passes_friday_today_override_to_reminder_request(self) -> None:
-        import src.jobs.send_reminders_job as module
+        import src.contexts.reminders.internal.job_runner as module
 
         original_build_snapshot_engine = module.build_snapshot_engine
         original_build_job_runner = module._build_reminder_job_runner

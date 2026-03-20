@@ -6,11 +6,7 @@ from time import perf_counter
 
 from src.app.context import AppContext
 from src.contexts.access_api.public import (
-    get_frontend_root_handler,
-    get_frontend_v2_handler,
-    get_info_handler,
-    get_people_snapshot_handler,
-    get_task_attachment_read_handler,
+    get_browser_routes_handler,
 )
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.admin_queue_handler import AdminQueueHandler
@@ -28,11 +24,7 @@ class HttpRouter:
         self._admin_task_attachments_handler = AdminTaskAttachmentsHandler(ctx)
         self._admin_queue_handler = AdminQueueHandler(ctx)
         self._job_status_handler = JobStatusHandler(ctx)
-        self._info_handler = get_info_handler(ctx)
-        self._people_snapshot_handler = get_people_snapshot_handler(ctx)
-        self._task_attachment_read_handler = get_task_attachment_read_handler(ctx)
-        self._frontend_root_handler = get_frontend_root_handler(ctx)
-        self._frontend_v2_handler = get_frontend_v2_handler(ctx)
+        self._browser_routes_handler = get_browser_routes_handler(ctx)
 
     @staticmethod
     def _with_headers(response: HttpResponse, extra_headers: dict[str, str]) -> HttpResponse:
@@ -51,11 +43,7 @@ class HttpRouter:
             ("admin_task_attachments", self._admin_task_attachments_handler.handle),
             ("admin_queue", self._admin_queue_handler.handle),
             ("job_status", self._job_status_handler.handle),
-            ("info", self._info_handler.handle),
-            ("people_snapshot", self._people_snapshot_handler.handle),
-            ("task_attachment_read", self._task_attachment_read_handler.handle),
-            ("frontend_root", self._frontend_root_handler.handle),
-            ("frontend_v2", self._frontend_v2_handler.handle),
+            ("browser_routes", self._browser_routes_handler.handle),
         ]
         for name, handler in handlers:
             precheck_ms = (perf_counter() - started_at) * 1000.0

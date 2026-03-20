@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 from src.app.context import AppContext
 from src.commands.model import Command, RequestedBy
-from src.jobs.delete_task_attachment_job import DeleteTaskAttachmentJob
+from src.contexts.attachments.internal.job_runners import DeleteTaskAttachmentJob
 from src.services.errors import TransientError
 
 
@@ -78,7 +78,7 @@ class _FakeResponseCacheStore:
 
 class DeleteTaskAttachmentJobTestCase(unittest.TestCase):
     def test_delete_job_marks_deleted_and_rebuilds_snapshot(self) -> None:
-        import src.jobs.delete_task_attachment_job as module
+        import src.contexts.attachments.internal.job_runners as module
 
         original_engine = module.build_snapshot_engine
         original_storage = module.build_attachment_storage
@@ -119,7 +119,7 @@ class DeleteTaskAttachmentJobTestCase(unittest.TestCase):
         )
 
     def test_delete_job_fails_when_attachment_is_missing(self) -> None:
-        import src.jobs.delete_task_attachment_job as module
+        import src.contexts.attachments.internal.job_runners as module
 
         original_engine = module.build_snapshot_engine
         module.build_snapshot_engine = lambda _ctx: _FakeEngine()  # type: ignore[assignment]
@@ -140,7 +140,7 @@ class DeleteTaskAttachmentJobTestCase(unittest.TestCase):
         self.assertEqual(result["error"]["code"], "attachment_not_found")
 
     def test_delete_job_keeps_ok_when_cache_invalidation_fails(self) -> None:
-        import src.jobs.delete_task_attachment_job as module
+        import src.contexts.attachments.internal.job_runners as module
 
         original_engine = module.build_snapshot_engine
         original_storage = module.build_attachment_storage

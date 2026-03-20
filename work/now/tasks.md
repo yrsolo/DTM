@@ -1,6 +1,6 @@
 # Active Tasks
 
-- CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1: module-first canon is now the active roadmap; the main browser read-side is the primary task-list payload with embedded card data and attachments, Telegram is reclassified as reserve capability, and the first execution wave is a trust-gated delta audit against the stricter canon before any further refactor starts.
+- CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1: module-first canon is now the active roadmap; the delta audit is recorded, active runtime no longer imports `src.jobs` directly, browser read routes are composed inside `access_api`, and the next blocker is bootstrap gravity in `app/bootstrap.py` plus `platform/runtime/queue_bootstrap.py`.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done

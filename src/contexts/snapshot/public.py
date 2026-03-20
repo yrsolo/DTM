@@ -55,7 +55,7 @@ def query_frontend_v2(ctx, query):
 def get_update_snapshot_job(ctx):
     """Return the owning snapshot update job runner."""
 
-    from src.jobs.update_snapshot_job import UpdateSnapshotJob
+    from .application import UpdateSnapshotJob
 
     return UpdateSnapshotJob(ctx)
 

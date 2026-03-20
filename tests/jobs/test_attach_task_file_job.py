@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from src.app.context import AppContext
 from src.commands.model import Command, RequestedBy
 from src.services.errors import TransientError
-from src.jobs.attach_task_file_job import AttachTaskFileJob
+from src.contexts.attachments.internal.job_runners import AttachTaskFileJob
 
 
 class _FakeResponseCacheStore:
@@ -78,7 +78,7 @@ class _FakeStatusStore:
 
 class AttachTaskFileJobTestCase(unittest.TestCase):
     def test_attach_job_validates_payload_and_updates_snapshot(self) -> None:
-        import src.jobs.attach_task_file_job as module
+        import src.contexts.attachments.internal.job_runners as module
 
         original = module.build_snapshot_engine
         engine = _FakeEngine()
@@ -120,7 +120,7 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
         )
 
     def test_attach_job_keeps_ok_when_cache_invalidation_fails(self) -> None:
-        import src.jobs.attach_task_file_job as module
+        import src.contexts.attachments.internal.job_runners as module
 
         original = module.build_snapshot_engine
         engine = _FakeEngine()
@@ -150,7 +150,7 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
         self.assertIn("frontend_response_cache_invalidation_failed", result["warnings"])
 
     def test_attach_job_enqueues_doc_preview_when_configured(self) -> None:
-        import src.jobs.attach_task_file_job as module
+        import src.contexts.attachments.internal.job_runners as module
 
         original = module.build_snapshot_engine
         engine = _FakeEngine()
@@ -190,7 +190,7 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
         self.assertEqual(engine.preview_pending_calls, [("task-1", engine.calls[0][1].attachment_id)])
 
     def test_attach_job_marks_doc_preview_failed_when_unconfigured(self) -> None:
-        import src.jobs.attach_task_file_job as module
+        import src.contexts.attachments.internal.job_runners as module
 
         original = module.build_snapshot_engine
         engine = _FakeEngine()

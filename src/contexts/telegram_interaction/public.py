@@ -46,6 +46,6 @@ def build_group_query_request(**kwargs):
 def get_group_query_reply_job(ctx):
     """Return the owning Telegram interaction job runner for group-query replies."""
 
-    from src.jobs.group_query_reply_job import GroupQueryReplyJob
+    from .internal.job_runner import GroupQueryReplyJob
 
     return GroupQueryReplyJob(ctx)

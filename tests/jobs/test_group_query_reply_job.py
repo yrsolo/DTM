@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 from src.app.context import AppContext
 from src.commands.model import Command, RequestedBy
-from src.jobs.group_query_reply_job import GroupQueryReplyJob
+from src.contexts.telegram_interaction.internal.job_runner import GroupQueryReplyJob
 from src.contexts.reminders.internal import next_workday
 from src.snapshot_engine.model import Milestone, PrepIndexes, PrepSnapshot, TaskSheet, TaskView
 
@@ -53,7 +53,7 @@ def _task(task_id: str, owner: str, milestone_day: date, *, title: str) -> TaskV
 
 class GroupQueryReplyJobTestCase(unittest.TestCase):
     def test_group_query_reply_job_sends_selected_tasks(self) -> None:
-        import src.jobs.group_query_reply_job as module
+        import src.contexts.telegram_interaction.internal.job_runner as module
 
         orig_build_snapshot_engine = module.build_snapshot_engine
         orig_build_sender = module._build_group_query_sender
