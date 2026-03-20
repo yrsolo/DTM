@@ -4,7 +4,7 @@ import unittest
 from datetime import datetime, timezone
 
 from scripts.migrate_extra_store_to_bulk import build_bulk_extra_snapshot_from_legacy
-from src.snapshot_engine.model import TaskExtra
+from src.contexts.snapshot.internal.engine.model import TaskExtra
 
 
 class ExtraStoreMigrationTestCase(unittest.TestCase):

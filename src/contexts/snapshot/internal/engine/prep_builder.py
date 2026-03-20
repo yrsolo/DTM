@@ -6,8 +6,8 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from time import perf_counter
 
-from src.snapshot_engine.interfaces import ExtraStore
-from src.snapshot_engine.model import ExtraSnapshot, PrepBuildResult, PrepIndexes, PrepSnapshot, RawSnapshot, TaskExtra, TaskView
+from src.contexts.snapshot.internal.engine.interfaces import ExtraStore
+from src.contexts.snapshot.internal.engine.model import ExtraSnapshot, PrepBuildResult, PrepIndexes, PrepSnapshot, RawSnapshot, TaskExtra, TaskView
 
 
 class PrepBuilder:

@@ -4,7 +4,7 @@ import unittest
 from datetime import date
 
 from src.contexts.reminders.internal import ReminderFormatter, ReminderGroup
-from src.snapshot_engine.model import TaskSheet, TaskView
+from src.contexts.snapshot.internal.engine.model import TaskSheet, TaskView
 
 
 def _task(task_id: str, owner: str, day: date, stages: list[str]) -> TaskView:

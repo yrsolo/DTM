@@ -10,7 +10,7 @@ from src.contexts.reminders.internal import (
     ReminderRequest,
     ReminderUseCase,
 )
-from src.snapshot_engine.model import (
+from src.contexts.snapshot.internal.engine.model import (
     Milestone,
     PeopleSnapshot,
     PersonView,

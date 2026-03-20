@@ -46,7 +46,7 @@ src/contexts/snapshot/
 
 For the primary read scenario, `snapshot` is the point where mutation-state becomes visible read-side state in the main browser payload.
 
-## Transitional extraction notes
+## Current implementation notes
 
-- current implementation spans `src/core/*`, `src/services/sources/*`, `src/snapshot_engine/*`, and snapshot job wiring
-- split ownership first, then reduce legacy/transitional overlap
+- current implementation spans `src/core/*`, `src/services/sources/*`, `src/contexts/snapshot/internal/engine/*`, and snapshot job wiring
+- the old top-level `src/snapshot_engine/*` root is removed; the read-side engine now lives physically inside the snapshot context

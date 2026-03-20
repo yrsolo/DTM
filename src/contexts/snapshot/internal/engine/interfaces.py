@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from src.snapshot_engine.model import ExtraSnapshot, PeopleSnapshot, PrepSnapshot, RawSnapshot, SheetSnapshot
+from src.contexts.snapshot.internal.engine.model import ExtraSnapshot, PeopleSnapshot, PrepSnapshot, RawSnapshot, SheetSnapshot
 
 
 class SheetsSource(Protocol):

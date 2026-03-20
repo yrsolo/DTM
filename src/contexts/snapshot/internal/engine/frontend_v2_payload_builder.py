@@ -7,7 +7,7 @@ from datetime import date, datetime, timezone
 from typing import Any
 
 from src.contexts.attachments.contracts import attachment_projection_visible
-from src.snapshot_engine.model import Milestone, PrepSnapshot, TaskSheet, TaskView
+from src.contexts.snapshot.internal.engine.model import Milestone, PrepSnapshot, TaskSheet, TaskView
 
 
 def _to_str(value: Any) -> str:

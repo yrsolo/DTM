@@ -24,17 +24,15 @@ Governing policy:
 | `src/platform/*` | Platform | Runtime wiring, queue/runtime orchestration, bootstrap delegation | OK | Platform owns transport/runtime only. |
 | `src/contexts/attachments/*` | Context | Attachment lifecycle and attachment access policy | OK | First fully extracted context. |
 | `src/contexts/reminders/*` | Context | Reminder execution ownership and public facade | OK | Trigger intake stays platform-owned. |
-| `src/contexts/snapshot/*` | Context | Snapshot public API, contracts, and legacy bridge ownership | OK | Canonical cross-context snapshot surface. |
+| `src/contexts/snapshot/*` | Context | Snapshot public API, contracts, internal engine, and read-side ownership | OK | Canonical cross-context snapshot surface and internal engine home. |
 | `src/contexts/rendering/*` | Context | Rendering ownership and snapshot-boundary enforcement | OK | Depends on `snapshot.public` or contracts only. |
 | `src/contexts/telegram_interaction/*` | Context | Telegram interaction ownership and command routing facade | OK | Owns `group_query_reply`. |
 | `src/contexts/access_api/*` | Context | Browser-facing read surface ownership and access policy facade | OK | Owns frontend root, frontend v2, info, people snapshot, and attachment read handlers. |
 | `src/core/models/*` | Domain | Canonical domain DTOs | OK | Pure contracts only. |
 | `src/core/normalize/*` | Domain | Normalization, parsing, inference rules | OK | Pure business logic. |
 | `src/core/rules/*` | Domain | Domain rules and invariants | OK | Keep pure and tested. |
-| `src/snapshot_engine/*` | Application | Snapshot build, query, cache, and storage access | OK | Canonical read-side engine. |
 | `src/commands/*` | Application | Internal command contracts and queue serialization | OK | Canonical async command boundary. |
 | `src/worker/*` | Application | Worker dispatcher, execution, status persistence | OK | Canonical async mutation runner. |
-| `src/jobs/*` | Application | Concrete snapshot/render/reminder jobs | OK | Canonical mutation jobs. |
 | `src/services/access/*` | Application | Access context masking and payload transforms | OK | Browser access policy lives at the boundary. |
 | `src/observability/*` | Support | Metrics, logging, timing, trace helpers | OK | Shared observability layer. |
 | `src/config/*` | Support | Typed config schema and loader | OK | Canonical config source of truth. |
@@ -53,10 +51,12 @@ Governing policy:
 These are not part of the canonical runtime story:
 - `src/archive/legacy_runtime/*`
 - removed compatibility-only roots formerly used during recovery:
+  - `src/jobs/*`
   - `src/render/*`
   - `src/notify/*`
   - `src/telegram/*`
   - `src/services/attachments/*`
+  - `src/snapshot_engine/*`
 - `archive/legacy_test_refs/*`
 - `old/v1/*`
 - planner-era extraction plans and compatibility notes under `docs/archive/system_legacy/modules/*`
@@ -68,7 +68,7 @@ If a reader needs that history, current docs should point there instead of retel
 
 - Keep `index.py` thin.
 - Treat `src/contexts/*` and `src/platform/*` as the canonical target ownership map for active refactor work.
-- Treat `src/snapshot_engine/*` as the canonical read-side runtime.
+- Treat `src/contexts/snapshot/internal/engine/*` as the canonical internal read-side runtime.
 - Keep browser auth, read shaping, and masking inside `access_api`; keep `src/entrypoints/http/*` transport-only.
 - Keep refresh/render/reminder work in async jobs or explicit runtime modes.
 - Treat archive modules and docs as reference-only, not as active architecture.

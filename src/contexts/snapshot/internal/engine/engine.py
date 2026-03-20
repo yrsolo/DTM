@@ -16,10 +16,10 @@ from src.contexts.attachments.contracts import (
 )
 from src.services.errors import AppError, UserError
 
-from src.snapshot_engine.model import AttachmentMeta, ExtraSnapshot, TaskExtra
-from src.snapshot_engine.prep_builder import PrepBuilder
-from src.snapshot_engine.query_engine import FrontendV2Query, SnapshotQueryEngine
-from src.snapshot_engine.update_job import (
+from src.contexts.snapshot.internal.engine.model import AttachmentMeta, ExtraSnapshot, TaskExtra
+from src.contexts.snapshot.internal.engine.prep_builder import PrepBuilder
+from src.contexts.snapshot.internal.engine.query_engine import FrontendV2Query, SnapshotQueryEngine
+from src.contexts.snapshot.internal.engine.update_job import (
     PeopleSnapshotUpdater,
     SheetSnapshotHasher,
     SheetsTaskNormalizer,
@@ -349,7 +349,7 @@ def _resolve_env_prefix(value: str, env_name: str) -> str:
 
 
 def build_snapshot_engine(ctx: AppContext) -> SnapshotEngine:
-    from src.snapshot_engine.stores.s3_store import build_s3_stores
+    from src.contexts.snapshot.internal.engine.stores.s3_store import build_s3_stores
 
     cfg = ctx.cfg
     deps = ctx.deps

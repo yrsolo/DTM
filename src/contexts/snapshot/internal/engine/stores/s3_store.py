@@ -6,8 +6,8 @@ from datetime import datetime, timezone
 from typing import Any
 
 from src.services.errors import PermanentError, TransientError
-from src.snapshot_engine.model import ExtraSnapshot, PeopleSnapshot, PrepSnapshot, RawSnapshot, TaskExtra
-from src.snapshot_engine.serialization import (
+from src.contexts.snapshot.internal.engine.model import ExtraSnapshot, PeopleSnapshot, PrepSnapshot, RawSnapshot, TaskExtra
+from src.contexts.snapshot.internal.engine.serialization import (
     dumps_json,
     extra_from_dict,
     extra_snapshot_from_dict,

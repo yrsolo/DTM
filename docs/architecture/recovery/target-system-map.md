@@ -34,6 +34,7 @@ No technical cluster should compete with this map as an architectural center.
 These roots are not acceptable as first-class architecture centers:
 - `src/jobs`
 - `src/services`
+- `src/jobs`
 - `src/render`
 - `src/notify`
 - `src/telegram`

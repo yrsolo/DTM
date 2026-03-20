@@ -3,8 +3,8 @@ from __future__ import annotations
 import unittest
 from datetime import datetime, timezone
 
-from src.snapshot_engine.model import PrepBuildResult, PrepSnapshot, PrepIndexes, RawSnapshot, SheetSnapshot, TaskSheet, TaskView
-from src.snapshot_engine.update_job import UpdateJob
+from src.contexts.snapshot.internal.engine.model import PrepBuildResult, PrepSnapshot, PrepIndexes, RawSnapshot, SheetSnapshot, TaskSheet, TaskView
+from src.contexts.snapshot.internal.engine.update_job import UpdateJob
 
 
 class _FakeSource:

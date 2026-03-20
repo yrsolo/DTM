@@ -63,7 +63,7 @@ Prep timing metrics:
 
 ## 3) Query runtime
 - API handler: `src/contexts/access_api/internal/frontend_v2_handler.py` via `src/entrypoints/http/router.py`
-- Query engine: `src/snapshot_engine/query_engine.py`
+- Query engine: `src/contexts/snapshot/internal/engine/query_engine.py`
 - Source: `PrepSnapshot` from S3
 
 Payload contract remains API v2 compatible (including `history`, `brand`, `format_`, `customer`).
@@ -75,7 +75,7 @@ Payload contract remains API v2 compatible (including `history`, `brand`, `forma
 ## 5) Telegram group query/runtime
 - webhook intake: `src/contexts/telegram_interaction/internal/webhook.py`
 - parser: `src/contexts/telegram_interaction/internal/parser.py`
-- worker job: `src/jobs/group_query_reply_job.py`
+- worker job: `src/contexts/telegram_interaction/internal/job_runner.py`
 
 Execution order:
 1. receive Telegram webhook on `/telegram`

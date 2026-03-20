@@ -6,8 +6,8 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
-from src.snapshot_engine.frontend_v2_payload_builder import FrontendV2PayloadBuilder
-from src.snapshot_engine.model import PrepSnapshot
+from src.contexts.snapshot.internal.engine.frontend_v2_payload_builder import FrontendV2PayloadBuilder
+from src.contexts.snapshot.internal.engine.model import PrepSnapshot
 
 
 @dataclass(frozen=True)

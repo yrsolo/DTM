@@ -3,8 +3,8 @@ from __future__ import annotations
 import unittest
 from datetime import date, datetime, timezone
 
-from src.snapshot_engine.model import AttachmentMeta, PrepIndexes, PrepSnapshot, TaskExtra, TaskSheet, TaskView
-from src.snapshot_engine.query_engine import FrontendV2Query, SnapshotQueryEngine
+from src.contexts.snapshot.internal.engine.model import AttachmentMeta, PrepIndexes, PrepSnapshot, TaskExtra, TaskSheet, TaskView
+from src.contexts.snapshot.internal.engine.query_engine import FrontendV2Query, SnapshotQueryEngine
 
 
 def _sheet(*, task_id: str, status: str, history: str, owner: str, group: str, milestone_day: str) -> TaskSheet:

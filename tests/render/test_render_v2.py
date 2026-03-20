@@ -10,7 +10,7 @@ from src.contexts.rendering.internal import (
     RenderUseCase,
     SheetTarget,
 )
-from src.snapshot_engine.model import PrepIndexes, PrepSnapshot, TaskSheet, TaskView, Window
+from src.contexts.snapshot.internal.engine.model import PrepIndexes, PrepSnapshot, TaskSheet, TaskView, Window
 
 
 class _FakeEngine:

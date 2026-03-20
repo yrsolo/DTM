@@ -3,11 +3,11 @@ from __future__ import annotations
 import unittest
 from datetime import datetime, timezone
 
-from src.snapshot_engine.engine import SnapshotEngine
-from src.snapshot_engine.model import PeopleSnapshot, PersonView
-from src.snapshot_engine.serialization import people_from_dict, people_to_dict
-from src.snapshot_engine.stores import s3_store
-from src.snapshot_engine.update_job import PeopleSnapshotUpdater
+from src.contexts.snapshot.internal.engine.engine import SnapshotEngine
+from src.contexts.snapshot.internal.engine.model import PeopleSnapshot, PersonView
+from src.contexts.snapshot.internal.engine.serialization import people_from_dict, people_to_dict
+from src.contexts.snapshot.internal.engine.stores import s3_store
+from src.contexts.snapshot.internal.engine.update_job import PeopleSnapshotUpdater
 
 
 class _FakeJsonStore:
@@ -186,7 +186,7 @@ class PeopleSnapshotTestCase(unittest.TestCase):
         self.assertEqual(engine.find_by_name("\u0418\u0432\u0430\u043d \u0418\u0432\u0430\u043d\u043e\u0432").person_id, "p1")
 
     def test_infer_person_is_active_uses_safe_markers_only(self) -> None:
-        from src.snapshot_engine.update_job import infer_person_is_active
+        from src.contexts.snapshot.internal.engine.update_job import infer_person_is_active
 
         self.assertTrue(infer_person_is_active(vacation=".", info=""))
         self.assertTrue(infer_person_is_active(vacation="", info=""))

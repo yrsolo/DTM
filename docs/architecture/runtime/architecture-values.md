@@ -76,9 +76,8 @@ Canonical active areas:
 - `src/contexts/*`
 - `src/platform/*`
 - `src/entrypoint/*`
-- `src/snapshot_engine/*`
+- `src/contexts/snapshot/internal/engine/*`
 - `src/entrypoints/http/*`
-- `src/jobs/*`
 - `src/worker/*`
 - `src/commands/*`
 - `src/observability/*`

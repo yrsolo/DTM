@@ -3,8 +3,8 @@ from __future__ import annotations
 import unittest
 from datetime import datetime, timezone
 
-from src.snapshot_engine.model import AttachmentMeta, ExtraSnapshot, TaskExtra
-from src.snapshot_engine.stores import s3_store
+from src.contexts.snapshot.internal.engine.model import AttachmentMeta, ExtraSnapshot, TaskExtra
+from src.contexts.snapshot.internal.engine.stores import s3_store
 
 
 class _DummyError(Exception):

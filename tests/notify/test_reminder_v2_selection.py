@@ -4,7 +4,7 @@ import unittest
 from datetime import date, datetime, timezone
 
 from src.contexts.reminders.internal import ReminderRequest, ReminderUseCase, next_workday
-from src.snapshot_engine.model import Milestone, PrepIndexes, PrepSnapshot, TaskSheet, TaskView
+from src.contexts.snapshot.internal.engine.model import Milestone, PrepIndexes, PrepSnapshot, TaskSheet, TaskView
 
 
 class _FakeEngine:

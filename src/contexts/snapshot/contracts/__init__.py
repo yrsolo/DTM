@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from datetime import date
 
-from src.snapshot_engine.model import AttachmentMeta, ExtraSnapshot, TaskExtra, TaskView, Window
+from src.contexts.snapshot.internal.engine.model import AttachmentMeta, ExtraSnapshot, TaskExtra, TaskView, Window
 
 
 @dataclass(frozen=True)

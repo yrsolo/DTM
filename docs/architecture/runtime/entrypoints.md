@@ -71,7 +71,7 @@ Browser auth note:
 For API v2 runtime:
 - canonical source: prep snapshot in Object Storage
 - handler path: `src/contexts/access_api/internal/frontend_v2_handler.py` via `src/entrypoints/http/router.py`
-- query engine: `src/snapshot_engine/query_engine.py`
+- query engine: `src/contexts/snapshot/internal/engine/query_engine.py`
 
 Current payload policy:
 - one canonical frontend payload shape

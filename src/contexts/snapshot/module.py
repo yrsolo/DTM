@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from src.snapshot_engine import build_snapshot_engine
+from src.contexts.snapshot.internal.engine import build_snapshot_engine
 
 
 @dataclass(slots=True)

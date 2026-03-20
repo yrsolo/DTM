@@ -5,7 +5,7 @@ Replace the architecture-recovery canon with the stricter module-first canon and
 
 ## Status
 - in progress: 2026-03-20
-- current phase: P07 snapshot/rendering hard boundary
+- current phase: P10 physical structure cleanup
 
 ## Phases
 
@@ -35,6 +35,7 @@ Replace the architecture-recovery canon with the stricter module-first canon and
 
 ### P07 - Snapshot/rendering hard boundary
 - `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P07-T001` verify snapshot/rendering boundary remains capability-based and readable
+- `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P07-T002` move the snapshot engine physically under the snapshot context
 
 ### P08 - Access API around the primary read-model
 - `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P08-T001` validate access-api ownership around the main browser payload
@@ -44,6 +45,7 @@ Replace the architecture-recovery canon with the stricter module-first canon and
 
 ### P10 - Physical structure cleanup
 - `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P10-T001` remove or demote any remaining folder-level drift against the module-first map
+- `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P10-T002` remove compatibility-only `src/jobs/*` after runtime/context consumers stop importing it
 
 ### P11 - Guardrails and done
 - `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P11-T001` align guardrails and final review with the module-first canon

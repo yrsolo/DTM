@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from src.app.context import AppContext
 from src.commands.model import Command, RequestedBy
 from src.contexts.attachments.internal.preview_job import GenerateAttachmentPreviewJob
-from src.snapshot_engine.model import AttachmentMeta
+from src.contexts.snapshot.internal.engine.model import AttachmentMeta
 
 
 class _FakeMetadataStore:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from src.snapshot_engine.engine import _resolve_env_prefix
+from src.contexts.snapshot.internal.engine.engine import _resolve_env_prefix
 
 
 class SnapshotEnginePrefixTestCase(unittest.TestCase):

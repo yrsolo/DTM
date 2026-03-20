@@ -6,7 +6,7 @@ import json
 from datetime import date, datetime, timezone
 from typing import Any
 
-from src.snapshot_engine.model import (
+from src.contexts.snapshot.internal.engine.model import (
     AttachmentMeta,
     ExtraSnapshot,
     Milestone,

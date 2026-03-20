@@ -148,13 +148,13 @@ What to do next:
 
 What is good:
 - snapshot is clearly recognized as the canonical read-side owner
-- external code now depends on `snapshot.public` and `snapshot.contracts` rather than direct imports into `src.snapshot_engine`
+- external code now depends on `snapshot.public` and `snapshot.contracts` rather than direct imports into `src.contexts.snapshot.internal.engine`
 - this was the most important structural win of the refactor
 
 What still couples it:
-- `src/contexts/snapshot/module.py` is still mostly a bridge to `src.snapshot_engine`
+- `src/contexts/snapshot/module.py` is still mostly a bridge to `src.contexts.snapshot.internal.engine`
 - `snapshot.public` exposes `get_snapshot_engine()`, which leaks a broad dependency shape outward
-- `snapshot.contracts` still re-export types straight from `src.snapshot_engine.model`
+- `snapshot.contracts` still re-export types straight from `src.contexts.snapshot.internal.engine.model`
 - snapshot remains a central backbone for almost every other context
 
 What to do next:
@@ -165,7 +165,7 @@ What to do next:
    - prep/raw access where truly needed
    - attachment metadata projection
    - reminder/render query contracts
-3. move `src.snapshot_engine` inward conceptually and treat it as implementation detail of the snapshot context
+3. move `src.contexts.snapshot.internal.engine` inward conceptually and treat it as implementation detail of the snapshot context
 
 ## Cross-cutting coupling hotspots
 
@@ -177,7 +177,7 @@ This is the biggest remaining architectural coupling.
 
 Symptoms:
 - multiple contexts still ask snapshot for a full engine or engine-shaped dependency
-- contracts are still derived from `src.snapshot_engine.model`
+- contracts are still derived from `src.contexts.snapshot.internal.engine.model`
 - snapshot is both a context and an implementation backbone
 
 Recommended next move:

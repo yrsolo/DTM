@@ -8,9 +8,9 @@ from time import perf_counter
 from datetime import date, datetime, timezone
 from typing import Any
 
-from src.snapshot_engine.interfaces import Hasher, Normalizer, PeopleStore, PrepCache, RawCache, SheetsSource
-from src.snapshot_engine.model import Milestone, PeopleSnapshot, PersonView, RawSnapshot, SheetSnapshot, TaskSheet, UpdateResult
-from src.snapshot_engine.prep_builder import PrepBuilder
+from src.contexts.snapshot.internal.engine.interfaces import Hasher, Normalizer, PeopleStore, PrepCache, RawCache, SheetsSource
+from src.contexts.snapshot.internal.engine.model import Milestone, PeopleSnapshot, PersonView, RawSnapshot, SheetSnapshot, TaskSheet, UpdateResult
+from src.contexts.snapshot.internal.engine.prep_builder import PrepBuilder
 
 
 class SheetSnapshotHasher:

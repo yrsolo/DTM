@@ -6,8 +6,8 @@ from types import SimpleNamespace
 
 import pandas as pd
 
-from src.snapshot_engine.model import SheetSnapshot
-from src.snapshot_engine.update_job import SheetsTaskNormalizer
+from src.contexts.snapshot.internal.engine.model import SheetSnapshot
+from src.contexts.snapshot.internal.engine.update_job import SheetsTaskNormalizer
 
 
 class SheetsTaskNormalizerTestCase(unittest.TestCase):

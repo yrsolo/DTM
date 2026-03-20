@@ -27,6 +27,9 @@
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T004`
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P03-T001`
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P04-T001`
+- [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P07-T001`
+- [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P07-T002`
+- [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P10-T002`
 
 ## Verification
 - Command:
@@ -49,14 +52,15 @@
 - attachment publication and the primary task-list read-model are now explicit governing scenarios
 - attachment readiness is treated as an operational signal that leads to task-list refetch, not as the canonical browser read artifact
 - Telegram is now treated as reserve capability, not a co-equal active architecture center
-- generic `src/jobs/*` no longer acts as an active execution center; active runtime and contexts now obtain runners through owning modules, while `src/jobs/*` remains compatibility-only
+- generic `src/jobs/*` no longer acts as an active execution center; active runtime and contexts now obtain runners through owning modules, and the compatibility root is removed
 - browser-facing read routes are now composed inside `access_api` via `BrowserRoutesHandler`, so `HttpRouter` no longer owns the frontend/info/people/attachment-read fanout directly
 - queue/worker orchestration is now bound through module-owned command handler maps instead of direct `src.jobs` fanout in platform bootstrap
 - attachment preview converter assembly moved out of `app/bootstrap.py` into the owning `attachments` module; bootstrap now carries raw runtime inputs instead of building the domain adapter directly
 - active entrypoints/contexts now use platform-owned `command_runtime` capability instead of reading `command_queue_producer`, `job_status_store`, and `command_worker` directly from the generic deps bag
-- bootstrap gravity is materially reduced, but the next microservice-facing gap is physical structure: `src.snapshot_engine` still exists as a top-level implementation zone instead of living under the `snapshot` context
+- `src/snapshot_engine/*` is removed as a top-level implementation island; the read-side engine now lives under `src/contexts/snapshot/internal/engine/*`
+- compatibility-only `src/jobs/*` is removed from the active tree
 
 ## Notes
 - `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1` remains closed as phase-one precedent.
 - Structured delta audit is now recorded in `delta-audit.md`.
-- Recommended next code wave: internalize `src.snapshot_engine` into the `snapshot` context or explicitly approve it as the last remaining top-level implementation island.
+- Recommended next code wave: decide whether test and documentation layout should also become fully module-first, or whether keeping historical folder names like `tests/snapshot_engine` and `tests/jobs` is acceptable as non-runtime drift.

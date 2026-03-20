@@ -4,8 +4,8 @@ import unittest
 from datetime import datetime, timedelta, timezone
 
 from src.services.errors import TransientError
-from src.snapshot_engine.engine import SnapshotEngine
-from src.snapshot_engine.model import AttachmentMeta, ExtraSnapshot, RawSnapshot, TaskExtra, TaskSheet
+from src.contexts.snapshot.internal.engine.engine import SnapshotEngine
+from src.contexts.snapshot.internal.engine.model import AttachmentMeta, ExtraSnapshot, RawSnapshot, TaskExtra, TaskSheet
 
 
 class _RawCache:
@@ -43,7 +43,7 @@ class _PrepBuilder:
 
     def build(self, raw):  # noqa: ANN001
         self.calls += 1
-        from src.snapshot_engine.model import PrepBuildResult, PrepIndexes, PrepSnapshot
+        from src.contexts.snapshot.internal.engine.model import PrepBuildResult, PrepIndexes, PrepSnapshot
 
         return PrepBuildResult(
             prep=PrepSnapshot(

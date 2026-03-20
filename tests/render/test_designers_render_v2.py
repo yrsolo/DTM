@@ -5,7 +5,7 @@ from datetime import date, datetime, timezone
 from unittest.mock import patch
 
 from src.contexts.rendering.internal import DesignersRenderUseCase, RenderRequest
-from src.snapshot_engine.model import PrepIndexes, PrepSnapshot, TaskSheet, TaskView, Window
+from src.contexts.snapshot.internal.engine.model import PrepIndexes, PrepSnapshot, TaskSheet, TaskView, Window
 
 
 class _FakeEngine:

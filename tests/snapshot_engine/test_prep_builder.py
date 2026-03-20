@@ -3,8 +3,8 @@ from __future__ import annotations
 import unittest
 from datetime import datetime, timezone
 
-from src.snapshot_engine.model import AttachmentMeta, ExtraSnapshot, PrepBuildResult, RawSnapshot, TaskExtra, TaskSheet
-from src.snapshot_engine.prep_builder import PrepBuilder
+from src.contexts.snapshot.internal.engine.model import AttachmentMeta, ExtraSnapshot, PrepBuildResult, RawSnapshot, TaskExtra, TaskSheet
+from src.contexts.snapshot.internal.engine.prep_builder import PrepBuilder
 
 
 class _FakeExtraStore:

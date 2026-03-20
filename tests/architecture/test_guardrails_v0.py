@@ -124,7 +124,7 @@ class GuardrailsV0TestCase(unittest.TestCase):
             "import src.adapters",
             "from src.telegram",
             "from src.notify",
-            "from src.snapshot_engine",
+            "from src.contexts.snapshot.internal.engine",
         ]
         offenders: list[str] = []
         for file_path in _python_files([ROOT / "src" / "entrypoint"]):
@@ -179,6 +179,9 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 "src.contexts.snapshot.public",
                 "src.contexts.snapshot.contracts",
             },
+            "snapshot": {
+                "src.contexts.attachments.contracts",
+            },
             "telegram_interaction": {
                 "src.contexts.snapshot.public",
                 "src.contexts.snapshot.contracts",
@@ -220,16 +223,15 @@ class GuardrailsV0TestCase(unittest.TestCase):
         ]
         for file_path in _python_files(target_paths):
             content = file_path.read_text(encoding="utf-8")
-            if "from src.snapshot_engine" in content or "import src.snapshot_engine" in content:
+            if "from src.contexts.snapshot.internal.engine" in content or "import src.contexts.snapshot.internal.engine" in content:
                 offenders.append(str(file_path.relative_to(ROOT)))
-            if "from src.snapshot_engine.model" in content or "import src.snapshot_engine.model" in content:
+            if "from src.contexts.snapshot.internal.engine.model" in content or "import src.contexts.snapshot.internal.engine.model" in content:
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
     def test_snapshot_engine_imports_stay_inside_snapshot_boundary(self) -> None:
         offenders: list[str] = []
         allowed_roots = {
-            ROOT / "src" / "snapshot_engine",
             ROOT / "src" / "contexts" / "snapshot",
         }
         for file_path in _python_files([ROOT / "src"]):
@@ -237,11 +239,16 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 continue
             content = file_path.read_text(encoding="utf-8")
             if (
-                "from src.snapshot_engine" in content
-                or "import src.snapshot_engine" in content
+                "from src.contexts.snapshot.internal.engine" in content
+                or "import src.contexts.snapshot.internal.engine" in content
             ):
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
+
+    def test_removed_snapshot_engine_root_does_not_exist(self) -> None:
+        path = ROOT / "src" / "snapshot_engine"
+        python_files = sorted(path.rglob("*.py")) if path.exists() else []
+        self.assertEqual(python_files, [])
 
     def test_render_notify_adapters_import_snapshot_only_through_context_surface(self) -> None:
         offenders: list[str] = []
@@ -258,7 +265,7 @@ class GuardrailsV0TestCase(unittest.TestCase):
         }
         for file_path in _python_files(target_paths):
             content = file_path.read_text(encoding="utf-8")
-            if "src.snapshot_engine" in content:
+            if "src.contexts.snapshot.internal.engine" in content:
                 offenders.append(str(file_path.relative_to(ROOT)))
                 continue
             for line in content.splitlines():
@@ -315,6 +322,11 @@ class GuardrailsV0TestCase(unittest.TestCase):
             if "from src.jobs" in content or "import src.jobs" in content:
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
+
+    def test_removed_jobs_root_does_not_exist(self) -> None:
+        path = ROOT / "src" / "jobs"
+        python_files = sorted(path.rglob("*.py")) if path.exists() else []
+        self.assertEqual(python_files, [])
 
     def test_http_entrypoints_do_not_import_attachments_services_directly(self) -> None:
         offenders: list[str] = []

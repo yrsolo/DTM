@@ -24,7 +24,7 @@ from src.entrypoints.http.runtime_mode import extract_force_refresh, extract_run
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES
 from src.observability.bottlenecks import RECENT_API_STAGE_EVENTS, RECENT_DIRECT_API_OUTER_TRACES
 from src.services.access.masking import BRAND_DICTIONARY, DESIGNER_DICTIONARY, FORMAT_DICTIONARY, SHOW_DICTIONARY
-from src.snapshot_engine.model import PeopleSnapshot, PersonView
+from src.contexts.snapshot.internal.engine.model import PeopleSnapshot, PersonView
 from src.worker.model import JobStatusRecord
 
 
