@@ -3,8 +3,7 @@ from __future__ import annotations
 import unittest
 from datetime import date
 
-from src.notify.formatter import ReminderFormatter
-from src.notify.model import ReminderGroup
+from src.contexts.reminders.internal import ReminderFormatter, ReminderGroup
 from src.snapshot_engine.model import TaskSheet, TaskView
 
 

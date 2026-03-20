@@ -1,0 +1,45 @@
+"""Local builder for the transitional attachments context."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+from src.app.context import AppContext
+from src.contexts.snapshot.public import get_attachment_capability
+
+from .internal import AttachmentFinalizeService, AttachmentReadResolver, build_attachment_storage
+
+
+@dataclass(slots=True)
+class AttachmentsModule:
+    """Context-local builder used during staged migration."""
+
+    ctx: AppContext
+    name: str = "attachments"
+
+    def snapshot_capability(self):
+        return get_attachment_capability(self.ctx)
+
+    def metadata_store(self):
+        return self.snapshot_capability().get_attachment_metadata_store()
+
+    def storage(self):
+        return build_attachment_storage(self.ctx)
+
+    def finalize_service(self) -> AttachmentFinalizeService:
+        return AttachmentFinalizeService(
+            storage=self.storage(),
+            metadata_store=self.metadata_store(),
+        )
+
+    def read_resolver(self) -> AttachmentReadResolver:
+        return AttachmentReadResolver(
+            metadata_store=self.metadata_store(),
+            storage=self.storage(),
+        )
+
+
+def get_module(ctx: AppContext) -> AttachmentsModule:
+    """Return the local attachments module builder."""
+
+    return AttachmentsModule(ctx=ctx)

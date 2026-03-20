@@ -1,0 +1,64 @@
+# Evidence - CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1
+
+## Trust gate
+- source: current runtime code, current architecture docs, owner-provided split/campaign briefs
+- last_verified_at: 2026-03-19
+- verified_by: Codex
+- evidence:
+  - `index.py`
+  - `src/app/bootstrap.py`
+  - `src/entrypoints/*`
+  - `src/worker/*`
+  - `src/jobs/*`
+  - `src/services/attachments/*`
+  - `src/snapshot_engine/*`
+  - `src/telegram/*`
+  - `docs/architecture/runtime/*`
+  - `agent/intructions/split.md`
+  - `agent/intructions/camps.md`
+- trust_level: medium
+- notes:
+  - current code paths were verified as the real active contour for kickoff
+  - owner-provided split/campaign docs are treated as target intent, not as executable truth by themselves
+  - this campaign is the canonical umbrella for the modular-monolith refactor wave
+  - child campaign decomposition must follow the rule in `plan.md` and `docs/architecture/runtime/modular-monolith-v2.md`
+  - owner explicitly lifted the temporary Telegram/reminder/group-query freeze on 2026-03-19; extraction can continue inside this umbrella campaign
+
+## Planned early verification
+- mode routing tests
+- command routing tests
+- import-boundary tests
+- `os.getenv` grep/test gate
+- active-path no-legacy-import gate
+- snapshot/rendering boundary test
+
+## Notes
+- current blocked operational focus remains `CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1`
+- this campaign opens the normative architecture and tracking shell for future implementation waves
+- `send_reminders` now routes through `src.contexts.reminders.public`
+- Telegram webhook/router and `group_query_reply` now route through `src.contexts.telegram_interaction.public`
+- rendering-owned jobs now depend on `src.contexts.snapshot.public` / `src.contexts.snapshot.contracts` instead of direct `src.snapshot_engine` imports
+- browser-facing HTTP handlers now route through `src.contexts.access_api.public`
+- active snapshot consumers in HTTP/job entry modules now enter through `src.contexts.snapshot.public`
+- `src.render.*`, `src.notify.*`, `src.entrypoints_adapters.*`, and context module builders now depend on `src.contexts.snapshot.public` / `src.contexts.snapshot.contracts` instead of direct `src.snapshot_engine.*` imports
+- direct `src.snapshot_engine.*` imports are now expected to stay inside `src/snapshot_engine/**` and `src/contexts/snapshot/**` only; guardrails enforce this boundary
+- active planner/runtime entrypoints now cross the bootstrap boundary through `src.platform.bootstrap` instead of importing `src.app.bootstrap` directly
+- `src.app.__init__` no longer re-exports bootstrap, which removes an import-time coupling path from light app utilities into heavy runtime wiring
+- planner runtime now has characterization coverage for unsupported mode, reminder-only short-circuit, and render-v2 unsafe-target blocking flow
+- `render_v2` runtime orchestration now reuses `RenderTimelineJob` and `RenderDesignersJob` as canonical per-sheet executors instead of duplicating the happy-path inside `planner_runtime_entry`
+- active bootstrap no longer depends on legacy `config.constants`; base runtime deps are now resolved directly from `load_config()` plus bootstrap-owned env loading
+- `P14` config centralization is now backed by bootstrap input tests plus an active-path guardrail that blocks reintroduction of legacy `config` imports
+- active runtime paths (`app`, `entrypoint`, `platform`, `contexts`, `entrypoints`, `jobs`, `services`, `render`, `notify`, `entrypoints_adapters`) were re-verified to contain no `src.legacy` imports before entering `P15`
+- runtime architecture docs were re-aligned to the current ownership reality: `src/contexts/*` and `src/platform/*` are now documented as the active refactor contour, while `src/render/*`, `src/notify/*`, and `src/telegram/*` remain transitional implementation detail layers behind those context boundaries
+- `P15b` legacy namespace removal is complete: `src.legacy` and `tests.legacy` were removed from the tree, remaining legacy runtime code lives only under `src/archive/legacy_runtime/*`, and archived legacy tests live under `archive/legacy_test_refs/*` outside the default test contour
+
+## Closeout
+
+- campaign status: completed
+- delivered outcome:
+  - modular-monolith target contour is active
+  - active runtime no longer depends on legacy namespace paths
+  - legacy runtime code is archive-only
+- remaining work:
+  - `/info` build metadata 404
+  - notify enqueue inconsistency on test

@@ -3,9 +3,11 @@ from __future__ import annotations
 import unittest
 
 from src.commands.types import GROUP_QUERY_REPLY, RENDER_TIMELINE_SHEET, SEND_REMINDERS, UPDATE_SNAPSHOT
-from src.telegram.command_router import TelegramCommandRouter
-from src.telegram.model import ParsedTelegramUpdate
-from src.telegram.parser import TelegramUpdateParser
+from src.contexts.telegram_interaction.internal import (
+    ParsedTelegramUpdate,
+    TelegramCommandRouter,
+    TelegramUpdateParser,
+)
 
 
 class TelegramParserAndRouterTestCase(unittest.TestCase):

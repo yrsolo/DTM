@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Any
 
-from src.snapshot_engine.engine import SnapshotFrontendQuery
+from src.contexts.snapshot.contracts import SnapshotFrontendQuery
 
 
 def build_frontend_query(

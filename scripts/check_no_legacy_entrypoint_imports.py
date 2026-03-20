@@ -33,8 +33,13 @@ FORBIDDEN_IMPORT_PREFIXES = (
     "main",
 )
 INDEX_ALLOWED_IMPORTS = {
-    "src.app.bootstrap.build_app_context",
-    "src.entrypoints.index_dispatcher.IndexDispatcher",
+    "src.platform.bootstrap.APP_DEPS",
+    "src.entrypoint.handler.handle",
+    "src.platform.bootstrap.APP_TRIGGERS",
+    "src.platform.bootstrap.get_app_context",
+    "src.platform.bootstrap.get_http_shell",
+    "src.platform.bootstrap.get_trigger_shell",
+    "src.platform.bootstrap.get_worker_shell",
 }
 
 

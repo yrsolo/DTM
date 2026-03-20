@@ -3,8 +3,7 @@ from __future__ import annotations
 import unittest
 from datetime import date, datetime, timezone
 
-from src.notify.model import ReminderRequest
-from src.notify.usecase import ReminderUseCase, next_workday
+from src.contexts.reminders.internal import ReminderRequest, ReminderUseCase, next_workday
 from src.snapshot_engine.model import Milestone, PrepIndexes, PrepSnapshot, TaskSheet, TaskView
 
 

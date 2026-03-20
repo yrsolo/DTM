@@ -4,10 +4,12 @@ import asyncio
 import unittest
 from datetime import date, datetime, timezone
 
-from src.notify.formatter import ReminderFormatter
-from src.notify.job import ReminderJob
-from src.notify.model import ReminderRequest
-from src.notify.usecase import ReminderUseCase
+from src.contexts.reminders.internal import (
+    ReminderFormatter,
+    ReminderJob,
+    ReminderRequest,
+    ReminderUseCase,
+)
 from src.snapshot_engine.model import (
     Milestone,
     PeopleSnapshot,

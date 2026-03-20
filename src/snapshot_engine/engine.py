@@ -7,6 +7,13 @@ from datetime import date, datetime, timezone
 from typing import Any
 
 from src.app.context import AppContext
+from src.contexts.attachments.contracts import (
+    ATTACHMENT_STATUS_DELETED,
+    ATTACHMENT_STATUS_PENDING_UPLOAD,
+    ATTACHMENT_STATUS_READY,
+    ATTACHMENT_STATUS_UPLOADED_UNVERIFIED,
+    AttachmentMetadataStore,
+)
 from src.services.errors import AppError, UserError
 
 from src.snapshot_engine.model import AttachmentMeta, ExtraSnapshot, TaskExtra
@@ -21,13 +28,6 @@ from src.snapshot_engine.update_job import (
     normalize_person_yandex_email,
     normalize_person_lookup_value,
     normalize_person_name,
-)
-from src.services.attachments import AttachmentMetadataStore
-from src.services.attachments.contracts import (
-    ATTACHMENT_STATUS_DELETED,
-    ATTACHMENT_STATUS_PENDING_UPLOAD,
-    ATTACHMENT_STATUS_READY,
-    ATTACHMENT_STATUS_UPLOADED_UNVERIFIED,
 )
 
 

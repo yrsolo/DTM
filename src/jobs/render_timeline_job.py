@@ -4,11 +4,19 @@ from datetime import timezone
 from time import perf_counter
 
 from src.app.context import AppContext
+from src.contexts.rendering.public import (
+    get_render_job,
+    get_request,
+    get_snapshot_read_capability as _get_rendering_snapshot_read_capability,
+    get_timeline_usecase,
+    get_window,
+    get_writer,
+)
 from src.observability.batching import MetricsBatchCollector, add_flush_metrics
-from src.render import GoogleSheetsPlanWriter, RenderJob, RenderRequest, RenderUseCase, SheetTarget
-from src.render.target_guard import RenderTarget, validate_render_target
-from src.snapshot_engine import build_snapshot_engine
-from src.snapshot_engine.model import Window
+from src.contexts.rendering.internal.target_guard import RenderTarget, validate_render_target
+
+
+build_snapshot_engine = _get_rendering_snapshot_read_capability
 
 
 class RenderTimelineJob:
@@ -24,7 +32,7 @@ class RenderTimelineJob:
         started_at = self._ctx.clock()
         wall_clock_started = perf_counter()
         snapshot_engine = build_snapshot_engine(self._ctx)
-        usecase = RenderUseCase(
+        usecase = get_timeline_usecase(
             snapshot_engine,
             timezone_name=str(self._ctx.cfg.runtime.runtime.timezone or "Europe/Moscow"),
         )
@@ -62,15 +70,16 @@ class RenderTimelineJob:
                 "duration_ms": int((self._ctx.clock() - started_at).total_seconds() * 1000),
                 "error": {"code": "render_target_unsafe"},
             }
-        writer = GoogleSheetsPlanWriter(
+        writer = get_writer(
             GoogleSheetsService(str(self._ctx.deps.get("key_json", "")), dry_run=bool(cmd.payload.get("dry_run", False))),
-            SheetTarget(spreadsheet_name=sheet_info.spreadsheet_name, worksheet_name=target_worksheet),
+            spreadsheet_name=sheet_info.spreadsheet_name,
+            worksheet_name=target_worksheet,
         )
-        request = RenderRequest(
-            window=Window(start=None, end=None, mode="intersects"),
+        request = get_request(
+            window=get_window(start=None, end=None, mode="intersects"),
             statuses=statuses,
         )
-        result = RenderJob(usecase, writer).run(request)
+        result = get_render_job(usecase, writer).run(request)
         warnings = list(result.warnings)
         if not result.applied and not warnings:
             warnings = ["empty_render_plan"]

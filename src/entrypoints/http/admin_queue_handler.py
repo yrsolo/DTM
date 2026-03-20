@@ -14,11 +14,17 @@ from src.commands.types import (
     SEND_REMINDERS,
     UPDATE_SNAPSHOT,
 )
+from src.contexts.snapshot.public import (
+    get_prep_snapshot as _get_prep_snapshot,
+)
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response, json_response
 from src.entrypoints.triggers.trigger_plan import planned_trigger_commands, resolve_trigger_mode_by_id
-from src.snapshot_engine import build_snapshot_engine
+
+
+def get_prep_snapshot(ctx):
+    return _get_prep_snapshot(ctx)
 
 
 class AdminQueueHandler:
@@ -127,7 +133,7 @@ class AdminQueueHandler:
         if not filename:
             return error_response(400, code="filename_required", message="filename is required.")
         try:
-            prep = build_snapshot_engine(self._ctx).get_prep_snapshot()
+            prep = get_prep_snapshot(self._ctx)
         except Exception as error:
             return error_response(
                 503,

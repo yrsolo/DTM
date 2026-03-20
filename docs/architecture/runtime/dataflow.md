@@ -13,7 +13,7 @@ Hash basis is stable JSON over `{values, colors}`.
 Runtime object:
 - `src/services/timer_pipeline.py` -> `TimerPipeline(AppContext)`
 - `TimerPipeline.run(RunRequest(...))` invokes `SnapshotEngine.update(...)`
-- top-level transport dispatch: `index.py` -> `src/entrypoints/index_dispatcher.py`
+- top-level transport dispatch: `index.py` -> `src/entrypoint/handler.py`
 - runtime bridge for explicit modes: `src/entrypoints/runtime/runtime_shell.py`
 
 Execution order:
@@ -62,7 +62,7 @@ Prep timing metrics:
 - Unsafe target is blocked at runtime with `error.code=render_target_unsafe`.
 
 ## 3) Query runtime
-- API handler: `src/entrypoints/http/frontend_v2_handler.py`
+- API handler: `src/contexts/access_api/internal/frontend_v2_handler.py` via `src/entrypoints/http/router.py`
 - Query engine: `src/snapshot_engine/query_engine.py`
 - Source: `PrepSnapshot` from S3
 
@@ -73,8 +73,8 @@ Payload contract remains API v2 compatible (including `history`, `brand`, `forma
 - `history`: raw textual status from source sheet
 
 ## 5) Telegram group query/runtime
-- webhook intake: `src/telegram/webhook.py`
-- parser: `src/telegram/parser.py`
+- webhook intake: `src/contexts/telegram_interaction/internal/webhook.py`
+- parser: `src/contexts/telegram_interaction/internal/parser.py`
 - worker job: `src/jobs/group_query_reply_job.py`
 
 Execution order:
@@ -87,7 +87,7 @@ Execution order:
 No business selection or snapshot reads happen inline in webhook intake.
 
 ## 6) Reminder parity runtime
-- reminder modes (`reminder_v2`, `reminders-only`, `morning`, `test`) use `src/notify/*` parity contour.
+- reminder modes (`reminder_v2`, `reminders-only`, `morning`, `test`) use `src/contexts/reminders/internal/*` as the owning reminder contour.
 - candidate designers are selected only from tasks with milestones on:
   - today,
   - next workday (weekend-aware).

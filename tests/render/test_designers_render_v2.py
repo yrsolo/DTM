@@ -4,7 +4,7 @@ import unittest
 from datetime import date, datetime, timezone
 from unittest.mock import patch
 
-from src.render import DesignersRenderUseCase, RenderRequest
+from src.contexts.rendering.internal import DesignersRenderUseCase, RenderRequest
 from src.snapshot_engine.model import PrepIndexes, PrepSnapshot, TaskSheet, TaskView, Window
 
 
@@ -94,8 +94,8 @@ class DesignersRenderV2TestCase(unittest.TestCase):
         )
         fake_now = datetime(2026, 3, 6, 8, 45, tzinfo=timezone.utc)
         with (
-            patch("src.render.designers_usecase.now_in_timezone", return_value=fake_now),
-            patch("src.render.designers_usecase.today_in_timezone", return_value=date(2026, 3, 6)),
+            patch("src.contexts.rendering.internal.designers_usecase.now_in_timezone", return_value=fake_now),
+            patch("src.contexts.rendering.internal.designers_usecase.today_in_timezone", return_value=date(2026, 3, 6)),
         ):
             plan = DesignersRenderUseCase(_FakeEngine(prep), timezone_name="Europe/Moscow").build_plan(
                 RenderRequest(statuses=["work"])

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from src.app.context import AppContext
-from src.services.attachments import build_attachment_storage
+from src.contexts.attachments.public import get_attachment_snapshot_capability, get_attachment_storage
 from src.services.errors import AppError, UserError
-from src.snapshot_engine import build_snapshot_engine
+
+build_snapshot_engine = get_attachment_snapshot_capability
+build_attachment_storage = get_attachment_storage
 
 
 class CleanupTaskAttachmentsJob:

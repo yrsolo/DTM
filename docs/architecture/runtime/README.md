@@ -1,9 +1,10 @@
 # Runtime architecture
 
-В этой папке лежат активные документы про текущий runtime DTM: как он устроен, как течёт dataflow, какие есть entrypoints и как разложен код.
+This folder contains active runtime reference docs and descriptive evidence about the current DTM runtime shape.
 
 ## Start here
 
+- [../recovery/README.md](../recovery/README.md)
 - [architecture.md](architecture.md)
 - [dataflow.md](dataflow.md)
 - [module-map.md](module-map.md)
@@ -13,7 +14,23 @@
 - [command-runtime.md](command-runtime.md)
 - [entrypoints.md](entrypoints.md)
 - [architecture-values.md](architecture-values.md)
+- [module-map.md](module-map.md)
+- [modularity-audit-2026-03-19.md](modularity-audit-2026-03-19.md)
+- [context-ownership-map.md](context-ownership-map.md)
+- [command-ownership-v2.md](command-ownership-v2.md)
+- [route-ownership-v2.md](route-ownership-v2.md)
+- [trigger-orchestration-v2.md](trigger-orchestration-v2.md)
+- [bootstrap-discipline-v2.md](bootstrap-discipline-v2.md)
+- [guardrails-v2.md](guardrails-v2.md)
+- [modular-monolith-v2.md](modular-monolith-v2.md)
 
 ## When to use this folder
 
-Используй этот раздел, когда нужно понять текущее устройство системы, а не исторические планы или будущие redesign-идеи.
+Use this folder when you need the current runtime map, descriptive evidence, or historical architecture context.
+
+Current active reading path for architecture work:
+- `docs/architecture/recovery/README.md`
+- `architecture-values.md`
+- `module-map.md`
+- `modularity-audit-2026-03-19.md`
+- ownership and guardrail docs

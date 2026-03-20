@@ -90,7 +90,7 @@ Operator truth sources:
 Thin top-level shell:
 
 - `index.py`
-- `src/entrypoints/index_dispatcher.py`
+- `src/entrypoint/handler.py`
 
 Transport shells:
 
@@ -102,5 +102,5 @@ Transport shells:
 Local/manual runtime still passes through a transitional runtime adapter, but that adapter is not the conceptual center of the current architecture.
 
 Historical runtime detail is archive-only:
-- `src/legacy/`
+- `src/archive/legacy_runtime/`
 - `docs/archive/system_legacy/modules/*`

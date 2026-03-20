@@ -36,6 +36,7 @@ class _FakeEngine:
     def __init__(self, store: _FakeMetadataStore) -> None:
         self.store = store
         self.attach_calls = []
+        self.response_cache_store = SimpleNamespace(delete=lambda _cache_key: None)
 
     def get_attachment_metadata_store(self):
         return self.store
@@ -43,6 +44,9 @@ class _FakeEngine:
     def attach_file_metadata(self, *, task_id, attachment):  # noqa: ANN001
         self.attach_calls.append((task_id, attachment))
         return {"artifact": "attach_task_file", "status": "ok"}
+
+    def get_response_cache_store(self):
+        return self.response_cache_store
 
 
 class _FakeStorage:
@@ -103,10 +107,8 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
         converter = _FakeConverter()
         original_engine = module.build_snapshot_engine
         original_storage = module.build_attachment_storage
-        original_invalidate = module.invalidate_default_frontend_responses
         module.build_snapshot_engine = lambda _ctx: engine  # type: ignore[assignment]
         module.build_attachment_storage = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
-        module.invalidate_default_frontend_responses = lambda _engine: None  # type: ignore[assignment]
         try:
             ctx = AppContext(
                 cfg=SimpleNamespace(runtime=SimpleNamespace(runtime=SimpleNamespace(env_default="test"))),
@@ -123,7 +125,6 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
         finally:
             module.build_snapshot_engine = original_engine  # type: ignore[assignment]
             module.build_attachment_storage = original_storage  # type: ignore[assignment]
-            module.invalidate_default_frontend_responses = original_invalidate  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
         self.assertEqual(store.pending_calls, [("task-1", "att-1")])

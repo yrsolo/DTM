@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from src.render.target_guard import RenderTarget, validate_render_target
+from src.contexts.rendering.internal import RenderTarget, validate_render_target
 
 
 class RenderTargetGuardTestCase(unittest.TestCase):

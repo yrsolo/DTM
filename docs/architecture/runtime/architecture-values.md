@@ -2,6 +2,9 @@
 
 This document is normative for architecture decisions in this repository.
 
+For the modular-monolith refactor wave, read this together with:
+- [modular-monolith-v2.md](modular-monolith-v2.md)
+
 ## Purpose
 
 This file defines the architectural values and target shape of DTM for active design and implementation decisions.
@@ -51,6 +54,7 @@ Target formula:
 - bootstrap loads config, wires dependencies, and assembles context
 - bootstrap must not execute business logic
 - bootstrap must not create global runtime state at import time
+- during the modular-monolith refactor wave, old bootstrap may delegate only and must not become the new central ownership layer
 
 ### Import-time side effects are a bug
 - no module-level production `AppContext` construction in active runtime entry modules
@@ -61,14 +65,17 @@ Target formula:
 - hot paths must avoid uncontrolled synchronous metric spam
 - default user paths must avoid heavy diagnostics by default
 
-### Telegram/reminder is frozen
-- keep it operational if needed
-- do not use it as the model for new architecture during this wave
-- do not spend primary effort on redesign there unless break/fix is required
+### Context-first extraction is now the active path
+- `attachments`, `reminders`, `snapshot`, `rendering`, `telegram_interaction`, and `access_api` are first-class contexts for active refactor work
+- older implementation folders may remain in place temporarily, but ownership now sits behind `src/contexts/*`
+- new work should reinforce context facades and boundaries, not reopen transport-first or adapter-first ownership
 
 ## Boundary guidance
 
 Canonical active areas:
+- `src/contexts/*`
+- `src/platform/*`
+- `src/entrypoint/*`
 - `src/snapshot_engine/*`
 - `src/entrypoints/http/*`
 - `src/jobs/*`
@@ -79,8 +86,9 @@ Canonical active areas:
 Transitional areas:
 - `src/entrypoints/runtime/planner_runtime_entry.py`
 - old root `core/*`
-- legacy compatibility helpers still pulled by active runtime
+- legacy compatibility helpers still kept as reference or implementation detail behind context/module boundaries
 
-Frozen-but-not-target areas:
-- `src/telegram/*`
-- `src/notify/*`
+## Refactor governance note
+
+- `modular-monolith-v2.md` is the master text for future refactor campaigns
+- child campaigns should refresh trust against current code before decomposition

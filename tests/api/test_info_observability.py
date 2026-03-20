@@ -11,8 +11,9 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
+from src.contexts.access_api.internal import info_handler as access_info_handler_module
+from src.contexts.access_api.internal.info_handler import InfoHandler
 from src.entrypoints.http.dto import HttpRequest
-from src.entrypoints.http.info_handler import InfoHandler
 from src.observability import StdoutJsonLogger
 from src.observability.bottlenecks import RECENT_API_STAGE_EVENTS, RECENT_DIRECT_API_OUTER_TRACES, OuterApiTrace, StageEvent
 from src.worker.model import JobStatusRecord
@@ -111,13 +112,15 @@ class _MetricsRecorder:
 
 class InfoObservabilityTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        import src.entrypoints.http.info_handler as module
-
-        self.module = module
-        self.original_build_snapshot_engine = module.build_snapshot_engine
-        self.original_get_queue_live_stats = module.get_queue_live_stats
-        self.original_get_function_build_info = module.get_function_build_info
-        self.original_storage_stats = module.InfoHandler._storage_stats
+        self.module = access_info_handler_module
+        self.original_build_snapshot_engine = access_info_handler_module.build_snapshot_engine
+        self.original_access_build_snapshot_engine = access_info_handler_module.build_snapshot_engine
+        self.original_get_queue_live_stats = access_info_handler_module.get_queue_live_stats
+        self.original_access_get_queue_live_stats = access_info_handler_module.get_queue_live_stats
+        self.original_get_function_build_info = access_info_handler_module.get_function_build_info
+        self.original_access_get_function_build_info = access_info_handler_module.get_function_build_info
+        self.original_storage_stats = access_info_handler_module.InfoHandler._storage_stats
+        self.original_access_storage_stats = access_info_handler_module.InfoHandler._storage_stats
         self._orig_recent_stage_events = list(RECENT_API_STAGE_EVENTS._events)  # type: ignore[attr-defined]
         self._orig_recent_outer_traces = list(RECENT_DIRECT_API_OUTER_TRACES._events)  # type: ignore[attr-defined]
         self.build_snapshot_engine_calls = 0
@@ -163,10 +166,10 @@ class InfoObservabilityTestCase(unittest.TestCase):
                 "byPrefix": {"raw": 256, "prep": 256, "extra": 256, "attachments": 256, "jobs": 0},
             }
 
-        module.build_snapshot_engine = _build_snapshot_engine  # type: ignore[assignment]
-        module.get_queue_live_stats = _get_queue_live_stats  # type: ignore[assignment]
-        module.get_function_build_info = _get_function_build_info  # type: ignore[assignment]
-        module.InfoHandler._storage_stats = _storage_stats  # type: ignore[assignment]
+        access_info_handler_module.build_snapshot_engine = _build_snapshot_engine  # type: ignore[assignment]
+        access_info_handler_module.get_queue_live_stats = _get_queue_live_stats  # type: ignore[assignment]
+        access_info_handler_module.get_function_build_info = _get_function_build_info  # type: ignore[assignment]
+        access_info_handler_module.InfoHandler._storage_stats = _storage_stats  # type: ignore[assignment]
         self.metrics = _MetricsRecorder()
         self.ctx = SimpleNamespace(
             cfg=SimpleNamespace(
@@ -306,10 +309,10 @@ class InfoObservabilityTestCase(unittest.TestCase):
         )
 
     def tearDown(self) -> None:
-        self.module.build_snapshot_engine = self.original_build_snapshot_engine  # type: ignore[assignment]
-        self.module.get_queue_live_stats = self.original_get_queue_live_stats  # type: ignore[assignment]
-        self.module.get_function_build_info = self.original_get_function_build_info  # type: ignore[assignment]
-        self.module.InfoHandler._storage_stats = self.original_storage_stats  # type: ignore[assignment]
+        access_info_handler_module.build_snapshot_engine = self.original_access_build_snapshot_engine  # type: ignore[assignment]
+        access_info_handler_module.get_queue_live_stats = self.original_access_get_queue_live_stats  # type: ignore[assignment]
+        access_info_handler_module.get_function_build_info = self.original_access_get_function_build_info  # type: ignore[assignment]
+        access_info_handler_module.InfoHandler._storage_stats = self.original_access_storage_stats  # type: ignore[assignment]
         RECENT_API_STAGE_EVENTS._events.clear()  # type: ignore[attr-defined]
         RECENT_API_STAGE_EVENTS._events.extend(self._orig_recent_stage_events)  # type: ignore[attr-defined]
         RECENT_DIRECT_API_OUTER_TRACES._events.clear()  # type: ignore[attr-defined]

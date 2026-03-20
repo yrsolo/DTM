@@ -17,10 +17,15 @@ Responsibilities:
 - import-safe
 - transport-oriented
 
+Current active top path:
+- `index.py`
+- `src/entrypoint/handler.py`
+- `src/platform/bootstrap.py` lazy shell getters
+- `src/entrypoints/http/http_shell.py` or `src/entrypoints/queue/worker_shell.py` or `src/entrypoints/triggers/trigger_shell.py`
+
 ## Dispatcher and transport shells
 
 Active routing lives in:
-- `src/entrypoints/index_dispatcher.py`
 - `src/entrypoints/event_classifier.py`
 
 Transport shells:
@@ -65,7 +70,7 @@ Browser auth note:
 
 For API v2 runtime:
 - canonical source: prep snapshot in Object Storage
-- handler path: `src/entrypoints/http/frontend_v2_handler.py`
+- handler path: `src/contexts/access_api/internal/frontend_v2_handler.py` via `src/entrypoints/http/router.py`
 - query engine: `src/snapshot_engine/query_engine.py`
 
 Current payload policy:
@@ -105,4 +110,4 @@ There is still a transitional runtime adapter involved in that path, but it is n
 Historical planner-era entrypoint stories and deeper legacy runtime detail are archive-only.
 If needed, use:
 - `docs/archive/system_legacy/modules/*`
-- `src/legacy/*`
+- `src/archive/legacy_runtime/*`

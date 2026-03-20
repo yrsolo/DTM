@@ -157,6 +157,16 @@ class _FakeBoto3Module:
         return _FakeBoto3Client()
 
 
+class _FakeAttachmentFinalizeService:
+    def finalize(self, *, task_id, attachment_id):  # noqa: ANN001
+        return SimpleNamespace(
+            mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            content_length=128,
+            storage_etag='"etag-1"',
+            storage_version="v1",
+        )
+
+
 class CommandQueueFoundationTestCase(unittest.TestCase):
     def test_command_serializer_roundtrip(self) -> None:
         command = Command(
@@ -325,8 +335,10 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
         import src.entrypoints.http.admin_task_attachments_handler as module
 
         original_build_snapshot_engine = module.build_snapshot_engine
+        original_build_finalize_service = module.build_attachment_finalize_service
         engine = _FakeSnapshotEngine()
         module.build_snapshot_engine = lambda _ctx: engine  # type: ignore[assignment]
+        module.build_attachment_finalize_service = lambda _ctx: _FakeAttachmentFinalizeService()  # type: ignore[assignment]
         producer = _FakeProducer()
         status_store = _FakeStatusStore()
         try:
@@ -361,6 +373,7 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
                 )
         finally:
             module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+            module.build_attachment_finalize_service = original_build_finalize_service  # type: ignore[assignment]
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 202)
         payload = json.loads(response.body)

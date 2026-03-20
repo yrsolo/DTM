@@ -4,10 +4,12 @@ from datetime import datetime, timezone
 
 from src.app.context import AppContext
 from src.commands.model import Command
-from src.services.attachments import build_attachment_storage
-from src.entrypoints.http.frontend_response_cache import invalidate_default_frontend_responses
+from src.contexts.attachments.public import get_attachment_snapshot_capability, get_attachment_storage
+from src.platform.runtime.frontend_cache_invalidation import invalidate_default_frontend_cache_store
 from src.services.errors import AppError, TransientError, UserError
-from src.snapshot_engine import build_snapshot_engine
+
+build_snapshot_engine = get_attachment_snapshot_capability
+build_attachment_storage = get_attachment_storage
 
 
 class GenerateAttachmentPreviewJob:
@@ -133,7 +135,7 @@ class GenerateAttachmentPreviewJob:
                 ),
             )
             try:
-                invalidate_default_frontend_responses(engine)
+                invalidate_default_frontend_cache_store(engine.get_response_cache_store())
             except AppError:
                 return {
                     "artifact": "generate_attachment_preview",

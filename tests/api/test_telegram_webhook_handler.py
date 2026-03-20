@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from src.app.context import AppContext
 from src.commands.types import GROUP_QUERY_REPLY, UPDATE_SNAPSHOT
 from src.entrypoints.http.dto import HttpRequest
-from src.telegram.webhook import TelegramWebhookHandler
+from src.contexts.telegram_interaction.internal import TelegramWebhookHandler
 
 
 class _FakeProducer:

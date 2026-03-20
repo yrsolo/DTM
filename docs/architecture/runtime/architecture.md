@@ -32,7 +32,6 @@ Primary consumers:
 ## Runtime topology
 
 - `index.py` is the thin top-level shell
-- `src/entrypoints/index_dispatcher.py` classifies incoming event shape
 - transport shells handle:
   - HTTP
   - queue worker events

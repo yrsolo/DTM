@@ -5,32 +5,34 @@ from __future__ import annotations
 from time import perf_counter
 
 from src.app.context import AppContext
+from src.contexts.access_api.public import (
+    get_frontend_root_handler,
+    get_frontend_v2_handler,
+    get_info_handler,
+    get_people_snapshot_handler,
+    get_task_attachment_read_handler,
+)
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.admin_queue_handler import AdminQueueHandler
 from src.entrypoints.http.admin_task_attachments_handler import AdminTaskAttachmentsHandler
-from src.entrypoints.http.frontend_compat_handlers import FrontendRootHandler
-from src.entrypoints.http.frontend_v2_handler import FrontendV2Handler
-from src.entrypoints.http.info_handler import InfoHandler
 from src.entrypoints.http.job_status_handler import JobStatusHandler
-from src.entrypoints.http.people_snapshot_handler import PeopleSnapshotHandler
-from src.entrypoints.http.task_attachment_read_handler import TaskAttachmentReadHandler
+from src.contexts.telegram_interaction.public import get_webhook_handler
 from src.observability.bottlenecks import append_response_headers
-from src.telegram.webhook import TelegramWebhookHandler
 
 
 class HttpRouter:
     """Route table based HTTP router."""
 
     def __init__(self, ctx: AppContext) -> None:
-        self._telegram_webhook_handler = TelegramWebhookHandler(ctx)
+        self._telegram_webhook_handler = get_webhook_handler(ctx)
         self._admin_task_attachments_handler = AdminTaskAttachmentsHandler(ctx)
         self._admin_queue_handler = AdminQueueHandler(ctx)
         self._job_status_handler = JobStatusHandler(ctx)
-        self._info_handler = InfoHandler(ctx)
-        self._people_snapshot_handler = PeopleSnapshotHandler(ctx)
-        self._task_attachment_read_handler = TaskAttachmentReadHandler(ctx)
-        self._frontend_root_handler = FrontendRootHandler(ctx)
-        self._frontend_v2_handler = FrontendV2Handler(ctx)
+        self._info_handler = get_info_handler(ctx)
+        self._people_snapshot_handler = get_people_snapshot_handler(ctx)
+        self._task_attachment_read_handler = get_task_attachment_read_handler(ctx)
+        self._frontend_root_handler = get_frontend_root_handler(ctx)
+        self._frontend_v2_handler = get_frontend_v2_handler(ctx)
 
     @staticmethod
     def _with_headers(response: HttpResponse, extra_headers: dict[str, str]) -> HttpResponse:

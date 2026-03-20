@@ -6,12 +6,14 @@
 
 - [product/README.md](product/README.md) — быстрый вход: что это за система и какие задачи она решает
 - [architecture/README.md](architecture/README.md) — как устроен текущий runtime
+- [architecture/runtime/modular-monolith-v2.md](architecture/runtime/modular-monolith-v2.md) — normative master text для будущих refactor campaigns
 - [operations/README.md](operations/README.md) — как это запускать, проверять и сопровождать
 - [reference/README.md](reference/README.md) — сухие контракты, режимы, конфиги и схемы
 
 ## Deep dives
 
 - [architecture/runtime/architecture.md](architecture/runtime/architecture.md)
+- [architecture/runtime/context-ownership-map.md](architecture/runtime/context-ownership-map.md)
 - [integrations/attachments/backend-flow.md](integrations/attachments/backend-flow.md)
 - [integrations/browser-auth/contract.md](integrations/browser-auth/contract.md)
 - [operations/runbook.md](operations/runbook.md)
@@ -23,6 +25,7 @@
 
 - быстро понять, что такое DTM и где искать нужную тему
 - разобраться в текущем устройстве runtime и внешних контурах
+- запустить новую architecture/refactor campaign от зафиксированного master text
 - найти рабочий runbook или технический контракт
 - перейти из обзорного уровня в глубокий документ по ссылкам
 

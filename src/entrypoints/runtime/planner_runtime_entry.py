@@ -3,33 +3,29 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from time import perf_counter
 from typing import Any
 
-from src.adapters.llm_google import AsyncGoogleLLMChatAgent
-from src.adapters.llm_openai import AsyncOpenAIChatAgent
-from src.adapters.llm_yandex import AsyncYandexLLMChatAgent
-from src.adapters.telegram import TelegramNotifier
-from src.app.bootstrap import build_app_context
+from src.contexts.reminders.public import (
+    build_reminder_request as _build_reminder_request,
+    get_enhancer as _get_reminders_enhancer,
+    get_formatter as _get_reminders_formatter,
+    get_job_runner as _get_reminder_job_runner,
+    get_sender as _get_reminders_sender,
+    get_snapshot_read_capability as _get_reminders_snapshot_read_capability,
+    get_usecase as _get_reminders_usecase,
+)
 from src.entrypoints.jobs.quality_report_job import print_quality_report as _print_quality_report
 from src.entrypoints.jobs.runtime_context_job import RuntimeContextRequest, resolve_runtime_context
 from src.entrypoints.jobs.timer_job import TimerJob
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES, is_legacy_mode
-from src.notify import ReminderFormatter, ReminderJob, ReminderRequest, ReminderUseCase
-from src.render import (
-    DesignersRenderUseCase,
-    GoogleSheetsPlanWriter,
-    RenderJob,
-    RenderRequest,
-    RenderUseCase,
-    SheetTarget,
-)
-from src.render.target_guard import RenderTarget, validate_render_target
+from src.platform.app_context import build_runtime_app_context
+from src.platform.runtime.render_runtime import run_render_runtime
 from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
 from src.services.timer_pipeline import RunRequest as TimerRunRequest
 from src.services.timer_pipeline import TimerPipeline
-from src.snapshot_engine import build_snapshot_engine
-from src.snapshot_engine.model import Window
+
+
+build_snapshot_engine = _get_reminders_snapshot_read_capability
 
 
 def _resolve_standard_run_mode(
@@ -52,53 +48,70 @@ def _resolve_standard_run_mode(
 
 
 def _build_notify_enhancer(*, ctx: Any, mock_external: bool):
-    if bool(mock_external):
-        return None
-    cfg = ctx.cfg
-    deps = ctx.deps
-    provider = str(cfg.llm.llm.get("provider_default", "openai")).strip().lower()
-    model_openai = str(cfg.llm.models.get("openai_default", "")).strip()
-    model_google = str(cfg.llm.models.get("google_default", "")).strip()
-    model_yandex = str(cfg.llm.models.get("yandex_default_uri", "")).strip()
-    timeout = float(cfg.llm.http.get("timeout_seconds_default", 25))
-    retry_attempts = int(cfg.llm.http.get("retry_attempts_default", 2))
-    retry_backoff = float(cfg.llm.http.get("retry_backoff_seconds_default", 0.8))
-    proxy_url = str(deps.get("proxy_url", "")).strip()
-    proxy_map = {"https://": proxy_url, "http://": proxy_url} if proxy_url else {}
-    if provider == "google":
-        api_key = str(deps.get("google_llm_api_key", "")).strip()
-        if not api_key:
-            return None
-        return AsyncGoogleLLMChatAgent(
-            api_key=api_key,
-            model=model_google,
-            timeout_seconds=timeout,
-            retry_attempts=retry_attempts,
-            retry_backoff_seconds=retry_backoff,
+    return _get_reminders_enhancer(ctx, mock_external=mock_external)
+
+
+async def _run_reminder_mode(
+    *,
+    app_context: Any,
+    cfg: Any,
+    deps: dict[str, Any],
+    normalized_mode: str,
+    mock_external: bool,
+    runtime_env: str,
+):
+    """Execute reminder-oriented runtime modes through the reminders context."""
+
+    snapshot_engine = build_snapshot_engine(app_context)
+    usecase = _get_reminders_usecase(snapshot_engine)
+    formatter = _get_reminders_formatter(app_context)
+    sender = _get_reminders_sender(app_context)
+    notify_cfg = cfg.runtime.notify
+    llm_mode = str(notify_cfg.llm_mode_default or "provider")
+    mock_llm = bool(mock_external or llm_mode == "draft_only" or runtime_env == "test")
+    enhancer = _build_notify_enhancer(ctx=app_context, mock_external=mock_llm)
+    reminder_result = await _get_reminder_job_runner(
+        usecase=usecase,
+        formatter=formatter,
+        sender=sender,
+        helper_character=str(cfg.llm.assistant.get("helper_character", "")),
+        enhancer=enhancer,
+        people_lookup=snapshot_engine,
+        default_chat_id=str(deps.get("default_chat_id", "")).strip(),
+        enhance_concurrency=int(notify_cfg.enhance_concurrency),
+        send_retry_attempts=int(notify_cfg.send_retry_attempts),
+        send_retry_backoff_seconds=float(notify_cfg.send_retry_backoff_seconds),
+        send_retry_backoff_multiplier=float(notify_cfg.send_retry_backoff_multiplier),
+        llm_mode=llm_mode,
+        llm_model=str(cfg.llm.models.get("openai_default", "")),
+        runtime_env=runtime_env,
+        mock_llm=mock_llm,
+    ).run(
+        _build_reminder_request(
+            mode=normalized_mode,
+            statuses=["work", "pre_done"],
+            include_today=True,
+            include_next_workday=True,
+            force_test_chat=(runtime_env == "test" or normalized_mode == "test"),
+            test_chat_id_override=str(notify_cfg.test_chat_id_override or ""),
         )
-    if provider == "yandex":
-        api_key = str(deps.get("yandex_llm_api_key", "")).strip()
-        if not api_key or not model_yandex:
-            return None
-        return AsyncYandexLLMChatAgent(
-            api_key=api_key,
-            model_uri=model_yandex,
-            timeout_seconds=timeout,
-            retry_attempts=retry_attempts,
-            retry_backoff_seconds=retry_backoff,
-        )
-    api_key = str(deps.get("openai_token", "")).strip()
-    if not api_key:
-        return None
-    return AsyncOpenAIChatAgent(
-        api_key=api_key,
-        proxies=proxy_map,
-        model=model_openai,
-        organization=str(deps.get("org_token", "")).strip() or None,
-        timeout_seconds=timeout,
-        retry_attempts=retry_attempts,
-        retry_backoff_seconds=retry_backoff,
     )
+    if normalized_mode in {"reminder_v2", "reminders-only", "morning"}:
+        return {
+            "artifact": reminder_result.artifact,
+            "status": reminder_result.status,
+            "mode": reminder_result.mode,
+            "summary": {
+                "task_row_issue_count": 0,
+                "groups": len(reminder_result.groups),
+            },
+            "delivery_counters": dict(reminder_result.delivery_counters),
+            "enhancement_counters": dict(reminder_result.enhancement_counters),
+            "warnings": list(reminder_result.warnings),
+            "today": reminder_result.today,
+            "next_workday": reminder_result.next_workday,
+        }
+    return None
 
 
 @dataclass(frozen=True)
@@ -113,7 +126,8 @@ class PlannerRuntimeRequest:
 
 async def run_planner_runtime(request: PlannerRuntimeRequest):
     """Run planner runtime mode through shared entry logic."""
-    app_context = request.app_context or build_app_context()
+
+    app_context = request.app_context or build_runtime_app_context()
     deps = app_context.deps
     cfg = app_context.cfg
     pipeline_cfg = cfg.runtime.pipeline
@@ -159,61 +173,16 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
     quality_report: dict[str, Any] = {"summary": {"task_row_issue_count": 0}}
 
     if normalized_mode in {"reminder_v2", "reminders-only", "morning", "test"}:
-        snapshot_engine = build_snapshot_engine(app_context)
-        usecase = ReminderUseCase(snapshot_engine)
-        formatter = ReminderFormatter(
-            timezone_name=str(cfg.runtime.runtime.timezone or "Europe/Moscow"),
-            hidden_stage_names=tuple(cfg.mapping.hidden_stage_names or ()),
-        )
-        sender = TelegramNotifier(
-            bot_token=str(deps.get("tg_bot_token", "")),
-            default_chat_id=deps.get("default_chat_id"),
-        )
-        notify_cfg = cfg.runtime.notify
-        llm_mode = str(notify_cfg.llm_mode_default or "provider")
-        mock_llm = bool(mock_external or llm_mode == "draft_only" or runtime_env == "test")
-        enhancer = _build_notify_enhancer(ctx=app_context, mock_external=mock_llm)
-        reminder_result = await ReminderJob(
-            usecase=usecase,
-            formatter=formatter,
-            sender=sender,
-            helper_character=str(cfg.llm.assistant.get("helper_character", "")),
-            enhancer=enhancer,
-            people_lookup=snapshot_engine,
-            default_chat_id=str(deps.get("default_chat_id", "")).strip(),
-            enhance_concurrency=int(notify_cfg.enhance_concurrency),
-            send_retry_attempts=int(notify_cfg.send_retry_attempts),
-            send_retry_backoff_seconds=float(notify_cfg.send_retry_backoff_seconds),
-            send_retry_backoff_multiplier=float(notify_cfg.send_retry_backoff_multiplier),
-            llm_mode=llm_mode,
-            llm_model=str(cfg.llm.models.get("openai_default", "")),
+        reminder_payload = await _run_reminder_mode(
+            app_context=app_context,
+            cfg=cfg,
+            deps=deps,
+            normalized_mode=normalized_mode,
+            mock_external=mock_external,
             runtime_env=runtime_env,
-            mock_llm=mock_llm,
-        ).run(
-            ReminderRequest(
-                mode=normalized_mode,
-                statuses=["work", "pre_done"],
-                include_today=True,
-                include_next_workday=True,
-                force_test_chat=(runtime_env == "test" or normalized_mode == "test"),
-                test_chat_id_override=str(notify_cfg.test_chat_id_override or ""),
-            )
         )
-        if normalized_mode in {"reminder_v2", "reminders-only", "morning"}:
-            return {
-                "artifact": reminder_result.artifact,
-                "status": reminder_result.status,
-                "mode": reminder_result.mode,
-                "summary": {
-                    "task_row_issue_count": 0,
-                    "groups": len(reminder_result.groups),
-                },
-                "delivery_counters": dict(reminder_result.delivery_counters),
-                "enhancement_counters": dict(reminder_result.enhancement_counters),
-                "warnings": list(reminder_result.warnings),
-                "today": reminder_result.today,
-                "next_workday": reminder_result.next_workday,
-            }
+        if reminder_payload is not None:
+            return reminder_payload
 
     TimerPipeline(app_context).run(
         TimerRunRequest(
@@ -223,147 +192,14 @@ async def run_planner_runtime(request: PlannerRuntimeRequest):
         )
     )
 
-    if normalized_mode in {"timer", "test", "render_v2"}:
-        render_started = perf_counter()
-        snapshot_engine = build_snapshot_engine(app_context)
-        render_usecase = RenderUseCase(
-            snapshot_engine,
-            timezone_name=str(cfg.runtime.runtime.timezone or "Europe/Moscow"),
+    if normalized_mode == "render_v2":
+        return run_render_runtime(
+            app_context,
+            mode="render_v2",
+            force_refresh=bool(force_refresh),
+            dry_run=dry_run,
+            statuses=["work", "pre_done"],
         )
-        from utils.service import GoogleSheetInfo, GoogleSheetsService
-
-        current_sheet_info = GoogleSheetInfo(**sheet_info)
-        target_worksheet = current_sheet_info.get_sheet_name("task_calendar") or "Задачи"
-        source_spreadsheet = str(
-            cfg.tables.google_sheets.get("source_sheet_name_default", "")
-        ).strip()
-        target_spreadsheet = str(current_sheet_info.spreadsheet_name or "").strip()
-        tasks_sheet_name = str(current_sheet_info.get_sheet_name("tasks") or "ТАБЛИЧКА").strip()
-        target_ok, target_warnings = validate_render_target(
-            RenderTarget(
-                source_spreadsheet=source_spreadsheet,
-                target_spreadsheet=target_spreadsheet,
-                tasks_sheet_name=tasks_sheet_name,
-                target_worksheet=str(target_worksheet),
-            )
-        )
-        if not target_ok:
-            return {
-                "artifact": "render_v2",
-                "status": "blocked",
-                "mode": "render_v2",
-                "render_applied": False,
-                "rows_written": 0,
-                "cells_written": 0,
-                "target_spreadsheet": target_spreadsheet,
-                "target_worksheet": target_worksheet,
-                "warnings": list(target_warnings),
-                "error": {
-                    "code": "render_target_unsafe",
-                    "details": {
-                        "source_spreadsheet": source_spreadsheet,
-                        "target_spreadsheet": target_spreadsheet,
-                        "target_worksheet": target_worksheet,
-                        "tasks_sheet_name": tasks_sheet_name,
-                    },
-                },
-                "duration_ms": int((perf_counter() - render_started) * 1000),
-                "summary": {"task_row_issue_count": 0},
-            }
-        writer = GoogleSheetsPlanWriter(
-            GoogleSheetsService(key_json, dry_run=dry_run),
-            SheetTarget(
-                spreadsheet_name=current_sheet_info.spreadsheet_name,
-                worksheet_name=target_worksheet,
-            ),
-        )
-        render_result = RenderJob(render_usecase, writer).run(
-            RenderRequest(
-                window=Window(start=None, end=None, mode="intersects"),
-                statuses=["work", "pre_done"],
-            )
-        )
-        designers_target_worksheet = current_sheet_info.get_sheet_name("designers") or "Дизайнеры"
-        designers_target_ok, designers_target_warnings = validate_render_target(
-            RenderTarget(
-                source_spreadsheet=source_spreadsheet,
-                target_spreadsheet=target_spreadsheet,
-                tasks_sheet_name=tasks_sheet_name,
-                target_worksheet=str(designers_target_worksheet),
-            )
-        )
-        if not designers_target_ok:
-            return {
-                "artifact": "render_v2",
-                "status": "blocked",
-                "mode": "render_v2",
-                "render_applied": False,
-                "rows_written": 0,
-                "cells_written": 0,
-                "target_spreadsheet": target_spreadsheet,
-                "target_worksheet": designers_target_worksheet,
-                "warnings": list(designers_target_warnings),
-                "error": {
-                    "code": "render_target_unsafe",
-                    "details": {
-                        "source_spreadsheet": source_spreadsheet,
-                        "target_spreadsheet": target_spreadsheet,
-                        "target_worksheet": designers_target_worksheet,
-                        "tasks_sheet_name": tasks_sheet_name,
-                    },
-                },
-                "duration_ms": int((perf_counter() - render_started) * 1000),
-                "summary": {"task_row_issue_count": 0},
-            }
-        designers_usecase = DesignersRenderUseCase(
-            snapshot_engine,
-            timezone_name=str(cfg.runtime.runtime.timezone or "Europe/Moscow"),
-        )
-        designers_writer = GoogleSheetsPlanWriter(
-            GoogleSheetsService(key_json, dry_run=dry_run),
-            SheetTarget(
-                spreadsheet_name=current_sheet_info.spreadsheet_name,
-                worksheet_name=designers_target_worksheet,
-            ),
-        )
-        designers_result = RenderJob(designers_usecase, designers_writer).run(
-            RenderRequest(
-                window=Window(start=None, end=None, mode="intersects"),
-                statuses=["work", "pre_done"],
-            )
-        )
-        if normalized_mode == "render_v2":
-            return {
-                "artifact": "render_v2",
-                "status": "ok",
-                "mode": "render_v2",
-                "force_refresh": bool(force_refresh),
-                "render_applied": bool(render_result.applied or designers_result.applied),
-                "rows_written": int(render_result.rows_written) + int(designers_result.rows_written),
-                "cells_written": int(render_result.cells_written)
-                + int(designers_result.cells_written),
-                "target_spreadsheet": str(render_result.target_spreadsheet),
-                "target_worksheet": "Задачи,Дизайнеры",
-                "targets": {
-                    "task_calendar": {
-                        "target_worksheet": str(render_result.target_worksheet),
-                        "render_applied": bool(render_result.applied),
-                        "rows_written": int(render_result.rows_written),
-                        "cells_written": int(render_result.cells_written),
-                        "warnings": list(render_result.warnings),
-                    },
-                    "designers": {
-                        "target_worksheet": str(designers_result.target_worksheet),
-                        "render_applied": bool(designers_result.applied),
-                        "rows_written": int(designers_result.rows_written),
-                        "cells_written": int(designers_result.cells_written),
-                        "warnings": list(designers_result.warnings),
-                    },
-                },
-                "warnings": list(render_result.warnings) + list(designers_result.warnings),
-                "duration_ms": int((perf_counter() - render_started) * 1000),
-                "summary": {"task_row_issue_count": 0},
-            }
 
     _print_quality_report(quality_report)
     return quality_report
