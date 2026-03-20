@@ -1,5 +1,6 @@
 # Active Tasks
 
+- CAM-2026-03-21-REPO-BEAUTY-AUDIT-V1: beauty audit published under the module-first canon; use its sequential backlog as the source of truth for future repo-curation waves.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done

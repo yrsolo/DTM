@@ -3,6 +3,7 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
+- CAM-2026-03-21-REPO-BEAUTY-AUDIT-V1
 
 ## Blocked
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1

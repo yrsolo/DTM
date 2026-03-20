@@ -27,6 +27,7 @@ It supersedes `docs/architecture/recovery/README.md` as the active architecture 
 - [success-criteria.md](success-criteria.md)
 - [checklists/final-review.md](checklists/final-review.md)
 - [notes-for-maintainers.md](notes-for-maintainers.md)
+- [repo-beauty-audit-2026-03-21.md](repo-beauty-audit-2026-03-21.md)
 
 ## Main stance
 
