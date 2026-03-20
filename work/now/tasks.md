@@ -1,6 +1,6 @@
 # Active Tasks
 
-- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1: architecture-recovery canon is now the active roadmap; `access_api` now owns frontend/info/people/attachment-read handlers under its internal package, old HTTP handler roots are compatibility wrappers, and the next hard slice is `P10` demotion/archive of the remaining competing technical clusters.
+- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1: architecture-recovery canon is now the active roadmap; `access_api` owns frontend/info/people/attachment-read handlers, `IndexDispatcher` is compatibility-only over the thin entrypoint, and the next hard slice is destructive archive/demotion policy for the remaining wrapper roots.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done

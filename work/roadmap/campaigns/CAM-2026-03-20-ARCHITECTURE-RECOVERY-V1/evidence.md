@@ -54,3 +54,4 @@
 - 2026-03-20: `access_api` now owns frontend root, frontend v2, info, people snapshot, and attachment read handlers under `src.contexts.access_api.internal/*`; `src.contexts.access_api.module` builds from that internal package instead of `src.entrypoints.http.*`.
 - 2026-03-20: direct API outer-trace finalization now follows the active `HttpShell` top path; `function_total`, outer debug headers, and recent outer-trace recording no longer depend on the retired `IndexDispatcher` path.
 - 2026-03-20: old HTTP handler modules (`frontend_compat_handlers`, `frontend_v2_handler`, `info_handler`, `people_snapshot_handler`, `task_attachment_read_handler`) are now compatibility wrappers only; the owning implementation center is `access_api`.
+- 2026-03-20: `src.entrypoints.index_dispatcher.IndexDispatcher` is now compatibility-only and delegates into `src.entrypoint.handler`; active top-path ownership stays in the thin entrypoint plus shells.
