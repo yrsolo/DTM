@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import asyncio
 import json
@@ -20,6 +20,7 @@ from src.entrypoints.http.admin_task_attachments_handler import AdminTaskAttachm
 from src.entrypoints.http.admin_queue_handler import AdminQueueHandler
 from src.entrypoints.http.dto import HttpRequest
 from src.entrypoints.http.job_status_handler import JobStatusHandler
+from src.platform import bootstrap as runtime_bootstrap
 from src.worker.model import JobStatusRecord
 
 
@@ -286,8 +287,8 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
     def test_admin_queue_handler_returns_upload_contract_for_existing_task(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
 
-        original_build_snapshot_engine = module.build_snapshot_engine
-        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        original_get_snapshot_capability = module.get_snapshot_capability
+        module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
         try:
             handler = AdminTaskAttachmentsHandler(_FakeCtx())
             with patch.dict(sys.modules, {"boto3": _FakeBoto3Module()}):
@@ -313,7 +314,7 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
                     )
                 )
         finally:
-            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+            module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 200)
         payload = json.loads(response.body)
@@ -334,11 +335,11 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
     def test_admin_task_attachments_handler_finalizes_and_enqueues_attach_command(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
 
-        original_build_snapshot_engine = module.build_snapshot_engine
-        original_build_finalize_service = module.build_attachment_finalize_service
+        original_get_snapshot_capability = module.get_snapshot_capability
+        original_build_finalize_service = module.get_attachment_finalize_capability
         engine = _FakeSnapshotEngine()
-        module.build_snapshot_engine = lambda _ctx: engine  # type: ignore[assignment]
-        module.build_attachment_finalize_service = lambda _ctx: _FakeAttachmentFinalizeService()  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: engine  # type: ignore[assignment]
+        module.get_attachment_finalize_capability = lambda _ctx: _FakeAttachmentFinalizeService()  # type: ignore[assignment]
         producer = _FakeProducer()
         status_store = _FakeStatusStore()
         try:
@@ -372,8 +373,8 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
                     )
                 )
         finally:
-            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
-            module.build_attachment_finalize_service = original_build_finalize_service  # type: ignore[assignment]
+            module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
+            module.get_attachment_finalize_capability = original_build_finalize_service  # type: ignore[assignment]
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 202)
         payload = json.loads(response.body)
@@ -419,8 +420,8 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
     def test_admin_task_attachments_handler_request_upload_returns_task_not_found_details(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
 
-        original_build_snapshot_engine = module.build_snapshot_engine
-        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine(tasks_by_id={})  # type: ignore[assignment]
+        original_get_snapshot_capability = module.get_snapshot_capability
+        module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine(tasks_by_id={})  # type: ignore[assignment]
         try:
             handler = AdminTaskAttachmentsHandler(_FakeCtx())
             response = handler.handle(
@@ -445,7 +446,7 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
                 )
             )
         finally:
-            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+            module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 404)
         payload = json.loads(response.body)
@@ -481,8 +482,8 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
     def test_admin_queue_handler_returns_upload_contract_for_pdf(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
 
-        original_build_snapshot_engine = module.build_snapshot_engine
-        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        original_get_snapshot_capability = module.get_snapshot_capability
+        module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
         try:
             handler = AdminTaskAttachmentsHandler(_FakeCtx())
             with patch.dict(sys.modules, {"boto3": _FakeBoto3Module()}):
@@ -508,7 +509,7 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
                     )
                 )
         finally:
-            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+            module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 200)
         payload = json.loads(response.body)
@@ -519,8 +520,8 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
     def test_admin_queue_handler_returns_upload_contract_for_legacy_doc(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
 
-        original_build_snapshot_engine = module.build_snapshot_engine
-        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        original_get_snapshot_capability = module.get_snapshot_capability
+        module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
         try:
             handler = AdminTaskAttachmentsHandler(_FakeCtx())
             with patch.dict(sys.modules, {"boto3": _FakeBoto3Module()}):
@@ -546,7 +547,7 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
                     )
                 )
         finally:
-            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+            module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 200)
         payload = json.loads(response.body)
@@ -573,9 +574,10 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
         self.assertFalse(payload["retryable"])
 
     def test_index_routes_message_queue_event_to_worker(self) -> None:
-        original_worker = index.APP_DEPS.get("command_worker")
+        runtime_deps = runtime_bootstrap.get_runtime_deps()
+        original_worker = runtime_deps.get("command_worker")
         fake_worker = _FakeWorker()
-        index.APP_DEPS["command_worker"] = fake_worker
+        runtime_deps["command_worker"] = fake_worker
         try:
             event = {
                 "messages": [
@@ -598,7 +600,7 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
             }
             response = asyncio.run(index.handler(event, None))
         finally:
-            index.APP_DEPS["command_worker"] = original_worker
+            runtime_deps["command_worker"] = original_worker
         self.assertEqual(response["statusCode"], 200)
         payload = json.loads(response["body"])
         self.assertEqual(payload["artifact"], "command_worker")
@@ -606,23 +608,25 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
         self.assertEqual(len(fake_worker.messages), 1)
 
     def test_index_enqueues_trigger_event_when_queue_is_configured(self) -> None:
-        original_producer = index.APP_DEPS.get("command_queue_producer")
-        original_status_store = index.APP_DEPS.get("job_status_store")
-        original_triggers = dict(index.APP_TRIGGERS)
+        runtime_deps = runtime_bootstrap.get_runtime_deps()
+        trigger_modes = runtime_bootstrap.get_trigger_modes()
+        original_producer = runtime_deps.get("command_queue_producer")
+        original_status_store = runtime_deps.get("job_status_store")
+        original_triggers = dict(trigger_modes)
         producer = _FakeProducer()
         status_store = _FakeStatusStore()
-        index.APP_DEPS["command_queue_producer"] = producer
-        index.APP_DEPS["job_status_store"] = status_store
-        index.APP_TRIGGERS.clear()
-        index.APP_TRIGGERS["trigger-1"] = "timer"
+        runtime_deps["command_queue_producer"] = producer
+        runtime_deps["job_status_store"] = status_store
+        trigger_modes.clear()
+        trigger_modes["trigger-1"] = "timer"
         try:
             event = {"messages": [{"details": {"trigger_id": "trigger-1"}}]}
             response = asyncio.run(index.handler(event, None))
         finally:
-            index.APP_DEPS["command_queue_producer"] = original_producer
-            index.APP_DEPS["job_status_store"] = original_status_store
-            index.APP_TRIGGERS.clear()
-            index.APP_TRIGGERS.update(original_triggers)
+            runtime_deps["command_queue_producer"] = original_producer
+            runtime_deps["job_status_store"] = original_status_store
+            trigger_modes.clear()
+            trigger_modes.update(original_triggers)
         self.assertEqual(response["statusCode"], 200)
         payload = json.loads(response["body"])
         self.assertEqual(payload["artifact"], "command_batch_enqueued")
@@ -641,3 +645,5 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+

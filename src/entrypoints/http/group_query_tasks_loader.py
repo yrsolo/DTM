@@ -14,7 +14,7 @@ def load_work_tasks_for_group_query(
     sheet_info: dict[str, str],  # noqa: ARG001
     app_cfg: Any,
 ) -> list[Any]:
-    """Compatibility helper: load active tasks from snapshot engine instead of planner."""
+    """Load active tasks for group-query flows from the canonical snapshot read-model."""
     from src.app.context import AppContext
 
     ctx = AppContext(cfg=app_cfg, deps={})

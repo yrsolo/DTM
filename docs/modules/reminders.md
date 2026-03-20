@@ -44,8 +44,9 @@ src/contexts/reminders/
 - no primary HTTP routes are expected as the main ownership center in this wave
 - trigger intake remains platform-owned; reminder execution ownership remains here
 
-## Transitional extraction notes
+## Active implementation notes
 
-- current implementation is partly frozen operationally, so migrate with care
+- reminders remain an active operational priority
 - keep behavior stable while separating reminder logic from trigger semantics and transport details
-
+- reminders must not depend on deep Telegram redesign; Telegram is reserve capability, reminders are active product/runtime flow
+- Telegram support for reminders should be maintained as an existing delivery channel, not as a reason to re-center the architecture on Telegram

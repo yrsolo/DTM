@@ -1,11 +1,11 @@
-"""Local builder for the snapshot context."""
+"""Module surface for the snapshot context."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
 
-from src.snapshot_engine import build_snapshot_engine
+from src.contexts.snapshot.internal.engine import build_snapshot_engine
 
 
 @dataclass(slots=True)
@@ -18,7 +18,7 @@ class SnapshotReadCapability:
 
     def _bound_engine(self):
         if self._engine is None:
-            self._engine = self._module.build_engine(self._ctx)
+            self._engine = self._module.engine(self._ctx)
         return self._engine
 
     def get_prep_snapshot(self):
@@ -38,7 +38,7 @@ class SnapshotQueryCapability:
 
     def _bound_engine(self):
         if self._engine is None:
-            self._engine = self._module.build_engine(self._ctx)
+            self._engine = self._module.engine(self._ctx)
         return self._engine
 
     def get_prep_snapshot(self):
@@ -67,7 +67,7 @@ class SnapshotAttachmentCapability:
 
     def _bound_engine(self):
         if self._engine is None:
-            self._engine = self._module.build_engine(self._ctx)
+            self._engine = self._module.engine(self._ctx)
         return self._engine
 
     def get_attachment_metadata_store(self):
@@ -102,7 +102,7 @@ class SnapshotUpdateCapability:
 
     def _bound_engine(self):
         if self._engine is None:
-            self._engine = self._module.build_engine(self._ctx)
+            self._engine = self._module.engine(self._ctx)
         return self._engine
 
     def update(self, *, task_source: Any, force: bool = False):
@@ -111,42 +111,42 @@ class SnapshotUpdateCapability:
 
 @dataclass(frozen=True, slots=True)
 class SnapshotModule:
-    """Context-local builder bundle used during staged migration."""
+    """Own the snapshot read-model surface and exported capabilities."""
 
     name: str = "snapshot"
 
-    def build_engine(self, ctx):
+    def engine(self, ctx):
         return build_snapshot_engine(ctx)
 
-    def build_read_capability(self, ctx) -> SnapshotReadCapability:
+    def read_capability(self, ctx) -> SnapshotReadCapability:
         return SnapshotReadCapability(self, ctx)
 
-    def build_attachment_capability(self, ctx) -> SnapshotAttachmentCapability:
+    def attachment_capability(self, ctx) -> SnapshotAttachmentCapability:
         return SnapshotAttachmentCapability(self, ctx)
 
-    def build_query_capability(self, ctx) -> SnapshotQueryCapability:
+    def query_capability(self, ctx) -> SnapshotQueryCapability:
         return SnapshotQueryCapability(self, ctx)
 
-    def build_update_capability(self, ctx) -> SnapshotUpdateCapability:
+    def update_capability(self, ctx) -> SnapshotUpdateCapability:
         return SnapshotUpdateCapability(self, ctx)
 
     def get_prep_snapshot(self, ctx):
-        return self.build_engine(ctx).get_prep_snapshot()
+        return self.engine(ctx).get_prep_snapshot()
 
     def get_raw_snapshot(self, ctx):
-        return self.build_engine(ctx).get_raw_snapshot()
+        return self.engine(ctx).get_raw_snapshot()
 
     def get_people_snapshot(self, ctx):
-        return self.build_engine(ctx).get_people_snapshot()
+        return self.engine(ctx).get_people_snapshot()
 
     def get_response_cache_store(self, ctx):
-        return self.build_engine(ctx).get_response_cache_store()
+        return self.engine(ctx).get_response_cache_store()
 
     def query_frontend_v2(self, ctx, query):
-        return self.build_engine(ctx).frontend_v2(query)
+        return self.engine(ctx).frontend_v2(query)
 
 
 def get_module() -> SnapshotModule:
-    """Return the local module instance for the snapshot context."""
+    """Return the canonical module surface for the snapshot context."""
 
     return SnapshotModule()

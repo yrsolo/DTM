@@ -6,26 +6,25 @@ from dataclasses import dataclass
 from typing import Any
 
 from src.contexts.reminders.public import (
-    build_reminder_request as _build_reminder_request,
     get_enhancer as _get_reminders_enhancer,
     get_formatter as _get_reminders_formatter,
     get_job_runner as _get_reminder_job_runner,
     get_sender as _get_reminders_sender,
     get_snapshot_read_capability as _get_reminders_snapshot_read_capability,
     get_usecase as _get_reminders_usecase,
+    make_reminder_request as _make_reminder_request,
 )
 from src.entrypoints.jobs.quality_report_job import print_quality_report as _print_quality_report
 from src.entrypoints.jobs.runtime_context_job import RuntimeContextRequest, resolve_runtime_context
 from src.entrypoints.jobs.timer_job import TimerJob
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES, is_legacy_mode
-from src.platform.app_context import build_runtime_app_context
 from src.platform.runtime.render_runtime import run_render_runtime
 from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
 from src.services.timer_pipeline import RunRequest as TimerRunRequest
 from src.services.timer_pipeline import TimerPipeline
 
 
-build_snapshot_engine = _get_reminders_snapshot_read_capability
+get_snapshot_capability = _get_reminders_snapshot_read_capability
 
 
 def _resolve_standard_run_mode(
@@ -47,7 +46,7 @@ def _resolve_standard_run_mode(
     return "test"
 
 
-def _build_notify_enhancer(*, ctx: Any, mock_external: bool):
+def _make_notify_enhancer(*, ctx: Any, mock_external: bool):
     return _get_reminders_enhancer(ctx, mock_external=mock_external)
 
 
@@ -62,14 +61,14 @@ async def _run_reminder_mode(
 ):
     """Execute reminder-oriented runtime modes through the reminders context."""
 
-    snapshot_engine = build_snapshot_engine(app_context)
+    snapshot_engine = get_snapshot_capability(app_context)
     usecase = _get_reminders_usecase(snapshot_engine)
     formatter = _get_reminders_formatter(app_context)
     sender = _get_reminders_sender(app_context)
     notify_cfg = cfg.runtime.notify
     llm_mode = str(notify_cfg.llm_mode_default or "provider")
     mock_llm = bool(mock_external or llm_mode == "draft_only" or runtime_env == "test")
-    enhancer = _build_notify_enhancer(ctx=app_context, mock_external=mock_llm)
+    enhancer = _make_notify_enhancer(ctx=app_context, mock_external=mock_llm)
     reminder_result = await _get_reminder_job_runner(
         usecase=usecase,
         formatter=formatter,
@@ -87,7 +86,7 @@ async def _run_reminder_mode(
         runtime_env=runtime_env,
         mock_llm=mock_llm,
     ).run(
-        _build_reminder_request(
+        _make_reminder_request(
             mode=normalized_mode,
             statuses=["work", "pre_done"],
             include_today=True,
@@ -127,7 +126,12 @@ class PlannerRuntimeRequest:
 async def run_planner_runtime(request: PlannerRuntimeRequest):
     """Run planner runtime mode through shared entry logic."""
 
-    app_context = request.app_context or build_runtime_app_context()
+    if request.app_context is None:
+        from src.platform.bootstrap import get_app_context
+
+        app_context = get_app_context()
+    else:
+        app_context = request.app_context
     deps = app_context.deps
     cfg = app_context.cfg
     pipeline_cfg = cfg.runtime.pipeline

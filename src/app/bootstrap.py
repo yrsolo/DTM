@@ -11,14 +11,12 @@ from dotenv import load_dotenv
 
 from src.app.context import AppContext
 from src.config.loader import load_config
-from src.infra.doc_preview_converter import DocPreviewConverter
 from src.observability import (
     NoopMetricsClient,
     StdoutJsonLogger,
 )
 from src.platform.infra.monitoring_bootstrap import build_metrics_dependencies
 from src.platform.runtime.queue_bootstrap import build_queue_runtime
-from src.services.mappers.task_payload_mapper import TaskPayloadMapper
 
 
 def _load_runtime_env_files() -> str:
@@ -100,7 +98,6 @@ def _build_base_bootstrap_deps(cfg, structured_logger) -> dict[str, object]:
         "migration_store_file": str(os.getenv("MIGRATION_STORE_FILE", "artifacts/tmp/normalized_store.json")).strip(),
         "write_legacy_milestones": str(os.getenv("WRITE_LEGACY_MILESTONES", "")).strip().lower()
         in {"1", "true", "yes"},
-        "task_payload_mapper": TaskPayloadMapper(),
         "aws_access_key_id": os.getenv("AWS_ACCESS_KEY_ID", "").strip(),
         "aws_secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY", "").strip(),
         "openai_token": os.getenv("OPENAI_TOKEN", "").strip(),
@@ -113,6 +110,8 @@ def _build_base_bootstrap_deps(cfg, structured_logger) -> dict[str, object]:
         "grafana_api_token": os.getenv("GRAFANA_API_TOKEN", "").strip() or os.getenv("GRAFANA_TOKEN", "").strip(),
         "yandex_prometheus_api_key": os.getenv("YANDEX_PROMETHEUS_API_KEY", "").strip()
         or os.getenv("YMP_API_KEY", "").strip(),
+        "doc_preview_converter_url": os.getenv("DOC_PREVIEW_CONVERTER_URL", "").strip(),
+        "doc_preview_converter_shared_token": os.getenv("DOC_PREVIEW_CONVERTER_SHARED_TOKEN", "").strip(),
         "metrics_client": NoopMetricsClient(),
         "metrics_sink": NoopMetricsClient(),
         "structured_logger": structured_logger,
@@ -130,13 +129,6 @@ def build_app_context() -> AppContext:
     cfg = load_config()
     structured_logger = StdoutJsonLogger()
     deps = _build_base_bootstrap_deps(cfg, structured_logger)
-    doc_preview_converter_url = os.getenv("DOC_PREVIEW_CONVERTER_URL", "").strip()
-    doc_preview_converter_token = os.getenv("DOC_PREVIEW_CONVERTER_SHARED_TOKEN", "").strip()
-    if doc_preview_converter_url:
-        deps["doc_preview_converter"] = DocPreviewConverter(
-            base_url=doc_preview_converter_url,
-            shared_token=doc_preview_converter_token,
-        )
     ctx = AppContext(cfg=cfg, deps=deps)
     deps.update(build_metrics_dependencies(ctx, deps, structured_logger=structured_logger))
     deps.update(build_queue_runtime(ctx, deps))

@@ -73,7 +73,7 @@ Attachment upload contract:
 - binary upload happens directly against Object Storage
 - `POST /ops/admin/task-attachments/finalize` verifies the object and enqueues `attach_task_file`
 - `POST /ops/admin/task-attachments/delete` enqueues `delete_task_attachment`
-- legacy paths remain as transitional wrappers only
+- legacy ingress aliases remain supported for enqueue parity
 
 ## Status and observability
 
@@ -99,8 +99,6 @@ Transport shells:
 - `src/entrypoints/triggers/trigger_shell.py`
 - `src/entrypoints/runtime/runtime_shell.py`
 
-Local/manual runtime still passes through a transitional runtime adapter, but that adapter is not the conceptual center of the current architecture.
+Local/manual runtime stays inside the same canonical shell family and is not a separate architectural center.
 
-Historical runtime detail is archive-only:
-- `src/archive/legacy_runtime/`
-- `docs/archive/system_legacy/modules/*`
+Historical runtime detail lives in `docs/archive/*` and `src/archive/*`.

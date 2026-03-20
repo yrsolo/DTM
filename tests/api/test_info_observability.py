@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import sys
@@ -74,8 +74,8 @@ class _FakeStatusStore:
                 "render_applied": False,
                 "rows_written": 0,
                 "cells_written": 0,
-                "target_spreadsheet": "Спонсорские ТНТ ТЕСТ",
-                "target_worksheet": "Задачи",
+                "target_spreadsheet": "Ð¡Ð¿Ð¾Ð½ÑÐ¾Ñ€ÑÐºÐ¸Ðµ Ð¢ÐÐ¢ Ð¢Ð•Ð¡Ð¢",
+                "target_worksheet": "Ð—Ð°Ð´Ð°Ñ‡Ð¸",
             },
             warnings=["no_matching_tasks"],
         )
@@ -113,8 +113,8 @@ class _MetricsRecorder:
 class InfoObservabilityTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self.module = access_info_handler_module
-        self.original_build_snapshot_engine = access_info_handler_module.build_snapshot_engine
-        self.original_access_build_snapshot_engine = access_info_handler_module.build_snapshot_engine
+        self.original_get_snapshot_query_capability = access_info_handler_module.get_snapshot_query_capability
+        self.original_access_get_snapshot_query_capability = access_info_handler_module.get_snapshot_query_capability
         self.original_get_queue_live_stats = access_info_handler_module.get_queue_live_stats
         self.original_access_get_queue_live_stats = access_info_handler_module.get_queue_live_stats
         self.original_get_function_build_info = access_info_handler_module.get_function_build_info
@@ -123,13 +123,13 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.original_access_storage_stats = access_info_handler_module.InfoHandler._storage_stats
         self._orig_recent_stage_events = list(RECENT_API_STAGE_EVENTS._events)  # type: ignore[attr-defined]
         self._orig_recent_outer_traces = list(RECENT_DIRECT_API_OUTER_TRACES._events)  # type: ignore[attr-defined]
-        self.build_snapshot_engine_calls = 0
+        self.get_snapshot_capability_calls = 0
         self.get_queue_live_stats_calls = 0
         self.get_function_build_info_calls = 0
         self.storage_stats_calls = 0
 
-        def _build_snapshot_engine(_ctx):
-            self.build_snapshot_engine_calls += 1
+        def _get_snapshot_capability(_ctx):
+            self.get_snapshot_capability_calls += 1
             return _FakeSnapshotEngine()
 
         def _get_queue_live_stats(**_kwargs):
@@ -166,7 +166,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
                 "byPrefix": {"raw": 256, "prep": 256, "extra": 256, "attachments": 256, "jobs": 0},
             }
 
-        access_info_handler_module.build_snapshot_engine = _build_snapshot_engine  # type: ignore[assignment]
+        access_info_handler_module.get_snapshot_query_capability = _get_snapshot_capability  # type: ignore[assignment]
         access_info_handler_module.get_queue_live_stats = _get_queue_live_stats  # type: ignore[assignment]
         access_info_handler_module.get_function_build_info = _get_function_build_info  # type: ignore[assignment]
         access_info_handler_module.InfoHandler._storage_stats = _storage_stats  # type: ignore[assignment]
@@ -309,7 +309,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         )
 
     def tearDown(self) -> None:
-        access_info_handler_module.build_snapshot_engine = self.original_access_build_snapshot_engine  # type: ignore[assignment]
+        access_info_handler_module.get_snapshot_query_capability = self.original_access_get_snapshot_query_capability  # type: ignore[assignment]
         access_info_handler_module.get_queue_live_stats = self.original_access_get_queue_live_stats  # type: ignore[assignment]
         access_info_handler_module.get_function_build_info = self.original_access_get_function_build_info  # type: ignore[assignment]
         access_info_handler_module.InfoHandler._storage_stats = self.original_access_storage_stats  # type: ignore[assignment]
@@ -333,7 +333,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertEqual(payload["bottlenecks"]["profilingLevel"], "stages")
         self.assertTrue(payload["bottlenecks"]["recentApiTracesDeferred"])
         self.assertTrue(payload["bottlenecks"]["recentDirectApiOuterTracesDeferred"])
-        self.assertEqual(self.build_snapshot_engine_calls, 0)
+        self.assertEqual(self.get_snapshot_capability_calls, 0)
         self.assertEqual(self.get_queue_live_stats_calls, 0)
         self.assertEqual(self.get_function_build_info_calls, 0)
         self.assertEqual(self.storage_stats_calls, 0)
@@ -400,7 +400,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertEqual(payload["bottlenecks"]["recentDirectApiOuterTraces"][0]["routerHandlerTotalMs"], 400.0)
         self.assertEqual(payload["bottlenecks"]["recentDirectApiOuterTraces"][0]["frontendHandlerTotalMs"], 200.0)
         self.assertEqual(len(payload["jobs"]["recent"]), 2)
-        self.assertGreater(self.build_snapshot_engine_calls, 0)
+        self.assertGreater(self.get_snapshot_capability_calls, 0)
         self.assertGreater(self.get_queue_live_stats_calls, 0)
         self.assertGreater(self.get_function_build_info_calls, 0)
         self.assertGreater(self.storage_stats_calls, 0)
@@ -447,3 +447,4 @@ class InfoObservabilityTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

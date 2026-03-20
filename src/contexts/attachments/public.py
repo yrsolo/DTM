@@ -2,6 +2,12 @@
 
 from __future__ import annotations
 
+from src.commands.types import (
+    ATTACH_TASK_FILE,
+    CLEANUP_TASK_ATTACHMENTS,
+    DELETE_TASK_ATTACHMENT,
+    GENERATE_ATTACHMENT_PREVIEW,
+)
 from src.app.context import AppContext
 
 from .internal.contracts import SUPPORTED_ATTACHMENT_MIME_TYPES
@@ -10,7 +16,7 @@ from .module import get_module
 
 
 def get_public_api(ctx: AppContext):
-    """Return the local module builder without leaking internals."""
+    """Return the local module surface without leaking internals."""
 
     return get_module(ctx)
 
@@ -39,6 +45,12 @@ def get_attachment_read_resolver(ctx: AppContext):
     return get_public_api(ctx).read_resolver()
 
 
+def get_doc_preview_converter(ctx: AppContext):
+    """Return the context-owned doc preview converter when configured."""
+
+    return get_public_api(ctx).doc_preview_converter()
+
+
 def get_supported_attachment_mime_types() -> frozenset[str]:
     """Return the public mime-type contract owned by the attachments context."""
 
@@ -54,7 +66,7 @@ def get_attachment_snapshot_capability(ctx: AppContext):
 def get_attach_task_file_job(ctx: AppContext):
     """Return the owning attachment job runner for attach-file mutations."""
 
-    from src.jobs.attach_task_file_job import AttachTaskFileJob
+    from .internal.job_runners import AttachTaskFileJob
 
     return AttachTaskFileJob(ctx)
 
@@ -62,7 +74,7 @@ def get_attach_task_file_job(ctx: AppContext):
 def get_delete_task_attachment_job(ctx: AppContext):
     """Return the owning attachment job runner for delete mutations."""
 
-    from src.jobs.delete_task_attachment_job import DeleteTaskAttachmentJob
+    from .internal.job_runners import DeleteTaskAttachmentJob
 
     return DeleteTaskAttachmentJob(ctx)
 
@@ -70,7 +82,7 @@ def get_delete_task_attachment_job(ctx: AppContext):
 def get_cleanup_task_attachments_job(ctx: AppContext):
     """Return the owning attachment job runner for cleanup mutations."""
 
-    from src.jobs.cleanup_task_attachments_job import CleanupTaskAttachmentsJob
+    from .internal.job_runners import CleanupTaskAttachmentsJob
 
     return CleanupTaskAttachmentsJob(ctx)
 
@@ -78,6 +90,17 @@ def get_cleanup_task_attachments_job(ctx: AppContext):
 def get_generate_attachment_preview_job(ctx: AppContext):
     """Return the owning attachment job runner for preview generation."""
 
-    from src.jobs.generate_attachment_preview_job import GenerateAttachmentPreviewJob
+    from .internal.preview_job import GenerateAttachmentPreviewJob
 
     return GenerateAttachmentPreviewJob(ctx)
+
+
+def get_command_handlers(ctx: AppContext) -> dict[str, object]:
+    """Return the attachment-owned queue command handlers."""
+
+    return {
+        ATTACH_TASK_FILE: get_attach_task_file_job(ctx),
+        DELETE_TASK_ATTACHMENT: get_delete_task_attachment_job(ctx),
+        CLEANUP_TASK_ATTACHMENTS: get_cleanup_task_attachments_job(ctx),
+        GENERATE_ATTACHMENT_PREVIEW: get_generate_attachment_preview_job(ctx),
+    }

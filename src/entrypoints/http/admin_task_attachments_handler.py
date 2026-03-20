@@ -16,22 +16,20 @@ from src.entrypoints.http.access_context import resolve_access_context
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response, json_response, path_matches
+from src.platform.runtime.command_runtime import get_command_runtime
 from src.services.errors import AppError
 
-build_snapshot_engine = get_attachment_snapshot_capability
-build_attachment_storage = get_attachment_storage
-build_attachment_finalize_service = get_attachment_finalize_service
+get_snapshot_capability = get_attachment_snapshot_capability
+get_attachment_storage_capability = get_attachment_storage
+get_attachment_finalize_capability = get_attachment_finalize_service
 
 
 class AdminTaskAttachmentsHandler:
     def __init__(self, ctx) -> None:
         self._ctx = ctx
 
-    def _producer(self):
-        return self._ctx.deps.get("command_queue_producer")
-
-    def _status_store(self):
-        return self._ctx.deps.get("job_status_store")
+    def _command_runtime(self):
+        return get_command_runtime(self._ctx)
 
     @staticmethod
     def _upload_error_details(
@@ -74,9 +72,8 @@ class AdminTaskAttachmentsHandler:
         return error_response(403, code="forbidden", message="Forbidden.", details={"reason": "attachment_admin_forbidden"})
 
     def _enqueue(self, *, command_type: str, payload: dict, req: HttpRequest, artifact: str) -> HttpResponse:
-        producer = self._producer()
-        status_store = self._status_store()
-        if producer is None or status_store is None:
+        command_runtime = self._command_runtime()
+        if not command_runtime.can_enqueue():
             return error_response(503, code="queue_unavailable", message="Command queue is not configured for current environment.")
         cmd = Command(
             job_id=uuid4().hex,
@@ -85,8 +82,7 @@ class AdminTaskAttachmentsHandler:
             requested_by=self._requested_by(req),
             payload=dict(payload),
         )
-        producer.send(cmd)
-        record = status_store.put_queued(cmd)
+        record = command_runtime.enqueue(cmd)
         return json_response(
             202,
             {
@@ -183,7 +179,7 @@ class AdminTaskAttachmentsHandler:
                 ),
             )
         try:
-            engine = build_snapshot_engine(self._ctx)
+            engine = get_snapshot_capability(self._ctx)
             prep = engine.get_prep_snapshot()
         except Exception as error:
             return error_response(
@@ -215,7 +211,7 @@ class AdminTaskAttachmentsHandler:
                 ),
             )
         attachment_id = str(body.get("attachment_id", "")).strip() or uuid4().hex
-        storage = build_attachment_storage(self._ctx)
+        storage = get_attachment_storage_capability(self._ctx)
         object_key = storage.build_object_key(
             env_name=str(self._ctx.cfg.runtime.runtime.env_default or ""),
             task_id=task_id,
@@ -298,8 +294,8 @@ class AdminTaskAttachmentsHandler:
         if not uploaded_by:
             return error_response(400, code="uploaded_by_required", message="uploaded_by is required.")
         try:
-            engine = build_snapshot_engine(self._ctx)
-            finalize = build_attachment_finalize_service(self._ctx)
+            engine = get_snapshot_capability(self._ctx)
+            finalize = get_attachment_finalize_capability(self._ctx)
             verified = finalize.finalize(task_id=task_id, attachment_id=attachment_id)
             lookup = engine.get_attachment_metadata_store().get_by_attachment_id(attachment_id)
             if lookup is None:

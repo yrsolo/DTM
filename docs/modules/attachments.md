@@ -2,9 +2,7 @@
 
 ## Purpose
 
-`attachments` is the first fully extracted context in the modular-monolith refactor wave.
-
-It owns the attachment lifecycle end-to-end:
+`attachments` owns the attachment mutation lifecycle and publication readiness:
 - request upload
 - direct upload contract handoff
 - finalize
@@ -14,7 +12,7 @@ It owns the attachment lifecycle end-to-end:
 - cleanup lifecycle
 - view / download / read access policy
 
-For the browser card scenario, `attachments` owns mutation and publication readiness, but not direct frontend cache control.
+For the primary read-model scenario, `attachments` owns mutation and publication readiness, but not direct frontend cache control or browser payload delivery.
 
 ## Public facade expectation
 
@@ -38,14 +36,14 @@ External callers should use the context facade only, not internal files.
 - shared contracts/utilities kept intentionally small
 - storage/object adapters owned by the context
 - snapshot public contracts only where publication/read-side interaction is necessary
-- runtime invalidation/publication intents where eventual card freshness must be coordinated
+- runtime invalidation/publication intents where eventual task-list freshness must be coordinated
 
 ## Forbidden dependencies
 
 - deep imports into another context's internals
 - ownership leakage into generic runtime/worker modules
 - direct transport logic as the place where business rules live
-- direct ownership of frontend cache helpers or card payload delivery
+- direct ownership of frontend cache helpers or main task-list payload delivery
 
 ## Commands owned
 
@@ -61,9 +59,9 @@ External callers should use the context facade only, not internal files.
 - attachment delete paths
 - attachment read/view/download paths
 
-## Transitional extraction notes
+## Active implementation notes
 
 - current implementation is spread across HTTP handlers, jobs, services, and snapshot-engine-facing pieces
 - preserve current behavior first, then consolidate into one context facade
 - `attachments` remains the first full extraction target after early bootstrap discipline and guardrails are in place
-- attachment success should be judged by appearance in the cached task card payload, not by upload/finalize alone
+- attachment success should be judged by appearance in the cached main task-list payload, not by upload/finalize alone

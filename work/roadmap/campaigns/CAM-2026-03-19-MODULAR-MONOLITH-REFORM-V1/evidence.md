@@ -37,11 +37,11 @@
 - this campaign opens the normative architecture and tracking shell for future implementation waves
 - `send_reminders` now routes through `src.contexts.reminders.public`
 - Telegram webhook/router and `group_query_reply` now route through `src.contexts.telegram_interaction.public`
-- rendering-owned jobs now depend on `src.contexts.snapshot.public` / `src.contexts.snapshot.contracts` instead of direct `src.snapshot_engine` imports
+- rendering-owned jobs now depend on `src.contexts.snapshot.public` / `src.contexts.snapshot.contracts` instead of direct `src.contexts.snapshot.internal.engine` imports
 - browser-facing HTTP handlers now route through `src.contexts.access_api.public`
 - active snapshot consumers in HTTP/job entry modules now enter through `src.contexts.snapshot.public`
-- `src.render.*`, `src.notify.*`, `src.entrypoints_adapters.*`, and context module builders now depend on `src.contexts.snapshot.public` / `src.contexts.snapshot.contracts` instead of direct `src.snapshot_engine.*` imports
-- direct `src.snapshot_engine.*` imports are now expected to stay inside `src/snapshot_engine/**` and `src/contexts/snapshot/**` only; guardrails enforce this boundary
+- `src.render.*`, `src.notify.*`, `src.entrypoints_adapters.*`, and context module builders now depend on `src.contexts.snapshot.public` / `src.contexts.snapshot.contracts` instead of direct `src.contexts.snapshot.internal.engine.*` imports
+- direct `src.contexts.snapshot.internal.engine.*` imports are now expected to stay inside `src/snapshot_engine/**` and `src/contexts/snapshot/**` only; guardrails enforce this boundary
 - active planner/runtime entrypoints now cross the bootstrap boundary through `src.platform.bootstrap` instead of importing `src.app.bootstrap` directly
 - `src.app.__init__` no longer re-exports bootstrap, which removes an import-time coupling path from light app utilities into heavy runtime wiring
 - planner runtime now has characterization coverage for unsupported mode, reminder-only short-circuit, and render-v2 unsafe-target blocking flow

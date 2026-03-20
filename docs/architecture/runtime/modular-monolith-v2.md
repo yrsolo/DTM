@@ -1,6 +1,6 @@
 # Modular Monolith V2
 
-> Superseded on 2026-03-20 by `docs/architecture/recovery/README.md`.
+> Superseded on 2026-03-20 by `docs/architecture/module-first-recovery/README.md`.
 > Keep this file as historical precedent for the previous modular-monolith wave, not as the current normative canon.
 
 This document is the normative master text for the DTM modular-monolith refactor wave.

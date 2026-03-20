@@ -1,11 +1,21 @@
 # Active Tasks
 
-- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1: architecture-recovery canon is now the active roadmap; active runtime no longer depends on `src.services.attachments`, `src.entrypoints.http.frontend_response_cache`, or `src.entrypoints.index_dispatcher`, `index.py` now reads directly through the thin entrypoint and shells, the main notify/telegram/render test contour reads through context-owned packages, old access-api HTTP wrappers are removed, old top-level `render` / `notify` / `telegram` / `services.attachments` roots are deleted, and the next hard slice is final closeout plus any remaining compatibility/archive policy in docs.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done
 
-- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1 completed: architecture-recovery canon is now the active source of truth, top-level competing roots were removed, and the runtime now reads through `entrypoint -> platform/runtime -> owning context`.
+- CAM-2026-03-21-FINAL-AESTHETIC-CLOSEOUT-V1 completed: the thin `build_runtime_app_context` alias boundary is gone, the last active `_build_*` helper seams now use `make_*`, and the beauty audit/tracking now describe the repo as closed out rather than still mid-polish.
+- CAM-2026-03-21-SHOWCASE-POLISH-V1 completed: root and top-level docs now point first to the active product story and module-first canon, and the repo has an explicit clean first-hop reading path.
+- CAM-2026-03-21-MODULE-POLISH-V1 completed: active module methods now read as handlers/capabilities/requests/jobs instead of generic assembly helpers, and the dead broad `get_snapshot_engine()` alias is gone from the active snapshot surface.
+- CAM-2026-03-21-ACTIVE-HISTORY-SEPARATION-V1 completed: active runtime docs now keep history available only as compact opt-in pointers instead of foregrounding predecessor material.
+- CAM-2026-03-21-BOOTSTRAP-READABILITY-V1 completed: mutable bootstrap seams were removed from `index.py`, dependent tests now use explicit runtime getters, and bootstrap reads as neutral lazy glue instead of a mini control center.
+- CAM-2026-03-21-DOCS-VOICE-UNIFICATION-V1 completed: active docs stopped framing the canon as material for future refactor campaigns and replaced the most visible transitional section names with calm current-system language.
+- CAM-2026-03-21-ACTIVE-NAMING-CLEANUP-V1 completed: active module docstrings now describe present ownership, and access-api query-owned paths now use `get_snapshot_query_capability` naming instead of broad snapshot-engine wording.
+- CAM-2026-03-21-TOP-PATH-ELEGANCE-V1 completed: `index.py` no longer resolves app context eagerly just to classify Telegram HTTP requests, `handler.py` stayed the single obvious top router, and the nearest top-path docs/checks were aligned.
+- CAM-2026-03-21-REPO-BEAUTY-AUDIT-V1 completed: beauty audit published under the module-first canon, a decision-complete sequential backlog was recorded, and the smell-driven execution method for future curation waves is now documented.
+- Pre-audit idealization wave completed: active runtime docs now point only to the module-first canon, stale migration-era wording was removed from active narrative, dead `group_query_handler.py` was deleted, and active capability aliases now use capability-true names.
+- CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1 completed: module-first canon replaced the active recovery canon, the trust-gated delta audit drove the remaining cleanup, `src/snapshot_engine/*` moved under `src/contexts/snapshot/internal/engine/*`, `src/jobs/*` was removed, and active tests now live under `tests/contexts/*`.
+- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1 completed: architecture-recovery canon delivered the previous recovery wave, top-level competing roots were removed, and the runtime now reads through `entrypoint -> platform/runtime -> owning context`.
 
 - CAM-2026-03-19-MODULARITY-AUDIT-V1 completed: code-verified audit now scores each context for autonomy and records the next decoupling moves.
 - CAM-2026-03-19-TEST-ROLLOUT-UNBLOCK-V1 completed: deploy guardrails now accept the active thin-entrypoint contour, and the current `dev` head was deployed to `test` successfully.
@@ -25,5 +35,6 @@
 - `agent/intructions/DTM-test/**` is reference-only input and must not be used as execution tracking.
 - Working plans and evidence must live only in `work/roadmap/campaigns/<CAMPAIGN>/`.
 - Latest bottleneck follow-up remains historical context only; current live execution focus is the blocked `prod` smoke for the attachment contour.
-- Future architecture-recovery child campaigns must start from `docs/architecture/recovery/README.md` and the new umbrella campaign trust gate.
+- Future architecture child campaigns must start from `docs/architecture/module-first-recovery/README.md` and the new umbrella campaign trust gate.
+- Future beauty child campaigns, if any, are optional taste curation only and should be opened only when a new concrete smell is identified instead of continuing the old mandatory beauty backlog.
 - Modular-monolith umbrella campaign is complete and superseded as the primary canon.

@@ -10,17 +10,14 @@ from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response
 from src.services.errors import AppError
+get_snapshot_capability = get_attachment_snapshot_capability
 
 
-def build_snapshot_engine(ctx):
-    return get_attachment_snapshot_capability(ctx)
-
-
-def build_attachment_storage(ctx):
+def get_attachment_storage_capability(ctx):
     return get_attachment_storage(ctx)
 
 
-def build_attachment_read_resolver(ctx):
+def get_attachment_read_capability(ctx):
     return get_attachment_read_resolver(ctx)
 
 
@@ -53,7 +50,7 @@ class TaskAttachmentReadHandler:
         attachment_id, action = matched
         access = resolve_access_context(self._ctx, req)
         try:
-            resolver = build_attachment_read_resolver(self._ctx)
+            resolver = get_attachment_read_capability(self._ctx)
             result = resolver.resolve(attachment_id=attachment_id, access=access, download=(action == "download"))
         except AppError as error:
             if error.code == "attachment_access_forbidden":

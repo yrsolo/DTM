@@ -11,6 +11,7 @@ from src.app.context import AppContext
 from src.commands.model import Command, RequestedBy
 from src.entrypoints.http.dto import to_gateway_response
 from src.entrypoints.http.runtime_execution import RuntimeExecutionRequest
+from src.platform.runtime.command_runtime import get_command_runtime
 from src.entrypoints.runtime.runtime_shell import RuntimeShell
 from src.entrypoints.triggers.trigger_plan import planned_trigger_commands
 
@@ -21,9 +22,8 @@ class TriggerShell:
         self._runtime_shell = runtime_shell
 
     def _enqueue_trigger_command(self, *, trigger_mode: str) -> dict[str, Any] | None:
-        producer = self._ctx.deps.get("command_queue_producer")
-        status_store = self._ctx.deps.get("job_status_store")
-        if producer is None or status_store is None:
+        command_runtime = get_command_runtime(self._ctx)
+        if not command_runtime.can_enqueue():
             return None
         mode = str(trigger_mode or "").strip().lower()
         planned = planned_trigger_commands(mode)
@@ -38,8 +38,7 @@ class TriggerShell:
                 requested_by=RequestedBy(source="trigger"),
                 payload=dict(payload),
             )
-            producer.send(cmd)
-            status_store.put_queued(cmd)
+            command_runtime.enqueue(cmd)
             commands.append(
                 {
                     "job_id": cmd.job_id,

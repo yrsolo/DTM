@@ -27,15 +27,16 @@ from src.observability.bottlenecks import (
     resolve_bottleneck_metrics_level,
 )
 from src.observability.buffered_metrics import metrics_sink_name, remote_metrics_enabled
+from src.platform.runtime.command_runtime import get_command_runtime
 from src.worker.model import JobStatusRecord
 
 
-build_snapshot_engine = _get_snapshot_query_capability
+get_snapshot_query_capability = _get_snapshot_query_capability
 get_attachment_mime_types = get_supported_attachment_mime_types
 
 
 def get_prep_snapshot(ctx):
-    engine = build_snapshot_engine(ctx)
+    engine = get_snapshot_query_capability(ctx)
     getter = getattr(engine, "get_prep_snapshot", None)
     if callable(getter):
         return getter()
@@ -46,7 +47,7 @@ def get_prep_snapshot(ctx):
 
 
 def get_raw_snapshot(ctx):
-    engine = build_snapshot_engine(ctx)
+    engine = get_snapshot_query_capability(ctx)
     getter = getattr(engine, "get_raw_snapshot", None)
     if callable(getter):
         return getter()
@@ -654,7 +655,7 @@ class InfoHandler:
         storage = self._storage_stats(str(snap_cfg.bucket), root_prefix)
         queue_url = str(queue_cfg.prod_queue_url if env_name == "prod" else queue_cfg.test_queue_url).strip()
         queue_name = queue_url.rstrip("/").rsplit("/", 1)[-1] if queue_url else ""
-        status_store = self._ctx.deps.get("job_status_store")
+        status_store = get_command_runtime(self._ctx).status_store
         jobs_payload = {
             "recent": [],
             "failedRecent": [],

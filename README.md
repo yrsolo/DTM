@@ -29,11 +29,21 @@ It sits on top of familiar tools, keeps reads fast and predictable, and pushes e
 - [Документация по проекту](docs/README.md)
 - [Быстрый обзор продукта](docs/product/README.md)
 - [Архитектура и устройство runtime](docs/architecture/README.md)
-- [Master text для modular-monolith refactor wave](docs/architecture/runtime/modular-monolith-v2.md)
+- [Active architecture canon](docs/architecture/module-first-recovery/README.md)
 - [Интеграции и внешние контуры](docs/integrations/README.md)
 - [Эксплуатация и наблюдаемость](docs/operations/README.md)
 - [Справочные схемы и контракты](docs/reference/README.md)
 - [Текущее execution-tracking пространство](work/README.md)
+
+## Fast reading path
+
+If you want the cleanest first pass through the repo:
+
+1. [docs/product/overview.md](docs/product/overview.md)
+2. [docs/architecture/module-first-recovery/README.md](docs/architecture/module-first-recovery/README.md)
+3. [docs/integrations/attachments/frontend-card-publication.md](docs/integrations/attachments/frontend-card-publication.md)
+4. [index.py](index.py)
+5. [src/entrypoint/handler.py](src/entrypoint/handler.py)
 
 ## Project posture
 

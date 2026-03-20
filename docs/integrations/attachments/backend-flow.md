@@ -14,7 +14,7 @@ The canonical upload flow is:
 2. Upload the binary directly to Object Storage using the returned presigned URL.
 3. Finalize the uploaded object; backend verifies object existence, size, and mime.
 4. Finalize enqueues metadata attachment through the command queue.
-5. Worker writes canonical attachment metadata into the extra snapshot, rebuilds prep, and best-effort invalidates exact default frontend response cache entries.
+5. Worker writes canonical attachment metadata into the extra snapshot, rebuilds the primary task-list read-model, and best-effort invalidates exact default frontend response cache entries.
 
 ## HTTP/admin intake
 
@@ -22,7 +22,7 @@ Upload-contract request:
 - `POST /ops/admin/task-attachments/request-upload`
 - `POST /test/ops/admin/task-attachments/request-upload`
 
-Transitional wrapper still accepted:
+Legacy ingress alias still accepted:
 - `POST /admin/attachments/request-upload`
 
 Required request body:
@@ -127,7 +127,7 @@ Optional request body:
 - `attachment_id`
 - `preview`
 
-This compatibility endpoint only enqueues command `attach_task_file`; canonical callers should use `finalize`.
+This legacy enqueue endpoint only enqueues command `attach_task_file`; canonical callers should use `finalize`.
 
 Hidden cleanup enqueue:
 - `POST /admin/commands/cleanup-task-attachments`
@@ -249,7 +249,7 @@ Security and visibility rules:
 - masked contour hides attachments entirely
 - read access requires trusted ingress + authenticated + `full` + `approved`
 - storage keys are intentionally not exposed through the frontend payload
-- successful attach/delete mutation also clears exact default frontend response cache variants (`api|bff` x `masked|full`) so the next default frontend hit is rebuilt from fresh prep
+- successful attach/delete mutation also clears exact default frontend response cache variants (`api|bff` x `masked|full`) so the next default frontend hit is rebuilt from the fresh primary task-list payload
 
 ## Lifecycle and cleanup policy
 
@@ -391,20 +391,20 @@ Contour note:
 
 Active code pointers:
 - `src/entrypoints/http/admin_task_attachments_handler.py`
-- `src/entrypoints/http/task_attachment_read_handler.py`
-- `src/jobs/attach_task_file_job.py`
-- `src/jobs/delete_task_attachment_job.py`
-- `src/services/attachments/*`
-- `src/snapshot_engine/engine.py`
-- `src/snapshot_engine/frontend_v2_payload_builder.py`
+- `src/contexts/access_api/internal/task_attachment_read_handler.py`
+- `src/contexts/attachments/internal/job_runners.py`
+- `src/contexts/attachments/internal/preview_job.py`
+- `src/contexts/attachments/contracts/*`
+- `src/contexts/snapshot/internal/engine/engine.py`
+- `src/contexts/snapshot/internal/engine/frontend_v2_payload_builder.py`
 
 Tests:
 - `tests/api/test_command_queue_foundation.py`
 - `tests/api/test_task_attachment_read_handler.py`
-- `tests/jobs/test_attach_task_file_job.py`
-- `tests/jobs/test_delete_task_attachment_job.py`
-- `tests/snapshot_engine/test_engine_attach_metadata.py`
-- `tests/snapshot_engine/test_query_engine.py`
+- `tests/contexts/attachments/test_attach_task_file_job.py`
+- `tests/contexts/attachments/test_delete_task_attachment_job.py`
+- `tests/contexts/snapshot/test_engine_attach_metadata.py`
+- `tests/contexts/snapshot/test_query_engine.py`
 
 ## Guardrails
 

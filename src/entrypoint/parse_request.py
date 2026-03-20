@@ -41,8 +41,8 @@ def _trigger_id(event: Any) -> str:
 def parse_request(
     event: Any,
     *,
-    triggers: dict[str, str] | None = None,
-    telegram_webhook_path: str = "/telegram",
+    get_trigger_modes=None,
+    get_telegram_webhook_path=None,
 ) -> ParsedRequest:
     """Classify the incoming event into an explicit top-level mode."""
 
@@ -66,6 +66,11 @@ def parse_request(
     if is_http_event and isinstance(event, dict):
         path = normalize_path(http_path(event))
         method = http_method(event)
+        telegram_webhook_path = (
+            get_telegram_webhook_path()
+            if callable(get_telegram_webhook_path)
+            else "/telegram"
+        )
         telegram_path = normalize_path(str(telegram_webhook_path or "").strip() or "/telegram")
         mode = Mode.TELEGRAM_WEBHOOK if path in {telegram_path, "/telegram/webhook"} else Mode.HTTP_ACCESS_API
         return ParsedRequest(
@@ -77,7 +82,7 @@ def parse_request(
             raw_event_hints={"event_type": "http"},
         )
 
-    trigger_lookup = dict(triggers or {})
+    trigger_lookup = dict(get_trigger_modes() or {}) if callable(get_trigger_modes) else {}
     trigger_id = _trigger_id(event)
     trigger_mode = str(trigger_lookup.get(trigger_id, "")).strip().lower()
     if trigger_mode == "timer":

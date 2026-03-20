@@ -7,6 +7,7 @@ from typing import Any
 
 from src.app.context import AppContext
 from src.commands.yandex_mq import queue_messages_from_event
+from src.platform.runtime.command_runtime import get_command_runtime
 
 
 class WorkerShell:
@@ -14,7 +15,7 @@ class WorkerShell:
         self._ctx = ctx
 
     async def handle_queue_event(self, event: Any) -> dict[str, Any]:
-        worker = self._ctx.deps.get("command_worker")
+        worker = get_command_runtime(self._ctx).get_worker()
         if worker is None:
             return {
                 "statusCode": 503,

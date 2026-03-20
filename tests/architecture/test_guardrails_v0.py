@@ -124,7 +124,7 @@ class GuardrailsV0TestCase(unittest.TestCase):
             "import src.adapters",
             "from src.telegram",
             "from src.notify",
-            "from src.snapshot_engine",
+            "from src.contexts.snapshot.internal.engine",
         ]
         offenders: list[str] = []
         for file_path in _python_files([ROOT / "src" / "entrypoint"]):
@@ -132,6 +132,13 @@ class GuardrailsV0TestCase(unittest.TestCase):
             if any(marker in content for marker in heavy_markers):
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
+
+    def test_index_does_not_export_bootstrap_mutation_seams(self) -> None:
+        file_path = ROOT / "index.py"
+        content = file_path.read_text(encoding="utf-8")
+        self.assertNotIn("APP_DEPS", content)
+        self.assertNotIn("APP_TRIGGERS", content)
+        self.assertNotIn("def _get_app_context", content)
 
     def test_active_entrypoints_do_not_import_app_bootstrap_directly(self) -> None:
         offenders: list[str] = []
@@ -179,6 +186,9 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 "src.contexts.snapshot.public",
                 "src.contexts.snapshot.contracts",
             },
+            "snapshot": {
+                "src.contexts.attachments.contracts",
+            },
             "telegram_interaction": {
                 "src.contexts.snapshot.public",
                 "src.contexts.snapshot.contracts",
@@ -220,16 +230,15 @@ class GuardrailsV0TestCase(unittest.TestCase):
         ]
         for file_path in _python_files(target_paths):
             content = file_path.read_text(encoding="utf-8")
-            if "from src.snapshot_engine" in content or "import src.snapshot_engine" in content:
+            if "from src.contexts.snapshot.internal.engine" in content or "import src.contexts.snapshot.internal.engine" in content:
                 offenders.append(str(file_path.relative_to(ROOT)))
-            if "from src.snapshot_engine.model" in content or "import src.snapshot_engine.model" in content:
+            if "from src.contexts.snapshot.internal.engine.model" in content or "import src.contexts.snapshot.internal.engine.model" in content:
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
     def test_snapshot_engine_imports_stay_inside_snapshot_boundary(self) -> None:
         offenders: list[str] = []
         allowed_roots = {
-            ROOT / "src" / "snapshot_engine",
             ROOT / "src" / "contexts" / "snapshot",
         }
         for file_path in _python_files([ROOT / "src"]):
@@ -237,11 +246,16 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 continue
             content = file_path.read_text(encoding="utf-8")
             if (
-                "from src.snapshot_engine" in content
-                or "import src.snapshot_engine" in content
+                "from src.contexts.snapshot.internal.engine" in content
+                or "import src.contexts.snapshot.internal.engine" in content
             ):
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
+
+    def test_removed_snapshot_engine_root_does_not_exist(self) -> None:
+        path = ROOT / "src" / "snapshot_engine"
+        python_files = sorted(path.rglob("*.py")) if path.exists() else []
+        self.assertEqual(python_files, [])
 
     def test_render_notify_adapters_import_snapshot_only_through_context_surface(self) -> None:
         offenders: list[str] = []
@@ -258,7 +272,7 @@ class GuardrailsV0TestCase(unittest.TestCase):
         }
         for file_path in _python_files(target_paths):
             content = file_path.read_text(encoding="utf-8")
-            if "src.snapshot_engine" in content:
+            if "src.contexts.snapshot.internal.engine" in content:
                 offenders.append(str(file_path.relative_to(ROOT)))
                 continue
             for line in content.splitlines():
@@ -274,6 +288,64 @@ class GuardrailsV0TestCase(unittest.TestCase):
         content = file_path.read_text(encoding="utf-8")
         self.assertNotIn("from src.jobs", content)
         self.assertNotIn("import src.jobs", content)
+
+    def test_active_paths_use_command_runtime_instead_of_queue_dep_keys(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "entrypoint",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "contexts",
+        ]
+        forbidden_markers = (
+            'deps.get("command_queue_producer"',
+            "deps.get('command_queue_producer'",
+            'deps.get("job_status_store"',
+            "deps.get('job_status_store'",
+            'deps.get("command_worker"',
+            "deps.get('command_worker'",
+        )
+        for file_path in _python_files(target_paths):
+            content = file_path.read_text(encoding="utf-8")
+            if any(marker in content for marker in forbidden_markers):
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_app_bootstrap_does_not_build_attachment_converter_directly(self) -> None:
+        file_path = ROOT / "src" / "app" / "bootstrap.py"
+        content = file_path.read_text(encoding="utf-8")
+        self.assertNotIn("from src.infra.doc_preview_converter import DocPreviewConverter", content)
+        self.assertNotIn("DocPreviewConverter(", content)
+
+    def test_active_module_first_paths_do_not_import_jobs_directly(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "entrypoint",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "platform",
+            ROOT / "src" / "contexts",
+        ]
+        for file_path in _python_files(target_paths):
+            content = file_path.read_text(encoding="utf-8")
+            if "from src.jobs" in content or "import src.jobs" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_removed_jobs_root_does_not_exist(self) -> None:
+        path = ROOT / "src" / "jobs"
+        python_files = sorted(path.rglob("*.py")) if path.exists() else []
+        self.assertEqual(python_files, [])
+
+    def test_removed_historical_test_roots_do_not_exist(self) -> None:
+        for relative in [
+            "tests/jobs",
+            "tests/snapshot_engine",
+            "tests/notify",
+            "tests/render",
+            "tests/telegram",
+        ]:
+            path = ROOT / relative
+            python_files = sorted(path.rglob("*.py")) if path.exists() else []
+            self.assertEqual(python_files, [], msg=relative)
 
     def test_http_entrypoints_do_not_import_attachments_services_directly(self) -> None:
         offenders: list[str] = []
@@ -373,8 +445,35 @@ class GuardrailsV0TestCase(unittest.TestCase):
             ROOT / "src" / "entrypoints" / "http" / "people_snapshot_handler.py",
             ROOT / "src" / "entrypoints" / "http" / "task_attachment_read_handler.py",
             ROOT / "src" / "entrypoints" / "http" / "frontend_response_cache.py",
+            ROOT / "src" / "entrypoints" / "http" / "group_query_handler.py",
         ]
         offenders = [str(path.relative_to(ROOT)) for path in removed_paths if path.exists()]
+        self.assertEqual(offenders, [])
+
+    def test_active_runtime_docs_do_not_point_to_old_canons_as_live_guidance(self) -> None:
+        offenders: list[str] = []
+        for file_path in _python_files([ROOT / "docs" / "architecture" / "runtime"]):
+            content = file_path.read_text(encoding="utf-8")
+            if "modular-monolith-v2.md" not in content:
+                continue
+            if "historical predecessor" in content or "historical" in content:
+                continue
+            offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_active_runtime_docs_do_not_use_wrapper_language_for_canonical_paths(self) -> None:
+        offenders: list[str] = []
+        target_files = [
+            ROOT / "docs" / "architecture" / "runtime" / "module-map.md",
+            ROOT / "docs" / "architecture" / "runtime" / "entrypoints.md",
+            ROOT / "docs" / "architecture" / "runtime" / "command-runtime.md",
+            ROOT / "docs" / "integrations" / "attachments" / "backend-flow.md",
+        ]
+        forbidden_markers = ("transitional wrapper", "compatibility wrapper", "legacy wrapper")
+        for file_path in target_files:
+            content = file_path.read_text(encoding="utf-8")
+            if any(marker in content for marker in forbidden_markers):
+                offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
     def test_removed_technical_compatibility_roots_do_not_exist(self) -> None:

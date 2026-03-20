@@ -1,4 +1,4 @@
-# Group Query Unification Skeleton
+﻿# Group Query Unification Skeleton
 
 ## Purpose
 
@@ -11,7 +11,7 @@ Source of truth for future migration of Telegram group query to the same task se
 - selection logic duplicates reminder-like logic instead of sharing one use-case
 
 Current touchpoint:
-- [src/entrypoints/http/group_query_handler.py](../../../src/entrypoints/http/group_query_handler.py)
+- [src/contexts/telegram_interaction/internal/job_runner.py](../../../src/contexts/telegram_interaction/internal/job_runner.py)
 
 ## Goal
 
@@ -47,7 +47,7 @@ This async decision must be explicit in the future CAM, not assumed here.
 
 ## Current Touchpoints
 
-- [src/entrypoints/http/group_query_handler.py](../../../src/entrypoints/http/group_query_handler.py)
+- [src/contexts/telegram_interaction/internal/job_runner.py](../../../src/contexts/telegram_interaction/internal/job_runner.py)
 - [src/notify/usecase.py](../../../src/notify/usecase.py)
 - [src/adapters/telegram.py](../../../src/adapters/telegram.py)
 - [src/snapshot_engine/engine.py](../../../src/snapshot_engine/engine.py)
@@ -68,3 +68,4 @@ This async decision must be explicit in the future CAM, not assumed here.
 - No direct business filtering in HTTP handler
 - No second selection engine just for group query
 - No silent drift from reminder semantics
+
