@@ -365,6 +365,12 @@ class GuardrailsV0TestCase(unittest.TestCase):
         self.assertNotIn("from src.entrypoints.http.people_snapshot_handler", content)
         self.assertNotIn("from src.entrypoints.http.task_attachment_read_handler", content)
 
+    def test_access_api_internal_paths_do_not_import_old_frontend_cache_helper(self) -> None:
+        file_path = ROOT / "src" / "contexts" / "access_api" / "internal" / "frontend_v2_handler.py"
+        content = file_path.read_text(encoding="utf-8")
+        self.assertNotIn("from src.entrypoints.http.frontend_response_cache", content)
+        self.assertNotIn("import src.entrypoints.http.frontend_response_cache", content)
+
     def test_active_render_jobs_do_not_import_old_render_target_guard(self) -> None:
         offenders: list[str] = []
         target_paths = [

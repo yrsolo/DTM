@@ -6,8 +6,7 @@ import time
 
 from src.app.context import AppContext
 from src.contexts.snapshot.public import get_query_capability as _get_snapshot_query_capability
-from src.entrypoints.http.access_context import resolve_access_context
-from src.entrypoints.http.frontend_response_cache import (
+from src.contexts.access_api.internal.frontend_response_cache import (
     build_default_frontend_cache_query_hash,
     build_response_cache_entry,
     cached_payload_with_access,
@@ -16,6 +15,7 @@ from src.entrypoints.http.frontend_response_cache import (
     resolve_frontend_route_class,
     response_cache_entry_is_fresh,
 )
+from src.entrypoints.http.access_context import resolve_access_context
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.frontend_query_params import (
