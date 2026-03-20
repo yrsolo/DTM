@@ -27,10 +27,15 @@
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T004`
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P03-T001`
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P04-T001`
+- [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P05-T001`
+- [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P06-T001`
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P07-T001`
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P07-T002`
+- [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P08-T001`
+- [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P09-T001`
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P10-T001`
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P10-T002`
+- [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P11-T001`
 
 ## Verification
 - Command:
@@ -61,8 +66,10 @@
 - `src/snapshot_engine/*` is removed as a top-level implementation island; the read-side engine now lives under `src/contexts/snapshot/internal/engine/*`
 - compatibility-only `src/jobs/*` is removed from the active tree
 - active test layout now follows module ownership under `tests/contexts/*`; old runtime-oriented test roots no longer carry Python files
+- attachment publication, reminder ownership, access-api read ownership, and reserve Telegram posture are verified against the active code and docs, so the remaining validation phases close without additional code waves
 
 ## Notes
 - `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1` remains closed as phase-one precedent.
 - Structured delta audit is now recorded in `delta-audit.md`.
 - Active runtime and active test layout now both follow module-first ownership; remaining historical path names in `work/archive/**` are preserved only as campaign evidence.
+- `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1` is complete; further changes should open child follow-up campaigns instead of extending this umbrella wave.

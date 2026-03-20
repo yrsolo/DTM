@@ -1,10 +1,10 @@
 # Active Tasks
 
-- CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1: module-first canon is now the active roadmap; the delta audit is recorded, active runtime no longer imports `src.jobs` directly, browser read routes are composed inside `access_api`, bootstrap delegates attachment converter assembly to the owning module, queue/status/worker access is grouped under platform-owned `command_runtime`, the snapshot engine now lives under `src/contexts/snapshot/internal/engine/*`, `src/jobs/*` is removed, and active tests now follow module-first ownership under `tests/contexts/*`.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done
 
+- CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1 completed: module-first canon replaced the active recovery canon, the trust-gated delta audit drove the remaining cleanup, `src/snapshot_engine/*` moved under `src/contexts/snapshot/internal/engine/*`, `src/jobs/*` was removed, and active tests now live under `tests/contexts/*`.
 - CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1 completed: architecture-recovery canon delivered the previous recovery wave, top-level competing roots were removed, and the runtime now reads through `entrypoint -> platform/runtime -> owning context`.
 
 - CAM-2026-03-19-MODULARITY-AUDIT-V1 completed: code-verified audit now scores each context for autonomy and records the next decoupling moves.
