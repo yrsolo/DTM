@@ -8,7 +8,7 @@ from types import SimpleNamespace
 from src.app.context import AppContext
 from src.commands.model import Command, RequestedBy
 from src.jobs.group_query_reply_job import GroupQueryReplyJob
-from src.notify.usecase import next_workday
+from src.contexts.reminders.internal import next_workday
 from src.snapshot_engine.model import Milestone, PrepIndexes, PrepSnapshot, TaskSheet, TaskView
 
 

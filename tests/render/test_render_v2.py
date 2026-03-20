@@ -4,7 +4,12 @@ import unittest
 from datetime import date, datetime, timezone
 from unittest.mock import patch
 
-from src.render import GoogleSheetsPlanWriter, RenderRequest, RenderUseCase, SheetTarget
+from src.contexts.rendering.internal import (
+    GoogleSheetsPlanWriter,
+    RenderRequest,
+    RenderUseCase,
+    SheetTarget,
+)
 from src.snapshot_engine.model import PrepIndexes, PrepSnapshot, TaskSheet, TaskView, Window
 
 
@@ -159,8 +164,8 @@ class RenderV2TestCase(unittest.TestCase):
         )
         fake_now = datetime(2026, 3, 6, 9, 15, tzinfo=timezone.utc)
         with (
-            patch("src.render.usecase.now_in_timezone", return_value=fake_now),
-            patch("src.render.usecase.today_in_timezone", return_value=date(2026, 3, 6)),
+            patch("src.contexts.rendering.internal.usecase.now_in_timezone", return_value=fake_now),
+            patch("src.contexts.rendering.internal.usecase.today_in_timezone", return_value=date(2026, 3, 6)),
         ):
             plan = RenderUseCase(_FakeEngine(prep), timezone_name="Europe/Moscow").build_plan(
                 RenderRequest(window=None, statuses=["work"])

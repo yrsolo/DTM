@@ -164,6 +164,11 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
+    def test_platform_bootstrap_does_not_import_index_dispatcher(self) -> None:
+        file_path = ROOT / "src" / "platform" / "bootstrap.py"
+        content = file_path.read_text(encoding="utf-8")
+        self.assertNotIn("src.entrypoints.index_dispatcher", content)
+
     def test_contexts_do_not_reach_into_other_contexts(self) -> None:
         offenders: list[str] = []
         allowed_cross_imports = {

@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from src.render.job import RenderJob
-from src.render.model import RenderApplyResult, RenderPlan, RenderRequest
+from src.contexts.rendering.internal import RenderApplyResult, RenderJob, RenderPlan, RenderRequest
 
 
 class _Usecase:

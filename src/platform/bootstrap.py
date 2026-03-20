@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from src.app.bootstrap import build_app_context
 from src.entrypoints.http.http_shell import HttpShell
-from src.entrypoints.index_dispatcher import IndexDispatcher
 from src.entrypoints.queue.worker_shell import WorkerShell
 from src.entrypoints.runtime.runtime_shell import RuntimeShell
 from src.entrypoints.triggers.trigger_shell import TriggerShell
@@ -54,7 +53,6 @@ class LazyMapping:
 
 
 _APP_CONTEXT = None
-_APP_DISPATCHER = None
 _RUNTIME_SHELL = None
 _HTTP_SHELL = None
 _WORKER_SHELL = None
@@ -80,16 +78,6 @@ def get_deps():
     """Expose mutable deps through the lazy app context."""
 
     return get_app_context().deps
-
-
-def get_dispatcher() -> IndexDispatcher:
-    """Build the transitional dispatcher lazily inside the entry boundary."""
-
-    global _APP_DISPATCHER
-    if _APP_DISPATCHER is None:
-        ctx = get_app_context()
-        _APP_DISPATCHER = IndexDispatcher(ctx, triggers=APP_TRIGGERS)
-    return _APP_DISPATCHER
 
 
 def get_runtime_shell() -> RuntimeShell:
