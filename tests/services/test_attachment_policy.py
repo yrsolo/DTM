@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from src.services.attachments.policy import build_attachment_capabilities, infer_attachment_kind
+from src.contexts.attachments.contracts import build_attachment_capabilities, infer_attachment_kind
 
 
 class AttachmentPolicyTestCase(unittest.TestCase):

@@ -292,6 +292,19 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
+    def test_active_attachment_paths_do_not_import_old_attachments_cluster(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "jobs" / "attach_task_file_job.py",
+            ROOT / "src" / "snapshot_engine" / "engine.py",
+            ROOT / "src" / "snapshot_engine" / "frontend_v2_payload_builder.py",
+        ]
+        for file_path in _python_files(target_paths):
+            content = file_path.read_text(encoding="utf-8")
+            if "src.services.attachments" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
     def test_jobs_do_not_import_http_frontend_cache_helpers(self) -> None:
         offenders: list[str] = []
         for file_path in _python_files([ROOT / "src" / "jobs"]):

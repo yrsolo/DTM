@@ -72,7 +72,7 @@ class _FakeResolver:
         self._store = store
 
     def resolve(self, *, attachment_id, access, download):  # noqa: ANN001
-        from src.services.attachments.read_resolver import AttachmentReadResolver
+        from src.contexts.attachments.internal import AttachmentReadResolver
 
         return AttachmentReadResolver(
             metadata_store=self._store,

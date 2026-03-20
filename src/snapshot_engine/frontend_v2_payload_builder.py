@@ -6,8 +6,8 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from typing import Any
 
+from src.contexts.attachments.contracts import attachment_projection_visible
 from src.snapshot_engine.model import Milestone, PrepSnapshot, TaskSheet, TaskView
-from src.services.attachments.policy import attachment_projection_visible
 
 
 def _to_str(value: Any) -> str:
