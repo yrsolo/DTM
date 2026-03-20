@@ -24,6 +24,10 @@ Bottom line:
 - it now reads like a serious and coherent module-first monolith
 - but it does not yet read like a fully curated â€œshowcase-gradeâ€ codebase
 
+Progress note:
+- the beauty backlog now executes through [beauty-wave-method.md](beauty-wave-method.md)
+- the first active curation wave is `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1`
+
 ## Evaluation Rubric
 
 Use this fixed scale:
@@ -151,6 +155,26 @@ Target ideal:
 Classification:
 - `aesthetic/readability problem`
 
+## Beauty Work Status
+
+Use these statuses when executing future waves:
+
+- `must fix`: directly harms top-path readability, ownership understanding, or finished-system feel
+- `nice to have`: visible and worth improving, but not blocking a clean reading path
+- `accepted imperfection`: real issue, but intentionally not worth the churn right now
+
+Current default classification:
+
+| Theme | Status | Why |
+|---|---|---|
+| top-path elegance | `must fix` | the first impression still carries small ceremonial overhead in `index.py` |
+| active naming cleanup | `must fix` | migration-era and builder-shaped language is still visible in active surfaces |
+| docs voice unification | `must fix` | active docs should read like finished system docs before external review |
+| bootstrap readability | `nice to have` | important for elegance, but no longer hides ownership in a serious way |
+| active/history separation | `nice to have` | still worth cleaning, but the active contour is already mostly safe |
+| module polish | `nice to have` | the modules are already structurally honest |
+| showcase polish | `accepted imperfection` until earlier waves close | should happen only after the higher-signal smells are gone |
+
 ## Sequential Improvement Waves
 
 ### Wave 1. Top-Path Elegance
@@ -160,6 +184,7 @@ Classification:
 - acceptance criteria: top path reads cleanly through `index.py -> handler -> runtime shell -> owning module` without extra explanatory baggage
 - risk level: low
 - safe independently: yes
+- current execution status: `in progress` via `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1`
 
 ### Wave 2. Naming Cleanup
 - goal: make active names describe present ownership rather than extraction history or internal plumbing

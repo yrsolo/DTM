@@ -1,10 +1,11 @@
 # Active Tasks
 
-- CAM-2026-03-21-REPO-BEAUTY-AUDIT-V1: beauty audit published under the module-first canon; use its sequential backlog as the source of truth for future repo-curation waves.
+- CAM-2026-03-21-TOP-PATH-ELEGANCE-V1: remove the remaining top-path ceremony around `index.py` so the first entrypoint path reads cleanly in 3-4 jumps with explicit kill criteria.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done
 
+- CAM-2026-03-21-REPO-BEAUTY-AUDIT-V1 completed: beauty audit published under the module-first canon, a decision-complete sequential backlog was recorded, and the smell-driven execution method for future curation waves is now documented.
 - Pre-audit idealization wave completed: active runtime docs now point only to the module-first canon, stale migration-era wording was removed from active narrative, dead `group_query_handler.py` was deleted, and active capability aliases now use capability-true names.
 - CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1 completed: module-first canon replaced the active recovery canon, the trust-gated delta audit drove the remaining cleanup, `src/snapshot_engine/*` moved under `src/contexts/snapshot/internal/engine/*`, `src/jobs/*` was removed, and active tests now live under `tests/contexts/*`.
 - CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1 completed: architecture-recovery canon delivered the previous recovery wave, top-level competing roots were removed, and the runtime now reads through `entrypoint -> platform/runtime -> owning context`.
@@ -28,4 +29,5 @@
 - Working plans and evidence must live only in `work/roadmap/campaigns/<CAMPAIGN>/`.
 - Latest bottleneck follow-up remains historical context only; current live execution focus is the blocked `prod` smoke for the attachment contour.
 - Future architecture child campaigns must start from `docs/architecture/module-first-recovery/README.md` and the new umbrella campaign trust gate.
+- Future beauty child campaigns must execute through `docs/architecture/module-first-recovery/beauty-wave-method.md` and close one smell at a time.
 - Modular-monolith umbrella campaign is complete and superseded as the primary canon.

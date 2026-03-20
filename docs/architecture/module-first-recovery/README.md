@@ -19,6 +19,7 @@ It supersedes `docs/architecture/recovery/README.md` as the active architecture 
 - [migration-rules.md](migration-rules.md)
 - [reserve-capabilities.md](reserve-capabilities.md)
 - [delta-audit-template.md](delta-audit-template.md)
+- [beauty-wave-method.md](beauty-wave-method.md)
 - [../../integrations/attachments/frontend-card-publication.md](../../integrations/attachments/frontend-card-publication.md)
 
 ## Program control

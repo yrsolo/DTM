@@ -75,5 +75,6 @@
   - recovery delta audit asked â€œwhat still violates the canon?â€
   - beauty audit asks â€œwhat still makes the repo feel unfinished, noisy, or less transparent than it could be?â€
 - The output is a sequential cleanup backlog for curation waves, not another extraction roadmap.
+- Follow-up execution now starts through `CAM-2026-03-21-TOP-PATH-ELEGANCE-V1` and the shared method in `docs/architecture/module-first-recovery/beauty-wave-method.md`.
 
 
