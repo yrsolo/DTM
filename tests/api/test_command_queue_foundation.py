@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import asyncio
 import json
@@ -286,8 +286,8 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
     def test_admin_queue_handler_returns_upload_contract_for_existing_task(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
 
-        original_build_snapshot_engine = module.build_snapshot_engine
-        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        original_get_snapshot_capability = module.get_snapshot_capability
+        module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
         try:
             handler = AdminTaskAttachmentsHandler(_FakeCtx())
             with patch.dict(sys.modules, {"boto3": _FakeBoto3Module()}):
@@ -313,7 +313,7 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
                     )
                 )
         finally:
-            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+            module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 200)
         payload = json.loads(response.body)
@@ -334,11 +334,11 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
     def test_admin_task_attachments_handler_finalizes_and_enqueues_attach_command(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
 
-        original_build_snapshot_engine = module.build_snapshot_engine
-        original_build_finalize_service = module.build_attachment_finalize_service
+        original_get_snapshot_capability = module.get_snapshot_capability
+        original_build_finalize_service = module.get_attachment_finalize_capability
         engine = _FakeSnapshotEngine()
-        module.build_snapshot_engine = lambda _ctx: engine  # type: ignore[assignment]
-        module.build_attachment_finalize_service = lambda _ctx: _FakeAttachmentFinalizeService()  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: engine  # type: ignore[assignment]
+        module.get_attachment_finalize_capability = lambda _ctx: _FakeAttachmentFinalizeService()  # type: ignore[assignment]
         producer = _FakeProducer()
         status_store = _FakeStatusStore()
         try:
@@ -372,8 +372,8 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
                     )
                 )
         finally:
-            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
-            module.build_attachment_finalize_service = original_build_finalize_service  # type: ignore[assignment]
+            module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
+            module.get_attachment_finalize_capability = original_build_finalize_service  # type: ignore[assignment]
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 202)
         payload = json.loads(response.body)
@@ -419,8 +419,8 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
     def test_admin_task_attachments_handler_request_upload_returns_task_not_found_details(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
 
-        original_build_snapshot_engine = module.build_snapshot_engine
-        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine(tasks_by_id={})  # type: ignore[assignment]
+        original_get_snapshot_capability = module.get_snapshot_capability
+        module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine(tasks_by_id={})  # type: ignore[assignment]
         try:
             handler = AdminTaskAttachmentsHandler(_FakeCtx())
             response = handler.handle(
@@ -445,7 +445,7 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
                 )
             )
         finally:
-            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+            module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 404)
         payload = json.loads(response.body)
@@ -481,8 +481,8 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
     def test_admin_queue_handler_returns_upload_contract_for_pdf(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
 
-        original_build_snapshot_engine = module.build_snapshot_engine
-        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        original_get_snapshot_capability = module.get_snapshot_capability
+        module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
         try:
             handler = AdminTaskAttachmentsHandler(_FakeCtx())
             with patch.dict(sys.modules, {"boto3": _FakeBoto3Module()}):
@@ -508,7 +508,7 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
                     )
                 )
         finally:
-            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+            module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 200)
         payload = json.loads(response.body)
@@ -519,8 +519,8 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
     def test_admin_queue_handler_returns_upload_contract_for_legacy_doc(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
 
-        original_build_snapshot_engine = module.build_snapshot_engine
-        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        original_get_snapshot_capability = module.get_snapshot_capability
+        module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
         try:
             handler = AdminTaskAttachmentsHandler(_FakeCtx())
             with patch.dict(sys.modules, {"boto3": _FakeBoto3Module()}):
@@ -546,7 +546,7 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
                     )
                 )
         finally:
-            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+            module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 200)
         payload = json.loads(response.body)
@@ -641,3 +641,5 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+

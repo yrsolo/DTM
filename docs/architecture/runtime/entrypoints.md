@@ -9,7 +9,7 @@ This document describes only the active entrypoint/runtime boundary.
 Responsibilities:
 - accept event/context
 - lazily resolve runtime context
-- delegate to dispatcher
+- delegate to the canonical entrypoint handler
 - avoid business logic and import-time side effects
 
 `index.py` must stay:
@@ -41,7 +41,6 @@ Current HTTP handlers:
 - `FrontendV2Handler`
 - `PeopleSnapshotHandler`
 - `TelegramWebhookHandler`
-- `GroupQueryHandler`
 - `AdminTaskAttachmentsHandler`
 - `TaskAttachmentReadHandler`
 - `AdminQueueHandler`
@@ -57,7 +56,7 @@ Admin attachment note:
   - `GET /ops/api/task-attachments/{attachment_id}/view`
   - `GET /ops/api/task-attachments/{attachment_id}/download`
 - binary upload goes directly to Object Storage; metadata attach/delete goes through the queue
-- legacy paths remain only as transitional wrappers:
+- legacy paths remain supported ingress aliases:
   - `POST /admin/attachments/request-upload`
   - `POST /admin/commands/attach-task-file`
 
@@ -103,7 +102,7 @@ Local/manual runtime helpers live under:
 - `src/entrypoints/runtime/local_runtime.py`
 - `src/entrypoints/runtime/runtime_shell.py`
 
-There is still a transitional runtime adapter involved in that path, but it is not the conceptual center of the current architecture.
+Local/manual runtime uses the same canonical runtime shell family and is not a separate architectural center.
 
 ## Archive pointer
 

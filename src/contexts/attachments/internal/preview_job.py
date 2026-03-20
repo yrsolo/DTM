@@ -12,8 +12,8 @@ from src.contexts.attachments.public import (
 from src.platform.runtime.frontend_cache_invalidation import invalidate_default_frontend_cache_store
 from src.services.errors import AppError, TransientError, UserError
 
-build_snapshot_engine = get_attachment_snapshot_capability
-build_attachment_storage = get_attachment_storage
+get_snapshot_capability = get_attachment_snapshot_capability
+get_attachment_storage_capability = get_attachment_storage
 
 
 class GenerateAttachmentPreviewJob:
@@ -36,7 +36,7 @@ class GenerateAttachmentPreviewJob:
         try:
             task_id = self._require_text(payload, "task_id")
             attachment_id = self._require_text(payload, "attachment_id")
-            engine = build_snapshot_engine(self._ctx)
+            engine = get_snapshot_capability(self._ctx)
             metadata_store = engine.get_attachment_metadata_store()
             lookup = metadata_store.get_by_attachment_id(attachment_id)
             if lookup is None or str(lookup[0]) != task_id:
@@ -85,7 +85,7 @@ class GenerateAttachmentPreviewJob:
                     "retryable": False,
                 }
             metadata_store.mark_preview_pending(task_id=task_id, attachment_id=attachment_id)
-            storage = build_attachment_storage(self._ctx)
+            storage = get_attachment_storage_capability(self._ctx)
             env_name = str(self._ctx.cfg.runtime.runtime.env_default or "").strip().lower() or "dev"
             preview_key = self._preview_key(env_name, task_id, attachment_id)
             source_url = storage.generate_read_url(

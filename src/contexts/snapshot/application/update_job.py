@@ -14,7 +14,7 @@ from src.observability.buffered_metrics import managed_metrics_scope
 from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
 
 
-build_snapshot_engine = _get_snapshot_update_capability
+get_snapshot_capability = _get_snapshot_update_capability
 
 
 class UpdateSnapshotJob:
@@ -40,7 +40,7 @@ class UpdateSnapshotJob:
                 "dtm.snapshot.update_duration_ms",
                 {"env": env_name, "module": "snapshot", "operation": "update", "result": "finished"},
             ):
-                result = build_snapshot_engine(self._ctx).update(
+                result = get_snapshot_capability(self._ctx).update(
                     task_source=task_source,
                     force=bool(cmd.payload.get("force_refresh", False)),
                 )
@@ -106,4 +106,4 @@ class UpdateSnapshotJob:
         }
 
 
-__all__ = ["UpdateSnapshotJob", "build_snapshot_engine"]
+__all__ = ["UpdateSnapshotJob", "get_snapshot_capability"]

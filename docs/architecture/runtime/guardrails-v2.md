@@ -3,7 +3,7 @@
 This document defines the first minimal architecture guardrails required early in the modular-monolith refactor wave.
 
 Governing source:
-- [modular-monolith-v2.md](modular-monolith-v2.md)
+- [../module-first-recovery/README.md](../module-first-recovery/README.md)
 
 ## Early mandatory rules
 

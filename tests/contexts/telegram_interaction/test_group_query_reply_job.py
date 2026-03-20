@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import asyncio
 import unittest
@@ -44,8 +44,8 @@ def _task(task_id: str, owner: str, milestone_day: date, *, title: str) -> TaskV
             raw_timing="raw",
             status="work",
             history="history",
-            timing={milestone_day.isoformat(): ["финал"]},
-            milestones=[Milestone(type="финал", planned=milestone_day)],
+            timing={milestone_day.isoformat(): ["Ñ„Ð¸Ð½Ð°Ð»"]},
+            milestones=[Milestone(type="Ñ„Ð¸Ð½Ð°Ð»", planned=milestone_day)],
         ),
         extra=None,
     )
@@ -55,7 +55,7 @@ class GroupQueryReplyJobTestCase(unittest.TestCase):
     def test_group_query_reply_job_sends_selected_tasks(self) -> None:
         import src.contexts.telegram_interaction.internal.job_runner as module
 
-        orig_build_snapshot_engine = module.build_snapshot_engine
+        orig_get_snapshot_capability = module.get_snapshot_capability
         orig_build_sender = module._build_group_query_sender
         try:
             today = date.today()
@@ -64,13 +64,13 @@ class GroupQueryReplyJobTestCase(unittest.TestCase):
                 raw_source_hash="hash",
                 built_at_utc=datetime.now(timezone.utc),
                 tasks_by_id={
-                    "1": _task("1", "Иван Иванов", today, title="Сегодняшняя задача"),
-                    "2": _task("2", "Петр Петров", next_workday(today), title="Чужая задача"),
+                    "1": _task("1", "Ð˜Ð²Ð°Ð½ Ð˜Ð²Ð°Ð½Ð¾Ð²", today, title="Ð¡ÐµÐ³Ð¾Ð´Ð½ÑÑˆÐ½ÑÑ Ð·Ð°Ð´Ð°Ñ‡Ð°"),
+                    "2": _task("2", "ÐŸÐµÑ‚Ñ€ ÐŸÐµÑ‚Ñ€Ð¾Ð²", next_workday(today), title="Ð§ÑƒÐ¶Ð°Ñ Ð·Ð°Ð´Ð°Ñ‡Ð°"),
                 },
                 indexes=PrepIndexes(),
             )
             sender = _FakeSender()
-            module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine(prep)  # type: ignore[assignment]
+            module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine(prep)  # type: ignore[assignment]
             module._build_group_query_sender = lambda _ctx: sender  # type: ignore[assignment]
 
             ctx = AppContext(cfg=SimpleNamespace(), deps={"tg_bot_token": "x", "default_chat_id": "0"})
@@ -79,18 +79,19 @@ class GroupQueryReplyJobTestCase(unittest.TestCase):
                 type="group_query_reply",
                 created_at_utc=datetime.now(timezone.utc),
                 requested_by=RequestedBy(source="telegram", user_id="2", chat_id="123"),
-                payload={"chat_id": "123", "requester_name": "Иван Иванов", "action": "tasks"},
+                payload={"chat_id": "123", "requester_name": "Ð˜Ð²Ð°Ð½ Ð˜Ð²Ð°Ð½Ð¾Ð²", "action": "tasks"},
             )
 
             result = asyncio.run(GroupQueryReplyJob(ctx).run(cmd))
             self.assertEqual(result["status"], "ok")
             self.assertEqual(len(sender.sent), 1)
-            self.assertIn("Сегодняшняя задача", sender.sent[0][1])
-            self.assertNotIn("Чужая задача", sender.sent[0][1])
+            self.assertIn("Ð¡ÐµÐ³Ð¾Ð´Ð½ÑÑˆÐ½ÑÑ Ð·Ð°Ð´Ð°Ñ‡Ð°", sender.sent[0][1])
+            self.assertNotIn("Ð§ÑƒÐ¶Ð°Ñ Ð·Ð°Ð´Ð°Ñ‡Ð°", sender.sent[0][1])
         finally:
-            module.build_snapshot_engine = orig_build_snapshot_engine  # type: ignore[assignment]
+            module.get_snapshot_capability = orig_get_snapshot_capability  # type: ignore[assignment]
             module._build_group_query_sender = orig_build_sender  # type: ignore[assignment]
 
 
 if __name__ == "__main__":
     unittest.main()
+

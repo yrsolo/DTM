@@ -3,7 +3,7 @@
 This document defines target ownership for active HTTP and trigger-facing routes/surfaces during the modular-monolith refactor wave.
 
 Governing source:
-- [modular-monolith-v2.md](modular-monolith-v2.md)
+- [../module-first-recovery/README.md](../module-first-recovery/README.md)
 
 ## Route ownership
 
@@ -24,4 +24,3 @@ Governing source:
 - route ownership is context-first, not folder-first
 - entrypoint and platform may host shells, but business ownership belongs to the context listed here
 - admin/runtime diagnostics remain platform-owned until a separate explicit context is intentionally introduced
-

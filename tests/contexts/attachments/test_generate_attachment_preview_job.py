@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import unittest
 from datetime import datetime, timezone
@@ -105,10 +105,10 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
         store = _FakeMetadataStore(record)
         engine = _FakeEngine(store)
         converter = _FakeConverter()
-        original_engine = module.build_snapshot_engine
-        original_storage = module.build_attachment_storage
-        module.build_snapshot_engine = lambda _ctx: engine  # type: ignore[assignment]
-        module.build_attachment_storage = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
+        original_engine = module.get_snapshot_capability
+        original_storage = module.get_attachment_storage_capability
+        module.get_snapshot_capability = lambda _ctx: engine  # type: ignore[assignment]
+        module.get_attachment_storage_capability = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
         try:
             ctx = AppContext(
                 cfg=SimpleNamespace(runtime=SimpleNamespace(runtime=SimpleNamespace(env_default="test"))),
@@ -123,8 +123,8 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
             )
             result = GenerateAttachmentPreviewJob(ctx).run(cmd)
         finally:
-            module.build_snapshot_engine = original_engine  # type: ignore[assignment]
-            module.build_attachment_storage = original_storage  # type: ignore[assignment]
+            module.get_snapshot_capability = original_engine  # type: ignore[assignment]
+            module.get_attachment_storage_capability = original_storage  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
         self.assertEqual(store.pending_calls, [("task-1", "att-1")])
@@ -137,10 +137,10 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
         record = self._make_record()
         store = _FakeMetadataStore(record)
         engine = _FakeEngine(store)
-        original_engine = module.build_snapshot_engine
-        original_storage = module.build_attachment_storage
-        module.build_snapshot_engine = lambda _ctx: engine  # type: ignore[assignment]
-        module.build_attachment_storage = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
+        original_engine = module.get_snapshot_capability
+        original_storage = module.get_attachment_storage_capability
+        module.get_snapshot_capability = lambda _ctx: engine  # type: ignore[assignment]
+        module.get_attachment_storage_capability = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
         try:
             ctx = AppContext(
                 cfg=SimpleNamespace(runtime=SimpleNamespace(runtime=SimpleNamespace(env_default="test"))),
@@ -155,8 +155,8 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
             )
             result = GenerateAttachmentPreviewJob(ctx).run(cmd)
         finally:
-            module.build_snapshot_engine = original_engine  # type: ignore[assignment]
-            module.build_attachment_storage = original_storage  # type: ignore[assignment]
+            module.get_snapshot_capability = original_engine  # type: ignore[assignment]
+            module.get_attachment_storage_capability = original_storage  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "failed")
         self.assertEqual(len(store.failed_calls), 1)
@@ -164,3 +164,5 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+

@@ -4,6 +4,7 @@
 
 ## Done
 
+- Pre-audit idealization wave completed: active runtime docs now point only to the module-first canon, stale migration-era wording was removed from active narrative, dead `group_query_handler.py` was deleted, and active capability aliases now use capability-true names.
 - CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1 completed: module-first canon replaced the active recovery canon, the trust-gated delta audit drove the remaining cleanup, `src/snapshot_engine/*` moved under `src/contexts/snapshot/internal/engine/*`, `src/jobs/*` was removed, and active tests now live under `tests/contexts/*`.
 - CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1 completed: architecture-recovery canon delivered the previous recovery wave, top-level competing roots were removed, and the runtime now reads through `entrypoint -> platform/runtime -> owning context`.
 

@@ -4,18 +4,18 @@ This document maps the modules that matter for the active runtime contour.
 
 Governing policy:
 - [architecture-values.md](architecture-values.md)
-- [modular-monolith-v2.md](modular-monolith-v2.md)
+- [../module-first-recovery/README.md](../module-first-recovery/README.md)
 
 ## Active runtime entrypoints
 
 | Path | Role | Responsibility | State | Notes |
 |---|---|---|---|---|
 | `index.py` | Entrypoint | Thin runtime shell for cloud events | OK | Lazy bootstrap and dispatch only. |
-| `src/entrypoint/*` | Entrypoint | Target thin entrypoint layer for parsed request routing | OK | New modular-monolith intake surface. |
+| `src/entrypoint/*` | Entrypoint | Thin entrypoint layer for parsed request routing | OK | Canonical intake surface. |
 | `src/entrypoints/http/*` | Entrypoint | HTTP parsing, transport routing, and response-shell logic over context-owned handlers | OK | Browser/API transport boundary; access-api-owned handlers now live under `src/contexts/access_api/internal/*`. |
 | `src/entrypoints/queue/*` | Entrypoint | Queue-trigger transport shell | OK | Canonical worker intake boundary. |
 | `src/entrypoints/triggers/*` | Entrypoint | Scheduled-trigger intake and queue fan-out | OK | Canonical trigger boundary. |
-| `src/entrypoints/runtime/*` | Entrypoint | Explicit runtime-mode bridge for local/manual execution | OK | Includes the transitional adapter used by local/runtime shells. |
+| `src/entrypoints/runtime/*` | Entrypoint | Explicit runtime-mode bridge for local/manual execution | OK | Canonical local/runtime shell boundary. |
 
 ## Active domain and application areas
 
@@ -72,4 +72,4 @@ If a reader needs that history, current docs should point there instead of retel
 - Keep browser auth, read shaping, and masking inside `access_api`; keep `src/entrypoints/http/*` transport-only.
 - Keep refresh/render/reminder work in async jobs or explicit runtime modes.
 - Treat archive modules and docs as reference-only, not as active architecture.
-- Use `modular-monolith-v2.md` and companion ownership docs as the canonical target map for future extraction waves.
+- Use the module-first recovery canon and companion ownership docs as the canonical target map for future extraction waves.

@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import asyncio
 import unittest
@@ -100,12 +100,12 @@ class SendRemindersJobTestCase(unittest.TestCase):
     def test_morning_skips_on_saturday(self) -> None:
         import src.contexts.reminders.internal.job_runner as module
 
-        original_build_snapshot_engine = module.build_snapshot_engine
+        original_get_snapshot_capability = module.get_snapshot_capability
         original_build_job_runner = module._build_reminder_job_runner
         original_today = module._today_in_runtime_timezone
         _FakeReminderJob.last_request = None
         _FakeReminderJob.run_calls = 0
-        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
         module._build_reminder_job_runner = lambda **kwargs: _FakeReminderJob(**kwargs)  # type: ignore[assignment]
         module._today_in_runtime_timezone = lambda _ctx: date(2026, 3, 7)  # type: ignore[assignment]
         try:
@@ -121,7 +121,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
                 )
             )
         finally:
-            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+            module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
             module._build_reminder_job_runner = original_build_job_runner  # type: ignore[assignment]
             module._today_in_runtime_timezone = original_today  # type: ignore[assignment]
 
@@ -134,11 +134,11 @@ class SendRemindersJobTestCase(unittest.TestCase):
     def test_morning_skips_on_sunday(self) -> None:
         import src.contexts.reminders.internal.job_runner as module
 
-        original_build_snapshot_engine = module.build_snapshot_engine
+        original_get_snapshot_capability = module.get_snapshot_capability
         original_build_job_runner = module._build_reminder_job_runner
         original_today = module._today_in_runtime_timezone
         _FakeReminderJob.run_calls = 0
-        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
         module._build_reminder_job_runner = lambda **kwargs: _FakeReminderJob(**kwargs)  # type: ignore[assignment]
         module._today_in_runtime_timezone = lambda _ctx: date(2026, 3, 8)  # type: ignore[assignment]
         try:
@@ -154,7 +154,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
                 )
             )
         finally:
-            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+            module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
             module._build_reminder_job_runner = original_build_job_runner  # type: ignore[assignment]
             module._today_in_runtime_timezone = original_today  # type: ignore[assignment]
 
@@ -165,12 +165,12 @@ class SendRemindersJobTestCase(unittest.TestCase):
     def test_test_mode_still_runs_on_saturday(self) -> None:
         import src.contexts.reminders.internal.job_runner as module
 
-        original_build_snapshot_engine = module.build_snapshot_engine
+        original_get_snapshot_capability = module.get_snapshot_capability
         original_build_job_runner = module._build_reminder_job_runner
         original_today = module._today_in_runtime_timezone
         _FakeReminderJob.last_request = None
         _FakeReminderJob.run_calls = 0
-        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
         module._build_reminder_job_runner = lambda **kwargs: _FakeReminderJob(**kwargs)  # type: ignore[assignment]
         module._today_in_runtime_timezone = lambda _ctx: date(2026, 3, 7)  # type: ignore[assignment]
         try:
@@ -186,7 +186,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
                 )
             )
         finally:
-            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+            module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
             module._build_reminder_job_runner = original_build_job_runner  # type: ignore[assignment]
             module._today_in_runtime_timezone = original_today  # type: ignore[assignment]
 
@@ -197,12 +197,12 @@ class SendRemindersJobTestCase(unittest.TestCase):
     def test_morning_passes_friday_today_override_to_reminder_request(self) -> None:
         import src.contexts.reminders.internal.job_runner as module
 
-        original_build_snapshot_engine = module.build_snapshot_engine
+        original_get_snapshot_capability = module.get_snapshot_capability
         original_build_job_runner = module._build_reminder_job_runner
         original_today = module._today_in_runtime_timezone
         _FakeReminderJob.last_request = None
         _FakeReminderJob.run_calls = 0
-        module.build_snapshot_engine = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
         module._build_reminder_job_runner = lambda **kwargs: _FakeReminderJob(**kwargs)  # type: ignore[assignment]
         module._today_in_runtime_timezone = lambda _ctx: date(2026, 3, 6)  # type: ignore[assignment]
         try:
@@ -218,7 +218,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
                 )
             )
         finally:
-            module.build_snapshot_engine = original_build_snapshot_engine  # type: ignore[assignment]
+            module.get_snapshot_capability = original_get_snapshot_capability  # type: ignore[assignment]
             module._build_reminder_job_runner = original_build_job_runner  # type: ignore[assignment]
             module._today_in_runtime_timezone = original_today  # type: ignore[assignment]
 
@@ -229,3 +229,4 @@ class SendRemindersJobTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

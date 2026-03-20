@@ -2,8 +2,8 @@
 
 This document is normative for architecture decisions in this repository.
 
-For the modular-monolith refactor wave, read this together with:
-- [modular-monolith-v2.md](modular-monolith-v2.md)
+For active architecture work, read this together with:
+- [../module-first-recovery/README.md](../module-first-recovery/README.md)
 
 ## Purpose
 
@@ -46,15 +46,15 @@ Target formula:
 - masking must preserve payload shape
 - same real entity maps to the same fake value for the same dictionary version
 
-### Planner-centric runtime is transitional
-- `planner_runtime_entry.py` may exist as compatibility adapter
-- it must not remain the conceptual center of the system
+### Planner-centric runtime is not the conceptual center
+- `planner_runtime_entry.py` may exist as a local/manual runtime bridge
+- it must not become the conceptual center of the system
 
 ### Bootstrap is composition root only
 - bootstrap loads config, wires dependencies, and assembles context
 - bootstrap must not execute business logic
 - bootstrap must not create global runtime state at import time
-- during the modular-monolith refactor wave, old bootstrap may delegate only and must not become the new central ownership layer
+- bootstrap may delegate only and must not become the new central ownership layer
 
 ### Import-time side effects are a bug
 - no module-level production `AppContext` construction in active runtime entry modules
@@ -66,8 +66,8 @@ Target formula:
 - default user paths must avoid heavy diagnostics by default
 
 ### Context-first extraction is now the active path
-- `attachments`, `reminders`, `snapshot`, `rendering`, `telegram_interaction`, and `access_api` are first-class contexts for active refactor work
-- older implementation folders may remain in place temporarily, but ownership now sits behind `src/contexts/*`
+- `attachments`, `reminders`, `snapshot`, `rendering`, `telegram_interaction`, and `access_api` are first-class contexts for active work
+- ownership sits behind `src/contexts/*`
 - new work should reinforce context facades and boundaries, not reopen transport-first or adapter-first ownership
 
 ## Boundary guidance
@@ -82,12 +82,12 @@ Canonical active areas:
 - `src/commands/*`
 - `src/observability/*`
 
-Transitional areas:
+Supporting areas:
 - `src/entrypoints/runtime/planner_runtime_entry.py`
-- old root `core/*`
-- legacy compatibility helpers still kept as reference or implementation detail behind context/module boundaries
+- `src/core/*`
+- archive and historical reference material outside the active path
 
 ## Refactor governance note
 
-- `modular-monolith-v2.md` is the master text for future refactor campaigns
+- `docs/architecture/module-first-recovery/README.md` is the master text for future refactor campaigns
 - child campaigns should refresh trust against current code before decomposition

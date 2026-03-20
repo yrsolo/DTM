@@ -438,8 +438,35 @@ class GuardrailsV0TestCase(unittest.TestCase):
             ROOT / "src" / "entrypoints" / "http" / "people_snapshot_handler.py",
             ROOT / "src" / "entrypoints" / "http" / "task_attachment_read_handler.py",
             ROOT / "src" / "entrypoints" / "http" / "frontend_response_cache.py",
+            ROOT / "src" / "entrypoints" / "http" / "group_query_handler.py",
         ]
         offenders = [str(path.relative_to(ROOT)) for path in removed_paths if path.exists()]
+        self.assertEqual(offenders, [])
+
+    def test_active_runtime_docs_do_not_point_to_old_canons_as_live_guidance(self) -> None:
+        offenders: list[str] = []
+        for file_path in _python_files([ROOT / "docs" / "architecture" / "runtime"]):
+            content = file_path.read_text(encoding="utf-8")
+            if "modular-monolith-v2.md" not in content:
+                continue
+            if "historical predecessor" in content or "historical" in content:
+                continue
+            offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_active_runtime_docs_do_not_use_wrapper_language_for_canonical_paths(self) -> None:
+        offenders: list[str] = []
+        target_files = [
+            ROOT / "docs" / "architecture" / "runtime" / "module-map.md",
+            ROOT / "docs" / "architecture" / "runtime" / "entrypoints.md",
+            ROOT / "docs" / "architecture" / "runtime" / "command-runtime.md",
+            ROOT / "docs" / "integrations" / "attachments" / "backend-flow.md",
+        ]
+        forbidden_markers = ("transitional wrapper", "compatibility wrapper", "legacy wrapper")
+        for file_path in target_files:
+            content = file_path.read_text(encoding="utf-8")
+            if any(marker in content for marker in forbidden_markers):
+                offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
     def test_removed_technical_compatibility_roots_do_not_exist(self) -> None:

@@ -19,9 +19,9 @@ from src.entrypoints.http.response_utils import error_response, json_response, p
 from src.platform.runtime.command_runtime import get_command_runtime
 from src.services.errors import AppError
 
-build_snapshot_engine = get_attachment_snapshot_capability
-build_attachment_storage = get_attachment_storage
-build_attachment_finalize_service = get_attachment_finalize_service
+get_snapshot_capability = get_attachment_snapshot_capability
+get_attachment_storage_capability = get_attachment_storage
+get_attachment_finalize_capability = get_attachment_finalize_service
 
 
 class AdminTaskAttachmentsHandler:
@@ -179,7 +179,7 @@ class AdminTaskAttachmentsHandler:
                 ),
             )
         try:
-            engine = build_snapshot_engine(self._ctx)
+            engine = get_snapshot_capability(self._ctx)
             prep = engine.get_prep_snapshot()
         except Exception as error:
             return error_response(
@@ -211,7 +211,7 @@ class AdminTaskAttachmentsHandler:
                 ),
             )
         attachment_id = str(body.get("attachment_id", "")).strip() or uuid4().hex
-        storage = build_attachment_storage(self._ctx)
+        storage = get_attachment_storage_capability(self._ctx)
         object_key = storage.build_object_key(
             env_name=str(self._ctx.cfg.runtime.runtime.env_default or ""),
             task_id=task_id,
@@ -294,8 +294,8 @@ class AdminTaskAttachmentsHandler:
         if not uploaded_by:
             return error_response(400, code="uploaded_by_required", message="uploaded_by is required.")
         try:
-            engine = build_snapshot_engine(self._ctx)
-            finalize = build_attachment_finalize_service(self._ctx)
+            engine = get_snapshot_capability(self._ctx)
+            finalize = get_attachment_finalize_capability(self._ctx)
             verified = finalize.finalize(task_id=task_id, attachment_id=attachment_id)
             lookup = engine.get_attachment_metadata_store().get_by_attachment_id(attachment_id)
             if lookup is None:

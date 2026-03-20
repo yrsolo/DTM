@@ -10,7 +10,7 @@ from src.app.context import AppContext
 from src.contexts.snapshot.public import get_update_capability as _get_snapshot_update_capability
 
 
-build_snapshot_engine = _get_snapshot_update_capability
+get_snapshot_capability = _get_snapshot_update_capability
 
 
 @dataclass(frozen=True)
@@ -39,7 +39,7 @@ class TimerPipeline:
             return PipelineResult(sync_deferred=False, readmodel_deferred=False, ttl_skip=False)
 
         try:
-            engine = build_snapshot_engine(self._ctx)
+            engine = get_snapshot_capability(self._ctx)
             result = engine.update(task_source=request.task_source, force=bool(request.force_refresh))
             self._ctx.log(
                 "snapshot_update="

@@ -9,6 +9,7 @@
 - none
 
 ## Done
+- Pre-audit idealization wave completed: active runtime docs now speak with one canon voice, stale migration language was removed from the active contour, dead `group_query_handler.py` was deleted, and capability naming in active paths was clarified.
 - CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1 completed: module-first canon is now the active architecture source, the delta audit was executed and closed, snapshot internals moved under the snapshot context, `src/jobs/*` was removed, and active tests now live under `tests/contexts/*`.
 - CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1 completed: recovery canon replaced the old roadmap, active runtime now reads through thin entrypoints/platform/contexts, and the competing technical roots were removed from the active graph.
 - CAM-2026-03-19-MODULARITY-AUDIT-V1 completed: current module autonomy and the remaining coupling hotspots are now documented in the active runtime docs.

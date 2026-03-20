@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import unittest
 from datetime import datetime, timezone
@@ -36,11 +36,11 @@ class CleanupTaskAttachmentsJobTestCase(unittest.TestCase):
     def test_cleanup_job_delegates_to_engine(self) -> None:
         import src.contexts.attachments.internal.job_runners as module
 
-        original_engine = module.build_snapshot_engine
-        original_storage = module.build_attachment_storage
+        original_engine = module.get_snapshot_capability
+        original_storage = module.get_attachment_storage_capability
         engine = _FakeEngine()
-        module.build_snapshot_engine = lambda _ctx: engine  # type: ignore[assignment]
-        module.build_attachment_storage = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: engine  # type: ignore[assignment]
+        module.get_attachment_storage_capability = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
         try:
             ctx = AppContext(cfg=SimpleNamespace(), deps={})
             cmd = Command(
@@ -52,8 +52,8 @@ class CleanupTaskAttachmentsJobTestCase(unittest.TestCase):
             )
             result = CleanupTaskAttachmentsJob(ctx).run(cmd)
         finally:
-            module.build_snapshot_engine = original_engine  # type: ignore[assignment]
-            module.build_attachment_storage = original_storage  # type: ignore[assignment]
+            module.get_snapshot_capability = original_engine  # type: ignore[assignment]
+            module.get_attachment_storage_capability = original_storage  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
         self.assertEqual(result["ttl_seconds"], 7200)
@@ -76,3 +76,5 @@ class CleanupTaskAttachmentsJobTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+

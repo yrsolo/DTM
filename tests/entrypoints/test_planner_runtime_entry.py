@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import asyncio
 from datetime import date
@@ -157,7 +157,7 @@ class PlannerRuntimeEntryTestCase(unittest.TestCase):
             return_value=object(),
         ), patch.object(
             module,
-            "build_snapshot_engine",
+            "get_snapshot_capability",
             return_value=fake_engine,
         ), patch.object(
             module,
@@ -292,7 +292,7 @@ class PlannerRuntimeEntryTestCase(unittest.TestCase):
             "rows_written": 3,
             "cells_written": 10,
             "target_spreadsheet": "Book",
-            "target_worksheet": "Задачи",
+            "target_worksheet": "Ð—Ð°Ð´Ð°Ñ‡Ð¸",
             "warnings": ["timeline_warning"],
         }
         _FakeRenderJob.designers_result = {
@@ -302,7 +302,7 @@ class PlannerRuntimeEntryTestCase(unittest.TestCase):
             "rows_written": 2,
             "cells_written": 5,
             "target_spreadsheet": "Book",
-            "target_worksheet": "Дизайнеры",
+            "target_worksheet": "Ð”Ð¸Ð·Ð°Ð¹Ð½ÐµÑ€Ñ‹",
             "warnings": ["designers_warning"],
         }
 
@@ -324,8 +324,8 @@ class PlannerRuntimeEntryTestCase(unittest.TestCase):
         self.assertTrue(result["render_applied"])
         self.assertEqual(result["rows_written"], 5)
         self.assertEqual(result["cells_written"], 15)
-        self.assertEqual(result["targets"]["task_calendar"]["target_worksheet"], "Задачи")
-        self.assertEqual(result["targets"]["designers"]["target_worksheet"], "Дизайнеры")
+        self.assertEqual(result["targets"]["task_calendar"]["target_worksheet"], "Ð—Ð°Ð´Ð°Ñ‡Ð¸")
+        self.assertEqual(result["targets"]["designers"]["target_worksheet"], "Ð”Ð¸Ð·Ð°Ð¹Ð½ÐµÑ€Ñ‹")
         self.assertEqual(result["warnings"], ["timeline_warning", "designers_warning"])
         self.assertEqual(len(_FakeRenderJob.timeline_calls), 1)
         self.assertEqual(len(_FakeRenderJob.designers_calls), 1)
@@ -337,7 +337,7 @@ class PlannerRuntimeEntryTestCase(unittest.TestCase):
             "artifact": "render_timeline_sheet",
             "status": "blocked",
             "target_spreadsheet": "Book",
-            "target_worksheet": "Задачи",
+            "target_worksheet": "Ð—Ð°Ð´Ð°Ñ‡Ð¸",
             "warnings": ["unsafe_timeline"],
         }
 
@@ -355,7 +355,7 @@ class PlannerRuntimeEntryTestCase(unittest.TestCase):
             )
 
         self.assertEqual(result["status"], "blocked")
-        self.assertEqual(result["target_worksheet"], "Задачи")
+        self.assertEqual(result["target_worksheet"], "Ð—Ð°Ð´Ð°Ñ‡Ð¸")
         self.assertEqual(result["error"]["code"], "render_target_unsafe")
         self.assertEqual(len(_FakeRenderJob.timeline_calls), 1)
         self.assertEqual(len(_FakeRenderJob.designers_calls), 0)
@@ -370,14 +370,14 @@ class PlannerRuntimeEntryTestCase(unittest.TestCase):
             "rows_written": 1,
             "cells_written": 2,
             "target_spreadsheet": "Book",
-            "target_worksheet": "Задачи",
+            "target_worksheet": "Ð—Ð°Ð´Ð°Ñ‡Ð¸",
             "warnings": [],
         }
         _FakeRenderJob.designers_result = {
             "artifact": "render_designers_sheet",
             "status": "blocked",
             "target_spreadsheet": "Book",
-            "target_worksheet": "Дизайнеры",
+            "target_worksheet": "Ð”Ð¸Ð·Ð°Ð¹Ð½ÐµÑ€Ñ‹",
             "warnings": ["unsafe_designers"],
         }
 
@@ -395,7 +395,7 @@ class PlannerRuntimeEntryTestCase(unittest.TestCase):
             )
 
         self.assertEqual(result["status"], "blocked")
-        self.assertEqual(result["target_worksheet"], "Дизайнеры")
+        self.assertEqual(result["target_worksheet"], "Ð”Ð¸Ð·Ð°Ð¹Ð½ÐµÑ€Ñ‹")
         self.assertEqual(result["warnings"], ["unsafe_designers"])
         self.assertEqual(len(_FakeRenderJob.timeline_calls), 1)
         self.assertEqual(len(_FakeRenderJob.designers_calls), 1)
@@ -403,3 +403,4 @@ class PlannerRuntimeEntryTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

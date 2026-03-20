@@ -10,7 +10,7 @@ from src.contexts.telegram_interaction.public import (
 )
 
 
-build_snapshot_engine = _get_group_query_snapshot_read_capability
+get_snapshot_capability = _get_group_query_snapshot_read_capability
 
 
 def _make_group_query_request(**kwargs):
@@ -26,7 +26,7 @@ class GroupQueryReplyJob:
         self._ctx = ctx
 
     async def run(self, cmd):
-        snapshot_engine = build_snapshot_engine(self._ctx)
+        snapshot_engine = get_snapshot_capability(self._ctx)
         usecase = _get_group_query_usecase(snapshot_engine)
         groups, today, next_workday = usecase.select(
             _make_group_query_request(

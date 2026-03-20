@@ -3,7 +3,7 @@
 This document defines target orchestration ownership for scheduled triggers.
 
 Governing source:
-- [modular-monolith-v2.md](modular-monolith-v2.md)
+- [../module-first-recovery/README.md](../module-first-recovery/README.md)
 
 ## Trigger ownership
 
@@ -19,4 +19,3 @@ Governing source:
 - trigger orchestration may assemble command plans and enqueue them
 - trigger orchestration must not become a second business layer
 - trigger execution results should remain transport/status oriented
-

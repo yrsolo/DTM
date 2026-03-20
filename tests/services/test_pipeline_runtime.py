@@ -1,4 +1,4 @@
-"""Smoke tests for snapshot-engine timer pipeline."""
+﻿"""Smoke tests for snapshot-engine timer pipeline."""
 
 from __future__ import annotations
 
@@ -42,7 +42,7 @@ class TimerPipelineSmokeTestCase(unittest.TestCase):
                 prep_written=True,
             )
         )
-        module.build_snapshot_engine = lambda _ctx: fake_engine  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: fake_engine  # type: ignore[assignment]
         task_source = SimpleNamespace(source_id="sheet:test")
         request = module.RunRequest(mode="reminders-only", force_refresh=False, task_source=task_source)
 
@@ -62,7 +62,7 @@ class TimerPipelineSmokeTestCase(unittest.TestCase):
                 prep_written=True,
             )
         )
-        module.build_snapshot_engine = lambda _ctx: fake_engine  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: fake_engine  # type: ignore[assignment]
         task_source = SimpleNamespace(source_id="sheet:test")
         request = module.RunRequest(mode="timer", force_refresh=False, task_source=task_source)
 
@@ -86,7 +86,7 @@ class TimerPipelineSmokeTestCase(unittest.TestCase):
                 prep_written=False,
             )
         )
-        module.build_snapshot_engine = lambda _ctx: fake_engine  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: fake_engine  # type: ignore[assignment]
         task_source = SimpleNamespace(source_id="sheet:test")
         request = module.RunRequest(mode="sync-only", force_refresh=True, task_source=task_source)
 
@@ -100,7 +100,7 @@ class TimerPipelineSmokeTestCase(unittest.TestCase):
     def test_pipeline_marks_sync_deferred_on_engine_error(self) -> None:
         module = _import_timer_pipeline()
         fake_engine = _FakeEngine(error=RuntimeError("boom"))
-        module.build_snapshot_engine = lambda _ctx: fake_engine  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: fake_engine  # type: ignore[assignment]
         task_source = SimpleNamespace(source_id="sheet:test")
         request = module.RunRequest(mode="timer", force_refresh=False, task_source=task_source)
 
@@ -113,3 +113,4 @@ class TimerPipelineSmokeTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -1,4 +1,4 @@
-"""Local builder for the transitional attachments context."""
+"""Local builder for the attachments context."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from .internal import AttachmentFinalizeService, AttachmentReadResolver, build_a
 
 @dataclass(slots=True)
 class AttachmentsModule:
-    """Context-local builder used during staged migration."""
+    """Context-local builder for attachment capabilities."""
 
     ctx: AppContext
     name: str = "attachments"

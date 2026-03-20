@@ -3,7 +3,7 @@
 This document defines the target ownership of async command types for the modular-monolith refactor wave.
 
 Governing source:
-- [modular-monolith-v2.md](modular-monolith-v2.md)
+- [../module-first-recovery/README.md](../module-first-recovery/README.md)
 
 ## Command ownership
 
@@ -23,6 +23,5 @@ Governing source:
 
 - queue routing must be explicit via `match/case`
 - worker/runtime may parse and dispatch commands, but ownership belongs to the listed context
-- command handlers may temporarily delegate to transitional code during migration, but the ownership map above is the canonical target
+- command handlers may delegate to local module internals, but the ownership map above is the canonical target
 - no command should stay owned by generic `worker` or `jobs` as a conceptual home
-

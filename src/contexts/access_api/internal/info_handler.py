@@ -31,12 +31,12 @@ from src.platform.runtime.command_runtime import get_command_runtime
 from src.worker.model import JobStatusRecord
 
 
-build_snapshot_engine = _get_snapshot_query_capability
+get_snapshot_capability = _get_snapshot_query_capability
 get_attachment_mime_types = get_supported_attachment_mime_types
 
 
 def get_prep_snapshot(ctx):
-    engine = build_snapshot_engine(ctx)
+    engine = get_snapshot_capability(ctx)
     getter = getattr(engine, "get_prep_snapshot", None)
     if callable(getter):
         return getter()
@@ -47,7 +47,7 @@ def get_prep_snapshot(ctx):
 
 
 def get_raw_snapshot(ctx):
-    engine = build_snapshot_engine(ctx)
+    engine = get_snapshot_capability(ctx)
     getter = getattr(engine, "get_raw_snapshot", None)
     if callable(getter):
         return getter()

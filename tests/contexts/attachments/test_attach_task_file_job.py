@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import unittest
 from datetime import datetime, timezone
@@ -80,9 +80,9 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
     def test_attach_job_validates_payload_and_updates_snapshot(self) -> None:
         import src.contexts.attachments.internal.job_runners as module
 
-        original = module.build_snapshot_engine
+        original = module.get_snapshot_capability
         engine = _FakeEngine()
-        module.build_snapshot_engine = lambda _ctx: engine  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: engine  # type: ignore[assignment]
         try:
             ctx = AppContext(cfg=SimpleNamespace(), deps={})
             cmd = Command(
@@ -101,7 +101,7 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
             )
             result = AttachTaskFileJob(ctx).run(cmd)
         finally:
-            module.build_snapshot_engine = original  # type: ignore[assignment]
+            module.get_snapshot_capability = original  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
         self.assertEqual(result["task_id"], "task-1")
@@ -122,10 +122,10 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
     def test_attach_job_keeps_ok_when_cache_invalidation_fails(self) -> None:
         import src.contexts.attachments.internal.job_runners as module
 
-        original = module.build_snapshot_engine
+        original = module.get_snapshot_capability
         engine = _FakeEngine()
         engine.response_cache_store.fail = True
-        module.build_snapshot_engine = lambda _ctx: engine  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: engine  # type: ignore[assignment]
         try:
             ctx = AppContext(cfg=SimpleNamespace(), deps={})
             cmd = Command(
@@ -144,7 +144,7 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
             )
             result = AttachTaskFileJob(ctx).run(cmd)
         finally:
-            module.build_snapshot_engine = original  # type: ignore[assignment]
+            module.get_snapshot_capability = original  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
         self.assertIn("frontend_response_cache_invalidation_failed", result["warnings"])
@@ -152,9 +152,9 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
     def test_attach_job_enqueues_doc_preview_when_configured(self) -> None:
         import src.contexts.attachments.internal.job_runners as module
 
-        original = module.build_snapshot_engine
+        original = module.get_snapshot_capability
         engine = _FakeEngine()
-        module.build_snapshot_engine = lambda _ctx: engine  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: engine  # type: ignore[assignment]
         try:
             producer = _FakeProducer()
             status_store = _FakeStatusStore()
@@ -182,7 +182,7 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
             )
             result = AttachTaskFileJob(ctx).run(cmd)
         finally:
-            module.build_snapshot_engine = original  # type: ignore[assignment]
+            module.get_snapshot_capability = original  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
         self.assertEqual(len(producer.commands), 1)
@@ -192,9 +192,9 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
     def test_attach_job_marks_doc_preview_failed_when_unconfigured(self) -> None:
         import src.contexts.attachments.internal.job_runners as module
 
-        original = module.build_snapshot_engine
+        original = module.get_snapshot_capability
         engine = _FakeEngine()
-        module.build_snapshot_engine = lambda _ctx: engine  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: engine  # type: ignore[assignment]
         try:
             ctx = AppContext(cfg=SimpleNamespace(), deps={})
             cmd = Command(
@@ -213,7 +213,7 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
             )
             result = AttachTaskFileJob(ctx).run(cmd)
         finally:
-            module.build_snapshot_engine = original  # type: ignore[assignment]
+            module.get_snapshot_capability = original  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
         self.assertEqual(len(engine.preview_failed_calls), 1)
@@ -234,3 +234,4 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

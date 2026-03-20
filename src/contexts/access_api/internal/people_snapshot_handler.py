@@ -14,11 +14,11 @@ from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response, json_response
 
 
-build_snapshot_engine = _get_snapshot_query_capability
+get_snapshot_capability = _get_snapshot_query_capability
 
 
 def get_people_snapshot(ctx):
-    return build_snapshot_engine(ctx).get_people_snapshot()
+    return get_snapshot_capability(ctx).get_people_snapshot()
 
 
 def _header_map(headers: dict[str, object] | None) -> dict[str, str]:

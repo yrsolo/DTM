@@ -21,8 +21,8 @@ from src.platform.runtime.command_runtime import get_command_runtime
 from src.platform.runtime.frontend_cache_invalidation import invalidate_default_frontend_cache_store
 from src.services.errors import AppError, TransientError, UserError
 
-build_snapshot_engine = get_attachment_snapshot_capability
-build_attachment_storage = get_attachment_storage
+get_snapshot_capability = get_attachment_snapshot_capability
+get_attachment_storage_capability = get_attachment_storage
 
 
 class AttachTaskFileJob:
@@ -82,7 +82,7 @@ class AttachTaskFileJob:
                 snapshot_visible=True,
                 preview_state=doc_preview_state,
             )
-            engine = build_snapshot_engine(self._ctx)
+            engine = get_snapshot_capability(self._ctx)
             metadata_store = engine.get_attachment_metadata_store()
             lookup = metadata_store.get_by_attachment_id(attachment_id)
             if lookup is not None:
@@ -152,7 +152,7 @@ class DeleteTaskAttachmentJob:
             task_id = self._require_text(payload, "task_id")
             attachment_id = self._require_text(payload, "attachment_id")
             deleted_by = self._require_text(payload, "deleted_by")
-            engine = build_snapshot_engine(self._ctx)
+            engine = get_snapshot_capability(self._ctx)
             metadata_store = engine.get_attachment_metadata_store()
             lookup = metadata_store.get_by_attachment_id(attachment_id)
             if lookup is None or lookup[0] != task_id:
@@ -165,14 +165,14 @@ class DeleteTaskAttachmentJob:
             )
             delete_warning = ""
             try:
-                build_attachment_storage(self._ctx).delete_object(key=record.storage_key)
+                    get_attachment_storage_capability(self._ctx).delete_object(key=record.storage_key)
             except AppError as error:
                 delete_warning = error.code
             preview_warning = ""
             preview_key = str(getattr(record, "derived_preview_ref", "") or "").strip()
             if preview_key:
                 try:
-                    build_attachment_storage(self._ctx).delete_object(key=preview_key)
+                    get_attachment_storage_capability(self._ctx).delete_object(key=preview_key)
                 except AppError as error:
                     preview_warning = error.code
             metadata_store.mark_deleted(
@@ -220,8 +220,8 @@ class CleanupTaskAttachmentsJob:
         payload = dict(cmd.payload or {})
         try:
             ttl_seconds = self._parse_ttl_seconds(payload)
-            engine = build_snapshot_engine(self._ctx)
-            storage = build_attachment_storage(self._ctx)
+            engine = get_snapshot_capability(self._ctx)
+            storage = get_attachment_storage_capability(self._ctx)
             result = engine.cleanup_stale_attachments(
                 ttl_seconds=ttl_seconds,
                 delete_object=storage.delete_object,

@@ -14,7 +14,7 @@ from src.contexts.reminders.public import (
 from src.observability import timed
 
 
-build_snapshot_engine = _get_reminders_snapshot_read_capability
+get_snapshot_capability = _get_reminders_snapshot_read_capability
 _today_in_runtime_timezone = _get_today_in_runtime_timezone
 
 
@@ -37,7 +37,7 @@ class SendRemindersJob:
     async def run(self, cmd):
         metrics = self._ctx.deps.get("metrics_client")
         logger = self._ctx.deps.get("structured_logger")
-        snapshot_engine = build_snapshot_engine(self._ctx)
+        snapshot_engine = get_snapshot_capability(self._ctx)
         usecase = _get_reminders_usecase(snapshot_engine)
         formatter = _get_reminders_formatter(self._ctx)
         sender = _get_reminders_sender(self._ctx)

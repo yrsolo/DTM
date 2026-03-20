@@ -22,7 +22,7 @@ This folder contains active runtime reference docs and descriptive evidence abou
 - [trigger-orchestration-v2.md](trigger-orchestration-v2.md)
 - [bootstrap-discipline-v2.md](bootstrap-discipline-v2.md)
 - [guardrails-v2.md](guardrails-v2.md)
-- [modular-monolith-v2.md](modular-monolith-v2.md)
+- [modular-monolith-v2.md](modular-monolith-v2.md) - historical predecessor only
 
 ## When to use this folder
 

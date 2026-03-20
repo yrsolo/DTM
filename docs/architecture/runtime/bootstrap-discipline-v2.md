@@ -1,17 +1,17 @@
 # Bootstrap Discipline V2
 
-This document defines the controlled bootstrap transition for the modular-monolith refactor wave.
+This document defines bootstrap discipline for the active module-first runtime.
 
 Governing source:
-- [modular-monolith-v2.md](modular-monolith-v2.md)
+- [../module-first-recovery/README.md](../module-first-recovery/README.md)
 
-## Transitional policy
+## Active policy
 
-- the current bootstrap may remain as the transitional composition root while migration is in progress
-- old bootstrap may delegate only
+- bootstrap remains the composition root
+- bootstrap may delegate only
 - new contexts may not be born through centralized ad-hoc wiring in a growing global bootstrap
 - each new context must own its own `module.py`
-- context-local builders may be lazy and transitional, but ownership must stay local to the context
+- context-local builders may be lazy, but ownership must stay local to the context
 
 ## Practical rules
 
@@ -25,4 +25,3 @@ Governing source:
 - move bootstrap discipline earlier than the first full context extraction
 - treat it as an enabling rule, not as a giant isolated reform campaign
 - keep future context extraction reversible and locally owned
-

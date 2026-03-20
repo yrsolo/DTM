@@ -25,7 +25,7 @@ from src.services.timer_pipeline import RunRequest as TimerRunRequest
 from src.services.timer_pipeline import TimerPipeline
 
 
-build_snapshot_engine = _get_reminders_snapshot_read_capability
+get_snapshot_capability = _get_reminders_snapshot_read_capability
 
 
 def _resolve_standard_run_mode(
@@ -62,7 +62,7 @@ async def _run_reminder_mode(
 ):
     """Execute reminder-oriented runtime modes through the reminders context."""
 
-    snapshot_engine = build_snapshot_engine(app_context)
+    snapshot_engine = get_snapshot_capability(app_context)
     usecase = _get_reminders_usecase(snapshot_engine)
     formatter = _get_reminders_formatter(app_context)
     sender = _get_reminders_sender(app_context)

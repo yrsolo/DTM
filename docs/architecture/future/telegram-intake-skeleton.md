@@ -1,4 +1,4 @@
-# Telegram Intake Skeleton
+﻿# Telegram Intake Skeleton
 
 ## Purpose
 
@@ -57,7 +57,7 @@ Make Telegram integration thin, safe, and operationally transparent:
 
 ## Current Touchpoints
 
-- [src/entrypoints/http/group_query_handler.py](../../../src/entrypoints/http/group_query_handler.py)
+- [src/contexts/telegram_interaction/internal/job_runner.py](../../../src/contexts/telegram_interaction/internal/job_runner.py)
 - [src/adapters/telegram.py](../../../src/adapters/telegram.py)
 - [src/notify/job.py](../../../src/notify/job.py)
 - [src/entrypoints/http/info_handler.py](../../../src/entrypoints/http/info_handler.py)
@@ -98,3 +98,4 @@ This is future work, not part of queue foundation v1.
 - No direct Sheets reads in webhook path
 - No direct reminder/render execution in webhook path
 - No polling mode
+

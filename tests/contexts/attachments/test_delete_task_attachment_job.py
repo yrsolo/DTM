@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import unittest
 from datetime import datetime, timezone
@@ -80,12 +80,12 @@ class DeleteTaskAttachmentJobTestCase(unittest.TestCase):
     def test_delete_job_marks_deleted_and_rebuilds_snapshot(self) -> None:
         import src.contexts.attachments.internal.job_runners as module
 
-        original_engine = module.build_snapshot_engine
-        original_storage = module.build_attachment_storage
+        original_engine = module.get_snapshot_capability
+        original_storage = module.get_attachment_storage_capability
         engine = _FakeEngine()
         storage = _FakeStorage()
-        module.build_snapshot_engine = lambda _ctx: engine  # type: ignore[assignment]
-        module.build_attachment_storage = lambda _ctx: storage  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: engine  # type: ignore[assignment]
+        module.get_attachment_storage_capability = lambda _ctx: storage  # type: ignore[assignment]
         try:
             ctx = AppContext(cfg=SimpleNamespace(), deps={})
             cmd = Command(
@@ -97,8 +97,8 @@ class DeleteTaskAttachmentJobTestCase(unittest.TestCase):
             )
             result = DeleteTaskAttachmentJob(ctx).run(cmd)
         finally:
-            module.build_snapshot_engine = original_engine  # type: ignore[assignment]
-            module.build_attachment_storage = original_storage  # type: ignore[assignment]
+            module.get_snapshot_capability = original_engine  # type: ignore[assignment]
+            module.get_attachment_storage_capability = original_storage  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
         self.assertEqual(engine.delete_calls, [("task-1", "a1")])
@@ -121,8 +121,8 @@ class DeleteTaskAttachmentJobTestCase(unittest.TestCase):
     def test_delete_job_fails_when_attachment_is_missing(self) -> None:
         import src.contexts.attachments.internal.job_runners as module
 
-        original_engine = module.build_snapshot_engine
-        module.build_snapshot_engine = lambda _ctx: _FakeEngine()  # type: ignore[assignment]
+        original_engine = module.get_snapshot_capability
+        module.get_snapshot_capability = lambda _ctx: _FakeEngine()  # type: ignore[assignment]
         try:
             ctx = AppContext(cfg=SimpleNamespace(), deps={})
             cmd = Command(
@@ -134,7 +134,7 @@ class DeleteTaskAttachmentJobTestCase(unittest.TestCase):
             )
             result = DeleteTaskAttachmentJob(ctx).run(cmd)
         finally:
-            module.build_snapshot_engine = original_engine  # type: ignore[assignment]
+            module.get_snapshot_capability = original_engine  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "failed")
         self.assertEqual(result["error"]["code"], "attachment_not_found")
@@ -142,13 +142,13 @@ class DeleteTaskAttachmentJobTestCase(unittest.TestCase):
     def test_delete_job_keeps_ok_when_cache_invalidation_fails(self) -> None:
         import src.contexts.attachments.internal.job_runners as module
 
-        original_engine = module.build_snapshot_engine
-        original_storage = module.build_attachment_storage
+        original_engine = module.get_snapshot_capability
+        original_storage = module.get_attachment_storage_capability
         engine = _FakeEngine()
         engine.response_cache_store.fail = True
         storage = _FakeStorage()
-        module.build_snapshot_engine = lambda _ctx: engine  # type: ignore[assignment]
-        module.build_attachment_storage = lambda _ctx: storage  # type: ignore[assignment]
+        module.get_snapshot_capability = lambda _ctx: engine  # type: ignore[assignment]
+        module.get_attachment_storage_capability = lambda _ctx: storage  # type: ignore[assignment]
         try:
             ctx = AppContext(cfg=SimpleNamespace(), deps={})
             cmd = Command(
@@ -160,8 +160,8 @@ class DeleteTaskAttachmentJobTestCase(unittest.TestCase):
             )
             result = DeleteTaskAttachmentJob(ctx).run(cmd)
         finally:
-            module.build_snapshot_engine = original_engine  # type: ignore[assignment]
-            module.build_attachment_storage = original_storage  # type: ignore[assignment]
+            module.get_snapshot_capability = original_engine  # type: ignore[assignment]
+            module.get_attachment_storage_capability = original_storage  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
         self.assertIn("frontend_response_cache_invalidation_failed", result["warnings"])
@@ -169,3 +169,5 @@ class DeleteTaskAttachmentJobTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
