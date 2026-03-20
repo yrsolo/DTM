@@ -8,6 +8,7 @@ This document records the product and operational scenarios that should govern t
 - Actor: site user
 - Goal: open the main interface and quickly receive ready-to-render data
 - Important: the main payload already contains card data and attachments
+- UI card/drawer/details views are frontend representations of this payload, not separate canonical backend read artifacts
 - Owning module: `access_api`
 
 ### User sees attachment inside the main payload
@@ -34,6 +35,7 @@ This document records the product and operational scenarios that should govern t
   - finalize is not enough
   - preview completion alone is not enough
   - success means publication into the main read-model and appearance in the next normal browser payload
+  - readiness endpoint is an operational signal that tells the frontend when to refetch the task-list payload
 - Owning modules:
   - `attachments` for mutation lifecycle
   - `platform.runtime` for invalidation/orchestration aftermath

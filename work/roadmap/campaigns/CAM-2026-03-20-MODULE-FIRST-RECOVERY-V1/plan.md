@@ -18,7 +18,8 @@ Replace the architecture-recovery canon with the stricter module-first canon and
 ### P02 - Delta audit against the new canon
 - `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T001` compare current code and docs against the module-first canon
 - `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T002` record what is already true vs still violated
-- `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T003` define the next code wave from the audit instead of continuing refactor inertia
+- `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T003` publish the audit in the structured template format
+- `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P02-T004` define the next code wave from the audit instead of continuing refactor inertia
 
 ### P03 - Top path and runtime clarity
 - `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P03-T001` remove or document remaining top-path ambiguity

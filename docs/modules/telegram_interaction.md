@@ -12,6 +12,7 @@ Current architecture stance:
 - keep this module available and isolated
 - keep it low-maintenance unless product priority changes
 - do not let it reshape the main read-side or reminder roadmap
+- preserve reserve capability contour instead of polishing for ideal architecture
 
 ## Public facade expectation
 
@@ -46,6 +47,14 @@ src/contexts/telegram_interaction/
 ## Routes owned
 
 - Telegram webhook path(s)
+
+## Minimal reserve contour
+
+The following behavior must keep working:
+- webhook intake
+- update parsing and routing needed for current interaction flows
+- `group_query_reply`
+- reminder delivery channel through Telegram where already used
 
 ## Transitional extraction notes
 

@@ -49,3 +49,4 @@ src/contexts/reminders/
 - reminders remain an active operational priority
 - keep behavior stable while separating reminder logic from trigger semantics and transport details
 - reminders must not depend on deep Telegram redesign; Telegram is reserve capability, reminders are active product/runtime flow
+- Telegram support for reminders should be maintained as an existing delivery channel, not as a reason to re-center the architecture on Telegram

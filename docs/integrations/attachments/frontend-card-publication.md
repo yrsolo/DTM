@@ -6,9 +6,9 @@
 - админ загружает ТЗ в attachment задачи;
 - система принимает `request-upload` и `finalize` как начало mutation flow;
 - async обработка конвертирует и публикует attachment;
-- админ следит за job status и ждёт появления attachment в карточке;
-- frontend делает refetch или polling и получает уже кэшированный payload карточки с attachment;
-- обычный пользователь открывает карточку и быстро видит attachment без тяжёлой сборки на каждый запрос.
+- админ следит за job status и readiness signal и ждёт появления attachment в основном списке задач;
+- frontend делает polling/readiness, получает `ready`, затем refetch всего списка задач и получает уже кэшированный основной payload с attachment;
+- обычный пользователь открывает интерфейс и быстро видит attachment в UI-карточке без тяжёлой сборки на каждый запрос.
 
 ## Главный критерий успеха
 
@@ -18,11 +18,11 @@
 - async job дошёл до terminal state.
 
 Успех означает:
-- attachment появился в browser-facing cached task card payload;
-- attachment виден в карточке по обычному read path;
+- attachment появился в browser-facing cached primary task-list payload;
+- attachment виден в UI-карточке через обычный read path основного списка задач;
 - frontend не ждёт тяжёлую rebuild-операцию на открытии карточки.
 
-Если файл существует, но не попал в карточку, сценарий ещё не завершён.
+Если файл существует, но не попал в основной task-list payload, сценарий ещё не завершён.
 
 ## Сквозной поток
 
@@ -34,9 +34,10 @@
 6. Attachment становится пригодным к публикации в read-side.
 7. Runtime инициирует invalidation/refresh нужного read-side контура.
 8. `snapshot` включает attachment в задачу как часть read-model projection.
-9. `access_api` отдаёт карточку через обычный browser-safe cached payload.
-10. Админ после terminal job success и refetch видит attachment в карточке.
-11. Обычный пользователь открывает карточку и быстро получает уже подготовленный ответ.
+9. attachment readiness/status становится операционным сигналом для frontend refetch.
+10. `access_api` отдаёт основной browser-safe cached task-list payload.
+11. Админ после terminal job success, readiness `ready`, и refetch видит attachment в UI-карточке.
+12. Обычный пользователь открывает интерфейс и быстро получает уже подготовленный ответ.
 
 ## Кто за что отвечает
 
@@ -51,7 +52,7 @@
 
 Не отвечает за:
 - прямое управление frontend cache;
-- browser card payload как конечный read-side артефакт.
+- primary browser read payload как конечный read-side артефакт.
 
 ### `platform/runtime`
 
@@ -66,16 +67,16 @@ Runtime не должен быть местом attachment business rules, но 
 ### `snapshot`
 
 Отвечает за read-model projection:
-- attachment становится частью карточки задачи именно здесь;
+- attachment становится частью primary task-list read-model именно здесь;
 - read-side включает только уже пригодные к публикации attachment-данные;
-- browser card не должна собираться напрямую из mutation state.
+- UI-карточка не должна собираться напрямую из mutation state.
 
 ### `access_api`
 
 Отвечает за browser-facing delivery:
-- cached task card payload;
+- cached primary task-list payload;
 - browser-safe shaping;
-- выдачу attachment внутри карточки;
+- выдачу attachment внутри UI-карточки через этот payload;
 - предсказуемый быстрый read path для frontend.
 
 ## Сигналы готовности для frontend и оператора
@@ -86,14 +87,15 @@ Runtime не должен быть местом attachment business rules, но 
 - сам по себе факт существования файла в storage.
 
 Что означает readiness:
+- operational signal, что frontend может refetch основной список задач;
 - terminal attachment job success;
-- attachment опубликован в read-side карточки;
-- после refetch attachment появился в обычном task card payload.
+- attachment опубликован в primary task-list read-model;
+- после refetch attachment появился в обычном task-list payload.
 
 Практическое следствие:
-- frontend может использовать polling/refetch после terminal job success;
-- backend должен обеспечить eventual publication into cached card payload;
-- attachment flow нельзя считать завершённым раньше появления attachment в карточке.
+- frontend может использовать readiness polling, а после `ready` делать refetch task-list;
+- backend должен обеспечить eventual publication into cached primary task-list payload;
+- attachment flow нельзя считать завершённым раньше появления attachment в UI-карточке через этот payload.
 
 ## Нефункциональные ожидания
 
@@ -108,4 +110,4 @@ Runtime не должен быть местом attachment business rules, но 
 
 `attachments mutation -> platform/runtime invalidation/orchestration -> snapshot projection -> access_api cached delivery`
 
-Именно этот путь, а не upload-only flow, должен считаться каноническим acceptance path для recovery-работ вокруг attachments, cache freshness, snapshot и access API.
+Именно этот путь, а не upload-only flow и не readiness endpoint сам по себе, должен считаться каноническим acceptance path для recovery-работ вокруг attachments, cache freshness, snapshot и access API.

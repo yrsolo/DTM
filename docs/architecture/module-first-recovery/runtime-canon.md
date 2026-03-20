@@ -17,10 +17,12 @@ For browser reads, the canonical product path is:
 - user requests the main task-list payload
 - payload already contains card data and attachments
 - `access_api` returns a prepared or cached response
+- card/drawer/details UI on the frontend uses this payload instead of defining a separate canonical backend read artifact
 
 Canonical finish line is not:
 - upload accepted
 - finalize accepted
+- readiness endpoint returning `ready` by itself
 - opening a separate "card details" pipeline
 
 ## Runtime duties only

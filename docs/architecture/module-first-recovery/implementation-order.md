@@ -23,6 +23,10 @@
 - reminders stay active priority
 - Telegram comes later because it is reserve capability, not the active product center
 
+## Delta-audit requirement
+
+Before code refactor resumes, the first wave under this canon must publish a structured delta audit using `delta-audit-template.md`.
+
 ## Acceptance language
 
 Attachment, cache, snapshot, and access-api waves are incomplete unless the architecture explicitly supports:

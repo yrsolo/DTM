@@ -18,6 +18,7 @@
 
 Before the next code wave:
 - verify current code against this canon
+- fill the structured delta-audit table from `delta-audit-template.md`
 - record remaining top-path ambiguity
 - record remaining bootstrap weight
 - record any remaining fake-modularity or reserve-Telegram drift

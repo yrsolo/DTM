@@ -18,6 +18,9 @@ They count only if all are true:
 
 - facade over a historical cluster that remains the real implementation center
 - lazy getter chains without ownership benefit
+- wrapper-over-wrapper delegation without path shortening
 - router -> dispatcher -> shell -> bridge -> handler ladders
 - transport files that still hide business ownership
 - "temporary" compatibility paths with no removal task
+
+See also: `top-path-readability.md`

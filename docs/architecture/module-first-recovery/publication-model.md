@@ -9,7 +9,7 @@ For attachments, this means:
 - upload accepted: not enough
 - `finalize` accepted: not enough
 - preview or conversion finished: still not enough
-- success: attachment appears in the normal browser task-list payload
+- success: attachment appears in the normal browser task-list payload after frontend refetch
 
 ## Governing pipeline
 
@@ -33,7 +33,13 @@ For attachments, this means:
 
 Admin success means:
 - job status reaches the right terminal state
-- next normal read path returns the attachment in the main payload
+- readiness/status reports that the frontend may refetch
+- next normal read path returns the attachment in the main task-list payload
+
+Readiness/status endpoint means:
+- operational signal for polling
+- not the canonical browser read artifact
+- not a replacement for publication success
 
 Frontend expectations:
 - no heavy rebuild on every open
