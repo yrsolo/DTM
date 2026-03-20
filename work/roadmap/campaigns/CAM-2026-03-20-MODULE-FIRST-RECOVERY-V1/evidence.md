@@ -29,6 +29,7 @@
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P04-T001`
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P07-T001`
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P07-T002`
+- [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P10-T001`
 - [x] `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1-P10-T002`
 
 ## Verification
@@ -44,8 +45,8 @@
   - `Get-Content src/contexts/attachments/module.py`
   - `Get-Content src/platform/runtime/queue_bootstrap.py`
   - `rg -n "src\\.jobs|HttpRouter|get_http_shell|get_worker_shell|get_trigger_shell" index.py src tests`
-  - `python -m unittest tests.jobs.test_attach_task_file_job tests.jobs.test_delete_task_attachment_job tests.jobs.test_cleanup_task_attachments_job tests.jobs.test_generate_attachment_preview_job tests.jobs.test_send_reminders_job tests.jobs.test_group_query_reply_job tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety -v`
-  - `python -m unittest tests.entrypoints.test_planner_runtime_entry tests.api.test_telegram_webhook_handler tests.render.test_render_v2 tests.render.test_designers_render_v2 tests.api.test_frontend_api_routing tests.api.test_info_observability tests.api.test_task_attachment_read_handler -v`
+  - `python -m unittest tests.contexts.attachments.test_attach_task_file_job tests.contexts.attachments.test_delete_task_attachment_job tests.contexts.attachments.test_cleanup_task_attachments_job tests.contexts.attachments.test_generate_attachment_preview_job tests.contexts.reminders.test_send_reminders_job tests.contexts.telegram_interaction.test_group_query_reply_job tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety -v`
+  - `python -m unittest tests.entrypoints.test_planner_runtime_entry tests.api.test_telegram_webhook_handler tests.contexts.rendering.test_render_v2 tests.contexts.rendering.test_designers_render_v2 tests.api.test_frontend_api_routing tests.api.test_info_observability tests.api.test_task_attachment_read_handler -v`
   - `rg -n "from src\\.jobs|import src\\.jobs|src\\.jobs\\." src/contexts src/platform src/entrypoint src/entrypoints`
 - Result:
 - the new module-first canon introduces a stricter stance than the previous recovery set
@@ -59,8 +60,9 @@
 - active entrypoints/contexts now use platform-owned `command_runtime` capability instead of reading `command_queue_producer`, `job_status_store`, and `command_worker` directly from the generic deps bag
 - `src/snapshot_engine/*` is removed as a top-level implementation island; the read-side engine now lives under `src/contexts/snapshot/internal/engine/*`
 - compatibility-only `src/jobs/*` is removed from the active tree
+- active test layout now follows module ownership under `tests/contexts/*`; old runtime-oriented test roots no longer carry Python files
 
 ## Notes
 - `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1` remains closed as phase-one precedent.
 - Structured delta audit is now recorded in `delta-audit.md`.
-- Recommended next code wave: decide whether test and documentation layout should also become fully module-first, or whether keeping historical folder names like `tests/snapshot_engine` and `tests/jobs` is acceptable as non-runtime drift.
+- Active runtime and active test layout now both follow module-first ownership; remaining historical path names in `work/archive/**` are preserved only as campaign evidence.

@@ -1,6 +1,6 @@
 # Active Tasks
 
-- CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1: module-first canon is now the active roadmap; the delta audit is recorded, active runtime no longer imports `src.jobs` directly, browser read routes are composed inside `access_api`, bootstrap delegates attachment converter assembly to the owning module, queue/status/worker access is grouped under platform-owned `command_runtime`, the snapshot engine is physically moved under `src/contexts/snapshot/internal/engine/*`, `src/jobs/*` is removed, and the next open question is whether test/doc folder layout should also become fully module-first.
+- CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1: module-first canon is now the active roadmap; the delta audit is recorded, active runtime no longer imports `src.jobs` directly, browser read routes are composed inside `access_api`, bootstrap delegates attachment converter assembly to the owning module, queue/status/worker access is grouped under platform-owned `command_runtime`, the snapshot engine now lives under `src/contexts/snapshot/internal/engine/*`, `src/jobs/*` is removed, and active tests now follow module-first ownership under `tests/contexts/*`.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done

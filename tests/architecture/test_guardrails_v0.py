@@ -328,6 +328,18 @@ class GuardrailsV0TestCase(unittest.TestCase):
         python_files = sorted(path.rglob("*.py")) if path.exists() else []
         self.assertEqual(python_files, [])
 
+    def test_removed_historical_test_roots_do_not_exist(self) -> None:
+        for relative in [
+            "tests/jobs",
+            "tests/snapshot_engine",
+            "tests/notify",
+            "tests/render",
+            "tests/telegram",
+        ]:
+            path = ROOT / relative
+            python_files = sorted(path.rglob("*.py")) if path.exists() else []
+            self.assertEqual(python_files, [], msg=relative)
+
     def test_http_entrypoints_do_not_import_attachments_services_directly(self) -> None:
         offenders: list[str] = []
         target_paths = [

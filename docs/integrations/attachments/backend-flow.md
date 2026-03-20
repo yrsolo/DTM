@@ -401,10 +401,10 @@ Active code pointers:
 Tests:
 - `tests/api/test_command_queue_foundation.py`
 - `tests/api/test_task_attachment_read_handler.py`
-- `tests/jobs/test_attach_task_file_job.py`
-- `tests/jobs/test_delete_task_attachment_job.py`
-- `tests/snapshot_engine/test_engine_attach_metadata.py`
-- `tests/snapshot_engine/test_query_engine.py`
+- `tests/contexts/attachments/test_attach_task_file_job.py`
+- `tests/contexts/attachments/test_delete_task_attachment_job.py`
+- `tests/contexts/snapshot/test_engine_attach_metadata.py`
+- `tests/contexts/snapshot/test_query_engine.py`
 
 ## Guardrails
 

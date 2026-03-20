@@ -5,7 +5,7 @@ Replace the architecture-recovery canon with the stricter module-first canon and
 
 ## Status
 - in progress: 2026-03-20
-- current phase: P10 physical structure cleanup
+- current phase: P11 guardrails and done
 
 ## Phases
 
