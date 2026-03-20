@@ -5,7 +5,7 @@ from __future__ import annotations
 import time
 
 from src.app.context import AppContext
-from src.contexts.snapshot.public import get_snapshot_engine as _get_snapshot_engine
+from src.contexts.snapshot.public import get_query_capability as _get_snapshot_query_capability
 from src.entrypoints.http.access_context import resolve_access_context
 from src.entrypoints.http.frontend_response_cache import (
     build_default_frontend_cache_query_hash,
@@ -38,7 +38,7 @@ from src.services.access import mask_frontend_payload
 from src.services.access.masking import masking_version_for_hour
 
 
-build_snapshot_engine = _get_snapshot_engine
+build_snapshot_engine = _get_snapshot_query_capability
 
 
 def get_prep_snapshot(ctx):

@@ -5,7 +5,7 @@ Replace the modular-monolith V2 canon with the new architecture-recovery canon a
 
 ## Status
 - in progress: 2026-03-20
-- current phase: P07 snapshot and rendering split
+- current phase: P09 access API as a real module
 
 ## Phases
 

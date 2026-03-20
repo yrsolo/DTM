@@ -7,7 +7,7 @@ from src.contexts.rendering.public import (
     get_designers_usecase,
     get_render_job,
     get_request,
-    get_snapshot_engine as _get_rendering_snapshot_engine,
+    get_snapshot_read_capability as _get_rendering_snapshot_read_capability,
     get_window,
     get_writer,
 )
@@ -15,7 +15,7 @@ from src.observability.batching import MetricsBatchCollector, add_flush_metrics
 from src.contexts.rendering.internal.target_guard import RenderTarget, validate_render_target
 
 
-build_snapshot_engine = _get_rendering_snapshot_engine
+build_snapshot_engine = _get_rendering_snapshot_read_capability
 
 
 class RenderDesignersJob:

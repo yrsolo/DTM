@@ -79,8 +79,12 @@ def _iter_days_half_open(start: date, end_exclusive: date) -> Iterable[date]:
 
 
 class RenderUseCase:
-    def __init__(self, engine, timezone_name: str = "Europe/Moscow"):  # noqa: ANN001
-        self._engine = engine
+    def __init__(self, prep_snapshot_source, timezone_name: str = "Europe/Moscow"):  # noqa: ANN001
+        if callable(prep_snapshot_source):
+            self._load_prep_snapshot = prep_snapshot_source
+        else:
+            getter = getattr(prep_snapshot_source, "get_prep_snapshot", None)
+            self._load_prep_snapshot = getter if callable(getter) else (lambda: None)
         self._color = GetColor()
         self._timezone_name = str(timezone_name or "Europe/Moscow").strip() or "Europe/Moscow"
 
@@ -95,7 +99,7 @@ class RenderUseCase:
         return today - timedelta(days=5), today + timedelta(days=150), today
 
     def build_plan(self, req: RenderRequest) -> RenderPlan:
-        prep = self._engine.get_prep_snapshot()
+        prep = self._load_prep_snapshot()
         if prep is None:
             return RenderPlan(values=[], borders=[], warnings=["prep_snapshot_missing"])
         statuses = {str(item).strip().lower() for item in list(req.statuses or ["work", "pre_done", "wait"]) if str(item).strip()}

@@ -7,14 +7,14 @@ from src.contexts.reminders.public import (
     get_formatter as _get_reminders_formatter,
     get_job_runner as _get_reminder_job_runner,
     get_sender as _get_reminders_sender,
-    get_snapshot_engine as _get_reminders_snapshot_engine,
+    get_snapshot_read_capability as _get_reminders_snapshot_read_capability,
     get_today_in_runtime_timezone as _get_today_in_runtime_timezone,
     get_usecase as _get_reminders_usecase,
 )
 from src.observability import timed
 
 
-build_snapshot_engine = _get_reminders_snapshot_engine
+build_snapshot_engine = _get_reminders_snapshot_read_capability
 _today_in_runtime_timezone = _get_today_in_runtime_timezone
 
 

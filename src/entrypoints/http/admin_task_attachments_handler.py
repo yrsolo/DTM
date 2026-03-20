@@ -9,7 +9,7 @@ from src.commands.model import Command, RequestedBy
 from src.commands.types import ATTACH_TASK_FILE, DELETE_TASK_ATTACHMENT
 from src.contexts.attachments.public import (
     get_attachment_finalize_service,
-    get_attachment_snapshot_engine,
+    get_attachment_snapshot_capability,
     get_attachment_storage,
 )
 from src.entrypoints.http.access_context import resolve_access_context
@@ -18,7 +18,7 @@ from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response, json_response, path_matches
 from src.services.errors import AppError
 
-build_snapshot_engine = get_attachment_snapshot_engine
+build_snapshot_engine = get_attachment_snapshot_capability
 build_attachment_storage = get_attachment_storage
 build_attachment_finalize_service = get_attachment_finalize_service
 

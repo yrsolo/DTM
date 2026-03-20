@@ -5,12 +5,12 @@ from src.contexts.telegram_interaction.public import (
     build_group_query_request as _build_group_query_request,
     get_sender as _get_group_query_sender,
     get_group_query_formatter as _get_group_query_formatter,
-    get_snapshot_engine as _get_group_query_snapshot_engine,
+    get_snapshot_read_capability as _get_group_query_snapshot_read_capability,
     get_usecase as _get_group_query_usecase,
 )
 
 
-build_snapshot_engine = _get_group_query_snapshot_engine
+build_snapshot_engine = _get_group_query_snapshot_read_capability
 
 
 def _make_group_query_request(**kwargs):

@@ -7,10 +7,10 @@ from dataclasses import dataclass
 from typing import Any
 
 from src.app.context import AppContext
-from src.contexts.snapshot.public import get_snapshot_engine as _get_snapshot_engine
+from src.contexts.snapshot.public import get_update_capability as _get_snapshot_update_capability
 
 
-build_snapshot_engine = _get_snapshot_engine
+build_snapshot_engine = _get_snapshot_update_capability
 
 
 @dataclass(frozen=True)

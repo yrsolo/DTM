@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from src.app.context import AppContext
-from src.contexts.attachments.public import get_attachment_snapshot_engine, get_attachment_storage
+from src.contexts.attachments.public import get_attachment_snapshot_capability, get_attachment_storage
 from src.platform.runtime.frontend_cache_invalidation import invalidate_default_frontend_cache_store
 from src.services.errors import AppError, UserError
 
-build_snapshot_engine = get_attachment_snapshot_engine
+build_snapshot_engine = get_attachment_snapshot_capability
 build_attachment_storage = get_attachment_storage
 
 

@@ -45,10 +45,10 @@ def get_supported_attachment_mime_types() -> frozenset[str]:
     return SUPPORTED_ATTACHMENT_MIME_TYPES
 
 
-def get_attachment_snapshot_engine(ctx: AppContext):
-    """Return the transitional snapshot engine dependency for attachments."""
+def get_attachment_snapshot_capability(ctx: AppContext):
+    """Return the attachment-scoped snapshot capability."""
 
-    return get_public_api(ctx).snapshot_engine()
+    return get_public_api(ctx).snapshot_capability()
 
 
 def get_attach_task_file_job(ctx: AppContext):

@@ -23,12 +23,12 @@ def get_webhook_handler(ctx):
     return get_module().build_webhook_handler(ctx)
 
 
-def get_snapshot_engine(ctx):
-    return get_module().build_snapshot_engine(ctx)
+def get_snapshot_read_capability(ctx):
+    return get_module().build_snapshot_read_capability(ctx)
 
 
-def get_usecase(snapshot_engine):
-    return get_module().build_usecase(snapshot_engine)
+def get_usecase(snapshot_read):
+    return get_module().build_usecase(snapshot_read)
 
 
 def get_group_query_formatter():

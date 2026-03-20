@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from src.contexts.snapshot.contracts import Window
-from src.contexts.snapshot.public import get_snapshot_engine
+from src.contexts.snapshot.public import get_read_capability
 
 from .internal import DesignersRenderUseCase, GoogleSheetsPlanWriter, RenderJob, RenderRequest, RenderUseCase, SheetTarget
 
@@ -16,14 +16,14 @@ class RenderingModule:
 
     name: str = "rendering"
 
-    def build_snapshot_engine(self, ctx):
-        return get_snapshot_engine(ctx)
+    def build_snapshot_read_capability(self, ctx):
+        return get_read_capability(ctx)
 
-    def build_timeline_usecase(self, snapshot_engine, *, timezone_name: str):
-        return RenderUseCase(snapshot_engine, timezone_name=timezone_name)
+    def build_timeline_usecase(self, snapshot_read, *, timezone_name: str):
+        return RenderUseCase(snapshot_read, timezone_name=timezone_name)
 
-    def build_designers_usecase(self, snapshot_engine, *, timezone_name: str):
-        return DesignersRenderUseCase(snapshot_engine, timezone_name=timezone_name)
+    def build_designers_usecase(self, snapshot_read, *, timezone_name: str):
+        return DesignersRenderUseCase(snapshot_read, timezone_name=timezone_name)
 
     def build_window(self, *, start=None, end=None, mode: str = "intersects"):
         return Window(start=start, end=end, mode=mode)

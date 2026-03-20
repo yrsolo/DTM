@@ -41,11 +41,15 @@ def _milestone_days(task: TaskView) -> set[date]:
 
 
 class GroupQueryUseCase:
-    def __init__(self, engine):  # noqa: ANN001
-        self._engine = engine
+    def __init__(self, prep_snapshot_source):  # noqa: ANN001
+        if callable(prep_snapshot_source):
+            self._load_prep_snapshot = prep_snapshot_source
+        else:
+            getter = getattr(prep_snapshot_source, "get_prep_snapshot", None)
+            self._load_prep_snapshot = getter if callable(getter) else (lambda: None)
 
     def select(self, req: GroupQueryRequest) -> tuple[list[ReminderGroup], date, date]:
-        prep = self._engine.get_prep_snapshot()
+        prep = self._load_prep_snapshot()
         if prep is None:
             today = req.today_override or datetime.now().date()
             return [], today, next_workday(today)

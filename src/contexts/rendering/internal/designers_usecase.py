@@ -76,13 +76,17 @@ class _DesignerTask:
 
 
 class DesignersRenderUseCase:
-    def __init__(self, engine, timezone_name: str = "Europe/Moscow"):  # noqa: ANN001
-        self._engine = engine
+    def __init__(self, prep_snapshot_source, timezone_name: str = "Europe/Moscow"):  # noqa: ANN001
+        if callable(prep_snapshot_source):
+            self._load_prep_snapshot = prep_snapshot_source
+        else:
+            getter = getattr(prep_snapshot_source, "get_prep_snapshot", None)
+            self._load_prep_snapshot = getter if callable(getter) else (lambda: None)
         self._color = GetColor()
         self._timezone_name = str(timezone_name or "Europe/Moscow").strip() or "Europe/Moscow"
 
     def _select_tasks(self, req: RenderRequest) -> list[_DesignerTask]:
-        prep = self._engine.get_prep_snapshot()
+        prep = self._load_prep_snapshot()
         if prep is None:
             return []
         statuses = {str(item).strip().lower() for item in list(req.statuses or ["work", "pre_done"]) if str(item).strip()}
@@ -102,7 +106,7 @@ class DesignersRenderUseCase:
     def build_plan(self, req: RenderRequest) -> RenderPlan:
         selected = self._select_tasks(req)
         if not selected:
-            prep = self._engine.get_prep_snapshot()
+            prep = self._load_prep_snapshot()
             warning = "prep_snapshot_missing" if prep is None else "empty_render_plan"
             return RenderPlan(values=[], borders=[], warnings=[warning])
         by_owner: dict[str, list[TaskView]] = {}

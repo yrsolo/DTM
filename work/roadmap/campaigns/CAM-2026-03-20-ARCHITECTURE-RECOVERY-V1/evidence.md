@@ -24,6 +24,8 @@
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P04-T001`
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P05-T001`
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P06-T001`
+- [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P07-T001`
+- [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P08-T001`
 
 ## Verification
 - Command:
@@ -46,3 +48,6 @@
 - 2026-03-20: `src.telegram/*` is now compatibility-only; owning telegram implementation lives under `src.contexts.telegram_interaction.internal/*`, and the telegram interaction context module now builds parser/router/sender/webhook/group-query pieces from its own internal package.
 - 2026-03-20: `src.render/*` is now compatibility-only; owning rendering implementation lives under `src.contexts.rendering.internal/*`, and the rendering context module now builds usecases/job/writer/target-guard from its own internal package.
 - 2026-03-20: `src.services.attachments/*` is now compatibility-only; owning attachment implementation lives under `src.contexts.attachments.internal/*`, and the attachments context module now builds storage/finalize/read/metadata pieces from its own internal package.
+- 2026-03-20: active contexts no longer import `src.contexts.snapshot.public.get_snapshot_engine`; rendering, reminders, telegram interaction, attachments, runtime orchestration, and update flows now use snapshot-owned read/update/attachment/query capabilities instead of the broad engine surface.
+- 2026-03-20: active HTTP read handlers no longer depend on the broad snapshot engine surface directly; `frontend_v2_handler`, `info_handler`, and `people_snapshot_handler` now build against snapshot query capability, while `admin_queue_handler` reads snapshot state through `get_prep_snapshot` only.
+- 2026-03-20: targeted capability-split smoke is green, but the broader `tests.api.test_frontend_api_routing` suite still has independent outer-trace failures (`function_total` / outer debug headers) that are not caused by the snapshot boundary change and should be handled as a separate follow-up.

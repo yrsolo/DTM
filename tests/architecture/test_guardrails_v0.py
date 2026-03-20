@@ -330,6 +330,32 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
+    def test_active_paths_do_not_import_broad_snapshot_engine_surface(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "contexts" / "attachments",
+            ROOT / "src" / "contexts" / "reminders",
+            ROOT / "src" / "contexts" / "rendering",
+            ROOT / "src" / "contexts" / "telegram_interaction",
+            ROOT / "src" / "jobs",
+            ROOT / "src" / "services" / "timer_pipeline.py",
+            ROOT / "src" / "entrypoints" / "runtime" / "planner_runtime_entry.py",
+            ROOT / "src" / "entrypoints" / "http" / "admin_queue_handler.py",
+            ROOT / "src" / "entrypoints" / "http" / "admin_task_attachments_handler.py",
+            ROOT / "src" / "entrypoints" / "http" / "frontend_v2_handler.py",
+            ROOT / "src" / "entrypoints" / "http" / "info_handler.py",
+            ROOT / "src" / "entrypoints" / "http" / "people_snapshot_handler.py",
+            ROOT / "src" / "entrypoints" / "http" / "task_attachment_read_handler.py",
+        ]
+        for file_path in _python_files(target_paths):
+            content = file_path.read_text(encoding="utf-8")
+            if "get_snapshot_engine" in content and "src.contexts.snapshot.public" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+                continue
+            if "get_attachment_snapshot_engine" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
 
 if __name__ == "__main__":
     unittest.main()

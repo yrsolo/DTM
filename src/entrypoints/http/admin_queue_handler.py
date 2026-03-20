@@ -16,15 +16,11 @@ from src.commands.types import (
 )
 from src.contexts.snapshot.public import (
     get_prep_snapshot as _get_prep_snapshot,
-    get_snapshot_engine as _get_snapshot_engine,
 )
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response, json_response
 from src.entrypoints.triggers.trigger_plan import planned_trigger_commands, resolve_trigger_mode_by_id
-
-
-build_snapshot_engine = _get_snapshot_engine
 
 
 def get_prep_snapshot(ctx):

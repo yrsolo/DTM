@@ -11,16 +11,16 @@ def get_public_api():
     return get_module()
 
 
-def get_snapshot_engine(ctx):
-    return get_module().build_snapshot_engine(ctx)
+def get_snapshot_read_capability(ctx):
+    return get_module().build_snapshot_read_capability(ctx)
 
 
-def get_timeline_usecase(snapshot_engine, *, timezone_name: str):
-    return get_module().build_timeline_usecase(snapshot_engine, timezone_name=timezone_name)
+def get_timeline_usecase(snapshot_read, *, timezone_name: str):
+    return get_module().build_timeline_usecase(snapshot_read, timezone_name=timezone_name)
 
 
-def get_designers_usecase(snapshot_engine, *, timezone_name: str):
-    return get_module().build_designers_usecase(snapshot_engine, timezone_name=timezone_name)
+def get_designers_usecase(snapshot_read, *, timezone_name: str):
+    return get_module().build_designers_usecase(snapshot_read, timezone_name=timezone_name)
 
 
 def get_window(*, start=None, end=None, mode: str = "intersects"):

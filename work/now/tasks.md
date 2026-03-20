@@ -1,6 +1,6 @@
 # Active Tasks
 
-- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1: architecture-recovery canon is now the active roadmap; reminders, telegram interaction, rendering, and attachments own their internal implementation stacks, and the next hard slice is replacing broad `snapshot` engine access with capability-oriented APIs.
+- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1: architecture-recovery canon is now the active roadmap; broad `snapshot` engine access is removed from active contexts, runtime orchestration, and HTTP read paths via capability surfaces, and the next hard slice is making `access_api` the real ownership center while resolving the independent outer-trace API test drift.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done

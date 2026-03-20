@@ -11,9 +11,9 @@ from src.contexts.reminders.public import (
     get_formatter as _get_reminders_formatter,
     get_job_runner as _get_reminder_job_runner,
     get_sender as _get_reminders_sender,
+    get_snapshot_read_capability as _get_reminders_snapshot_read_capability,
     get_usecase as _get_reminders_usecase,
 )
-from src.contexts.snapshot.public import get_snapshot_engine as _get_snapshot_engine
 from src.entrypoints.jobs.quality_report_job import print_quality_report as _print_quality_report
 from src.entrypoints.jobs.runtime_context_job import RuntimeContextRequest, resolve_runtime_context
 from src.entrypoints.jobs.timer_job import TimerJob
@@ -25,7 +25,7 @@ from src.services.timer_pipeline import RunRequest as TimerRunRequest
 from src.services.timer_pipeline import TimerPipeline
 
 
-build_snapshot_engine = _get_snapshot_engine
+build_snapshot_engine = _get_reminders_snapshot_read_capability
 
 
 def _resolve_standard_run_mode(

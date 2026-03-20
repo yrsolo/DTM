@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 
 from src.app.context import AppContext
 from src.contexts.attachments.public import get_supported_attachment_mime_types
-from src.contexts.snapshot.public import get_snapshot_engine as _get_snapshot_engine
+from src.contexts.snapshot.public import get_query_capability as _get_snapshot_query_capability
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import html_response, json_response
@@ -30,7 +30,7 @@ from src.observability.buffered_metrics import metrics_sink_name, remote_metrics
 from src.worker.model import JobStatusRecord
 
 
-build_snapshot_engine = _get_snapshot_engine
+build_snapshot_engine = _get_snapshot_query_capability
 get_attachment_mime_types = get_supported_attachment_mime_types
 
 

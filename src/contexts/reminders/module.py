@@ -10,7 +10,7 @@ from src.adapters.llm_google import AsyncGoogleLLMChatAgent
 from src.adapters.llm_openai import AsyncOpenAIChatAgent
 from src.adapters.llm_yandex import AsyncYandexLLMChatAgent
 from src.adapters.telegram import TelegramNotifier
-from src.contexts.snapshot.public import get_snapshot_engine
+from src.contexts.snapshot.public import get_read_capability
 
 from .internal import ReminderFormatter, ReminderJob, ReminderUseCase
 
@@ -21,11 +21,11 @@ class RemindersModule:
 
     name: str = "reminders"
 
-    def build_snapshot_engine(self, ctx):
-        return get_snapshot_engine(ctx)
+    def build_snapshot_read_capability(self, ctx):
+        return get_read_capability(ctx)
 
-    def build_usecase(self, snapshot_engine):
-        return ReminderUseCase(snapshot_engine)
+    def build_usecase(self, snapshot_read):
+        return ReminderUseCase(snapshot_read)
 
     def build_formatter(self, ctx):
         return ReminderFormatter(

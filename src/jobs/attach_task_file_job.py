@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from src.app.context import AppContext
-from src.contexts.attachments.public import get_attachment_snapshot_engine
+from src.contexts.attachments.public import get_attachment_snapshot_capability
 from src.contexts.snapshot.contracts import AttachmentMeta
 from src.services.errors import AppError, UserError
 from src.services.attachments.policy import build_attachment_capabilities, infer_attachment_kind
@@ -13,7 +13,7 @@ from src.commands.model import Command
 from src.commands.types import GENERATE_ATTACHMENT_PREVIEW
 from src.platform.runtime.frontend_cache_invalidation import invalidate_default_frontend_cache_store
 
-build_snapshot_engine = get_attachment_snapshot_engine
+build_snapshot_engine = get_attachment_snapshot_capability
 
 
 class AttachTaskFileJob:

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from src.contexts.attachments.public import (
     get_attachment_read_resolver,
-    get_attachment_snapshot_engine,
+    get_attachment_snapshot_capability,
     get_attachment_storage,
 )
 from src.entrypoints.http.access_context import resolve_access_context
@@ -13,7 +13,7 @@ from src.services.errors import AppError
 
 
 def build_snapshot_engine(ctx):
-    return get_attachment_snapshot_engine(ctx)
+    return get_attachment_snapshot_capability(ctx)
 
 
 def build_attachment_storage(ctx):

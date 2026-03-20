@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from src.contexts.snapshot.public import get_snapshot_engine
+from src.contexts.snapshot.public import get_read_capability
 from .internal import TelegramCommandRouter, TelegramSender, TelegramUpdateParser, TelegramWebhookHandler
 from .internal.group_query_formatter import GroupQueryFormatter
 from .internal.group_query_usecase import GroupQueryUseCase
@@ -29,11 +29,11 @@ class TelegramInteractionModule:
             command_router=self.build_command_router(),
         )
 
-    def build_snapshot_engine(self, ctx):
-        return get_snapshot_engine(ctx)
+    def build_snapshot_read_capability(self, ctx):
+        return get_read_capability(ctx)
 
-    def build_usecase(self, snapshot_engine):
-        return GroupQueryUseCase(snapshot_engine)
+    def build_usecase(self, snapshot_read):
+        return GroupQueryUseCase(snapshot_read)
 
     def build_group_query_formatter(self):
         return GroupQueryFormatter()
