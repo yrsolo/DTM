@@ -46,6 +46,6 @@ src/contexts/reminders/
 
 ## Transitional extraction notes
 
-- current implementation is partly frozen operationally, so migrate with care
+- reminders remain an active operational priority
 - keep behavior stable while separating reminder logic from trigger semantics and transport details
-
+- reminders must not depend on deep Telegram redesign; Telegram is reserve capability, reminders are active product/runtime flow

@@ -8,6 +8,11 @@
 - update-to-command mapping
 - Telegram interaction flows for group/user replies
 
+Current architecture stance:
+- keep this module available and isolated
+- keep it low-maintenance unless product priority changes
+- do not let it reshape the main read-side or reminder roadmap
+
 ## Public facade expectation
 
 Target context shape:
@@ -46,4 +51,4 @@ src/contexts/telegram_interaction/
 
 - current behavior spans Telegram parser/router/webhook modules and the group query reply job
 - command ownership is fixed now: `group_query_reply -> telegram_interaction`
-
+- this module is a reserve capability, not a co-equal active architecture priority with the primary browser read-side

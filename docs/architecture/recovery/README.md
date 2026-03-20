@@ -1,8 +1,10 @@
 # Architecture Recovery
 
-This folder is the canonical architecture program for the next DTM recovery wave.
+> Superseded on 2026-03-20 by `docs/architecture/module-first-recovery/README.md`.
 
-It replaces `docs/architecture/runtime/modular-monolith-v2.md` as the primary normative source for future architecture work.
+This folder is the historical predecessor of the active module-first canon.
+
+It remains useful as the record of the previous recovery wave, but it is no longer the primary normative source for new architecture work.
 
 ## Start here
 
@@ -23,9 +25,9 @@ It replaces `docs/architecture/runtime/modular-monolith-v2.md` as the primary no
 ## Reading policy
 
 Use this folder when:
-- opening a new architecture-recovery campaign
-- deciding whether a change improves or worsens ownership
-- checking whether an old bridge should be removed instead of wrapped again
+- reviewing the previous recovery wave
+- checking how the earlier recovery program framed the same problems
+- comparing the module-first canon against the predecessor
 
 For attachment-related waves, read the frontend card publication scenario before decomposing work:
 - `attachments mutation -> platform/runtime invalidation/orchestration -> snapshot projection -> access_api cached delivery`
@@ -35,4 +37,4 @@ Current descriptive evidence still lives in:
 - `docs/architecture/runtime/modularity-audit-2026-03-19.md`
 
 Those files describe the current system state.
-This folder defines the target canon.
+This folder defines the previous target canon.

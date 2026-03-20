@@ -2,7 +2,8 @@
 
 ## Rule 1: No parallel canon
 
-Use this architecture-recovery set as the normative source.
+This architecture-recovery set is historical precedent.
+Use `docs/architecture/module-first-recovery/` as the active normative source.
 Current runtime docs remain descriptive evidence only.
 
 ## Rule 2: Every wave must improve ownership

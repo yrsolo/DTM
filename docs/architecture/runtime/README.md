@@ -4,7 +4,7 @@ This folder contains active runtime reference docs and descriptive evidence abou
 
 ## Start here
 
-- [../recovery/README.md](../recovery/README.md)
+- [../module-first-recovery/README.md](../module-first-recovery/README.md)
 - [architecture.md](architecture.md)
 - [dataflow.md](dataflow.md)
 - [module-map.md](module-map.md)
@@ -29,7 +29,7 @@ This folder contains active runtime reference docs and descriptive evidence abou
 Use this folder when you need the current runtime map, descriptive evidence, or historical architecture context.
 
 Current active reading path for architecture work:
-- `docs/architecture/recovery/README.md`
+- `docs/architecture/module-first-recovery/README.md`
 - `architecture-values.md`
 - `module-map.md`
 - `modularity-audit-2026-03-19.md`
