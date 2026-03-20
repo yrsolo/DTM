@@ -12,7 +12,7 @@ Governing policy:
 |---|---|---|---|---|
 | `index.py` | Entrypoint | Thin runtime shell for cloud events | OK | Lazy bootstrap and dispatch only. |
 | `src/entrypoint/*` | Entrypoint | Target thin entrypoint layer for parsed request routing | OK | New modular-monolith intake surface. |
-| `src/entrypoints/http/*` | Entrypoint | HTTP parsing, transport routing, and compatibility wrappers over context-owned handlers | OK | Browser/API transport boundary; access-api-owned handlers now live under `src/contexts/access_api/internal/*`. |
+| `src/entrypoints/http/*` | Entrypoint | HTTP parsing, transport routing, and response-shell logic over context-owned handlers | OK | Browser/API transport boundary; access-api-owned handlers now live under `src/contexts/access_api/internal/*`. |
 | `src/entrypoints/queue/*` | Entrypoint | Queue-trigger transport shell | OK | Canonical worker intake boundary. |
 | `src/entrypoints/triggers/*` | Entrypoint | Scheduled-trigger intake and queue fan-out | OK | Canonical trigger boundary. |
 | `src/entrypoints/runtime/*` | Entrypoint | Explicit runtime-mode bridge for local/manual execution | OK | Includes the transitional adapter used by local/runtime shells. |

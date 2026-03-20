@@ -365,6 +365,18 @@ class GuardrailsV0TestCase(unittest.TestCase):
         self.assertNotIn("from src.entrypoints.http.frontend_response_cache", content)
         self.assertNotIn("import src.entrypoints.http.frontend_response_cache", content)
 
+    def test_removed_http_access_api_wrappers_do_not_exist(self) -> None:
+        removed_paths = [
+            ROOT / "src" / "entrypoints" / "http" / "frontend_compat_handlers.py",
+            ROOT / "src" / "entrypoints" / "http" / "frontend_v2_handler.py",
+            ROOT / "src" / "entrypoints" / "http" / "info_handler.py",
+            ROOT / "src" / "entrypoints" / "http" / "people_snapshot_handler.py",
+            ROOT / "src" / "entrypoints" / "http" / "task_attachment_read_handler.py",
+            ROOT / "src" / "entrypoints" / "http" / "frontend_response_cache.py",
+        ]
+        offenders = [str(path.relative_to(ROOT)) for path in removed_paths if path.exists()]
+        self.assertEqual(offenders, [])
+
     def test_active_render_jobs_do_not_import_old_render_target_guard(self) -> None:
         offenders: list[str] = []
         target_paths = [
@@ -389,10 +401,6 @@ class GuardrailsV0TestCase(unittest.TestCase):
             ROOT / "src" / "entrypoints" / "runtime" / "planner_runtime_entry.py",
             ROOT / "src" / "entrypoints" / "http" / "admin_queue_handler.py",
             ROOT / "src" / "entrypoints" / "http" / "admin_task_attachments_handler.py",
-            ROOT / "src" / "entrypoints" / "http" / "frontend_v2_handler.py",
-            ROOT / "src" / "entrypoints" / "http" / "info_handler.py",
-            ROOT / "src" / "entrypoints" / "http" / "people_snapshot_handler.py",
-            ROOT / "src" / "entrypoints" / "http" / "task_attachment_read_handler.py",
         ]
         for file_path in _python_files(target_paths):
             content = file_path.read_text(encoding="utf-8")

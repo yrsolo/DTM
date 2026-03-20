@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from src.entrypoints.http.frontend_response_cache import (
+from src.contexts.access_api.internal.frontend_response_cache import (
     default_frontend_cache_keys,
     invalidate_default_frontend_responses,
 )

@@ -62,7 +62,7 @@ Prep timing metrics:
 - Unsafe target is blocked at runtime with `error.code=render_target_unsafe`.
 
 ## 3) Query runtime
-- API handler: `src/entrypoints/http/frontend_v2_handler.py`
+- API handler: `src/contexts/access_api/internal/frontend_v2_handler.py` via `src/entrypoints/http/router.py`
 - Query engine: `src/snapshot_engine/query_engine.py`
 - Source: `PrepSnapshot` from S3
 

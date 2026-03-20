@@ -17,10 +17,7 @@ import index
 from src.contexts.access_api.internal import frontend_v2_handler as access_frontend_v2_module
 from src.contexts.access_api.internal import info_handler as access_info_handler_module
 from src.contexts.access_api.internal import people_snapshot_handler as access_people_snapshot_handler_module
-from src.entrypoints.http import frontend_v2_handler as frontend_v2_module
-from src.entrypoints.http import info_handler as info_handler_module
-from src.entrypoints.http import people_snapshot_handler as people_snapshot_handler_module
-from src.entrypoints.http.frontend_response_cache import default_frontend_cache_key
+from src.contexts.access_api.internal.frontend_response_cache import default_frontend_cache_key
 from src.entrypoints.http.event_parser import extract_payload, http_path, query_params
 from src.entrypoints.http.frontend_query_params import parse_bool
 from src.entrypoints.http.runtime_mode import extract_force_refresh, extract_run_mode
@@ -215,17 +212,17 @@ def _shape_signature(value):  # noqa: ANN001
 
 class FrontendApiRoutingTestCase(unittest.TestCase):
     def setUp(self) -> None:
-        self._orig_build_snapshot_engine = frontend_v2_module.build_snapshot_engine
+        self._orig_build_snapshot_engine = access_frontend_v2_module.build_snapshot_engine
         self._orig_access_build_snapshot_engine = access_frontend_v2_module.build_snapshot_engine
-        self._orig_info_build_snapshot_engine = info_handler_module.build_snapshot_engine
+        self._orig_info_build_snapshot_engine = access_info_handler_module.build_snapshot_engine
         self._orig_access_info_build_snapshot_engine = access_info_handler_module.build_snapshot_engine
-        self._orig_people_build_snapshot_engine = people_snapshot_handler_module.build_snapshot_engine
+        self._orig_people_build_snapshot_engine = access_people_snapshot_handler_module.build_snapshot_engine
         self._orig_access_people_build_snapshot_engine = access_people_snapshot_handler_module.build_snapshot_engine
-        self._orig_info_get_queue_live_stats = info_handler_module.get_queue_live_stats
+        self._orig_info_get_queue_live_stats = access_info_handler_module.get_queue_live_stats
         self._orig_access_info_get_queue_live_stats = access_info_handler_module.get_queue_live_stats
-        self._orig_info_get_function_build_info = info_handler_module.get_function_build_info
+        self._orig_info_get_function_build_info = access_info_handler_module.get_function_build_info
         self._orig_access_info_get_function_build_info = access_info_handler_module.get_function_build_info
-        self._orig_info_storage_stats = info_handler_module.InfoHandler._storage_stats
+        self._orig_info_storage_stats = access_info_handler_module.InfoHandler._storage_stats
         self._orig_access_info_storage_stats = access_info_handler_module.InfoHandler._storage_stats
         self._orig_job_status_store = index.APP_DEPS.get("job_status_store")
         self._orig_metrics_client = index.APP_DEPS.get("metrics_client")
@@ -280,19 +277,15 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
                 ],
             }
         )
-        frontend_v2_module.build_snapshot_engine = lambda _ctx: self._engine  # type: ignore[assignment]
         access_frontend_v2_module.build_snapshot_engine = lambda _ctx: self._engine  # type: ignore[assignment]
-        info_handler_module.build_snapshot_engine = lambda _ctx: _FakeInfoSnapshotEngine()  # type: ignore[assignment]
         access_info_handler_module.build_snapshot_engine = lambda _ctx: _FakeInfoSnapshotEngine()  # type: ignore[assignment]
-        people_snapshot_handler_module.build_snapshot_engine = lambda _ctx: self._engine  # type: ignore[assignment]
         access_people_snapshot_handler_module.build_snapshot_engine = lambda _ctx: self._engine  # type: ignore[assignment]
-        info_handler_module.get_queue_live_stats = lambda **_kwargs: type(  # type: ignore[assignment]
+        access_info_handler_module.get_queue_live_stats = lambda **_kwargs: type(  # type: ignore[assignment]
             "QueueStats",
             (),
             {"to_dict": staticmethod(lambda: {"queue_name": "dtm-test-commands", "messages_visible": 1, "messages_in_flight": 0, "messages_delayed": 0, "dlq_configured": True})},
         )()
-        access_info_handler_module.get_queue_live_stats = info_handler_module.get_queue_live_stats  # type: ignore[assignment]
-        info_handler_module.get_function_build_info = lambda **_kwargs: type(  # type: ignore[assignment]
+        access_info_handler_module.get_function_build_info = lambda **_kwargs: type(  # type: ignore[assignment]
             "BuildInfo",
             (),
             {
@@ -306,14 +299,12 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
                 "service_account_id": "aje-test",
             },
         )()
-        access_info_handler_module.get_function_build_info = info_handler_module.get_function_build_info  # type: ignore[assignment]
-        info_handler_module.InfoHandler._storage_stats = lambda _self, _bucket, _prefix: {  # type: ignore[assignment]
+        access_info_handler_module.InfoHandler._storage_stats = lambda _self, _bucket, _prefix: {  # type: ignore[assignment]
             "objectsTotal": 4,
             "bytesTotal": 1024,
             "bytesHuman": "1.00 KB",
             "byPrefix": {"raw": 100, "prep": 200, "extra": 300, "attachments": 400, "jobs": 24},
         }
-        access_info_handler_module.InfoHandler._storage_stats = info_handler_module.InfoHandler._storage_stats  # type: ignore[assignment]
         index.APP_DEPS["job_status_store"] = _FakeInfoStatusStore()
         index.APP_DEPS["metrics_client"] = self._metrics
         index.APP_DEPS["browser_auth_proxy_secret"] = "proxy-secret-test"
@@ -322,17 +313,11 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         RECENT_DIRECT_API_OUTER_TRACES._events.clear()  # type: ignore[attr-defined]
 
     def tearDown(self) -> None:
-        frontend_v2_module.build_snapshot_engine = self._orig_build_snapshot_engine  # type: ignore[assignment]
         access_frontend_v2_module.build_snapshot_engine = self._orig_access_build_snapshot_engine  # type: ignore[assignment]
-        info_handler_module.build_snapshot_engine = self._orig_info_build_snapshot_engine  # type: ignore[assignment]
         access_info_handler_module.build_snapshot_engine = self._orig_access_info_build_snapshot_engine  # type: ignore[assignment]
-        people_snapshot_handler_module.build_snapshot_engine = self._orig_people_build_snapshot_engine  # type: ignore[assignment]
         access_people_snapshot_handler_module.build_snapshot_engine = self._orig_access_people_build_snapshot_engine  # type: ignore[assignment]
-        info_handler_module.get_queue_live_stats = self._orig_info_get_queue_live_stats  # type: ignore[assignment]
         access_info_handler_module.get_queue_live_stats = self._orig_access_info_get_queue_live_stats  # type: ignore[assignment]
-        info_handler_module.get_function_build_info = self._orig_info_get_function_build_info  # type: ignore[assignment]
         access_info_handler_module.get_function_build_info = self._orig_access_info_get_function_build_info  # type: ignore[assignment]
-        info_handler_module.InfoHandler._storage_stats = self._orig_info_storage_stats  # type: ignore[assignment]
         access_info_handler_module.InfoHandler._storage_stats = self._orig_access_info_storage_stats  # type: ignore[assignment]
         index.APP_DEPS["job_status_store"] = self._orig_job_status_store
         index.APP_DEPS["metrics_client"] = self._orig_metrics_client
@@ -552,8 +537,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self.assertEqual(payload.get("error", {}).get("code"), "unsupported_mode")
 
     def test_v2_returns_503_when_snapshot_source_unavailable(self) -> None:
-        frontend_v2_module.build_snapshot_engine = lambda _ctx: (_ for _ in ()).throw(RuntimeError("s3 down"))  # type: ignore[assignment]
-        access_frontend_v2_module.build_snapshot_engine = frontend_v2_module.build_snapshot_engine  # type: ignore[assignment]
+        access_frontend_v2_module.build_snapshot_engine = lambda _ctx: (_ for _ in ()).throw(RuntimeError("s3 down"))  # type: ignore[assignment]
         event = _fixture_event()
         event["pathParams"]["proxy"] = "api/v2/frontend"
         event["params"]["proxy"] = "api/v2/frontend"
