@@ -13,6 +13,7 @@ Replace the modular-monolith V2 canon with the new architecture-recovery canon a
 - `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P01-T001` publish canonical recovery docs under `docs/architecture/recovery/`
 - `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P01-T002` rewire runtime docs so recovery docs are the primary normative source
 - `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P01-T003` update tracking so the previous modular-monolith umbrella campaign is historical precedent, not current canon
+- `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P01-T004` capture the frontend attachment card publication scenario and wire it into the recovery canon as the governing attachment acceptance path
 
 ### P02 - Simplify the top path
 - `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P02-T001` reduce competing top-path reading routes and tighten runtime readability guards

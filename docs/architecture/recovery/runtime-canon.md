@@ -8,6 +8,10 @@ The top path must be readable in 1-2 screens:
 - `src/platform/runtime/*`
 - owning module facade
 
+For browser task-card reads, the canonical path is read-side delivery:
+- mutation may start elsewhere, but card visibility is judged through `snapshot` projection and `access_api` cached delivery
+- upload-only or finalize-only paths are not the canonical end of the browser scenario
+
 ## Runtime responsibilities
 
 Runtime owns:
@@ -16,6 +20,7 @@ Runtime owns:
 - explicit command routing
 - orchestration of triggers and invalidation jobs
 - diagnostics and operator surfaces
+- orchestration that connects mutation completion to read-side freshness
 
 Runtime does not own:
 - business rules

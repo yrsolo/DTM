@@ -19,6 +19,7 @@
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P01-T001`
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P01-T002`
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P01-T003`
+- [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P01-T004`
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P02-T001`
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P03-T001`
 - [x] `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1-P04-T001`
@@ -55,3 +56,4 @@
 - 2026-03-20: direct API outer-trace finalization now follows the active `HttpShell` top path; `function_total`, outer debug headers, and recent outer-trace recording no longer depend on the retired `IndexDispatcher` path.
 - 2026-03-20: old HTTP handler modules (`frontend_compat_handlers`, `frontend_v2_handler`, `info_handler`, `people_snapshot_handler`, `task_attachment_read_handler`) are now compatibility wrappers only; the owning implementation center is `access_api`.
 - 2026-03-20: `src.entrypoints.index_dispatcher.IndexDispatcher` is now compatibility-only and delegates into `src.entrypoint.handler`; active top-path ownership stays in the thin entrypoint plus shells.
+- 2026-03-20: added `docs/integrations/attachments/frontend-card-publication.md` and rewired recovery/module/product docs so attachment-related waves are judged by publication into the cached task card payload, not by upload/finalize alone.

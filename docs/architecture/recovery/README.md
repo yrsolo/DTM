@@ -11,6 +11,7 @@ It replaces `docs/architecture/runtime/modular-monolith-v2.md` as the primary no
 - [ownership-and-boundaries.md](ownership-and-boundaries.md)
 - [runtime-canon.md](runtime-canon.md)
 - [migration-rules.md](migration-rules.md)
+- [../../integrations/attachments/frontend-card-publication.md](../../integrations/attachments/frontend-card-publication.md) for the governing attachment publication scenario
 
 ## Program control
 
@@ -25,6 +26,9 @@ Use this folder when:
 - opening a new architecture-recovery campaign
 - deciding whether a change improves or worsens ownership
 - checking whether an old bridge should be removed instead of wrapped again
+
+For attachment-related waves, read the frontend card publication scenario before decomposing work:
+- `attachments mutation -> platform/runtime invalidation/orchestration -> snapshot projection -> access_api cached delivery`
 
 Current descriptive evidence still lives in:
 - `docs/architecture/runtime/module-map.md`

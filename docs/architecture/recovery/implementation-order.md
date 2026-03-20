@@ -22,3 +22,14 @@
 - attachments first because it is the strongest extraction candidate
 - cache decoupling early because cache is currently one of the main cross-module glue points
 - snapshot/rendering later because it is the riskiest boundary and should be cut after module discipline is stronger
+
+## Scenario acceptance language
+
+Attachment, cache, snapshot, and access-api waves are not complete unless the architecture clearly supports this path:
+
+`attachments mutation -> platform/runtime invalidation/orchestration -> snapshot projection -> access_api cached delivery`
+
+For this scenario:
+- upload and `finalize` are only mutation-start signals
+- terminal job success is not enough by itself
+- the wave is complete only when attachment publication into the cached task card payload is an explicit supported path in the docs and architecture

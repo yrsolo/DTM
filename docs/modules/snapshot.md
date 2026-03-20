@@ -7,6 +7,7 @@
 - normalization
 - state build/update
 - prepared read-side state and public query-facing contracts
+- projection of attachment state into task card read models
 
 ## Public facade expectation
 
@@ -43,8 +44,9 @@ src/contexts/snapshot/
 - no primary frontend route ownership is expected here
 - snapshot exposes public contracts/facades for other contexts, especially `access_api` and `rendering`
 
+For the attachment card scenario, `snapshot` is the point where mutation-state becomes visible card read-side state.
+
 ## Transitional extraction notes
 
 - current implementation spans `src/core/*`, `src/services/sources/*`, `src/snapshot_engine/*`, and snapshot job wiring
 - split ownership first, then reduce legacy/transitional overlap
-

@@ -36,3 +36,4 @@ The program is successful only if all conditions are true at the same time.
 ## Readability
 
 - a new engineer can open entrypoint, one module facade, and one module builder and understand the scenario in under a minute
+- for the attachment card scenario, a new engineer can follow publication from mutation to cached card delivery by opening `entrypoint`, `platform/runtime`, `attachments`, `snapshot`, and `access_api`

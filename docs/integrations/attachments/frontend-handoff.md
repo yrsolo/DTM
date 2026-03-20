@@ -2,6 +2,8 @@
 
 This document is the current frontend integration handoff for task attachments.
 
+For the product scenario and architecture ownership of this flow, see [frontend-card-publication.md](frontend-card-publication.md).
+
 ## Confidence level
 
 What is confirmed right now:
