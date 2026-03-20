@@ -1,6 +1,6 @@
 # Active Tasks
 
-- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1: architecture-recovery canon is now the active roadmap; attachment-related waves are anchored to the frontend card publication scenario, `access_api` owns frontend/info/people/attachment-read handlers, `IndexDispatcher` is compatibility-only over the thin entrypoint, and the next hard slice is destructive archive/demotion policy for the remaining wrapper roots.
+- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1: architecture-recovery canon is now the active roadmap; attachment-related waves are anchored to the frontend card publication scenario, active attachment and access-api paths no longer depend on `src.services.attachments` or `src.entrypoints.http.frontend_response_cache`, and the next hard slice is destructive archive/demotion policy for the remaining compatibility wrapper roots.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done
