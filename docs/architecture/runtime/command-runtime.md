@@ -90,7 +90,7 @@ Operator truth sources:
 Thin top-level shell:
 
 - `index.py`
-- `src/entrypoints/index_dispatcher.py`
+- `src/entrypoint/handler.py`
 
 Transport shells:
 

@@ -1,6 +1,6 @@
 # Active Tasks
 
-- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1: architecture-recovery canon is now the active roadmap; active runtime no longer depends on `src.services.attachments`, `src.entrypoints.http.frontend_response_cache`, or `src.entrypoints.index_dispatcher`, the main notify/telegram/render test contour reads through context-owned packages, and the next hard slice is destructive archive/demotion policy for the remaining compatibility wrapper roots.
+- CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1: architecture-recovery canon is now the active roadmap; active runtime no longer depends on `src.services.attachments`, `src.entrypoints.http.frontend_response_cache`, or `src.entrypoints.index_dispatcher`, `index.py` now reads directly through the thin entrypoint and shells, the main notify/telegram/render test contour reads through context-owned packages, and the next hard slice is destructive archive/demotion policy for the remaining compatibility wrapper roots.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
 
 ## Done

@@ -23,12 +23,9 @@ Current active top path:
 - `src/platform/bootstrap.py` lazy shell getters
 - `src/entrypoints/http/http_shell.py` or `src/entrypoints/queue/worker_shell.py` or `src/entrypoints/triggers/trigger_shell.py`
 
-`src/entrypoints/index_dispatcher.py` remains transitional compatibility code and is no longer the canonical top-path router.
-
 ## Dispatcher and transport shells
 
 Active routing lives in:
-- `src/entrypoints/index_dispatcher.py`
 - `src/entrypoints/event_classifier.py`
 
 Transport shells:

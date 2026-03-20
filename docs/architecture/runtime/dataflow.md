@@ -13,7 +13,7 @@ Hash basis is stable JSON over `{values, colors}`.
 Runtime object:
 - `src/services/timer_pipeline.py` -> `TimerPipeline(AppContext)`
 - `TimerPipeline.run(RunRequest(...))` invokes `SnapshotEngine.update(...)`
-- top-level transport dispatch: `index.py` -> `src/entrypoints/index_dispatcher.py`
+- top-level transport dispatch: `index.py` -> `src/entrypoint/handler.py`
 - runtime bridge for explicit modes: `src/entrypoints/runtime/runtime_shell.py`
 
 Execution order:
