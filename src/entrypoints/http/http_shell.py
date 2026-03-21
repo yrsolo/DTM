@@ -5,7 +5,7 @@ from __future__ import annotations
 from time import perf_counter
 from typing import Any
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.entrypoints.http.debug_utils import debug_http_shape
 from src.entrypoints.http.dto import HttpRequest, to_gateway_response
 from src.entrypoints.http.event_parser import (
@@ -20,7 +20,7 @@ from src.entrypoints.http.router import HttpRouter
 from src.entrypoints.http.runtime_execution import RuntimeExecutionRequest
 from src.entrypoints.http.runtime_mode import extract_force_refresh, extract_run_mode
 from src.entrypoints.http.frontend_query_params import parse_bool
-from src.observability.bottlenecks import (
+from src.platform.observability.bottlenecks import (
     append_response_headers,
     build_server_timing_header,
     is_direct_api_operation,
@@ -31,7 +31,7 @@ from src.observability.bottlenecks import (
     record_api_outer_stage,
     record_direct_api_outer_trace,
 )
-from src.observability.buffered_metrics import managed_metrics_scope
+from src.platform.observability.buffered_metrics import managed_metrics_scope
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES, is_legacy_mode
 from src.entrypoints.runtime.runtime_shell import RuntimeShell
 

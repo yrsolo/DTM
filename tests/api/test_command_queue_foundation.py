@@ -14,14 +14,14 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 import index
-from src.commands.model import Command, RequestedBy
-from src.commands.serializer import command_from_json, command_to_json
+from src.platform.runtime.commands.model import Command, RequestedBy
+from src.platform.runtime.commands.serializer import command_from_json, command_to_json
 from src.entrypoints.http.admin_task_attachments_handler import AdminTaskAttachmentsHandler
 from src.entrypoints.http.admin_queue_handler import AdminQueueHandler
 from src.entrypoints.http.dto import HttpRequest
 from src.entrypoints.http.job_status_handler import JobStatusHandler
 from src.platform import bootstrap as runtime_bootstrap
-from src.worker.model import JobStatusRecord
+from src.platform.runtime.worker.model import JobStatusRecord
 
 
 class _FakeProducer:
@@ -645,5 +645,6 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
 
 

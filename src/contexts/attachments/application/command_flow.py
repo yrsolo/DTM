@@ -1,9 +1,9 @@
-"""Application-owned command flow for the attachments context."""
+﻿"""Application-owned command flow for the attachments context."""
 
 from __future__ import annotations
 
-from src.app.context import AppContext
-from src.commands.types import (
+from src.platform.context import AppContext
+from src.platform.runtime.commands.types import (
     ATTACH_TASK_FILE,
     CLEANUP_TASK_ATTACHMENTS,
     DELETE_TASK_ATTACHMENT,
@@ -46,3 +46,4 @@ class AttachmentCommandFlow:
 
 
 __all__ = ["AttachmentCommandFlow"]
+

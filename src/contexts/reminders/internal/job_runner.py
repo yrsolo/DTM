@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.contexts.reminders.public import (
     get_enhancer as _get_reminders_enhancer,
     get_formatter as _get_reminders_formatter,
@@ -11,7 +11,7 @@ from src.contexts.reminders.public import (
     get_usecase as _get_reminders_usecase,
     make_reminder_request as _make_reminder_request_from_module,
 )
-from src.observability import timed
+from src.platform.observability import timed
 
 
 get_snapshot_read_api = _get_reminders_snapshot_read_api

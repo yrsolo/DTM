@@ -1,9 +1,9 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from src.app.context import AppContext
-from src.commands.model import Command
+from src.platform.context import AppContext
+from src.platform.runtime.commands.model import Command
 from src.contexts.attachments.public import (
     get_attachment_snapshot_api,
     get_attachment_storage,
@@ -170,3 +170,4 @@ class GenerateAttachmentPreviewJob:
 
 
 __all__ = ["GenerateAttachmentPreviewJob"]
+

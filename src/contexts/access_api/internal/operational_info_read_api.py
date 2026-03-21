@@ -1,4 +1,4 @@
-"""Operational info dashboard handler."""
+﻿"""Operational info dashboard handler."""
 
 from __future__ import annotations
 
@@ -10,15 +10,15 @@ from time import perf_counter
 from typing import Any
 from urllib.parse import urlparse
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.contexts.attachments.public import get_supported_attachment_mime_types
 from src.contexts.snapshot.module import get_query_api as _get_snapshot_query_api
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import html_response, json_response
-from src.infra.yc_function_info import get_function_build_info
-from src.infra.yc_queue_info import get_queue_live_stats
-from src.observability.bottlenecks import (
+from src.platform.integrations.yandex_cloud.function_info import get_function_build_info
+from src.platform.integrations.yandex_cloud.queue_info import get_queue_live_stats
+from src.platform.observability.bottlenecks import (
     RECENT_DIRECT_API_OUTER_TRACES,
     RECENT_API_STAGE_EVENTS,
     is_debug_metrics_enabled,
@@ -26,9 +26,9 @@ from src.observability.bottlenecks import (
     is_stage_metrics_enabled,
     resolve_bottleneck_metrics_level,
 )
-from src.observability.buffered_metrics import metrics_sink_name, remote_metrics_enabled
+from src.platform.observability.buffered_metrics import metrics_sink_name, remote_metrics_enabled
 from src.platform.runtime.command_runtime import get_command_runtime
-from src.worker.model import JobStatusRecord
+from src.platform.runtime.worker.model import JobStatusRecord
 
 
 get_snapshot_query_api = _get_snapshot_query_api
@@ -786,3 +786,4 @@ class OperationalInfoReadApi:
         if as_json:
             return json_response(200, payload)
         return html_response(200, _render_info_page(payload))
+

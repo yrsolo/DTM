@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.contexts.snapshot.module import get_attachment_api
-from src.infra.doc_preview_converter import DocPreviewConverter
+from src.contexts.attachments.internal.doc_preview_converter import DocPreviewConverter
 
 from .internal import AttachmentFinalizeService, AttachmentReadResolver, build_attachment_storage
 

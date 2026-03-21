@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Protocol
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 
 
 @dataclass(slots=True)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.contexts.telegram_interaction.public import (
     get_group_query_formatter as _get_group_query_formatter,
     get_sender as _get_group_query_sender,

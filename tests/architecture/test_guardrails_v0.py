@@ -12,6 +12,10 @@ TARGET_DIRS = [
     ROOT / "src" / "contexts",
 ]
 
+ALLOWED_ENV_READ_FILES = {
+    ROOT / "src" / "platform" / "bootstrap.py",
+}
+
 
 def _python_files(paths: list[Path]) -> list[Path]:
     result: list[Path] = []
@@ -30,6 +34,8 @@ class GuardrailsV0TestCase(unittest.TestCase):
     def test_target_layers_do_not_read_env_directly(self) -> None:
         offenders: list[str] = []
         for file_path in _python_files(TARGET_DIRS):
+            if file_path in ALLOWED_ENV_READ_FILES:
+                continue
             content = file_path.read_text(encoding="utf-8")
             if "os.getenv(" in content:
                 offenders.append(str(file_path.relative_to(ROOT)))
@@ -138,7 +144,7 @@ class GuardrailsV0TestCase(unittest.TestCase):
         self.assertNotIn("APP_TRIGGERS", content)
         self.assertNotIn("def _get_app_context", content)
 
-    def test_active_entrypoints_do_not_import_app_bootstrap_directly(self) -> None:
+    def test_active_entrypoints_do_not_import_removed_app_bootstrap(self) -> None:
         offenders: list[str] = []
         target_paths = [
             ROOT / "src" / "entrypoint",
@@ -307,10 +313,10 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
-    def test_app_bootstrap_does_not_build_attachment_converter_directly(self) -> None:
-        file_path = ROOT / "src" / "app" / "bootstrap.py"
+    def test_platform_bootstrap_does_not_build_attachment_converter_directly(self) -> None:
+        file_path = ROOT / "src" / "platform" / "bootstrap.py"
         content = file_path.read_text(encoding="utf-8")
-        self.assertNotIn("from src.infra.doc_preview_converter import DocPreviewConverter", content)
+        self.assertNotIn("DocPreviewConverter", content)
         self.assertNotIn("DocPreviewConverter(", content)
 
     def test_active_module_first_paths_do_not_import_jobs_directly(self) -> None:
@@ -335,12 +341,16 @@ class GuardrailsV0TestCase(unittest.TestCase):
     def test_removed_historical_test_roots_do_not_exist(self) -> None:
         for relative in [
             "tests/adapters",
+            "tests/app",
             "tests/entrypoint",
+            "tests/infra",
             "tests/jobs",
+            "tests/observability",
             "tests/snapshot_engine",
             "tests/notify",
             "tests/render",
             "tests/telegram",
+            "tests/worker",
         ]:
             path = ROOT / relative
             python_files = sorted(path.rglob("*.py")) if path.exists() else []
@@ -477,6 +487,7 @@ class GuardrailsV0TestCase(unittest.TestCase):
 
     def test_removed_technical_compatibility_roots_do_not_exist(self) -> None:
         removed_paths = [
+            ROOT / "src" / "app",
             ROOT / "src" / "entrypoint",
             ROOT / "src" / "render",
             ROOT / "src" / "notify",
@@ -492,6 +503,8 @@ class GuardrailsV0TestCase(unittest.TestCase):
             ROOT / "src" / "services" / "sources",
             ROOT / "src" / "services",
             ROOT / "src" / "adapters",
+            ROOT / "src" / "infra",
+            ROOT / "src" / "observability",
             ROOT / "src" / "handlers",
             ROOT / "src" / "entrypoints_adapters",
         ]

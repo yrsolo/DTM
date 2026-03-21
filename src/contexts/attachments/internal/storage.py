@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.platform.errors import PermanentError, TransientError, UserError
 
 

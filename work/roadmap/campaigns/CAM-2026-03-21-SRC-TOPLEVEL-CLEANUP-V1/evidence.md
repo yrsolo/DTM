@@ -80,8 +80,8 @@
   - `tests/services/test_readmodel_uses_milestones_table.py`
   - `tests/services/test_source_policy.py`
   - `tests/services/test_sync_source_hash_gate.py`
-- tracked top-level `src/` map now reads through active architecture zones only:
-  - `app`, `archive`, `commands`, `config`, `contexts`, `core`, `entrypoints`, `infra`, `observability`, `platform`, `worker`
+- tracked top-level `src/` map is being reduced to role-true active architecture zones:
+  - `archive`, `config`, `contexts`, `core`, `entrypoints`, `platform`
 - `src/__pycache__` may reappear during local test runs; it is treated as Python runtime noise rather than an architecture root and is no longer part of the structural kill criteria.
 - `src/entrypoint`, `src/services`, and `tests/entrypoint` may still exist locally as `__pycache__` directories during a dirty worktree test run; they no longer exist as tracked Python roots.
 - guardrail strengthened in `tests/architecture/test_guardrails_v0.py` so removed top-level historical roots, `entrypoints_adapters`, `src/entrypoint`, and `tests/entrypoint` must not return as tracked Python roots.
@@ -96,5 +96,17 @@
 - verification after removing the tracked adapter root stayed green:
   - `python -m unittest tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.entrypoints.test_planner_runtime_entry tests.api.test_command_queue_foundation tests.api.test_frontend_api_routing tests.contexts.reminders.test_send_reminders_job tests.contexts.telegram_interaction.test_group_query_reply_job tests.contexts.snapshot.test_sheets_normalized_source tests.core.test_timing_year_modes tests.services.test_ydb_backoff tests.platform.infra.test_operational_store tests.platform.infra.test_operational_store_repository tests.platform.infra.ydb.test_operational_repo_dates tests.platform.infra.ydb.test_operational_repo_history tests.platform.infra.ydb.test_operational_repo_milestones_bulk tests.platform.infra.ydb.test_operational_repo_versions_bulk tests.platform.infra.ydb.test_operational_task_repository tests.platform.infra.ydb.test_schema_history_column -v`
 - next blocker is no longer the adapter root; tracked `src/adapters` is gone from the active repo map.
-- the loudest remaining architectural split is now the coexistence of `src/app` and `src/platform`: bootstrap/context live in `app`, while runtime/integrations/infra now live in `platform`.
-- from here the next step is no longer a safe top-level cleanup. It is a design choice: keep `app` as a justified composition/config contour, or fold it deeper into `platform` for one tighter runtime map.
+- the active upper-contour cut now chooses the tighter path: `AppContext` and bootstrap move into `platform`, and pure timezone helpers move into `core` instead of preserving `app` as a second runtime-looking root.
+- the next active cut keeps the same principle: `infra` is redistributed into platform integrations plus attachment internals, and `observability` is folded into `platform/observability` instead of surviving as another top-level technical shelf.
+- verification after the upper-contour and platform-folding cuts stayed green:
+  - `python -m unittest tests.platform.test_bootstrap_inputs tests.platform.test_bootstrap_monitoring tests.core.test_timezone_utils tests.platform.integrations.yandex_cloud.test_iam tests.platform.integrations.yandex_cloud.test_function_info tests.platform.integrations.grafana.test_api tests.platform.integrations.grafana.test_specs tests.platform.integrations.datalens.test_api tests.platform.integrations.datalens.test_specs tests.platform.observability.test_metrics_batching tests.platform.observability.test_metrics_timing_logging tests.platform.observability.test_prometheus_metrics tests.platform.observability.test_yandex_monitoring_metrics tests.api.test_info_observability tests.api.test_frontend_api_routing tests.api.test_command_queue_foundation tests.api.test_telegram_webhook_handler tests.contexts.attachments.test_attach_task_file_job tests.contexts.attachments.test_delete_task_attachment_job tests.contexts.attachments.test_cleanup_task_attachments_job tests.contexts.attachments.test_generate_attachment_preview_job tests.contexts.reminders.test_send_reminders_job tests.contexts.telegram_interaction.test_group_query_reply_job tests.entrypoints.test_import_safety tests.entrypoints.test_planner_runtime_entry tests.platform.runtime.test_timer_pipeline tests.architecture.test_guardrails_v0 -v`
+- folded the remaining command-contract and worker-runtime roots into `platform/runtime`:
+  - `src/commands/*` -> `src/platform/runtime/commands/*`
+  - `src/worker/*` -> `src/platform/runtime/worker/*`
+  - aligned worker tests moved from `tests/worker/*` -> `tests/platform/runtime/worker/*`
+  - aligned queue dispatch test moved from `tests/platform/test_queue_dispatch.py` -> `tests/platform/runtime/test_queue_dispatch.py`
+- verification after the runtime-contract fold stayed green:
+  - `python -m unittest tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.entrypoints.test_planner_runtime_entry tests.api.test_command_queue_foundation tests.api.test_frontend_api_routing tests.api.test_telegram_webhook_handler tests.api.test_info_observability tests.contexts.attachments.test_attach_task_file_job tests.contexts.attachments.test_delete_task_attachment_job tests.contexts.attachments.test_cleanup_task_attachments_job tests.contexts.attachments.test_generate_attachment_preview_job tests.contexts.reminders.test_send_reminders_job tests.contexts.telegram_interaction.test_group_query_reply_job tests.platform.runtime.test_queue_dispatch tests.platform.runtime.test_timer_pipeline tests.platform.runtime.worker.test_retry_semantics tests.platform.runtime.worker.test_status_store_history tests.architecture.test_target_skeleton_imports -v`
+- active top-level `src/` map now reads through six live roots only:
+  - `archive`, `config`, `contexts`, `core`, `entrypoints`, `platform`
+- the next blocker is no longer a leftover runtime shelf; it is whether any further top-level reduction would improve architectural truth or only trade clarity for over-flattening.

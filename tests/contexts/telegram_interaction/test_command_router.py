@@ -1,8 +1,8 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import unittest
 
-from src.commands.types import GROUP_QUERY_REPLY, RENDER_TIMELINE_SHEET, SEND_REMINDERS, UPDATE_SNAPSHOT
+from src.platform.runtime.commands.types import GROUP_QUERY_REPLY, RENDER_TIMELINE_SHEET, SEND_REMINDERS, UPDATE_SNAPSHOT
 from src.contexts.telegram_interaction.internal import (
     ParsedTelegramUpdate,
     TelegramCommandRouter,
@@ -105,3 +105,4 @@ class TelegramParserAndRouterTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

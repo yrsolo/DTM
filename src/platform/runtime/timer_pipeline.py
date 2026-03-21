@@ -6,7 +6,7 @@ import traceback
 from dataclasses import dataclass
 from typing import Any
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.contexts.snapshot.module import get_update_api as _get_snapshot_update_api
 
 

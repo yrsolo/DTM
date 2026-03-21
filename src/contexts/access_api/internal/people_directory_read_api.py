@@ -7,7 +7,7 @@ import json
 from datetime import datetime, timezone
 from hmac import compare_digest
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.contexts.snapshot.module import get_query_api as _get_snapshot_query_api
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path

@@ -6,7 +6,7 @@ import importlib
 import unittest
 from types import SimpleNamespace
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 
 
 def _import_timer_pipeline():

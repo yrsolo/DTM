@@ -14,9 +14,9 @@ if str(ROOT_DIR) not in sys.path:
 from src.contexts.access_api.internal import operational_info_read_api as access_info_handler_module
 from src.contexts.access_api.internal.operational_info_read_api import OperationalInfoReadApi
 from src.entrypoints.http.dto import HttpRequest
-from src.observability import StdoutJsonLogger
-from src.observability.bottlenecks import RECENT_API_STAGE_EVENTS, RECENT_DIRECT_API_OUTER_TRACES, OuterApiTrace, StageEvent
-from src.worker.model import JobStatusRecord
+from src.platform.observability import StdoutJsonLogger
+from src.platform.observability.bottlenecks import RECENT_API_STAGE_EVENTS, RECENT_DIRECT_API_OUTER_TRACES, OuterApiTrace, StageEvent
+from src.platform.runtime.worker.model import JobStatusRecord
 
 
 class _FakeSnapshotCache:
@@ -447,4 +447,5 @@ class InfoObservabilityTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
 

@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 class ImportSafetyTestCase(unittest.TestCase):
     def _assert_safe_import(self, module_name: str, export_name: str) -> None:
-        bootstrap = importlib.import_module("src.app.bootstrap")
+        bootstrap = importlib.import_module("src.platform.bootstrap")
         sys.modules.pop(module_name, None)
 
         with patch.dict(os.environ, {}, clear=True):

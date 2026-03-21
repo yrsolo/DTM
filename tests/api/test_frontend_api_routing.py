@@ -28,10 +28,10 @@ from src.entrypoints.http.event_parser import extract_payload, http_path, query_
 from src.entrypoints.http.frontend_query_params import parse_bool
 from src.entrypoints.http.runtime_mode import extract_force_refresh, extract_run_mode
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES
-from src.observability.bottlenecks import RECENT_API_STAGE_EVENTS, RECENT_DIRECT_API_OUTER_TRACES
+from src.platform.observability.bottlenecks import RECENT_API_STAGE_EVENTS, RECENT_DIRECT_API_OUTER_TRACES
 from src.platform import bootstrap as runtime_bootstrap
 from src.contexts.snapshot.internal.engine.model import PeopleSnapshot, PersonView
-from src.worker.model import JobStatusRecord
+from src.platform.runtime.worker.model import JobStatusRecord
 
 
 FIXTURE_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "http_event_yc_api_gw.json"
@@ -871,4 +871,5 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
 

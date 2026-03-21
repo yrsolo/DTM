@@ -1,11 +1,11 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from src.app.context import AppContext
-from src.commands.model import Command
-from src.commands.types import GENERATE_ATTACHMENT_PREVIEW
+from src.platform.context import AppContext
+from src.platform.runtime.commands.model import Command
+from src.platform.runtime.commands.types import GENERATE_ATTACHMENT_PREVIEW
 from src.contexts.attachments.contracts import (
     ATTACHMENT_STATUS_READY,
     build_attachment_capabilities,
@@ -234,3 +234,4 @@ class CleanupTaskAttachmentsJob:
                 "status": "failed",
                 "error": {"code": error.code, "message": str(error)},
             }
+

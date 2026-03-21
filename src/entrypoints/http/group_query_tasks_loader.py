@@ -15,7 +15,7 @@ def load_work_tasks_for_group_query(
     app_cfg: Any,
 ) -> list[Any]:
     """Load active tasks for group-query flows from the canonical snapshot read-model."""
-    from src.app.context import AppContext
+    from src.platform.context import AppContext
 
     ctx = AppContext(cfg=app_cfg, deps={})
     payload = get_query_api(ctx).frontend_v2(

@@ -1,8 +1,8 @@
-"""Public facade for the snapshot context."""
+﻿"""Public facade for the snapshot context."""
 
 from __future__ import annotations
 
-from src.commands.types import UPDATE_SNAPSHOT
+from src.platform.runtime.commands.types import UPDATE_SNAPSHOT
 
 from .contracts import Window
 from .module import get_attachment_api, get_module, get_query_api, get_read_api, get_update_api
@@ -52,3 +52,4 @@ __all__ = [
     "get_update_capability",
     "get_update_snapshot_job",
 ]
+

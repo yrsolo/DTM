@@ -1,11 +1,11 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import unittest
 from types import SimpleNamespace
 
-from src.app.context import AppContext
-from src.commands.types import GROUP_QUERY_REPLY, UPDATE_SNAPSHOT
+from src.platform.context import AppContext
+from src.platform.runtime.commands.types import GROUP_QUERY_REPLY, UPDATE_SNAPSHOT
 from src.entrypoints.http.dto import HttpRequest
 from src.contexts.telegram_interaction.internal import TelegramWebhookHandler
 
@@ -69,7 +69,7 @@ class TelegramWebhookHandlerTestCase(unittest.TestCase):
                     "message": {
                         "chat": {"type": "group", "id": 123},
                         "text": "/tasks@dtm_bot",
-                        "from": {"id": 2, "first_name": "Иван", "last_name": "Иванов"},
+                        "from": {"id": 2, "first_name": "Ð˜Ð²Ð°Ð½", "last_name": "Ð˜Ð²Ð°Ð½Ð¾Ð²"},
                     }
                 },
                 is_http_event=True,
@@ -94,7 +94,7 @@ class TelegramWebhookHandlerTestCase(unittest.TestCase):
                     "message": {
                         "chat": {"type": "private", "id": 777},
                         "text": "/update",
-                        "from": {"id": 2, "first_name": "Админ"},
+                        "from": {"id": 2, "first_name": "ÐÐ´Ð¼Ð¸Ð½"},
                     }
                 },
                 is_http_event=True,
@@ -109,3 +109,4 @@ class TelegramWebhookHandlerTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

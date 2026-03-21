@@ -1,15 +1,15 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
-from src.commands.types import GROUP_QUERY_REPLY, RENDER_TIMELINE_SHEET, SEND_REMINDERS, UPDATE_SNAPSHOT
+from src.platform.runtime.commands.types import GROUP_QUERY_REPLY, RENDER_TIMELINE_SHEET, SEND_REMINDERS, UPDATE_SNAPSHOT
 
 from .model import ParsedTelegramUpdate, RoutedTelegramCommand
 
-TASK_COMMANDS = frozenset({"/tasks", "/задачи"})
-DEADLINE_COMMANDS = frozenset({"/deadlines", "/дедлайны"})
+TASK_COMMANDS = frozenset({"/tasks", "/Ð·Ð°Ð´Ð°Ñ‡Ð¸"})
+DEADLINE_COMMANDS = frozenset({"/deadlines", "/Ð´ÐµÐ´Ð»Ð°Ð¹Ð½Ñ‹"})
 UPDATE_COMMANDS = frozenset({"/update", "/update_snapshot", "/refresh"})
 TEST_REMINDER_COMMANDS = frozenset({"/reminders_test", "/notify_test", "/send_statuses"})
 RENDER_COMMANDS = frozenset({"/render_timeline"})
-DEADLINE_HINTS = ("дедлайн", "срок", "deadline")
+DEADLINE_HINTS = ("Ð´ÐµÐ´Ð»Ð°Ð¹Ð½", "ÑÑ€Ð¾Ðº", "deadline")
 
 
 class TelegramCommandRouter:
@@ -46,3 +46,4 @@ class TelegramCommandRouter:
             if command in RENDER_COMMANDS:
                 return RoutedTelegramCommand(command_name="render_timeline", command_type=RENDER_TIMELINE_SHEET, payload={"statuses": ["work", "pre_done"], "dry_run": False})
         return None
+

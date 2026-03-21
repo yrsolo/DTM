@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_api_v2_doc_html

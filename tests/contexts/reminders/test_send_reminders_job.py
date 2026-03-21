@@ -5,8 +5,8 @@ import unittest
 from datetime import date, datetime, timezone
 from types import SimpleNamespace
 
-from src.app.context import AppContext
-from src.commands.model import Command, RequestedBy
+from src.platform.context import AppContext
+from src.platform.runtime.commands.model import Command, RequestedBy
 from src.contexts.reminders.internal.job_runner import SendRemindersJob
 
 
@@ -229,4 +229,5 @@ class SendRemindersJobTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
 

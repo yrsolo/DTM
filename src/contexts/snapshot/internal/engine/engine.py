@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from typing import Any
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.contexts.attachments.contracts import (
     ATTACHMENT_STATUS_DELETED,
     ATTACHMENT_STATUS_PENDING_UPLOAD,

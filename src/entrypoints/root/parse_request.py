@@ -1,11 +1,11 @@
-"""Target parsed-request contract for top-level entrypoint routing."""
+﻿"""Target parsed-request contract for top-level entrypoint routing."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any
 
-from src.commands.yandex_mq import is_message_queue_event
+from src.platform.runtime.commands.yandex_mq import is_message_queue_event
 from src.entrypoints.http.event_parser import extract_payload, http_method, http_path, normalize_path
 
 from .modes import Mode
@@ -105,3 +105,4 @@ def parse_request(
         payload=payload,
         raw_event_hints={"event_type": "unknown"},
     )
+

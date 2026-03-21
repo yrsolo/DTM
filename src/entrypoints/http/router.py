@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from time import perf_counter
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.contexts.access_api.public import (
     get_browser_read_api,
 )
@@ -13,7 +13,7 @@ from src.entrypoints.http.admin_queue_handler import AdminQueueHandler
 from src.entrypoints.http.admin_task_attachments_handler import AdminTaskAttachmentsHandler
 from src.entrypoints.http.job_status_handler import JobStatusHandler
 from src.contexts.telegram_interaction.public import get_webhook_handler
-from src.observability.bottlenecks import append_response_headers
+from src.platform.observability.bottlenecks import append_response_headers
 
 
 class HttpRouter:

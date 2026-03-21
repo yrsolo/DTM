@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.contexts.snapshot.module import get_query_api as _get_snapshot_query_api
 from src.contexts.access_api.internal.frontend_response_cache import (
     build_default_frontend_cache_query_hash,
@@ -28,7 +28,7 @@ from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_
 from src.entrypoints.http.response_utils import error_response, html_response, json_response
 from src.contexts.access_api.internal.frontend_query import build_frontend_query
 from src.contexts.access_api.internal.masking import mask_frontend_payload, masking_version_for_hour
-from src.observability.bottlenecks import (
+from src.platform.observability.bottlenecks import (
     append_response_headers,
     is_api_metrics_enabled,
     is_stage_metrics_enabled,

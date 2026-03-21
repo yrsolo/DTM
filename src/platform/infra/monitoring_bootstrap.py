@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from src.infra.yc_iam import get_iam_token
-from src.observability import (
+from src.platform.integrations.yandex_cloud.iam import get_iam_token
+from src.platform.observability import (
     BufferedMetricsClient,
     CompositeMetricsClient,
     NoopMetricsClient,

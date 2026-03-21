@@ -1,12 +1,12 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
 from urllib.parse import urlsplit
 from uuid import uuid4
 
-from src.commands.model import Command, RequestedBy
-from src.commands.types import ATTACH_TASK_FILE, DELETE_TASK_ATTACHMENT
+from src.platform.runtime.commands.model import Command, RequestedBy
+from src.platform.runtime.commands.types import ATTACH_TASK_FILE, DELETE_TASK_ATTACHMENT
 from src.contexts.attachments.public import (
     get_attachment_finalize_service,
     get_attachment_snapshot_api,
@@ -402,3 +402,4 @@ class AdminTaskAttachmentsHandler:
                 artifact="command_enqueued",
             )
         return None
+

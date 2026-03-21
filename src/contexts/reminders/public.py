@@ -1,8 +1,8 @@
-"""Public facade for the reminders context."""
+﻿"""Public facade for the reminders context."""
 
 from __future__ import annotations
 
-from src.commands.types import SEND_REMINDERS
+from src.platform.runtime.commands.types import SEND_REMINDERS
 
 from .module import get_module
 
@@ -57,3 +57,4 @@ def get_command_handlers(ctx) -> dict[str, object]:
     """Return the reminders-owned queue command handlers."""
 
     return {SEND_REMINDERS: get_send_reminders_job(ctx)}
+

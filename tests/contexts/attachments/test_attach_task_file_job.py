@@ -4,8 +4,8 @@ import unittest
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
-from src.app.context import AppContext
-from src.commands.model import Command, RequestedBy
+from src.platform.context import AppContext
+from src.platform.runtime.commands.model import Command, RequestedBy
 from src.platform.errors import TransientError
 from src.contexts.attachments.internal.job_runners import AttachTaskFileJob
 
@@ -234,4 +234,5 @@ class AttachTaskFileJobTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
 

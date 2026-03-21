@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 
 from .internal.contracts import SUPPORTED_ATTACHMENT_MIME_TYPES
 

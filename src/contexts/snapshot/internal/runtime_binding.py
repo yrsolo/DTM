@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.contexts.snapshot.internal.engine.prep_builder import PrepBuilder
 from src.contexts.snapshot.internal.engine.query_engine import SnapshotQueryEngine
 from src.contexts.snapshot.internal.engine.update_job import (

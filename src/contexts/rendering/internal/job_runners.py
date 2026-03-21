@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import timezone
 from time import perf_counter
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.contexts.rendering.internal.target_guard import RenderTarget, validate_render_target
 from src.contexts.rendering.public import (
     get_designers_usecase,
@@ -14,7 +14,7 @@ from src.contexts.rendering.public import (
     get_window,
     get_writer,
 )
-from src.observability.batching import MetricsBatchCollector, add_flush_metrics
+from src.platform.observability.batching import MetricsBatchCollector, add_flush_metrics
 
 
 get_snapshot_read_api = _get_rendering_snapshot_read_api

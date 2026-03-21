@@ -7,7 +7,7 @@ import traceback
 from dataclasses import dataclass
 from typing import Any
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.entrypoints.http.dto import HttpResponse
 from src.entrypoints.http.response_utils import error_response
 from src.platform.errors import AppError, PermanentError, TransientError, UserError

@@ -1,13 +1,13 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from src.commands.model import Command, RequestedBy
+from src.platform.runtime.commands.model import Command, RequestedBy
 from src.entrypoints.http.dto import HttpRequest
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response, json_response
-from src.observability import timed
+from src.platform.observability import timed
 from src.platform.runtime.command_runtime import get_command_runtime
 
 from .command_router import TelegramCommandRouter
@@ -73,3 +73,4 @@ class TelegramWebhookHandler:
         if logger is not None:
             logger.info("telegram_update_accepted", command_name=routed.command_name, command_type=routed.command_type, chat_type=parsed.chat_type)
         return json_response(200, {"artifact": "telegram_webhook", "status": "accepted", "job_id": cmd.job_id, "command_type": cmd.type, "command_name": routed.command_name, "queued_at": record.requested_at_utc.isoformat()})
+
