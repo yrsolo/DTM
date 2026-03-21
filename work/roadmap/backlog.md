@@ -1,15 +1,17 @@
 # Backlog
 
 ## In Progress
-- CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1
+- none
 
 ## Blocked
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
+- next structural cleanup beyond current campaigns is blocked on owner approval because top-level `src` cleanup would require moving or deleting large folders
 
 ## Planned
 - none
 
 ## Done
+- CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1 completed after moving `snapshot` read/query/update onto direct runtime bindings, extracting attachment mutation semantics into a dedicated reusable service, and leaving `SnapshotEngine` as an internal utility instead of the active module center.
 - CAM-2026-03-21-ATTACHMENTS-MODULE-FIRST-FLOW-V1 completed after replacing the public job-shaped grammar in `attachments` with one module-owned command flow and keeping jobs as internal delivery details.
 - CAM-2026-03-21-ACCESS-API-PRIMARY-READ-OWNER-V1 completed after replacing the handler-catalog grammar in `access_api` with a single browser-read entry and moving that owning entry into the module application layer.
 - CAM-2026-03-21-FINAL-AESTHETIC-CLOSEOUT-V1 completed after removing the thin runtime app-context alias boundary, renaming the last `_build_*` helper seams, and closing the beauty backlog as complete rather than still mid-polish.
@@ -38,7 +40,7 @@
 
 ## Notes
 - Current live execution focus is the blocked `prod` confirmation step for `CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1`.
-- Current active structural cut is narrower now: `snapshot` read/query/update are runtime-bundle based, and only attachment mutation still remains engine-backed inside `CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1`.
+- The next serious structural cleanup is top-level `src` simplification; it is blocked until the owner explicitly allows large move/delete operations for competing visual roots.
 - `agent/intructions/DTM-test/**` is reference-only and not part of execution/archive lifecycle.
 - `docs/architecture/module-first-recovery/README.md` is now the canonical architecture starting point; new child campaigns should be opened only after a fresh trust-gated audit against current code.
 - Separate follow-ups remain outside this campaign:

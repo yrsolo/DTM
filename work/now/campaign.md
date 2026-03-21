@@ -3,7 +3,7 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
-- CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1
+- none
 
 ## Blocked
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
@@ -11,7 +11,7 @@ Single source of truth for campaign lifecycle state.
 ## Done
 - CAM-2026-03-21-ATTACHMENTS-MODULE-FIRST-FLOW-V1 completed after removing the public `get_*_job` grammar, introducing one module-owned attachment command flow in `application`, and leaving jobs as delivery details behind that flow.
 - CAM-2026-03-21-ACCESS-API-PRIMARY-READ-OWNER-V1 completed after replacing the `get_*_handler`/`browser_routes` grammar with one browser-read entry, moving that entry into `access_api.application`, and making the HTTP router read `access_api` as the owner of the primary browser read surface.
-- CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1 is still in progress, but it has crossed another stage: `snapshot` read/query/update now use one shared runtime bundle instead of full engine-backed APIs; the remaining work is isolated to attachment mutation semantics.
+- CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1 completed after removing the last engine-backed active API path from `snapshot`: `read/query/update` now use the runtime bundle directly, attachment mutation moved into a dedicated reusable service, and `SnapshotEngine` is no longer the semantic center of the module.
 - CAM-2026-03-21-REPO-BEAUTY-AUDIT-V1 exposed a new post-beauty structural gap: `access_api` still reads as a handler catalog instead of the owner of the primary browser read model.
 - CAM-2026-03-21-FINAL-AESTHETIC-CLOSEOUT-V1 completed after removing the thin runtime app-context alias boundary, renaming the last `_build_*` helper seams, and closing the beauty backlog as complete rather than still mid-polish.
 - CAM-2026-03-21-SHOWCASE-POLISH-V1 completed after aligning root and top-level docs with the active canon, adding a clean first-hop reading path, and removing stale top-level architecture pointers.

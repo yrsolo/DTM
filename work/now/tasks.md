@@ -1,10 +1,10 @@
 # Active Tasks
 
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
-- CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1: direct shortcut surface is gone, `read/query/update` now run through a shared runtime bundle instead of full engine-backed APIs, and the remaining smell is narrower: only attachment mutation methods still delegate through `SnapshotEngine`.
 
 ## Done
 
+- CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1 completed: `snapshot` no longer reads through an engine-centered active surface; `read/query/update` use the runtime bundle directly, attachment mutation semantics moved into a dedicated reusable service, and `SnapshotEngine` now survives only as an internal utility and compatibility-tested detail.
 - CAM-2026-03-21-ATTACHMENTS-MODULE-FIRST-FLOW-V1 completed: `attachments` no longer exposes mutation/publication through public `get_*_job` functions; the active entry is now one module-owned command flow in `application`, while jobs remain internal delivery details.
 - CAM-2026-03-21-ACCESS-API-PRIMARY-READ-OWNER-V1 completed: `access_api` no longer exposes the primary browser read side through `get_*_handler` and `browser_routes`; it now reads through one scenario-owned browser-read entry rooted in `application`.
 - CAM-2026-03-21-FINAL-AESTHETIC-CLOSEOUT-V1 completed: the thin `build_runtime_app_context` alias boundary is gone, the last active `_build_*` helper seams now use `make_*`, and the beauty audit/tracking now describe the repo as closed out rather than still mid-polish.
@@ -41,4 +41,4 @@
 - Future architecture child campaigns must start from `docs/architecture/module-first-recovery/README.md` and the new umbrella campaign trust gate.
 - Future beauty child campaigns, if any, are optional taste curation only and should be opened only when a new concrete smell is identified instead of continuing the old mandatory beauty backlog.
 - Modular-monolith umbrella campaign is complete and superseded as the primary canon.
-- Current active structural smell is the remaining `snapshot` attachment-mutation engine path; `module/api` language is now in place and `read/query/update` use direct runtime bindings, but attachment mutation still jumps through `SnapshotEngine`.
+- Current serious structural blocker has moved up a level: the next architectural cleanup is the top-level `src` map, where removing competing visual centers will require large move/delete operations and therefore explicit owner approval.

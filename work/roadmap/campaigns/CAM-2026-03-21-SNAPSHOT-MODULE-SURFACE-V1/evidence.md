@@ -58,9 +58,19 @@
   - `python -m unittest tests.contexts.snapshot.test_query_engine tests.contexts.snapshot.test_update_job tests.api.test_frontend_api_routing tests.api.test_info_observability tests.api.test_command_queue_foundation tests.contexts.attachments.test_attach_task_file_job tests.contexts.attachments.test_delete_task_attachment_job tests.contexts.attachments.test_cleanup_task_attachments_job tests.contexts.attachments.test_generate_attachment_preview_job tests.contexts.reminders.test_send_reminders_job tests.contexts.telegram_interaction.test_group_query_reply_job tests.services.test_pipeline_runtime tests.entrypoints.test_planner_runtime_entry tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety -v`
   - `python -m unittest tests.contexts.snapshot.test_update_job tests.api.test_command_queue_foundation tests.contexts.attachments.test_attach_task_file_job tests.contexts.attachments.test_delete_task_attachment_job tests.contexts.attachments.test_cleanup_task_attachments_job tests.contexts.attachments.test_generate_attachment_preview_job tests.services.test_pipeline_runtime tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety -v`
   - `rg -n "_bound_engine\\(|build_snapshot_engine_from_runtime|build_snapshot_engine\\(" src/contexts/snapshot src/contexts/attachments src/services tests`
-- smell still alive:
-  - the active `snapshot` surface is no longer broadly engine-backed, but attachment mutation methods in `SnapshotAttachmentApi` still delegate through `_bound_engine()` and `build_snapshot_engine_from_runtime(...)`
-  - this is no longer a naming/seam smell; it is a concrete design choice about whether attachment mutation logic should become its own reusable module-level service instead of living in `SnapshotEngine`
-- next honest move is a dedicated attachment-mutation extraction:
-  - either introduce a reusable attachment projection service that both `SnapshotAttachmentApi` and `SnapshotEngine` can share
-  - or accept `SnapshotEngine` as the internal owner of attachment mutation semantics while keeping it out of the active read/update/query surface
+- fifth cut executed:
+  - introduced `src/contexts/snapshot/internal/attachment_mutations.py` as the reusable module-owned service for attachment mutation semantics
+  - moved `SnapshotAttachmentApi` off `_bound_engine()` and onto that service
+  - made `SnapshotEngine` delegate its attachment mutation methods to the same service instead of owning that logic itself
+- fifth-cut verification:
+  - `python -m unittest tests.contexts.snapshot.test_engine_attach_metadata tests.contexts.snapshot.test_engine_cleanup_attachments tests.contexts.attachments.test_attach_task_file_job tests.contexts.attachments.test_delete_task_attachment_job tests.contexts.attachments.test_cleanup_task_attachments_job tests.contexts.attachments.test_generate_attachment_preview_job tests.api.test_command_queue_foundation tests.services.test_pipeline_runtime tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety -v`
+  - `rg -n "_bound_engine\\(|build_snapshot_engine_from_runtime|build_snapshot_engine\\(" src/contexts/snapshot/application src/contexts/snapshot/module.py src/contexts/attachments src/services tests`
+
+## Completion Verdict
+
+- `snapshot` no longer reads through an engine-centered active surface:
+  - `read/query/update` use the runtime bundle directly
+  - attachment mutation semantics now live in a dedicated reusable service instead of `SnapshotEngine`
+  - `SnapshotEngine` remains as an internal implementation detail and compatibility-tested utility, not the semantic center of the module
+- campaign result: `done`
+- next serious structural blocker is no longer inside `snapshot`; it is the top-level `src` map, where large move/delete operations would be required to remove competing visual centers.

@@ -5,8 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from src.contexts.attachments.contracts import AttachmentMetadataStore
-from src.contexts.snapshot.internal.engine.engine import FrontendV2Query, build_snapshot_engine_from_runtime
+from src.contexts.snapshot.internal.attachment_mutations import SnapshotAttachmentMutationService
+from src.contexts.snapshot.internal.engine.engine import FrontendV2Query
 from src.contexts.snapshot.internal.engine.update_job import TaskSourceSheetsAdapter
 from src.contexts.snapshot.internal.runtime_binding import SnapshotRuntimeBinding
 
@@ -66,30 +66,33 @@ class SnapshotAttachmentApi:
     """Attachment-specific API exposed to external contexts."""
 
     _runtime: SnapshotRuntimeBinding
-    _engine: Any | None = None
+    _mutations: SnapshotAttachmentMutationService | None = None
 
-    def _bound_engine(self):
-        if self._engine is None:
-            self._engine = build_snapshot_engine_from_runtime(self._runtime)
-        return self._engine
+    def _mutation_service(self) -> SnapshotAttachmentMutationService:
+        if self._mutations is None:
+            self._mutations = SnapshotAttachmentMutationService(
+                attachment_bucket=self._runtime.attachment_bucket,
+                raw_cache=self._runtime.raw_cache,
+                prep_cache=self._runtime.prep_cache,
+                extra_store=self._runtime.extra_store,
+                prep_builder=self._runtime.prep_builder,
+            )
+        return self._mutations
 
     def get_attachment_metadata_store(self):
-        return AttachmentMetadataStore(
-            self._runtime.extra_store,
-            bucket=self._runtime.attachment_bucket,
-        )
+        return self._mutation_service().get_attachment_metadata_store()
 
     def get_prep_snapshot(self):
         return self._runtime.prep_cache.get()
 
     def attach_file_metadata(self, *, task_id: str, attachment):
-        return self._bound_engine().attach_file_metadata(task_id=task_id, attachment=attachment)
+        return self._mutation_service().attach_file_metadata(task_id=task_id, attachment=attachment)
 
     def delete_attachment(self, *, task_id: str, attachment_id: str):
-        return self._bound_engine().delete_attachment(task_id=task_id, attachment_id=attachment_id)
+        return self._mutation_service().delete_attachment(task_id=task_id, attachment_id=attachment_id)
 
     def cleanup_stale_attachments(self, *, ttl_seconds: int, delete_object):
-        return self._bound_engine().cleanup_stale_attachments(
+        return self._mutation_service().cleanup_stale_attachments(
             ttl_seconds=ttl_seconds,
             delete_object=delete_object,
         )
