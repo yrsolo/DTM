@@ -30,6 +30,11 @@
   - `src/handlers`
 - removed `src/entrypoints_adapters` after moving `build_frontend_query` into `src/contexts/access_api/internal/frontend_query.py`
 - moved browser masking from `src/services/access/masking.py` into `src/contexts/access_api/internal/masking.py`, so `services/access` is no longer an owning-looking shelf in the repo map
+- removed dead service-era shelves that were no longer part of the active graph:
+  - `src/services/notify`
+  - `src/services/render`
+  - `src/services/mappers`
+  - `src/services/sync`
 - top-level `src/` map now reads through active architecture zones only:
   - `adapters`, `app`, `archive`, `commands`, `config`, `contexts`, `core`, `entrypoint`, `entrypoints`, `infra`, `observability`, `platform`, `services`, `worker`
 - `src/__pycache__` may reappear during local test runs; it is treated as Python runtime noise rather than an architecture root and is no longer part of the structural kill criteria.

@@ -1,7 +1,7 @@
 # Active Tasks
 
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
-- CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1: current cut is the visual `src/` map; dead historical roots are gone, `entrypoints_adapters` is folded into `access_api`, browser masking moved out of `services/access`, and the next architectural decision is whether the remaining `services` core is justified or the next competing-center cut.
+- CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1: current cut is the visual `src/` map; dead historical roots are gone, `entrypoints_adapters` is folded into `access_api`, browser masking left `services/access`, dead service-era shelves in `services/{notify,render,mappers,sync}` are removed from tracked code, and the next architectural decision is whether the remaining `services` core is justified or the next competing-center cut.
 
 ## Done
 
@@ -42,4 +42,4 @@
 - Future architecture child campaigns must start from `docs/architecture/module-first-recovery/README.md` and the new umbrella campaign trust gate.
 - Future beauty child campaigns, if any, are optional taste curation only and should be opened only when a new concrete smell is identified instead of continuing the old mandatory beauty backlog.
 - Modular-monolith umbrella campaign is complete and superseded as the primary canon.
-- Current active structural cut is the top-level `src` map: dead historical roots are gone, `entrypoints_adapters` is removed, `services/access` is folded into `access_api`, and the next decision is whether the remaining `services` core is justified or should be structurally reduced.
+- Current active structural cut is the top-level `src` map: dead historical roots are gone, `entrypoints_adapters` is removed, `services/access` is folded into `access_api`, dead service-era shelves in `services/{notify,render,mappers,sync}` are removed from tracked code, and the next decision is whether the remaining `services` core is justified or should be structurally reduced.
