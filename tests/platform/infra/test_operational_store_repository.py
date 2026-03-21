@@ -6,7 +6,7 @@ import unittest
 
 import pandas as pd
 
-from src.adapters.store_ydb import StoreTaskRepository
+from src.platform.infra.operational_store import StoreTaskRepository
 
 
 class _Store:

@@ -6,11 +6,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from src.adapters.llm_google import AsyncGoogleLLMChatAgent
-from src.adapters.llm_openai import AsyncOpenAIChatAgent
-from src.adapters.llm_yandex import AsyncYandexLLMChatAgent
-from src.adapters.telegram import TelegramNotifier
 from src.contexts.snapshot.module import get_read_api
+from src.platform.integrations.llm.google import AsyncGoogleLLMChatAgent
+from src.platform.integrations.llm.openai import AsyncOpenAIChatAgent
+from src.platform.integrations.llm.yandex import AsyncYandexLLMChatAgent
+from src.platform.integrations.telegram.notifier import TelegramNotifier
 
 from .internal import ReminderFormatter, ReminderJob, ReminderUseCase
 

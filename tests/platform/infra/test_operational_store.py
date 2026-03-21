@@ -8,7 +8,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
-from src.adapters.store_ydb import (
+from src.platform.infra.operational_store import (
     DualWriteOperationalStore,
     JsonOperationalStore,
     YdbOperationalStore,

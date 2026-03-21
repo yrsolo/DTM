@@ -56,6 +56,17 @@
   - `src/entrypoint/{handler,modes,parse_request,responses}.py` -> `src/entrypoints/root/*`
   - `index.py` now imports the top router from `src.entrypoints.root.handler`
   - aligned tests moved from `tests/entrypoint/*` -> `tests/entrypoints/root/*`
+- moved loose cross-context integration adapters out of the generic `src/adapters` shelf into platform-owned homes:
+  - `src/adapters/telegram.py` -> `src/platform/integrations/telegram/notifier.py`
+  - `src/adapters/llm_google.py` -> `src/platform/integrations/llm/google.py`
+  - `src/adapters/llm_openai.py` -> `src/platform/integrations/llm/openai.py`
+  - `src/adapters/llm_yandex.py` -> `src/platform/integrations/llm/yandex.py`
+- moved the operational store utility out of `src/adapters` into platform infra:
+  - `src/adapters/store_ydb.py` -> `src/platform/infra/operational_store.py`
+  - aligned tests moved from `tests/adapters/*store*` -> `tests/platform/infra/*`
+- removed dead placeholder files from the adapter root:
+  - `src/adapters/google_sheets_reader.py`
+  - `src/adapters/google_sheets_renderer.py`
 - moved the aligned active tests with those new owning paths:
   - `tests/platform/runtime/test_timer_pipeline.py`
   - `tests/contexts/snapshot/test_sheets_normalized_source.py`
@@ -72,5 +83,13 @@
   - `python -m unittest tests.contexts.access_api.test_masking tests.api.test_frontend_api_routing tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.api.test_command_queue_foundation tests.contexts.attachments.test_attach_task_file_job tests.services.test_pipeline_runtime -v`
   - `python -m unittest tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.api.test_frontend_api_routing tests.contexts.access_api.test_masking tests.api.test_command_queue_foundation tests.contexts.attachments.test_attach_task_file_job tests.contexts.attachments.test_delete_task_attachment_job tests.contexts.attachments.test_cleanup_task_attachments_job tests.contexts.attachments.test_generate_attachment_preview_job tests.services.test_pipeline_runtime tests.entrypoints.test_planner_runtime_entry -v`
   - `python -m unittest tests.architecture.test_guardrails_v0 tests.architecture.test_target_skeleton_imports tests.entrypoints.root.test_handler tests.entrypoints.root.test_parse_request tests.entrypoints.test_import_safety tests.api.test_frontend_api_routing tests.api.test_command_queue_foundation tests.entrypoints.test_planner_runtime_entry -v`
+- verification after the platform-integration cut stayed green:
+  - `python -m unittest tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.entrypoints.test_planner_runtime_entry tests.contexts.reminders.test_send_reminders_job tests.contexts.telegram_interaction.test_group_query_reply_job tests.api.test_command_queue_foundation tests.api.test_frontend_api_routing -v`
+- verification after the adapter-root reduction stayed green:
+  - `python -m unittest tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.entrypoints.test_planner_runtime_entry tests.contexts.reminders.test_send_reminders_job tests.contexts.telegram_interaction.test_group_query_reply_job tests.api.test_command_queue_foundation tests.api.test_frontend_api_routing tests.platform.infra.test_operational_store tests.platform.infra.test_operational_store_repository -v`
 - next blocker is no longer the dual-root entry contour; that split is gone from tracked code.
-- the loudest remaining architectural shelf is now the generic top-level `src/adapters` root, which still mixes provider-specific integrations that likely belong either in `platform` or in owning modules.
+- the loudest remaining architectural shelf is now the provider-only top-level `src/adapters` root:
+  - `src/adapters/google_sheets/*`
+  - `src/adapters/ydb/*`
+- after removing loose integrations and the operational store utility, `src/adapters` now reads as a narrow provider-only contour instead of a mixed catch-all shelf.
+- from here the next step is no longer a safe loose-file cleanup. It is a design choice: keep `src/adapters` as a justified provider-integration contour, or redistribute `google_sheets/*` and `ydb/*` into `platform` and owning modules.

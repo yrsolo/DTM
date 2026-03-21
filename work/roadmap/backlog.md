@@ -39,7 +39,7 @@
 
 ## Notes
 - Current live execution focus is the blocked `prod` confirmation step for `CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1`.
-- Current active structural cleanup is top-level `src` simplification: dead historical roots are gone, `entrypoints_adapters` has been folded into `access_api`, browser masking has left `services/access`, the remaining live `services` pieces are now split into `platform` and `snapshot.adapters`, the thin `src/entrypoint` package has been folded into `src/entrypoints/root`, and the next decision is whether the generic `src/adapters` shelf should survive as a top-level technical contour or be redistributed into `platform` and owning modules.
+- Current active structural cleanup is top-level `src` simplification: dead historical roots are gone, `entrypoints_adapters` has been folded into `access_api`, browser masking has left `services/access`, the remaining live `services` pieces are now split into `platform` and `snapshot.adapters`, the thin `src/entrypoint` package has been folded into `src/entrypoints/root`, loose Telegram and LLM adapters have moved into `platform/integrations`, the operational store utility has moved into `platform/infra`, and the next decision is whether the remaining provider-only `src/adapters` root should survive as a justified contour or be redistributed into `platform` and owning modules.
 - `agent/intructions/DTM-test/**` is reference-only and not part of execution/archive lifecycle.
 - `docs/architecture/module-first-recovery/README.md` is now the canonical architecture starting point; new child campaigns should be opened only after a fresh trust-gated audit against current code.
 - Separate follow-ups remain outside this campaign:

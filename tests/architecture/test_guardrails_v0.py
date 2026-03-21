@@ -566,6 +566,29 @@ class GuardrailsV0TestCase(unittest.TestCase):
             "src.services.timer_pipeline",
             "src.services.sources",
             "src.services.usecases",
+            "src.adapters.store_ydb",
+        )
+        for file_path in _python_files(target_paths):
+            if file_path == Path(__file__).resolve():
+                continue
+            content = file_path.read_text(encoding="utf-8")
+            if any(marker in content for marker in forbidden_markers):
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_active_runtime_paths_do_not_import_loose_adapter_roots(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "contexts",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "platform",
+            ROOT / "tests",
+        ]
+        forbidden_markers = (
+            "src.adapters.telegram",
+            "src.adapters.llm_google",
+            "src.adapters.llm_openai",
+            "src.adapters.llm_yandex",
         )
         for file_path in _python_files(target_paths):
             if file_path == Path(__file__).resolve():
