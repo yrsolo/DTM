@@ -60,8 +60,8 @@ def _path_matches(path: str, candidates: set[str]) -> bool:
     return any(normalized.endswith(candidate) for candidate in candidates)
 
 
-class FrontendV2Handler:
-    """HTTP handler for frontend api/doc routes."""
+class PrimaryTaskListReadApi:
+    """Primary task-list read endpoint for the access API context."""
 
     def __init__(self, ctx: AppContext) -> None:
         self._ctx = ctx

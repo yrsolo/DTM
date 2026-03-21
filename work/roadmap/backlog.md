@@ -7,9 +7,11 @@
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## Planned
-- none
+- CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1
 
 ## Done
+- CAM-2026-03-21-ATTACHMENTS-MODULE-FIRST-FLOW-V1 completed after replacing the public job-shaped grammar in `attachments` with one module-owned command flow and keeping jobs as internal delivery details.
+- CAM-2026-03-21-ACCESS-API-PRIMARY-READ-OWNER-V1 completed after replacing the handler-catalog grammar in `access_api` with a single browser-read entry and moving that owning entry into the module application layer.
 - CAM-2026-03-21-FINAL-AESTHETIC-CLOSEOUT-V1 completed after removing the thin runtime app-context alias boundary, renaming the last `_build_*` helper seams, and closing the beauty backlog as complete rather than still mid-polish.
 - CAM-2026-03-21-SHOWCASE-POLISH-V1 completed after aligning root and top-level docs with the active canon, adding a clean first-hop reading path, and removing stale top-level architecture pointers.
 - CAM-2026-03-21-MODULE-POLISH-V1 completed after renaming the loudest assembly-first active module methods to role-true names and removing the dead broad snapshot-engine alias from the active public surface.

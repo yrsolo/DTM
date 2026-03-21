@@ -148,7 +148,7 @@ def _render_info_page(payload: dict[str, Any]) -> str:
     )
 
 
-class InfoHandler:
+class OperationalInfoReadApi:
     def __init__(self, ctx: AppContext) -> None:
         self._ctx = ctx
 

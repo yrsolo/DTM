@@ -4,6 +4,8 @@
 
 ## Done
 
+- CAM-2026-03-21-ATTACHMENTS-MODULE-FIRST-FLOW-V1 completed: `attachments` no longer exposes mutation/publication through public `get_*_job` functions; the active entry is now one module-owned command flow in `application`, while jobs remain internal delivery details.
+- CAM-2026-03-21-ACCESS-API-PRIMARY-READ-OWNER-V1 completed: `access_api` no longer exposes the primary browser read side through `get_*_handler` and `browser_routes`; it now reads through one scenario-owned browser-read entry rooted in `application`.
 - CAM-2026-03-21-FINAL-AESTHETIC-CLOSEOUT-V1 completed: the thin `build_runtime_app_context` alias boundary is gone, the last active `_build_*` helper seams now use `make_*`, and the beauty audit/tracking now describe the repo as closed out rather than still mid-polish.
 - CAM-2026-03-21-SHOWCASE-POLISH-V1 completed: root and top-level docs now point first to the active product story and module-first canon, and the repo has an explicit clean first-hop reading path.
 - CAM-2026-03-21-MODULE-POLISH-V1 completed: active module methods now read as handlers/capabilities/requests/jobs instead of generic assembly helpers, and the dead broad `get_snapshot_engine()` alias is gone from the active snapshot surface.
@@ -38,3 +40,4 @@
 - Future architecture child campaigns must start from `docs/architecture/module-first-recovery/README.md` and the new umbrella campaign trust gate.
 - Future beauty child campaigns, if any, are optional taste curation only and should be opened only when a new concrete smell is identified instead of continuing the old mandatory beauty backlog.
 - Modular-monolith umbrella campaign is complete and superseded as the primary canon.
+- Next structural smell after the latest closeout is the `snapshot` engine-centric surface; it remains a planned dedicated wave rather than a quick local cleanup.

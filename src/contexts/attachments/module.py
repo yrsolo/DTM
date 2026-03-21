@@ -21,6 +21,11 @@ class AttachmentsModule:
     def snapshot_capability(self):
         return get_attachment_capability(self.ctx)
 
+    def command_flow(self):
+        from .application.command_flow import AttachmentCommandFlow
+
+        return AttachmentCommandFlow(self.ctx)
+
     def metadata_store(self):
         return self.snapshot_capability().get_attachment_metadata_store()
 

@@ -37,7 +37,7 @@ def _iso(value: datetime | None) -> str:
     return target.astimezone(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
-class PeopleSnapshotHandler:
+class PeopleDirectoryReadApi:
     """Expose the canonical people registry to trusted internal callers only."""
 
     def __init__(self, ctx: AppContext) -> None:

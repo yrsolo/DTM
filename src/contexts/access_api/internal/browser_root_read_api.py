@@ -9,8 +9,8 @@ from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_
 from src.entrypoints.http.response_utils import html_response, json_response
 
 
-class FrontendRootHandler:
-    """HTTP handler for API root/doc landing route."""
+class BrowserRootReadApi:
+    """Browser root/doc read endpoint for the access API context."""
 
     def __init__(self, ctx: AppContext) -> None:
         self._ctx = ctx

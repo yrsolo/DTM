@@ -3,9 +3,9 @@ from __future__ import annotations
 import unittest
 from types import SimpleNamespace
 
-from src.contexts.access_api.internal import task_attachment_read_handler as access_task_attachment_read_module
+from src.contexts.access_api.internal import task_attachment_read_api as access_task_attachment_read_module
 from src.entrypoints.http.dto import HttpRequest
-from src.contexts.access_api.internal.task_attachment_read_handler import TaskAttachmentReadHandler
+from src.contexts.access_api.internal.task_attachment_read_api import TaskAttachmentReadApi
 
 
 class _FakeAttachmentStore:
@@ -91,13 +91,13 @@ class _FakeCtx:
         )
 
 
-class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
+class TaskAttachmentReadApiTestCase(unittest.TestCase):
     def test_view_requires_trusted_full_approved_access(self) -> None:
-        original_resolver = access_task_attachment_read_module.build_attachment_read_resolver
-        original_access_resolver = access_task_attachment_read_module.build_attachment_read_resolver
-        access_task_attachment_read_module.build_attachment_read_resolver = lambda _ctx: _FakeResolver(store=_FakeAttachmentStore())  # type: ignore[assignment]
+        original_resolver = access_task_attachment_read_module.get_attachment_read_capability
+        original_access_resolver = access_task_attachment_read_module.get_attachment_read_capability
+        access_task_attachment_read_module.get_attachment_read_capability = lambda _ctx: _FakeResolver(store=_FakeAttachmentStore())  # type: ignore[assignment]
         try:
-            handler = TaskAttachmentReadHandler(_FakeCtx())
+            handler = TaskAttachmentReadApi(_FakeCtx())
             denied = handler.handle(
                 HttpRequest(method="GET", path="/test/ops/api/task-attachments/a1/view", is_http_event=True)
             )
@@ -116,7 +116,7 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
                 )
             )
         finally:
-            access_task_attachment_read_module.build_attachment_read_resolver = original_access_resolver  # type: ignore[assignment]
+            access_task_attachment_read_module.get_attachment_read_capability = original_access_resolver  # type: ignore[assignment]
 
         self.assertIsNotNone(denied)
         self.assertEqual(denied.status, 403)
@@ -125,11 +125,11 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
         self.assertIn("/view/attachments/test/task-1/a1-spec-final.docx", allowed.headers["Location"])
 
     def test_download_returns_404_for_unknown_attachment(self) -> None:
-        original_resolver = access_task_attachment_read_module.build_attachment_read_resolver
-        original_access_resolver = access_task_attachment_read_module.build_attachment_read_resolver
-        access_task_attachment_read_module.build_attachment_read_resolver = lambda _ctx: _FakeResolver(store=_FakeAttachmentStore())  # type: ignore[assignment]
+        original_resolver = access_task_attachment_read_module.get_attachment_read_capability
+        original_access_resolver = access_task_attachment_read_module.get_attachment_read_capability
+        access_task_attachment_read_module.get_attachment_read_capability = lambda _ctx: _FakeResolver(store=_FakeAttachmentStore())  # type: ignore[assignment]
         try:
-            handler = TaskAttachmentReadHandler(_FakeCtx())
+            handler = TaskAttachmentReadApi(_FakeCtx())
             response = handler.handle(
                 HttpRequest(
                     method="GET",
@@ -145,18 +145,18 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
                 )
             )
         finally:
-            access_task_attachment_read_module.build_attachment_read_resolver = original_access_resolver  # type: ignore[assignment]
+            access_task_attachment_read_module.get_attachment_read_capability = original_access_resolver  # type: ignore[assignment]
 
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 404)
 
     def test_view_doc_preview_redirects_when_ready(self) -> None:
-        original_resolver = access_task_attachment_read_module.build_attachment_read_resolver
-        original_access_resolver = access_task_attachment_read_module.build_attachment_read_resolver
+        original_resolver = access_task_attachment_read_module.get_attachment_read_capability
+        original_access_resolver = access_task_attachment_read_module.get_attachment_read_capability
         doc_store = _FakeDocAttachmentStore(preview_state="ready", derived_preview_ref="attachments/test/task-1/doc-1/preview.pdf")
-        access_task_attachment_read_module.build_attachment_read_resolver = lambda _ctx: _FakeResolver(store=doc_store)  # type: ignore[assignment]
+        access_task_attachment_read_module.get_attachment_read_capability = lambda _ctx: _FakeResolver(store=doc_store)  # type: ignore[assignment]
         try:
-            handler = TaskAttachmentReadHandler(_FakeCtx())
+            handler = TaskAttachmentReadApi(_FakeCtx())
             allowed = handler.handle(
                 HttpRequest(
                     method="GET",
@@ -172,19 +172,19 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
                 )
             )
         finally:
-            access_task_attachment_read_module.build_attachment_read_resolver = original_access_resolver  # type: ignore[assignment]
+            access_task_attachment_read_module.get_attachment_read_capability = original_access_resolver  # type: ignore[assignment]
 
         self.assertIsNotNone(allowed)
         self.assertEqual(allowed.status, 302)
         self.assertIn("/view/attachments/test/task-1/doc-1/preview.pdf", allowed.headers["Location"])
 
     def test_view_doc_preview_returns_pending_when_not_ready(self) -> None:
-        original_resolver = access_task_attachment_read_module.build_attachment_read_resolver
-        original_access_resolver = access_task_attachment_read_module.build_attachment_read_resolver
+        original_resolver = access_task_attachment_read_module.get_attachment_read_capability
+        original_access_resolver = access_task_attachment_read_module.get_attachment_read_capability
         doc_store = _FakeDocAttachmentStore(preview_state="pending")
-        access_task_attachment_read_module.build_attachment_read_resolver = lambda _ctx: _FakeResolver(store=doc_store)  # type: ignore[assignment]
+        access_task_attachment_read_module.get_attachment_read_capability = lambda _ctx: _FakeResolver(store=doc_store)  # type: ignore[assignment]
         try:
-            handler = TaskAttachmentReadHandler(_FakeCtx())
+            handler = TaskAttachmentReadApi(_FakeCtx())
             response = handler.handle(
                 HttpRequest(
                     method="GET",
@@ -200,18 +200,18 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
                 )
             )
         finally:
-            access_task_attachment_read_module.build_attachment_read_resolver = original_access_resolver  # type: ignore[assignment]
+            access_task_attachment_read_module.get_attachment_read_capability = original_access_resolver  # type: ignore[assignment]
 
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 409)
 
     def test_view_doc_preview_returns_unavailable_when_failed(self) -> None:
-        original_resolver = access_task_attachment_read_module.build_attachment_read_resolver
-        original_access_resolver = access_task_attachment_read_module.build_attachment_read_resolver
+        original_resolver = access_task_attachment_read_module.get_attachment_read_capability
+        original_access_resolver = access_task_attachment_read_module.get_attachment_read_capability
         doc_store = _FakeDocAttachmentStore(preview_state="failed")
-        access_task_attachment_read_module.build_attachment_read_resolver = lambda _ctx: _FakeResolver(store=doc_store)  # type: ignore[assignment]
+        access_task_attachment_read_module.get_attachment_read_capability = lambda _ctx: _FakeResolver(store=doc_store)  # type: ignore[assignment]
         try:
-            handler = TaskAttachmentReadHandler(_FakeCtx())
+            handler = TaskAttachmentReadApi(_FakeCtx())
             response = handler.handle(
                 HttpRequest(
                     method="GET",
@@ -227,7 +227,7 @@ class TaskAttachmentReadHandlerTestCase(unittest.TestCase):
                 )
             )
         finally:
-            access_task_attachment_read_module.build_attachment_read_resolver = original_access_resolver  # type: ignore[assignment]
+            access_task_attachment_read_module.get_attachment_read_capability = original_access_resolver  # type: ignore[assignment]
 
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 503)

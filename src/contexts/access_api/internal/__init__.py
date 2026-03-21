@@ -1,17 +1,15 @@
-"""Internal handler implementations owned by the access_api context."""
+"""Internal browser-read adapters owned by the access_api context."""
 
-from .browser_routes import BrowserRoutesHandler
-from .frontend_root_handler import FrontendRootHandler
-from .frontend_v2_handler import FrontendV2Handler
-from .info_handler import InfoHandler
-from .people_snapshot_handler import PeopleSnapshotHandler
-from .task_attachment_read_handler import TaskAttachmentReadHandler
+from .browser_root_read_api import BrowserRootReadApi
+from .operational_info_read_api import OperationalInfoReadApi
+from .people_directory_read_api import PeopleDirectoryReadApi
+from .primary_task_list_read_api import PrimaryTaskListReadApi
+from .task_attachment_read_api import TaskAttachmentReadApi
 
 __all__ = [
-    "BrowserRoutesHandler",
-    "FrontendRootHandler",
-    "FrontendV2Handler",
-    "InfoHandler",
-    "PeopleSnapshotHandler",
-    "TaskAttachmentReadHandler",
+    "BrowserRootReadApi",
+    "PrimaryTaskListReadApi",
+    "OperationalInfoReadApi",
+    "PeopleDirectoryReadApi",
+    "TaskAttachmentReadApi",
 ]

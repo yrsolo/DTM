@@ -14,9 +14,9 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 import index
-from src.contexts.access_api.internal import frontend_v2_handler as access_frontend_v2_module
-from src.contexts.access_api.internal import info_handler as access_info_handler_module
-from src.contexts.access_api.internal import people_snapshot_handler as access_people_snapshot_handler_module
+from src.contexts.access_api.internal import operational_info_read_api as access_info_handler_module
+from src.contexts.access_api.internal import people_directory_read_api as access_people_snapshot_handler_module
+from src.contexts.access_api.internal import primary_task_list_read_api as access_frontend_v2_module
 from src.contexts.access_api.internal.frontend_response_cache import default_frontend_cache_key
 from src.entrypoints.http.event_parser import extract_payload, http_path, query_params
 from src.entrypoints.http.frontend_query_params import parse_bool
@@ -223,8 +223,8 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         self._orig_access_info_get_queue_live_stats = access_info_handler_module.get_queue_live_stats
         self._orig_info_get_function_build_info = access_info_handler_module.get_function_build_info
         self._orig_access_info_get_function_build_info = access_info_handler_module.get_function_build_info
-        self._orig_info_storage_stats = access_info_handler_module.InfoHandler._storage_stats
-        self._orig_access_info_storage_stats = access_info_handler_module.InfoHandler._storage_stats
+        self._orig_info_storage_stats = access_info_handler_module.OperationalInfoReadApi._storage_stats
+        self._orig_access_info_storage_stats = access_info_handler_module.OperationalInfoReadApi._storage_stats
         self._runtime_deps = runtime_bootstrap.get_runtime_deps()
         self._runtime_cfg = runtime_bootstrap.get_app_context().cfg.runtime.runtime
         self._orig_job_status_store = self._runtime_deps.get("job_status_store")
@@ -302,7 +302,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
                 "service_account_id": "aje-test",
             },
         )()
-        access_info_handler_module.InfoHandler._storage_stats = lambda _self, _bucket, _prefix: {  # type: ignore[assignment]
+        access_info_handler_module.OperationalInfoReadApi._storage_stats = lambda _self, _bucket, _prefix: {  # type: ignore[assignment]
             "objectsTotal": 4,
             "bytesTotal": 1024,
             "bytesHuman": "1.00 KB",
@@ -321,7 +321,7 @@ class FrontendApiRoutingTestCase(unittest.TestCase):
         access_people_snapshot_handler_module.get_snapshot_query_capability = self._orig_access_people_get_snapshot_query_capability  # type: ignore[assignment]
         access_info_handler_module.get_queue_live_stats = self._orig_access_info_get_queue_live_stats  # type: ignore[assignment]
         access_info_handler_module.get_function_build_info = self._orig_access_info_get_function_build_info  # type: ignore[assignment]
-        access_info_handler_module.InfoHandler._storage_stats = self._orig_access_info_storage_stats  # type: ignore[assignment]
+        access_info_handler_module.OperationalInfoReadApi._storage_stats = self._orig_access_info_storage_stats  # type: ignore[assignment]
         self._runtime_deps["job_status_store"] = self._orig_job_status_store
         self._runtime_deps["metrics_client"] = self._orig_metrics_client
         self._runtime_deps["browser_auth_proxy_secret"] = self._orig_browser_auth_proxy_secret

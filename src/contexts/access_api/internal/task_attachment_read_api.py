@@ -21,7 +21,7 @@ def get_attachment_read_capability(ctx):
     return get_attachment_read_resolver(ctx)
 
 
-class TaskAttachmentReadHandler:
+class TaskAttachmentReadApi:
     def __init__(self, ctx) -> None:
         self._ctx = ctx
 

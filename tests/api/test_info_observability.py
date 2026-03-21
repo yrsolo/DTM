@@ -11,8 +11,8 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from src.contexts.access_api.internal import info_handler as access_info_handler_module
-from src.contexts.access_api.internal.info_handler import InfoHandler
+from src.contexts.access_api.internal import operational_info_read_api as access_info_handler_module
+from src.contexts.access_api.internal.operational_info_read_api import OperationalInfoReadApi
 from src.entrypoints.http.dto import HttpRequest
 from src.observability import StdoutJsonLogger
 from src.observability.bottlenecks import RECENT_API_STAGE_EVENTS, RECENT_DIRECT_API_OUTER_TRACES, OuterApiTrace, StageEvent
@@ -119,8 +119,8 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.original_access_get_queue_live_stats = access_info_handler_module.get_queue_live_stats
         self.original_get_function_build_info = access_info_handler_module.get_function_build_info
         self.original_access_get_function_build_info = access_info_handler_module.get_function_build_info
-        self.original_storage_stats = access_info_handler_module.InfoHandler._storage_stats
-        self.original_access_storage_stats = access_info_handler_module.InfoHandler._storage_stats
+        self.original_storage_stats = access_info_handler_module.OperationalInfoReadApi._storage_stats
+        self.original_access_storage_stats = access_info_handler_module.OperationalInfoReadApi._storage_stats
         self._orig_recent_stage_events = list(RECENT_API_STAGE_EVENTS._events)  # type: ignore[attr-defined]
         self._orig_recent_outer_traces = list(RECENT_DIRECT_API_OUTER_TRACES._events)  # type: ignore[attr-defined]
         self.get_snapshot_capability_calls = 0
@@ -169,7 +169,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         access_info_handler_module.get_snapshot_query_capability = _get_snapshot_capability  # type: ignore[assignment]
         access_info_handler_module.get_queue_live_stats = _get_queue_live_stats  # type: ignore[assignment]
         access_info_handler_module.get_function_build_info = _get_function_build_info  # type: ignore[assignment]
-        access_info_handler_module.InfoHandler._storage_stats = _storage_stats  # type: ignore[assignment]
+        access_info_handler_module.OperationalInfoReadApi._storage_stats = _storage_stats  # type: ignore[assignment]
         self.metrics = _MetricsRecorder()
         self.ctx = SimpleNamespace(
             cfg=SimpleNamespace(
@@ -312,14 +312,14 @@ class InfoObservabilityTestCase(unittest.TestCase):
         access_info_handler_module.get_snapshot_query_capability = self.original_access_get_snapshot_query_capability  # type: ignore[assignment]
         access_info_handler_module.get_queue_live_stats = self.original_access_get_queue_live_stats  # type: ignore[assignment]
         access_info_handler_module.get_function_build_info = self.original_access_get_function_build_info  # type: ignore[assignment]
-        access_info_handler_module.InfoHandler._storage_stats = self.original_access_storage_stats  # type: ignore[assignment]
+        access_info_handler_module.OperationalInfoReadApi._storage_stats = self.original_access_storage_stats  # type: ignore[assignment]
         RECENT_API_STAGE_EVENTS._events.clear()  # type: ignore[attr-defined]
         RECENT_API_STAGE_EVENTS._events.extend(self._orig_recent_stage_events)  # type: ignore[attr-defined]
         RECENT_DIRECT_API_OUTER_TRACES._events.clear()  # type: ignore[attr-defined]
         RECENT_DIRECT_API_OUTER_TRACES._events.extend(self._orig_recent_outer_traces)  # type: ignore[attr-defined]
 
     def test_info_json_default_summary_skips_heavy_diagnostics(self) -> None:
-        handler = InfoHandler(self.ctx)
+        handler = OperationalInfoReadApi(self.ctx)
         response = handler.handle(
             HttpRequest(method="GET", path="/info", query={"format": "json"}, is_http_event=True)
         )
@@ -340,7 +340,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertEqual(self.metrics.timings, [])
 
     def test_info_json_detail_includes_build_queue_jobs_and_render_debug(self) -> None:
-        handler = InfoHandler(self.ctx)
+        handler = OperationalInfoReadApi(self.ctx)
         response = handler.handle(
             HttpRequest(
                 method="GET",
@@ -407,7 +407,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertEqual(self.metrics.timings, [])
 
     def test_info_html_contains_new_operational_sections(self) -> None:
-        handler = InfoHandler(self.ctx)
+        handler = OperationalInfoReadApi(self.ctx)
         response = handler.handle(HttpRequest(method="GET", path="/info", is_http_event=True))
         self.assertIsNotNone(response)
         self.assertIn("Function Build", response.body)
@@ -430,7 +430,7 @@ class InfoObservabilityTestCase(unittest.TestCase):
         self.assertIn("Run full probe", response.body)
 
     def test_info_json_includes_ui_base_path_for_prefixed_route(self) -> None:
-        handler = InfoHandler(self.ctx)
+        handler = OperationalInfoReadApi(self.ctx)
         response = handler.handle(
             HttpRequest(
                 method="GET",
