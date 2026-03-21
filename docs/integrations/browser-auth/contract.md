@@ -100,9 +100,9 @@ Preferred backend pipeline:
 
 Current repo implementation:
 - trusted ingress is resolved in `src/entrypoints/http/access_context.py`
-- masking transform lives in `src/services/access/masking.py`
-- frontend handler keeps one canonical payload build path in `src/entrypoints/http/frontend_v2_handler.py`
-- secret bootstrap lives in `src/app/bootstrap.py`
+- masking transform lives in `src/contexts/access_api/internal/masking.py`
+- frontend handler keeps one canonical payload build path in `src/contexts/access_api/internal/primary_task_list_read_api.py`
+- secret bootstrap lives in `src/platform/bootstrap.py`
 
 Current deploy wiring:
 - `.github/workflows/deploy_yc_function_main.yml` maps `BROWSER_AUTH_PROXY_SECRET` from Lockbox for `test`

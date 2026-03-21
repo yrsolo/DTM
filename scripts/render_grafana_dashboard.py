@@ -9,7 +9,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.infra.grafana_specs import build_test_grafana_dashboard
+from src.platform.integrations.grafana.specs import build_test_grafana_dashboard
 
 
 def main() -> int:

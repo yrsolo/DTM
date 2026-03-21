@@ -48,5 +48,5 @@ For the primary read scenario, `snapshot` is the point where mutation-state beco
 
 ## Current implementation notes
 
-- current implementation spans `src/core/*`, `src/services/sources/*`, `src/contexts/snapshot/internal/engine/*`, and snapshot job wiring
+- current implementation spans `src/core/*`, `src/contexts/snapshot/adapters/sources/*`, `src/contexts/snapshot/internal/engine/*`, and snapshot job wiring
 - the old top-level `src/snapshot_engine/*` root is removed; the read-side engine now lives physically inside the snapshot context

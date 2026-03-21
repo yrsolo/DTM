@@ -101,7 +101,7 @@
 
 ## Current implementation notes
 
-`src/observability/*` is the shared abstraction layer for metrics and timing wrappers.
+`src/platform/observability/*` is the shared abstraction layer for metrics and timing wrappers.
 
 Snapshot runtime notes:
 

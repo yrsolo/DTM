@@ -93,7 +93,7 @@ Its default smell is:
 Its default kill criteria are:
 - no top-path context lookup remains in the top path
 - no stale glue helpers remain in `index.py`
-- `index.py -> src/entrypoint/handler.py -> one shell` reads without explanation
+- `index.py -> src/entrypoints/root/handler.py -> one shell` reads without explanation
 
 ## What Not To Do
 

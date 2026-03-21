@@ -10,8 +10,7 @@ ACTIVE_TARGETS = [
     ROOT / "index.py",
     ROOT / "local_run.py",
     ROOT / "src" / "entrypoints",
-    ROOT / "src" / "jobs",
-    ROOT / "src" / "worker",
+    ROOT / "src" / "platform" / "runtime",
 ]
 FORBIDDEN_IMPORT_PREFIXES = (
     "src.legacy",
@@ -33,7 +32,7 @@ FORBIDDEN_IMPORT_PREFIXES = (
     "main",
 )
 INDEX_ALLOWED_IMPORTS = {
-    "src.entrypoint.handler.handle",
+    "src.entrypoints.root.handler.handle",
     "src.platform.bootstrap.get_http_shell",
     "src.platform.bootstrap.get_telegram_webhook_path",
     "src.platform.bootstrap.get_trigger_modes",

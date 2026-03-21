@@ -1,15 +1,14 @@
 ﻿# Backlog
 
-## In Progress
-- CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1
-
 ## Blocked
+- CAM-2026-03-21-REPO-HYGIENE-POLISH-V1
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## Planned
 - none
 
 ## Done
+- CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1 completed after reducing the active top-level `src` contour to `config / contexts / core / entrypoints / platform` and moving archive material out into the top-level `archive/` home.
 - CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1 completed after moving `snapshot` read/query/update onto direct runtime bindings, extracting attachment mutation semantics into a dedicated reusable service, and leaving `SnapshotEngine` as an internal utility instead of the active module center.
 - CAM-2026-03-21-ATTACHMENTS-MODULE-FIRST-FLOW-V1 completed after replacing the public job-shaped grammar in `attachments` with one module-owned command flow and keeping jobs as internal delivery details.
 - CAM-2026-03-21-ACCESS-API-PRIMARY-READ-OWNER-V1 completed after replacing the handler-catalog grammar in `access_api` with a single browser-read entry and moving that owning entry into the module application layer.
@@ -39,7 +38,7 @@
 
 ## Notes
 - Current live execution focus is the blocked `prod` confirmation step for `CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1`.
-- Current active structural cleanup is top-level `src` simplification: dead historical roots are gone, `entrypoints_adapters` has been folded into `access_api`, browser masking has left `services/access`, the remaining live `services` pieces are now split into `platform` and `snapshot.adapters`, the thin `src/entrypoint` package has been folded into `src/entrypoints/root`, loose Telegram and LLM adapters have moved into `platform/integrations`, the operational store utility has moved into `platform/infra`, provider packages from the old adapter root have been redistributed into `platform`, tracked `src/adapters` is gone, the upper-contour cut folds `src/app` into `src/platform` while moving pure timezone helpers into `src/core`, `src/infra` is redistributed into platform integrations and attachment internals, `src/observability` is folded into `src/platform/observability`, command contracts plus worker runtime are folded into `src/platform/runtime`, archive code/docs/work are now lifted into the top-level `archive/` home, and the next structural decision is whether any further top-level reduction would improve truth instead of forcing taste-only churn.
+- Current blocked follow-up after the repo-hygiene pass is the dual active domain-root story between `core/` and `src/core/`; this is an architecture choice, not another cleanup-only pass.
 - `agent/intructions/DTM-test/**` is reference-only and not part of execution/archive lifecycle.
 - `docs/architecture/module-first-recovery/README.md` is now the canonical architecture starting point; new child campaigns should be opened only after a fresh trust-gated audit against current code.
 - Separate follow-ups remain outside this campaign:

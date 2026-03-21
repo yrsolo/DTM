@@ -26,14 +26,14 @@ It sits on top of familiar tools, keeps reads fast and predictable, and pushes e
 
 ## Where to go next
 
-- [Ð”Ð¾ÐºÑƒÐ¼ÐµÐ½Ñ‚Ð°Ñ†Ð¸Ñ Ð¿Ð¾ Ð¿Ñ€Ð¾ÐµÐºÑ‚Ñƒ](docs/README.md)
-- [Ð‘Ñ‹ÑÑ‚Ñ€Ñ‹Ð¹ Ð¾Ð±Ð·Ð¾Ñ€ Ð¿Ñ€Ð¾Ð´ÑƒÐºÑ‚Ð°](docs/product/README.md)
-- [ÐÑ€Ñ…Ð¸Ñ‚ÐµÐºÑ‚ÑƒÑ€Ð° Ð¸ ÑƒÑÑ‚Ñ€Ð¾Ð¹ÑÑ‚Ð²Ð¾ runtime](docs/architecture/README.md)
+- [Project docs map](docs/README.md)
+- [Product overview](docs/product/README.md)
+- [Architecture and runtime map](docs/architecture/README.md)
 - [Active architecture canon](docs/architecture/module-first-recovery/README.md)
-- [Ð˜Ð½Ñ‚ÐµÐ³Ñ€Ð°Ñ†Ð¸Ð¸ Ð¸ Ð²Ð½ÐµÑˆÐ½Ð¸Ðµ ÐºÐ¾Ð½Ñ‚ÑƒÑ€Ñ‹](docs/integrations/README.md)
-- [Ð­ÐºÑÐ¿Ð»ÑƒÐ°Ñ‚Ð°Ñ†Ð¸Ñ Ð¸ Ð½Ð°Ð±Ð»ÑŽÐ´Ð°ÐµÐ¼Ð¾ÑÑ‚ÑŒ](docs/operations/README.md)
-- [Ð¡Ð¿Ñ€Ð°Ð²Ð¾Ñ‡Ð½Ñ‹Ðµ ÑÑ…ÐµÐ¼Ñ‹ Ð¸ ÐºÐ¾Ð½Ñ‚Ñ€Ð°ÐºÑ‚Ñ‹](docs/reference/README.md)
-- [Ð¢ÐµÐºÑƒÑ‰ÐµÐµ execution-tracking Ð¿Ñ€Ð¾ÑÑ‚Ñ€Ð°Ð½ÑÑ‚Ð²Ð¾](work/README.md)
+- [Integrations and external contours](docs/integrations/README.md)
+- [Operations and observability](docs/operations/README.md)
+- [Reference contracts and schemas](docs/reference/README.md)
+- [Current execution tracking](work/README.md)
 
 ## Fast reading path
 
@@ -43,7 +43,7 @@ If you want the cleanest first pass through the repo:
 2. [docs/architecture/module-first-recovery/README.md](docs/architecture/module-first-recovery/README.md)
 3. [docs/integrations/attachments/frontend-card-publication.md](docs/integrations/attachments/frontend-card-publication.md)
 4. [index.py](index.py)
-5. [src/entrypoint/handler.py](src/entrypoint/handler.py)
+5. [src/entrypoints/root/handler.py](src/entrypoints/root/handler.py)
 
 ## Project posture
 

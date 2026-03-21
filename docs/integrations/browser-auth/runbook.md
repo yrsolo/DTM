@@ -105,7 +105,7 @@ Masked access applies when:
 
 ### Backend function
 Backend secret bootstrap is code-backed:
-- `src/app/bootstrap.py` reads `BROWSER_AUTH_PROXY_SECRET` from env
+- `src/platform/bootstrap.py` reads `BROWSER_AUTH_PROXY_SECRET` from env
 - `config/runtime.yaml` defines:
   - `runtime.api.auth_trusted_secret_header`
   - `runtime.api.auth_trusted_fallback`

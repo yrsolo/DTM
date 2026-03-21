@@ -9,14 +9,14 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.infra.grafana_api import (  # noqa: E402
+from src.platform.integrations.grafana.api import (  # noqa: E402
     ensure_folder,
     grafana_dashboard_url,
     grafana_embed_url,
     get_datasource_by_name,
     upsert_dashboard,
 )
-from src.infra.grafana_specs import build_test_grafana_dashboard  # noqa: E402
+from src.platform.integrations.grafana.specs import build_test_grafana_dashboard  # noqa: E402
 
 
 def _load_env_value(name: str) -> str:

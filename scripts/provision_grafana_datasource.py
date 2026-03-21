@@ -10,8 +10,8 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.config.loader import load_config  # noqa: E402
-from src.infra.grafana_api import upsert_prometheus_datasource  # noqa: E402
-from src.infra.yc_prometheus import workspace_query_endpoint  # noqa: E402
+from src.platform.integrations.grafana.api import upsert_prometheus_datasource  # noqa: E402
+from src.platform.integrations.yandex_cloud.prometheus import workspace_query_endpoint  # noqa: E402
 
 
 def _load_env_value(name: str) -> str:

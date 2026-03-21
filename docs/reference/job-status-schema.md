@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`src/worker/status_store.py` is the operational source of truth for recent command executions.
+`src/platform/runtime/worker/status_store.py` is the operational source of truth for recent command executions.
 
 It supports:
 

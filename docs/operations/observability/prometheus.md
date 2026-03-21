@@ -89,7 +89,7 @@ Required secret:
 - `YANDEX_PROMETHEUS_API_KEY`
 - fallback legacy name: `YMP_API_KEY`
 
-Secret resolution happens only in `src/app/bootstrap.py`.
+Secret resolution happens only in `src/platform/bootstrap.py`.
 
 ## Metric name mapping
 

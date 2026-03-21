@@ -9,7 +9,7 @@ Governing source:
 
 | Context | Owns | Current active areas |
 |---|---|---|
-| `snapshot` | ingestion, normalization, prepared state, query-facing state contracts | `src/core/*`, `src/services/sources/*`, `src/contexts/snapshot/internal/engine/*`, `src/contexts/snapshot/application/update_job.py` |
+| `snapshot` | ingestion, normalization, prepared state, query-facing state contracts | `src/core/*`, `src/contexts/snapshot/adapters/sources/*`, `src/contexts/snapshot/internal/engine/*`, `src/contexts/snapshot/application/update_job.py` |
 | `rendering` | timeline/designers render plans and sheet writeback | `src/contexts/rendering/internal/*`, context-owned render jobs, sheets render adapters |
 | `reminders` | reminder selection, payload building, styling, delivery orchestration | `src/contexts/reminders/internal/*`, context-owned reminder jobs |
 | `telegram_interaction` | Telegram webhook intake, update parsing, update-to-command mapping, group/user interaction flows | `src/contexts/telegram_interaction/internal/*`, context-owned group-query job, Telegram-related HTTP intake |
@@ -25,7 +25,7 @@ These surfaces are not first-class business contexts. They remain owned by platf
 | healthcheck | `platform.runtime` | event classification + top-level dispatch |
 | info/admin ops | `platform.runtime` with explicit route ownership docs | `/info`, admin ops, diagnostics handlers |
 | queue status / job status surfaces | `platform.runtime` | worker status store, job status endpoints |
-| observability / runtime diagnostics | `platform.runtime` | `src/observability/*`, diagnostics/reporting paths |
+| observability / runtime diagnostics | `platform.runtime` | `src/platform/observability/*`, diagnostics/reporting paths |
 
 ## Boundary notes
 

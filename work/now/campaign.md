@@ -2,13 +2,12 @@
 
 Single source of truth for campaign lifecycle state.
 
-## In Progress
-- CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1
-
 ## Blocked
+- CAM-2026-03-21-REPO-HYGIENE-POLISH-V1
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## Done
+- CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1 completed after removing or redistributing the old competing `src` roots so the active top-level map now reads through `config / contexts / core / entrypoints / platform`, with archive material moved out of active trees into the top-level `archive/` home.
 - CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1 completed after removing the last engine-backed active API path from `snapshot`: `read/query/update` now use the runtime bundle directly, attachment mutation moved into a dedicated reusable service, and `SnapshotEngine` is no longer the semantic center of the module.
 - CAM-2026-03-21-ATTACHMENTS-MODULE-FIRST-FLOW-V1 completed after removing the public `get_*_job` grammar, introducing one module-owned attachment command flow in `application`, and leaving jobs as delivery details behind that flow.
 - CAM-2026-03-21-ACCESS-API-PRIMARY-READ-OWNER-V1 completed after replacing the `get_*_handler`/`browser_routes` grammar with one browser-read entry, moving that entry into `access_api.application`, and making the HTTP router read `access_api` as the owner of the primary browser read surface.
@@ -20,7 +19,7 @@ Single source of truth for campaign lifecycle state.
 - CAM-2026-03-21-BOOTSTRAP-READABILITY-V1 completed after removing mutable bootstrap seams from `index.py`, switching dependent tests to explicit runtime getters, and leaving `src/platform/bootstrap.py` as neutral lazy runtime glue.
 - CAM-2026-03-21-DOCS-VOICE-UNIFICATION-V1 completed after removing the most visible future-facing and transitional wording from active docs so they read like current-system documentation.
 - CAM-2026-03-21-ACTIVE-NAMING-CLEANUP-V1 completed after rewriting active module docstrings in present-tense ownership language and renaming access-api query aliases away from broad snapshot-engine wording.
-- CAM-2026-03-21-TOP-PATH-ELEGANCE-V1 completed after removing the eager top-path context lookup from `index.py`, keeping `src/entrypoint/handler.py` as the single top router, and aligning the closest top-path docs and tests.
+- CAM-2026-03-21-TOP-PATH-ELEGANCE-V1 completed after removing the eager top-path context lookup from `index.py`, keeping `src/entrypoints/root/handler.py` as the single top router, and aligning the closest top-path docs and tests.
 - CAM-2026-03-21-REPO-BEAUTY-AUDIT-V1 completed after publishing the beauty assessment, the sequential backlog, and the smell-driven beauty-wave method used to execute the next curation steps.
 - Pre-audit idealization wave completed as a safe polish pass over the active contour: docs, capability naming, and readability guardrails were aligned before external review.
 - `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1` completed after replacing the active canon with module-first recovery, finishing the delta-audit-driven cleanup, moving snapshot internals under the snapshot context, removing `src/jobs/*`, and aligning active tests with module ownership under `tests/contexts/*`.
@@ -46,5 +45,5 @@ Single source of truth for campaign lifecycle state.
 ## Rule
 - Update this file first when campaign state changes.
 - Keep `work/roadmap/backlog.md` aligned with the same state buckets.
-- Current focus inside `CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1`: dead roots are removed, `entrypoints_adapters` is gone, browser masking is folded into `access_api`, the remaining live `services` pieces are now split between `platform` and `snapshot.adapters`, the thin `src/entrypoint` package is folded into `src/entrypoints/root`, loose Telegram/LLM adapters moved into `platform/integrations`, the operational store utility moved into `platform/infra`, provider packages from the old adapter root are redistributed into `platform`, tracked `src/adapters` is gone, `src/app` is folded into `src/platform`, pure timezone helpers moved into `src/core`, `src/infra` is redistributed into platform integrations plus attachment internals, `src/observability` is folded into `src/platform/observability`, command contracts plus worker runtime are folded into `src/platform/runtime`, archive code/docs/work are lifted into the top-level `archive/` home, and the next blocker is whether any further flattening beyond the active `src` roots would improve truth or only shave names cosmetically.
+- Current focus inside `CAM-2026-03-21-REPO-HYGIENE-POLISH-V1`: the hygiene pass is delivered, and the next blocker is architectural rather than cosmetic: active code still splits domain reality between the root `core/` package and `src/core/`.
 

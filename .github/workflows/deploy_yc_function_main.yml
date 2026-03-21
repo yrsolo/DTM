@@ -153,7 +153,7 @@ jobs:
             .venv/**
             venv/**
             artifacts/**
-            old/**
+            archive/code/old/**
             .git/**
             .github/**
             **/__pycache__/**

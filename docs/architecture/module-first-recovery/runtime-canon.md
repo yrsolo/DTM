@@ -4,7 +4,7 @@
 
 Normal path:
 - `index.py`
-- `src/entrypoint/*`
+- `src/entrypoints/root/*`
 - `src/platform/runtime/*`
 - owning module public surface
 

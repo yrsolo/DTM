@@ -19,7 +19,7 @@ Responsibilities:
 
 Current active top path:
 - `index.py`
-- `src/entrypoint/handler.py`
+- `src/entrypoints/root/handler.py`
 - `src/platform/bootstrap.py` lazy shell getters
 - `src/entrypoints/http/http_shell.py` or `src/entrypoints/queue/worker_shell.py` or `src/entrypoints/triggers/trigger_shell.py`
 

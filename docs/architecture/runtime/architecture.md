@@ -83,7 +83,7 @@ Flow:
 - `index.py` remains thin and import-safe
 - `src/entrypoints/**` owns transport parsing/translation only
 - `src/contexts/snapshot/internal/engine/*` owns read-side build/query/storage logic
-- context-owned jobs and `src/worker/*` own mutation execution
+- context-owned jobs and `src/platform/runtime/worker/*` own mutation execution
 - browser access policy stays at the HTTP boundary, not inside query internals
 - render/notify/group-query consume prepared snapshot data instead of inventing parallel read contours
 
