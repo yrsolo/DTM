@@ -3,7 +3,7 @@ from __future__ import annotations
 from time import perf_counter
 
 from src.app.context import AppContext
-from src.contexts.snapshot.public import get_update_capability as _get_snapshot_update_capability
+from src.contexts.snapshot.application.capabilities import SnapshotUpdateCapability
 from src.observability import timed
 from src.observability.batching import (
     MetricsBatchCollector,
@@ -14,7 +14,8 @@ from src.observability.buffered_metrics import managed_metrics_scope
 from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
 
 
-get_snapshot_capability = _get_snapshot_update_capability
+def get_snapshot_capability(ctx):
+    return SnapshotUpdateCapability(ctx)
 
 
 class UpdateSnapshotJob:

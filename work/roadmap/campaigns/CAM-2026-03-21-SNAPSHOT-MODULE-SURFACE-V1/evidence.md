@@ -34,5 +34,12 @@
 ## Current Assessment
 
 - smell shrank: direct shortcut surface is gone, and active consumers now read snapshot through capability contracts.
-- smell still alive: `SnapshotModule` still centers on `build_snapshot_engine` and thin engine-bound capability proxies.
-- next honest move is no longer another local wrapper deletion; it is a deeper contract-first redesign inside `src/contexts/snapshot/module.py`.
+- second cut executed:
+  - moved capability classes out of `src/contexts/snapshot/module.py` into `src/contexts/snapshot/application/capabilities.py`
+  - reduced `SnapshotModule` to a boring factory over capability contracts instead of an `engine()`-centered surface
+  - cut the update-path cycle by moving `UpdateSnapshotJob` to `SnapshotUpdateCapability` directly instead of going back through `snapshot.public`
+- second-cut verification:
+  - `python -m unittest tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.api.test_command_queue_foundation tests.contexts.telegram_interaction.test_group_query_reply_job tests.contexts.reminders.test_reminder_v2_selection tests.contexts.rendering.test_render_v2 tests.contexts.attachments.test_attach_task_file_job tests.contexts.attachments.test_delete_task_attachment_job tests.contexts.attachments.test_generate_attachment_preview_job -v`
+  - `rg -n "from src\\.contexts\\.snapshot\\.public import get_update_capability|\\.engine\\(|class Snapshot(Read|Query|Attachment|Update)Capability" src tests`
+- smell still alive: snapshot contracts are cleaner, but they still remain thin engine-bound proxies and the next improvement would touch several downstream context expectations at once.
+- next honest move is no longer a local module cleanup; it is a broader contract redesign across `snapshot`, `access_api`, `attachments`, `rendering`, `reminders`, and timer/runtime consumers.
