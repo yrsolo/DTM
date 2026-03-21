@@ -1,6 +1,6 @@
 # Route Ownership V2
 
-This document defines target ownership for active HTTP and trigger-facing routes/surfaces during the modular-monolith refactor wave.
+This document defines target ownership for active HTTP and trigger-facing routes/surfaces in the current runtime contour.
 
 Governing source:
 - [../module-first-recovery/README.md](../module-first-recovery/README.md)

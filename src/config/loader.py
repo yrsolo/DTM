@@ -32,7 +32,6 @@ ENV_ALLOWLIST = frozenset(
         "DEV_MODE_METRICS",
         "BOTTLENECK_METRICS_LEVEL",
         "METRICS_DELIVERY_MODE",
-        "STORE_MODE",
         "READMODEL_SOURCE",
         "NOTIFY_SOURCE",
         "RENDER_SOURCE",
@@ -41,8 +40,6 @@ ENV_ALLOWLIST = frozenset(
         "PREFLIGHT_TOP_ROWS",
         "FULL_SYNC_INTERVAL_HOURS",
         "FORCE_REFRESH",
-        "LEGACY_BLOB_WRITE",
-        "WRITE_LEGACY_MILESTONES",
         "SOURCE_SHEET_NAME",
         "TARGET_SHEET_NAME",
         "WEB_DOMAIN",
@@ -132,8 +129,6 @@ def _merge_runtime_env_overrides(runtime_cfg: RuntimeConfig) -> RuntimeConfig:
     if "FORCE_REFRESH" in os.environ:
         runtime_cfg.pipeline.force_refresh_default = _parse_bool(os.environ["FORCE_REFRESH"])
 
-    if "STORE_MODE" in os.environ:
-        runtime_cfg.sources.store_mode_default = os.environ["STORE_MODE"].strip().lower()
     if "READMODEL_SOURCE" in os.environ:
         runtime_cfg.sources.readmodel_source_default = os.environ["READMODEL_SOURCE"].strip().lower()
     if "NOTIFY_SOURCE" in os.environ:
@@ -418,9 +413,6 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
         notify_raw.get("llm_mode_default", defaults.notify.llm_mode_default)
     )
 
-    defaults.sources.store_mode_default = str(
-        sources_raw.get("store_mode_default", defaults.sources.store_mode_default)
-    )
     defaults.sources.readmodel_source_default = str(
         sources_raw.get("readmodel_source_default", defaults.sources.readmodel_source_default)
     )
@@ -554,12 +546,8 @@ def load_config(config_dir: Path = CONFIG_DIR) -> AppConfig:
     )
     tables_cfg = _merge_tables_env_overrides(tables_cfg)
     db_cfg = DbConfig(
-        ydb=db_data.get("ydb", {}),
         object_storage=db_data.get("object_storage", {}),
         tables=db_data.get("tables", {}),
-        readmodel=db_data.get("readmodel", {}),
-        compat=db_data.get("compat", {}),
-        retry=db_data.get("retry", {}),
     )
     llm_cfg = LlmConfig(
         llm=llm_data.get("llm", {}),

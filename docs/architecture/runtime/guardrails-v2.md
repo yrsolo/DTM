@@ -1,18 +1,18 @@
 ﻿# Guardrails V2
 
-This document defines the first minimal architecture guardrails required early in the modular-monolith refactor wave.
+This document defines the active minimal architecture guardrails for the current runtime contour.
 
 Governing source:
 - [../module-first-recovery/README.md](../module-first-recovery/README.md)
 
-## Early mandatory rules
+## Mandatory rules
 
 - no deep cross-context imports
 - no `os.getenv()` outside allowed config/bootstrap points
-- no active imports from `legacy` or archive-only code
+- no active imports from retired or archive-only code
 - entrypoint must not import heavy adapters directly
 
-## Planned early checks
+## Baseline checks
 
 - mode routing tests
 - command routing tests
@@ -29,11 +29,11 @@ Governing source:
 
 ## Intent
 
-These guardrails should be introduced before the first fully extracted context so migration velocity does not silently recreate the old coupling pattern.
+These guardrails keep the active contour honest: thin entrypoints, explicit boundaries, and no silent return of retired coupling patterns.
 
 Current enforced baseline in the active runtime:
-- active runtime paths may not import `src.legacy`
-- active runtime paths may not import `archive.code.legacy_runtime`
-- active runtime paths may not import the legacy `config` package
-- default tests may not import legacy or archived-legacy namespaces
+- active runtime paths may not import retired runtime roots or archived code
+- active runtime paths may not import the retired root `core` package
+- active runtime paths may not import the old flat `config` package
+- default tests may not import retired or archived runtime namespaces
 

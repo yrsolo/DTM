@@ -4,7 +4,7 @@
 
 This folder is the historical predecessor of the active module-first canon.
 
-It remains useful as the record of the previous recovery wave, but it is no longer the primary normative source for new architecture work.
+It remains useful as the record of the previous architecture program, but it is no longer the primary normative source for new architecture work.
 
 ## Start here
 
@@ -25,8 +25,8 @@ It remains useful as the record of the previous recovery wave, but it is no long
 ## Reading policy
 
 Use this folder when:
-- reviewing the previous recovery wave
-- checking how the earlier recovery program framed the same problems
+- reviewing the previous architecture program
+- checking how the earlier architecture program framed the same problems
 - comparing the module-first canon against the predecessor
 
 For attachment-related waves, read the frontend card publication scenario before decomposing work:

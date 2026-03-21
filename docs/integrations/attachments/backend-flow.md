@@ -399,8 +399,8 @@ Active code pointers:
 - `src/contexts/snapshot/internal/engine/frontend_v2_payload_builder.py`
 
 Tests:
-- `tests/api/test_command_queue_foundation.py`
-- `tests/api/test_task_attachment_read_handler.py`
+- `tests/entrypoints/http/test_command_queue_foundation.py`
+- `tests/contexts/access_api/test_task_attachment_read_api.py`
 - `tests/contexts/attachments/test_attach_task_file_job.py`
 - `tests/contexts/attachments/test_delete_task_attachment_job.py`
 - `tests/contexts/snapshot/test_engine_attach_metadata.py`
@@ -410,5 +410,5 @@ Tests:
 
 - no binary payload in queue messages
 - no direct prep mutation without extra-store update
-- no attachment metadata write through legacy YDB path
+- no attachment metadata write through retired database migration paths
 - no read access for non-ready, deleted, or masked attachments

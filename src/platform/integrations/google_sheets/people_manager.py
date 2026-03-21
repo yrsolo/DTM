@@ -1,16 +1,16 @@
-"""Google Sheets backed people manager adapter."""
+﻿"""Google Sheets backed people manager adapter."""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Mapping
 
-from core.contracts import PersonRowContract
-from core.errors import MissingRequiredColumnsError, RowValidationIssue
-from core.models.people import Designer, Person
+from src.core.contracts import PersonRowContract
+from src.core.errors import MissingRequiredColumnsError, RowValidationIssue
+from src.core.models.people import Designer, Person
 from src.config.loader import load_config
 
 if TYPE_CHECKING:
-    from utils.service import GoogleSheetInfo, GoogleSheetsService
+    from src.platform.integrations.google_sheets.service import GoogleSheetInfo, GoogleSheetsService
 
 
 def _safe_print(text: str) -> None:
@@ -110,3 +110,4 @@ class PeopleManager:
     def get_designers(self) -> list[Designer]:
         self._load()
         return [person for person in self.people.values() if isinstance(person, Designer)]
+

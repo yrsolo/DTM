@@ -1,4 +1,4 @@
-"""Google Sheets task repository adapter."""
+﻿"""Google Sheets task repository adapter."""
 
 from __future__ import annotations
 
@@ -8,15 +8,15 @@ from typing import TYPE_CHECKING, Any, Mapping
 
 import pandas as pd
 
-from core.contracts import TaskRowContract, is_nullish
-from core.errors import MissingRequiredColumnsError, RowValidationIssue
-from core.models.task import Task
-from core.task_repository_contract import TaskRepository
-from core.timing_parser import TimingParser
+from src.core.contracts import TaskRowContract, is_nullish
+from src.core.errors import MissingRequiredColumnsError, RowValidationIssue
+from src.core.models.task import Task
+from src.core.task_repository_contract import TaskRepository
+from src.core.timing_parser import TimingParser
 from src.config.loader import load_config
 
 if TYPE_CHECKING:
-    from utils.service import GoogleSheetInfo, GoogleSheetsService
+    from src.platform.integrations.google_sheets.service import GoogleSheetInfo, GoogleSheetsService
 
 
 def _safe_print(text: str) -> None:
@@ -251,3 +251,4 @@ class GoogleSheetsTaskRepository(TaskRepository):
         if not isinstance(value, Iterable):
             value = [value]
         return self.df[self.df[column_name].isin(value)]
+

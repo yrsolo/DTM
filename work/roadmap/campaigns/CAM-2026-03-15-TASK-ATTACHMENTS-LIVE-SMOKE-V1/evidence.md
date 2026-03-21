@@ -1,19 +1,20 @@
 # Evidence - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## Trust gate
-- source: deployed `test` and `prod` attachment routes, current attachment docs, current attachment code
-- last_verified_at: 2026-03-15
+- source: deployed `test` and `prod` attachment routes, current attachment docs, current attachment code, current production release workflow
+- last_verified_at: 2026-03-21
 - verified_by: Codex
 - evidence:
   - `docs/integrations/attachments/backend-flow.md`
   - `src/entrypoints/http/admin_task_attachments_handler.py`
-  - `src/entrypoints/http/task_attachment_read_handler.py`
+  - `src/contexts/access_api/internal/task_attachment_read_api.py`
+  - `.github/workflows/release_yc_function_prod.yml`
   - deployed `test` contour
   - deployed `prod` contour
 - trust_level: high
 - notes:
   - attachment contour is deployed on `test`
-  - `prod` live verification requires manual production release workflow; push to `main` alone does not deploy live function
+  - `prod` live verification still requires the manual `Release Yandex Cloud Function (prod manual)` workflow; push to `main` alone does not deploy the live function
   - this campaign is verification-first and should change code only if smoke finds a defect
 
 ## Planned live checks
@@ -37,12 +38,12 @@
   - `request-upload` returned `attachment_upload_request`
   - direct Object Storage `PUT` returned `200`
   - `finalize` returned `202` with `attachment_finalize_enqueued`
-  - trusted/full `frontend_v2` published the attachment after worker execution
-  - masked `frontend_v2` returned zero attachments for the same task
+  - trusted/full primary task-list payload published the attachment after worker execution
+  - masked browser payload returned zero attachments for the same task
   - `view` returned `302`
   - `download` returned `302`
   - `delete` returned `202` with `attachment_delete_enqueued`
-  - trusted/full `frontend_v2` no longer published the attachment after delete
+  - trusted/full primary task-list payload no longer published the attachment after delete
 - known caveats:
   - none observed on `test`
 
@@ -57,3 +58,4 @@
 - conclusion:
   - live prod function is not on the attachment-v1 runtime yet
   - production smoke must be rerun after manual release workflow execution
+  - as of 2026-03-21 the active repo still uses a manual prod release workflow, so this remains the only repo-local blocker for campaign closeout

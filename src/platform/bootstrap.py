@@ -74,7 +74,7 @@ def _resolve_target_sheet_name(cfg) -> str:
 
 
 def _build_base_bootstrap_deps(cfg, structured_logger) -> dict[str, object]:
-    """Build the base app deps without relying on legacy config.constants."""
+    """Build the base app deps from active config/bootstrap inputs only."""
 
     tables_cfg = getattr(cfg, "tables", None)
     llm_cfg = getattr(cfg, "llm", None)
@@ -101,10 +101,7 @@ def _build_base_bootstrap_deps(cfg, structured_logger) -> dict[str, object]:
         ).strip(),
         "yc_sa_json_credentials": str(os.getenv("YC_SA_JSON_CREDENTIALS", "")).strip(),
         "yc_sa_key_file": str(os.getenv("YC_SA_KEY_FILE", "")).strip(),
-        "legacy_blob_write": str(os.getenv("LEGACY_BLOB_WRITE", "")).strip().lower() in {"1", "true", "yes"},
-        "migration_store_file": str(os.getenv("MIGRATION_STORE_FILE", "artifacts/tmp/normalized_store.json")).strip(),
-        "write_legacy_milestones": str(os.getenv("WRITE_LEGACY_MILESTONES", "")).strip().lower()
-        in {"1", "true", "yes"},
+        "migration_store_file": str(os.getenv("MIGRATION_STORE_FILE", "work/artifacts/tmp/normalized_store.json")).strip(),
         "aws_access_key_id": os.getenv("AWS_ACCESS_KEY_ID", "").strip(),
         "aws_secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY", "").strip(),
         "openai_token": os.getenv("OPENAI_TOKEN", "").strip(),

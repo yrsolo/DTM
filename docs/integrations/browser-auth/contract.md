@@ -7,8 +7,7 @@ This document records the current backend-facing browser auth contract for the 2
 Canonical operator runbook:
 - `docs/integrations/browser-auth/runbook.md`
 
-Reference-only handoff remains:
-- `agent/intructions/DTM-test/BACKEND_AUTH_HANDOFF.md`
+Any owner handoff text for browser auth belongs in `agent/owner_inputs/` or archive only; it is not part of the active contract.
 
 ## Route namespace
 

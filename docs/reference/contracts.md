@@ -117,7 +117,5 @@ See `docs/reference/runtime-modes.md` for current supported modes and transport 
 
 ## Archive pointer
 
-Legacy YDB/readmodel table contracts are not part of the current runtime story.
-If historical schema detail is needed, use:
-- `archive/docs/system_legacy/ydb_schema.md`
+Historical schema detail lives only under `archive/docs/`.
 

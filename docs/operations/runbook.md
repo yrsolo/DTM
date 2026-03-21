@@ -106,11 +106,11 @@ Operator notes:
 
 Use the anti-relapse checks before shipping architectural cleanup:
 - `python scripts/check_no_monsters.py`
-- `python scripts/check_no_legacy_entrypoint_imports.py`
-- `python scripts/check_no_legacy_imports.py`
+- `python scripts/check_entrypoint_import_boundaries.py`
+- `python scripts/check_active_import_boundaries.py`
 
 Purpose:
-- prevent legacy contour from leaking back into active runtime paths
+- prevent retired contours from leaking back into active runtime paths
 - keep shells thin and import-safe
 - keep current runtime docs aligned with active code
 

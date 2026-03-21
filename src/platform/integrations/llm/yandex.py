@@ -1,12 +1,12 @@
-"""Yandex LLM adapter boundary."""
+﻿"""Yandex LLM adapter boundary."""
 
 from __future__ import annotations
 
 import asyncio
 from typing import Any
 
-from core.adapters import LoggerAdapter, NullLogger
-from core.reminder_policy import is_transient_llm_error, normalize_chat_messages
+from src.platform.contracts.adapters import LoggerAdapter, NullLogger
+from src.platform.policies.reminder_policy import is_transient_llm_error, normalize_chat_messages
 
 
 class AsyncYandexLLMChatAgent:
@@ -78,3 +78,5 @@ class AsyncYandexLLMChatAgent:
 
     async def aclose(self) -> None:
         await self.http_client.aclose()
+
+

@@ -3,9 +3,9 @@
 > Superseded on 2026-03-20 by `docs/architecture/module-first-recovery/README.md`.
 > Keep this file as historical precedent for the previous modular-monolith wave, not as the current normative canon.
 
-This document is the normative master text for the DTM modular-monolith refactor wave.
+This document is the preserved master text for the previous DTM modular-monolith wave.
 
-It supersedes chat memory as the working architectural brief for future campaign starts. When future campaign plans need the target shape, migration order, or boundary rules, start here.
+It superseded chat memory as the working architectural brief for that earlier program. When historical campaign plans need the target shape, implementation order, or boundary rules from that period, start here.
 
 ## Goal and scope
 
@@ -16,7 +16,7 @@ Goal:
 
 Scope:
 - active runtime code and architecture docs
-- campaign sequencing and ownership rules for the refactor wave
+- campaign sequencing and ownership rules for that earlier architecture program
 - boundary rules for new `entrypoint`, `platform`, and `contexts` structure
 
 Out of scope for this kickoff:
@@ -26,7 +26,7 @@ Out of scope for this kickoff:
 
 ## First-class top-level architecture
 
-DTM target shape for this wave is:
+DTM target shape for that earlier program was:
 
 - `entrypoint`
   - thin request/event intake only
@@ -74,7 +74,7 @@ src/
 
 ## Migration order
 
-The canonical migration order for this refactor wave is:
+The canonical implementation order for that earlier program was:
 
 1. architectural contract and ownership map
 2. skeleton `src/entrypoint`, `src/platform`, `src/contexts`
@@ -96,7 +96,7 @@ The canonical migration order for this refactor wave is:
 
 ## Controlled bootstrap transition
 
-Bootstrap transition policy for this wave:
+Bootstrap transition policy for that earlier program:
 
 - the existing bootstrap may stay as a transitional composition root
 - the old bootstrap may delegate only; it must not become the new architectural center
@@ -121,10 +121,10 @@ These guardrails must be planned and introduced before the first full context ex
 
 ## Ownership rules
 
-Ownership rules for this wave:
+Ownership rules for that earlier program:
 
 - top-level architecture is context-first, not transport-first
-- `jobs`, `worker`, `http`, `triggers`, `telegram SDK`, `ydb`, `s3`, `llm` are not first-class business modules; they are runtime/platform or adapter concerns
+- `jobs`, `worker`, `http`, `triggers`, `telegram SDK`, storage adapters, and `llm` are not first-class business modules; they are runtime/platform or adapter concerns
 - platform-owned surfaces must be documented explicitly:
   - healthcheck
   - info/admin ops

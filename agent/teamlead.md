@@ -20,8 +20,8 @@ Chat is not source of truth. Use repository files:
 - groomed queue: `work/roadmap/backlog.md`
 
 Historical materials are archive-only:
-- `docs/archive/*`
-- `work/archive/*`
+- `archive/docs/*`
+- `archive/work/*`
 
 ## Freshness and trust gate
 Before decomposition:

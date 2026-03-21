@@ -4,7 +4,7 @@
 
 - start every new architecture campaign from this folder
 - treat `docs/architecture/runtime/*` as descriptive evidence
-- treat `docs/architecture/recovery/*` as the previous recovery wave, not the current control doc set
+- treat `docs/architecture/recovery/*` as the previous architecture program, not the current control doc set
 - treat `docs/integrations/attachments/frontend-card-publication.md` as the governing concrete product scenario for publication/read-side work
 
 ## What to resist
@@ -16,7 +16,7 @@
 
 ## Delta-audit expectation
 
-Before the next code wave:
+Before the next code pass:
 - verify current code against this canon
 - fill the structured delta-audit table from `delta-audit-template.md`
 - record remaining top-path ambiguity

@@ -10,8 +10,7 @@ This runbook explains how browser auth works operationally in the current DTM co
 - how to verify rollout and diagnose masked/full behavior.
 
 This is the canonical operator-facing runbook for the current auth wave.
-Reference handoff remains archive-only input:
-- `agent/intructions/DTM-test/BACKEND_AUTH_HANDOFF.md`
+Any owner handoff text for browser auth belongs in `agent/owner_inputs/` or archive only; it is not part of the active canon.
 
 ## Runtime components
 

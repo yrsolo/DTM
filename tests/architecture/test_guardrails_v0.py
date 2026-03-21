@@ -10,6 +10,7 @@ TARGET_DIRS = [
     ROOT / "src" / "entrypoint",
     ROOT / "src" / "platform",
     ROOT / "src" / "contexts",
+    ROOT / "src" / "core",
 ]
 
 ALLOWED_ENV_READ_FILES = {
@@ -155,6 +156,64 @@ class GuardrailsV0TestCase(unittest.TestCase):
             if "from src.app.bootstrap import" in content or "import src.app.bootstrap" in content:
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
+
+    def test_active_code_does_not_import_root_core_package(self) -> None:
+        offenders: list[str] = []
+        import_patterns = (
+            re.compile(r"^\s*from\s+core(?:\.|\s+import)", re.MULTILINE),
+            re.compile(r"^\s*import\s+core(?:\.|\s|$)", re.MULTILINE),
+        )
+        for file_path in _python_files([
+            ROOT / "index.py",
+            ROOT / "local_run.py",
+            ROOT / "src",
+            ROOT / "tests",
+            ROOT / "agent",
+            ROOT / "scripts",
+        ]):
+            content = file_path.read_text(encoding="utf-8")
+            if any(pattern.search(content) for pattern in import_patterns):
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_root_core_package_does_not_exist_as_tracked_python_root(self) -> None:
+        path = ROOT / "core"
+        if not path.exists():
+            return
+        tracked_python_files = sorted(
+            str(file_path.relative_to(ROOT))
+            for file_path in path.rglob("*.py")
+        )
+        self.assertEqual(tracked_python_files, [])
+
+    def test_active_code_does_not_import_root_utils_package(self) -> None:
+        offenders: list[str] = []
+        import_patterns = (
+            re.compile(r"^\s*from\s+utils(?:\.|\s+import)", re.MULTILINE),
+            re.compile(r"^\s*import\s+utils(?:\.|\s|$)", re.MULTILINE),
+        )
+        for file_path in _python_files([
+            ROOT / "index.py",
+            ROOT / "local_run.py",
+            ROOT / "src",
+            ROOT / "tests",
+            ROOT / "agent",
+            ROOT / "scripts",
+        ]):
+            content = file_path.read_text(encoding="utf-8")
+            if any(pattern.search(content) for pattern in import_patterns):
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_root_utils_package_does_not_exist_as_tracked_python_root(self) -> None:
+        path = ROOT / "utils"
+        if not path.exists():
+            return
+        tracked_python_files = sorted(
+            str(file_path.relative_to(ROOT))
+            for file_path in path.rglob("*.py")
+        )
+        self.assertEqual(tracked_python_files, [])
 
     def test_active_runtime_paths_do_not_import_removed_index_dispatcher(self) -> None:
         offenders: list[str] = []
@@ -583,7 +642,6 @@ class GuardrailsV0TestCase(unittest.TestCase):
             "src.services.usecases",
             "src.adapters.store_ydb",
             "src.adapters.google_sheets",
-            "src.adapters.ydb",
         )
         for file_path in _python_files(target_paths):
             if file_path == Path(__file__).resolve():

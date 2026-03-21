@@ -1,4 +1,4 @@
-"""Row-based Sheets task normalization for active snapshot runtime."""
+﻿"""Row-based Sheets task normalization for active snapshot runtime."""
 
 from __future__ import annotations
 
@@ -7,10 +7,10 @@ from typing import Any, Mapping
 
 import pandas as pd
 
-from core.contracts import TaskRowContract, is_nullish
-from core.errors import MissingRequiredColumnsError, RowValidationIssue
-from core.models.task import Task
-from core.timing_parser import TimingParser
+from src.core.contracts import TaskRowContract, is_nullish
+from src.core.errors import MissingRequiredColumnsError, RowValidationIssue
+from src.core.models.task import Task
+from src.core.timing_parser import TimingParser
 
 
 def normalize_designer_cell(value: Any) -> str:
@@ -207,3 +207,4 @@ def apply_chain_year_shift(
         }
     )
     return shifted_sorted
+

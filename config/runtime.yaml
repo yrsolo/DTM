@@ -112,7 +112,6 @@ notify:
   llm_mode_default: provider
 
 sources:
-  store_mode_default: legacy
   readmodel_source_default: legacy
 
 timing:

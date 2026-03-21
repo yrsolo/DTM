@@ -34,5 +34,5 @@ Current active reading path for architecture work:
 - `modularity-audit-2026-03-19.md`
 - ownership and guardrail docs
 
-History stays available, but outside the default active path:
+Historical predecessor material stays available, but outside the default active path:
 - [modular-monolith-v2.md](modular-monolith-v2.md) - historical predecessor only

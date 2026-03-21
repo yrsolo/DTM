@@ -28,7 +28,7 @@ class RenderTimelineJob:
         metrics = self._ctx.deps.get("metrics_client")
         logger = self._ctx.deps.get("structured_logger")
         collector = MetricsBatchCollector(metrics)
-        from utils.service import GoogleSheetInfo, GoogleSheetsService
+        from src.platform.integrations.google_sheets.service import GoogleSheetInfo, GoogleSheetsService
 
         started_at = self._ctx.clock()
         wall_clock_started = perf_counter()
@@ -160,7 +160,7 @@ class RenderDesignersJob:
         metrics = self._ctx.deps.get("metrics_client")
         logger = self._ctx.deps.get("structured_logger")
         collector = MetricsBatchCollector(metrics)
-        from utils.service import GoogleSheetInfo, GoogleSheetsService
+        from src.platform.integrations.google_sheets.service import GoogleSheetInfo, GoogleSheetsService
 
         wall_clock_started = perf_counter()
         snapshot_read = get_snapshot_read_api(self._ctx)

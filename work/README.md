@@ -5,6 +5,7 @@
 ## Sections
 - `work/now/` - active campaign and execution checklist.
 - `work/roadmap/` - planned campaigns and strategic queue.
+- `work/artifacts/` - generated local evidence and working output files.
 - `archive/work/` - completed campaigns and historical process artifacts.
 
 ## Rules

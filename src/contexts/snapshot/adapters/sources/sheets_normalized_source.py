@@ -103,7 +103,7 @@ def build_sheets_normalized_task_source(
     dry_run: bool,
 ) -> SheetsNormalizedTaskSource:
     """Build Sheets task source directly from cfg + credentials (no planner)."""
-    from utils.service import GoogleSheetInfo, GoogleSheetsService
+    from src.platform.integrations.google_sheets.service import GoogleSheetInfo, GoogleSheetsService
 
     source_sheet_name = str(cfg.tables.google_sheets.get("source_sheet_name_default", "")).strip()
     source_sheet_info_data = {

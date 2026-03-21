@@ -22,9 +22,7 @@ class BootstrapInputsTestCase(unittest.TestCase):
                 "DEFAULT_CHAT_ID": "-1001",
                 "YC_SA_JSON_CREDENTIALS": "{json}",
                 "YC_SA_KEY_FILE": "/tmp/key.json",
-                "LEGACY_BLOB_WRITE": "1",
-                "WRITE_LEGACY_MILESTONES": "true",
-                "MIGRATION_STORE_FILE": "artifacts/custom/store.json",
+                "MIGRATION_STORE_FILE": "work/artifacts/custom/store.json",
             },
             clear=False,
         ):
@@ -37,9 +35,7 @@ class BootstrapInputsTestCase(unittest.TestCase):
         self.assertEqual(deps["default_chat_id"], "-1001")
         self.assertEqual(deps["yc_sa_json_credentials"], "{json}")
         self.assertEqual(deps["yc_sa_key_file"], "/tmp/key.json")
-        self.assertTrue(deps["legacy_blob_write"])
-        self.assertTrue(deps["write_legacy_milestones"])
-        self.assertEqual(deps["migration_store_file"], "artifacts/custom/store.json")
+        self.assertEqual(deps["migration_store_file"], "work/artifacts/custom/store.json")
 
     def test_resolve_google_key_json_path_supports_raw_json_env(self) -> None:
         with TemporaryDirectory() as tmp_dir:

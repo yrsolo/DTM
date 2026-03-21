@@ -1,8 +1,8 @@
 # Module-First Recovery
 
-This folder is the primary normative architecture canon for the next DTM recovery wave.
+This folder is the primary normative architecture canon for the active DTM system.
 
-It supersedes `docs/architecture/recovery/README.md` as the active architecture reading path while preserving the earlier recovery set as historical precedent.
+It supersedes `docs/architecture/recovery/README.md` as the active architecture reading path while preserving the earlier architecture set as historical precedent.
 
 ## Start here
 
@@ -53,5 +53,5 @@ Current descriptive evidence still lives in:
 - `docs/architecture/runtime/modularity-audit-2026-03-19.md`
 - `docs/architecture/recovery/README.md`
 
-Those files describe history or current state.
+Those files describe history or observed state.
 This folder defines the active canon.

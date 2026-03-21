@@ -116,7 +116,7 @@ Status keys:
 - `jobs/{env}/status/{job_id}.json`
 - `jobs/{env}/latest/{command_type}.json`
 
-Queue foundation must not introduce YDB-backed job status tracking.
+Queue foundation must not introduce database-backed job status tracking.
 
 ## Per-module Contracts
 
@@ -160,7 +160,7 @@ Queue foundation must not introduce YDB-backed job status tracking.
 ## `src/worker/status_store.py`
 - Owns S3 job status persistence.
 - Must be environment-scoped.
-- Must not depend on YDB.
+- Must not depend on a direct database adapter.
 
 ## Job wrappers
 - Must call extracted service/job entrypoints.
@@ -197,5 +197,5 @@ Queue foundation must not introduce YDB-backed job status tracking.
 - No attachments in v1
 - No Telegram runtime wiring in v1
 - No worker path that permanently calls monolithic `mode=*` orchestration
-- No status tracking in YDB
+- No status tracking in a direct database backend
 - No direct heavy execution from admin HTTP actions after async admin CAM starts

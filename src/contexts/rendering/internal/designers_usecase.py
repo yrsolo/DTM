@@ -5,7 +5,7 @@ from datetime import date
 
 from src.core.timezone_utils import format_sheet_timestamp, now_in_timezone, today_in_timezone
 from src.contexts.snapshot.contracts import TaskView
-from utils.func import GetColor
+from src.contexts.rendering.internal.colors import GetColor
 
 from .model import RenderCell, RenderPlan, RenderRequest
 
