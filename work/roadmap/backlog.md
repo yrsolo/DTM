@@ -39,7 +39,7 @@
 
 ## Notes
 - Current live execution focus is the blocked `prod` confirmation step for `CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1`.
-- Current active structural cleanup is top-level `src` simplification: dead historical roots are gone and `entrypoints_adapters` has been folded into `access_api`; the next decision is whether remaining technical roots like `services` are justified active zones or the next competing-center cut.
+- Current active structural cleanup is top-level `src` simplification: dead historical roots are gone, `entrypoints_adapters` has been folded into `access_api`, browser masking has left `services/access`, and the next decision is whether the remaining `services` core is justified or the next competing-center cut.
 - `agent/intructions/DTM-test/**` is reference-only and not part of execution/archive lifecycle.
 - `docs/architecture/module-first-recovery/README.md` is now the canonical architecture starting point; new child campaigns should be opened only after a fresh trust-gated audit against current code.
 - Separate follow-ups remain outside this campaign:

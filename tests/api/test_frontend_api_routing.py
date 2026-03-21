@@ -17,6 +17,12 @@ import index
 from src.contexts.access_api.internal import operational_info_read_api as access_info_handler_module
 from src.contexts.access_api.internal import people_directory_read_api as access_people_snapshot_handler_module
 from src.contexts.access_api.internal import primary_task_list_read_api as access_frontend_v2_module
+from src.contexts.access_api.internal.masking import (
+    BRAND_DICTIONARY,
+    DESIGNER_DICTIONARY,
+    FORMAT_DICTIONARY,
+    SHOW_DICTIONARY,
+)
 from src.contexts.access_api.internal.frontend_response_cache import default_frontend_cache_key
 from src.entrypoints.http.event_parser import extract_payload, http_path, query_params
 from src.entrypoints.http.frontend_query_params import parse_bool
@@ -24,7 +30,6 @@ from src.entrypoints.http.runtime_mode import extract_force_refresh, extract_run
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES
 from src.observability.bottlenecks import RECENT_API_STAGE_EVENTS, RECENT_DIRECT_API_OUTER_TRACES
 from src.platform import bootstrap as runtime_bootstrap
-from src.services.access.masking import BRAND_DICTIONARY, DESIGNER_DICTIONARY, FORMAT_DICTIONARY, SHOW_DICTIONARY
 from src.contexts.snapshot.internal.engine.model import PeopleSnapshot, PersonView
 from src.worker.model import JobStatusRecord
 

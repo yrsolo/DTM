@@ -479,6 +479,7 @@ class GuardrailsV0TestCase(unittest.TestCase):
             ROOT / "src" / "notify",
             ROOT / "src" / "telegram",
             ROOT / "src" / "services" / "attachments",
+            ROOT / "src" / "services" / "access",
             ROOT / "src" / "handlers",
             ROOT / "src" / "entrypoints_adapters",
         ]

@@ -27,6 +27,7 @@ from src.entrypoints.http.frontend_query_params import (
 from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_api_v2_doc_html
 from src.entrypoints.http.response_utils import error_response, html_response, json_response
 from src.contexts.access_api.internal.frontend_query import build_frontend_query
+from src.contexts.access_api.internal.masking import mask_frontend_payload, masking_version_for_hour
 from src.observability.bottlenecks import (
     append_response_headers,
     is_api_metrics_enabled,
@@ -34,8 +35,6 @@ from src.observability.bottlenecks import (
     new_stage_trace_id,
     record_api_stage,
 )
-from src.services.access import mask_frontend_payload
-from src.services.access.masking import masking_version_for_hour
 
 
 get_snapshot_query_api = _get_snapshot_query_api

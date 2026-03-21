@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 from datetime import datetime
 
-from src.services.access.masking import masking_version_for_hour
+from src.contexts.access_api.internal.masking import masking_version_for_hour
 
 
 class MaskingVersionTestCase(unittest.TestCase):
