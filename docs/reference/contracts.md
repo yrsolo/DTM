@@ -1,4 +1,4 @@
-# Contracts (Current)
+﻿# Contracts (Current)
 
 This document defines the current runtime contracts that shape the live snapshot-first contour.
 It intentionally excludes legacy database/storage schemas and historical migration contracts.
@@ -119,4 +119,5 @@ See `docs/reference/runtime-modes.md` for current supported modes and transport 
 
 Legacy YDB/readmodel table contracts are not part of the current runtime story.
 If historical schema detail is needed, use:
-- `docs/archive/system_legacy/ydb_schema.md`
+- `archive/docs/system_legacy/ydb_schema.md`
+

@@ -1,8 +1,8 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import unittest
 
-from src.archive.legacy_runtime.usecases.planner_runtime import run_planner_use_case
+from archive.code.legacy_runtime.usecases.planner_runtime import run_planner_use_case
 
 
 class _PlannerStub:
@@ -47,3 +47,4 @@ class PlannerRuntimeUseCaseTestCase(unittest.IsolatedAsyncioTestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

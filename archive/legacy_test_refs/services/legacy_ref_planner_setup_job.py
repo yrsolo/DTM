@@ -1,9 +1,9 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import unittest
 
-from src.archive.legacy_runtime.entrypoints.jobs.planner_setup_job import PlannerRuntimeBuildRequest, build_planner_runtime
-from src.archive.legacy_runtime.entrypoints.jobs.source_switch_job import SourceSwitchRequest
+from archive.code.legacy_runtime.entrypoints.jobs.planner_setup_job import PlannerRuntimeBuildRequest, build_planner_runtime
+from archive.code.legacy_runtime.entrypoints.jobs.source_switch_job import SourceSwitchRequest
 
 
 class _Deps:
@@ -55,3 +55,4 @@ class PlannerSetupJobTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

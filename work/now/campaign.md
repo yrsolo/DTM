@@ -1,4 +1,4 @@
-# Campaign Status Registry
+﻿# Campaign Status Registry
 
 Single source of truth for campaign lifecycle state.
 
@@ -30,7 +30,7 @@ Single source of truth for campaign lifecycle state.
 - `CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1` completed as the previous architecture wave and now serves as historical precedent rather than the current canon.
 - `CAM-2026-03-16-DOCS-IA-REFRESH-V1` completed and archived after the docs information architecture refresh and link normalization wave.
 - `CAM-2026-03-16-DOC-PREVIEW-CONVERTER-V1` completed and archived after the legacy `.doc` preview split-flow and converter integration.
-- Recent completed campaigns were archived under `work/archive/campaigns/`.
+- Recent completed campaigns were archived under `archive/work/campaigns/`.
 - Latest archived closeouts include the 2026-03-12 execution wave, 2026-03-14 attachment/people/audit waves, and the completed attachment cleanup wave.
 
 ## Planned
@@ -40,10 +40,11 @@ Single source of truth for campaign lifecycle state.
 - CAM-2026-03-09-RUNTIME-DEPLANNERIZE-V1 (obsolete / already substantially delivered)
 
 ## Archived
-- Completed campaigns were moved to `work/archive/campaigns/`.
+- Completed campaigns were moved to `archive/work/campaigns/`.
 - `agent/intructions/DTM-test/**` is treated as owner-provided reference input only.
 
 ## Rule
 - Update this file first when campaign state changes.
 - Keep `work/roadmap/backlog.md` aligned with the same state buckets.
-- Current focus inside `CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1`: dead roots are removed, `entrypoints_adapters` is gone, browser masking is folded into `access_api`, the remaining live `services` pieces are now split between `platform` and `snapshot.adapters`, the thin `src/entrypoint` package is folded into `src/entrypoints/root`, loose Telegram/LLM adapters moved into `platform/integrations`, the operational store utility moved into `platform/infra`, provider packages from the old adapter root are redistributed into `platform`, tracked `src/adapters` is gone, `src/app` is folded into `src/platform`, pure timezone helpers moved into `src/core`, `src/infra` is redistributed into platform integrations plus attachment internals, `src/observability` is folded into `src/platform/observability`, command contracts plus worker runtime are folded into `src/platform/runtime`, and the next blocker is no longer a leftover shelf but whether any further top-level reduction would improve truth instead of forcing taste-only churn.
+- Current focus inside `CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1`: dead roots are removed, `entrypoints_adapters` is gone, browser masking is folded into `access_api`, the remaining live `services` pieces are now split between `platform` and `snapshot.adapters`, the thin `src/entrypoint` package is folded into `src/entrypoints/root`, loose Telegram/LLM adapters moved into `platform/integrations`, the operational store utility moved into `platform/infra`, provider packages from the old adapter root are redistributed into `platform`, tracked `src/adapters` is gone, `src/app` is folded into `src/platform`, pure timezone helpers moved into `src/core`, `src/infra` is redistributed into platform integrations plus attachment internals, `src/observability` is folded into `src/platform/observability`, command contracts plus worker runtime are folded into `src/platform/runtime`, archive code/docs/work are lifted into the top-level `archive/` home, and the next blocker is whether any further flattening beyond the active `src` roots would improve truth or only shave names cosmetically.
+

@@ -1,4 +1,4 @@
-# Module Map (Current)
+﻿# Module Map (Current)
 
 This document maps the modules that matter for the active runtime contour.
 
@@ -50,8 +50,8 @@ Governing policy:
 
 Historical or archive-only detail stays outside the canonical runtime story.
 If needed, use:
-- `docs/archive/*`
-- `src/archive/*`
+- `archive/docs/*`
+- `archive/code/*`
 - `old/v1/*`
 
 ## Immediate guidance
@@ -63,3 +63,4 @@ If needed, use:
 - Keep refresh/render/reminder work in async jobs or explicit runtime modes.
 - Treat archive modules and docs as reference-only, not as active architecture.
 - Use the module-first recovery canon and companion ownership docs as the active ownership reference for current architecture work.
+

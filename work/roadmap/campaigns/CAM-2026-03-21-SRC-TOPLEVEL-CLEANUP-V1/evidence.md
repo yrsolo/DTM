@@ -108,5 +108,10 @@
 - verification after the runtime-contract fold stayed green:
   - `python -m unittest tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.entrypoints.test_planner_runtime_entry tests.api.test_command_queue_foundation tests.api.test_frontend_api_routing tests.api.test_telegram_webhook_handler tests.api.test_info_observability tests.contexts.attachments.test_attach_task_file_job tests.contexts.attachments.test_delete_task_attachment_job tests.contexts.attachments.test_cleanup_task_attachments_job tests.contexts.attachments.test_generate_attachment_preview_job tests.contexts.reminders.test_send_reminders_job tests.contexts.telegram_interaction.test_group_query_reply_job tests.platform.runtime.test_queue_dispatch tests.platform.runtime.test_timer_pipeline tests.platform.runtime.worker.test_retry_semantics tests.platform.runtime.worker.test_status_store_history tests.architecture.test_target_skeleton_imports -v`
 - active top-level `src/` map now reads through six live roots only:
-  - `archive`, `config`, `contexts`, `core`, `entrypoints`, `platform`
-- the next blocker is no longer a leftover runtime shelf; it is whether any further top-level reduction would improve architectural truth or only trade clarity for over-flattening.
+  - `config`, `contexts`, `core`, `entrypoints`, `platform`
+- lifted all archive material out of active trees into one top-level archive home:
+  - `src/archive/*` -> `archive/code/*`
+  - `docs/archive/*` -> `archive/docs/*`
+  - `work/archive/*` -> `archive/work/*`
+  - live archive references in active docs, guardrails, and tracking now point to `archive/*`
+- the next blocker is no longer archive contamination of active trees; it is whether any further top-level reduction would improve architectural truth or only trade clarity for over-flattening.

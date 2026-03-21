@@ -1,4 +1,4 @@
-# Runbook (Current)
+﻿# Runbook (Current)
 
 This is the minimal operator/developer runbook for the active runtime contour.
 
@@ -93,7 +93,7 @@ Operator notes:
 ## 7) Render safety
 
 - render jobs may write only to approved target worksheets
-- source worksheet `ТАБЛИЧКА` must never be a render target
+- source worksheet `Ð¢ÐÐ‘Ð›Ð˜Ð§ÐšÐ` must never be a render target
 - unsafe target returns structured blocked result
 
 ## 8) Branching and deploy
@@ -117,4 +117,5 @@ Purpose:
 ## 10) Archive policy
 
 Current runbook does not document historical planner-era or old database contours.
-If historical troubleshooting detail is needed, use `docs/archive/*`.
+If historical troubleshooting detail is needed, use `archive/docs/*`.
+

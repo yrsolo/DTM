@@ -6,7 +6,7 @@ import unittest
 
 import pandas as pd
 
-from src.archive.legacy_runtime.services.calendar_runtime import CalendarManager
+from archive.code.legacy_runtime.services.calendar_runtime import CalendarManager
 
 
 class _Renderer:
@@ -45,3 +45,4 @@ class CalendarManagerEmptyTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

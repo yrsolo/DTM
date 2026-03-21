@@ -1,4 +1,4 @@
-# Architecture (Current)
+﻿# Architecture (Current)
 
 ## Purpose
 
@@ -107,7 +107,7 @@ The current architecture story does not treat the following as canonical runtime
 - legacy database/readmodel source paths
 - historical migration/cutover plans
 
-If historical detail is needed, use `docs/archive/*`.
+If historical detail is needed, use `archive/docs/*`.
 
 ## People registry distinction
 - `/api/v2/people` is a secret-only internal auth-support route over the canonical people snapshot.
@@ -115,3 +115,4 @@ If historical detail is needed, use `docs/archive/*`.
 - people snapshot is the canonical registry for reminder/auth lookup and internal reads.
 - people registry explicitly separates `contactEmail` from `yandexEmail` so auth/account identity is not mixed with human-contact data.
 - the HTTP API exposes a clean projection of that registry, not the raw mapped row payload.
+

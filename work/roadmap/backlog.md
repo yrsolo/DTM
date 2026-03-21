@@ -1,4 +1,4 @@
-# Backlog
+﻿# Backlog
 
 ## In Progress
 - CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1
@@ -31,7 +31,7 @@
 - Docs IA refresh completed: active docs moved into `product/`, `architecture/`, `integrations/`, `operations/`, and `reference/`, with archive folders now indexed by local `README.md`.
 - Legacy `.doc` preview converter wave completed: external converter integrated, preview job added, and `.doc` view/download split behavior documented.
 - Attachment upload allowlist now includes `.doc` (`application/msword`) and `.pdf` (`application/pdf`) alongside existing `docx` and image formats.
-- Recent completed campaigns were archived under `work/archive/campaigns/`.
+- Recent completed campaigns were archived under `archive/work/campaigns/`.
 - Latest archived closeouts include the 2026-03-12 execution wave, 2026-03-14 attachment/people/audit waves, and the completed attachment cleanup wave.
 
 ## Parked
@@ -39,9 +39,10 @@
 
 ## Notes
 - Current live execution focus is the blocked `prod` confirmation step for `CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1`.
-- Current active structural cleanup is top-level `src` simplification: dead historical roots are gone, `entrypoints_adapters` has been folded into `access_api`, browser masking has left `services/access`, the remaining live `services` pieces are now split into `platform` and `snapshot.adapters`, the thin `src/entrypoint` package has been folded into `src/entrypoints/root`, loose Telegram and LLM adapters have moved into `platform/integrations`, the operational store utility has moved into `platform/infra`, provider packages from the old adapter root have been redistributed into `platform`, tracked `src/adapters` is gone, the upper-contour cut folds `src/app` into `src/platform` while moving pure timezone helpers into `src/core`, `src/infra` is redistributed into platform integrations and attachment internals, `src/observability` is folded into `src/platform/observability`, command contracts plus worker runtime are folded into `src/platform/runtime`, and the next structural decision is whether any further top-level reduction would improve truth instead of forcing taste-only churn.
+- Current active structural cleanup is top-level `src` simplification: dead historical roots are gone, `entrypoints_adapters` has been folded into `access_api`, browser masking has left `services/access`, the remaining live `services` pieces are now split into `platform` and `snapshot.adapters`, the thin `src/entrypoint` package has been folded into `src/entrypoints/root`, loose Telegram and LLM adapters have moved into `platform/integrations`, the operational store utility has moved into `platform/infra`, provider packages from the old adapter root have been redistributed into `platform`, tracked `src/adapters` is gone, the upper-contour cut folds `src/app` into `src/platform` while moving pure timezone helpers into `src/core`, `src/infra` is redistributed into platform integrations and attachment internals, `src/observability` is folded into `src/platform/observability`, command contracts plus worker runtime are folded into `src/platform/runtime`, archive code/docs/work are now lifted into the top-level `archive/` home, and the next structural decision is whether any further top-level reduction would improve truth instead of forcing taste-only churn.
 - `agent/intructions/DTM-test/**` is reference-only and not part of execution/archive lifecycle.
 - `docs/architecture/module-first-recovery/README.md` is now the canonical architecture starting point; new child campaigns should be opened only after a fresh trust-gated audit against current code.
 - Separate follow-ups remain outside this campaign:
   - `/info` build metadata 404 in `yc_function_info.py`
   - notify enqueue path inconsistency on test
+

@@ -1,8 +1,8 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import unittest
 
-from src.archive.legacy_runtime.entrypoints.jobs.legacy_store_write_job import LegacyStoreWriteRequest, run_legacy_store_write
+from archive.code.legacy_runtime.entrypoints.jobs.legacy_store_write_job import LegacyStoreWriteRequest, run_legacy_store_write
 
 
 class _StoreStub:
@@ -64,3 +64,4 @@ class LegacyStoreWriteJobTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

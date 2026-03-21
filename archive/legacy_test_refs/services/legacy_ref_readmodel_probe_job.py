@@ -1,8 +1,8 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import unittest
 
-from src.archive.legacy_runtime.entrypoints.jobs.readmodel_probe_job import (
+from archive.code.legacy_runtime.entrypoints.jobs.readmodel_probe_job import (
     ReadmodelProbeRequest,
     run_readmodel_freshness_probe,
 )
@@ -79,3 +79,4 @@ class ReadmodelProbeJobTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

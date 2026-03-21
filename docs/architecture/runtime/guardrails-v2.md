@@ -1,4 +1,4 @@
-# Guardrails V2
+﻿# Guardrails V2
 
 This document defines the first minimal architecture guardrails required early in the modular-monolith refactor wave.
 
@@ -33,6 +33,7 @@ These guardrails should be introduced before the first fully extracted context s
 
 Current enforced baseline in the active runtime:
 - active runtime paths may not import `src.legacy`
-- active runtime paths may not import `src.archive.legacy_runtime`
+- active runtime paths may not import `archive.code.legacy_runtime`
 - active runtime paths may not import the legacy `config` package
 - default tests may not import legacy or archived-legacy namespaces
+

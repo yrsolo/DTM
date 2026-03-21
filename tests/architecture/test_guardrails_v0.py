@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from pathlib import Path
 import re
@@ -83,7 +83,7 @@ class GuardrailsV0TestCase(unittest.TestCase):
         ]
         for file_path in _python_files(target_paths):
             content = file_path.read_text(encoding="utf-8")
-            if "src.archive.legacy_runtime" in content or "from src.archive.legacy_runtime" in content:
+            if "archive.code.legacy_runtime" in content or "from archive.code.legacy_runtime" in content:
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
@@ -113,8 +113,8 @@ class GuardrailsV0TestCase(unittest.TestCase):
         import_patterns = (
             re.compile(r"^\s*from\s+src\.legacy(?:\.|\s+import)", re.MULTILINE),
             re.compile(r"^\s*import\s+src\.legacy(?:\.|\s|$)", re.MULTILINE),
-            re.compile(r"^\s*from\s+src\.archive\.legacy_runtime(?:\.|\s+import)", re.MULTILINE),
-            re.compile(r"^\s*import\s+src\.archive\.legacy_runtime(?:\.|\s|$)", re.MULTILINE),
+            re.compile(r"^\s*from\s+archive\.code\.legacy_runtime(?:\.|\s+import)", re.MULTILINE),
+            re.compile(r"^\s*import\s+archive\.code\.legacy_runtime(?:\.|\s|$)", re.MULTILINE),
         )
         for file_path in _python_files([ROOT / "tests"]):
             content = file_path.read_text(encoding="utf-8")
@@ -618,3 +618,4 @@ class GuardrailsV0TestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

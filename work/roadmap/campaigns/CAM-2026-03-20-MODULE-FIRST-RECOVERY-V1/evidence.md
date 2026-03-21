@@ -1,4 +1,4 @@
-# CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1 Evidence
+﻿# CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1 Evidence
 
 ## Trust gate
 - source: current module-first draft, active recovery docs, attachment publication scenario, current code map, module docs
@@ -71,5 +71,6 @@
 ## Notes
 - `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1` remains closed as phase-one precedent.
 - Structured delta audit is now recorded in `delta-audit.md`.
-- Active runtime and active test layout now both follow module-first ownership; remaining historical path names in `work/archive/**` are preserved only as campaign evidence.
+- Active runtime and active test layout now both follow module-first ownership; remaining historical path names in `archive/work/**` are preserved only as campaign evidence.
 - `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1` is complete; further changes should open child follow-up campaigns instead of extending this umbrella wave.
+

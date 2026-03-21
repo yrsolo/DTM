@@ -1,4 +1,4 @@
-# Entrypoints Behavior (Current)
+﻿# Entrypoints Behavior (Current)
 
 This document describes only the active entrypoint/runtime boundary.
 
@@ -106,4 +106,5 @@ Local/manual runtime uses the same canonical runtime shell family and is not a s
 
 ## Archive pointer
 
-Historical entrypoint detail lives in `docs/archive/*` and `src/archive/*`.
+Historical entrypoint detail lives in `archive/docs/*` and `archive/code/*`.
+

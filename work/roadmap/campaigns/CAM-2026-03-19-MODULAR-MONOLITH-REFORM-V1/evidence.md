@@ -1,4 +1,4 @@
-# Evidence - CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1
+﻿# Evidence - CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1
 
 ## Trust gate
 - source: current runtime code, current architecture docs, owner-provided split/campaign briefs
@@ -50,7 +50,7 @@
 - `P14` config centralization is now backed by bootstrap input tests plus an active-path guardrail that blocks reintroduction of legacy `config` imports
 - active runtime paths (`app`, `entrypoint`, `platform`, `contexts`, `entrypoints`, `jobs`, `services`, `render`, `notify`, `entrypoints_adapters`) were re-verified to contain no `src.legacy` imports before entering `P15`
 - runtime architecture docs were re-aligned to the current ownership reality: `src/contexts/*` and `src/platform/*` are now documented as the active refactor contour, while `src/render/*`, `src/notify/*`, and `src/telegram/*` remain transitional implementation detail layers behind those context boundaries
-- `P15b` legacy namespace removal is complete: `src.legacy` and `tests.legacy` were removed from the tree, remaining legacy runtime code lives only under `src/archive/legacy_runtime/*`, and archived legacy tests live under `archive/legacy_test_refs/*` outside the default test contour
+- `P15b` legacy namespace removal is complete: `src.legacy` and `tests.legacy` were removed from the tree, remaining legacy runtime code lives only under `archive/code/legacy_runtime/*`, and archived legacy tests live under `archive/legacy_test_refs/*` outside the default test contour
 
 ## Closeout
 
@@ -62,3 +62,4 @@
 - remaining work:
   - `/info` build metadata 404
   - notify enqueue inconsistency on test
+

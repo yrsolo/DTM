@@ -1,4 +1,4 @@
-# CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1 Plan
+﻿# CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1 Plan
 
 ## Status
 
@@ -80,4 +80,5 @@ Before opening any child campaign or implementation wave:
 
 - Canonical active contour is now `src/entrypoint`, `src/platform`, `src/contexts`, plus the active runtime/application layers documented under `docs/architecture/runtime/*`.
 - `src.legacy` and `tests.legacy` were removed from the supported import graph.
-- Legacy logic remains reference-only under `src/archive/legacy_runtime/*` and `archive/legacy_test_refs/*`.
+- Legacy logic remains reference-only under `archive/code/legacy_runtime/*` and `archive/legacy_test_refs/*`.
+
