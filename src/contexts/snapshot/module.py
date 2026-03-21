@@ -9,6 +9,7 @@ from .application.capabilities import (
     SnapshotReadApi,
     SnapshotUpdateApi,
 )
+from .internal.runtime_binding import build_snapshot_runtime_binding
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,16 +19,16 @@ class SnapshotModule:
     name: str = "snapshot"
 
     def read_api(self, ctx) -> SnapshotReadApi:
-        return SnapshotReadApi(ctx)
+        return SnapshotReadApi(build_snapshot_runtime_binding(ctx))
 
     def attachment_api(self, ctx) -> SnapshotAttachmentApi:
-        return SnapshotAttachmentApi(ctx)
+        return SnapshotAttachmentApi(build_snapshot_runtime_binding(ctx))
 
     def query_api(self, ctx) -> SnapshotQueryApi:
-        return SnapshotQueryApi(ctx)
+        return SnapshotQueryApi(build_snapshot_runtime_binding(ctx))
 
     def update_api(self, ctx) -> SnapshotUpdateApi:
-        return SnapshotUpdateApi(ctx)
+        return SnapshotUpdateApi(build_snapshot_runtime_binding(ctx))
 
 
 def get_module() -> SnapshotModule:

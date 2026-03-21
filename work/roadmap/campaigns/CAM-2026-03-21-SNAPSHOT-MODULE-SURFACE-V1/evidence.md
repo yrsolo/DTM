@@ -49,7 +49,18 @@
 - third-cut verification:
   - `python -m unittest tests.api.test_frontend_api_routing tests.api.test_info_observability tests.api.test_command_queue_foundation tests.contexts.attachments.test_attach_task_file_job tests.contexts.attachments.test_delete_task_attachment_job tests.contexts.attachments.test_cleanup_task_attachments_job tests.contexts.attachments.test_generate_attachment_preview_job tests.contexts.reminders.test_send_reminders_job tests.contexts.telegram_interaction.test_group_query_reply_job tests.services.test_pipeline_runtime tests.entrypoints.test_planner_runtime_entry tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety -v`
   - `rg -n "get_snapshot_read_capability|get_attachment_snapshot_capability|get_snapshot_query_capability|get_snapshot_capability\\b|Snapshot(Read|Query|Attachment|Update)Capability" src tests`
+- fourth cut executed:
+  - introduced `src/contexts/snapshot/internal/runtime_binding.py` as the shared runtime bundle for module APIs and engine assembly
+  - moved `SnapshotReadApi` and `SnapshotQueryApi` off full `build_snapshot_engine(...)` usage onto direct stores/query-engine from that runtime bundle
+  - moved `SnapshotUpdateApi` off engine-backed update and onto direct runtime job factories
+  - reduced `SnapshotAttachmentApi` engine usage to mutation methods only; read/cache/store access now comes directly from the runtime bundle
+- fourth-cut verification:
+  - `python -m unittest tests.contexts.snapshot.test_query_engine tests.contexts.snapshot.test_update_job tests.api.test_frontend_api_routing tests.api.test_info_observability tests.api.test_command_queue_foundation tests.contexts.attachments.test_attach_task_file_job tests.contexts.attachments.test_delete_task_attachment_job tests.contexts.attachments.test_cleanup_task_attachments_job tests.contexts.attachments.test_generate_attachment_preview_job tests.contexts.reminders.test_send_reminders_job tests.contexts.telegram_interaction.test_group_query_reply_job tests.services.test_pipeline_runtime tests.entrypoints.test_planner_runtime_entry tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety -v`
+  - `python -m unittest tests.contexts.snapshot.test_update_job tests.api.test_command_queue_foundation tests.contexts.attachments.test_attach_task_file_job tests.contexts.attachments.test_delete_task_attachment_job tests.contexts.attachments.test_cleanup_task_attachments_job tests.contexts.attachments.test_generate_attachment_preview_job tests.services.test_pipeline_runtime tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety -v`
+  - `rg -n "_bound_engine\\(|build_snapshot_engine_from_runtime|build_snapshot_engine\\(" src/contexts/snapshot src/contexts/attachments src/services tests`
 - smell still alive:
-  - `snapshot` now reads through `module/api`, but the application API layer is still implemented as thin engine-bound proxies with `_bound_engine()` and `build_snapshot_engine(...)` as the hidden center of gravity
-  - the next honest move would redesign the shape of those APIs themselves rather than just the public/module language around them
-- next honest move is no longer a local language/seam cleanup; it is a broader contract redesign across `snapshot`, `access_api`, `attachments`, `rendering`, `reminders`, and timer/runtime consumers.
+  - the active `snapshot` surface is no longer broadly engine-backed, but attachment mutation methods in `SnapshotAttachmentApi` still delegate through `_bound_engine()` and `build_snapshot_engine_from_runtime(...)`
+  - this is no longer a naming/seam smell; it is a concrete design choice about whether attachment mutation logic should become its own reusable module-level service instead of living in `SnapshotEngine`
+- next honest move is a dedicated attachment-mutation extraction:
+  - either introduce a reusable attachment projection service that both `SnapshotAttachmentApi` and `SnapshotEngine` can share
+  - or accept `SnapshotEngine` as the internal owner of attachment mutation semantics while keeping it out of the active read/update/query surface

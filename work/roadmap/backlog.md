@@ -38,6 +38,7 @@
 
 ## Notes
 - Current live execution focus is the blocked `prod` confirmation step for `CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1`.
+- Current active structural cut is narrower now: `snapshot` read/query/update are runtime-bundle based, and only attachment mutation still remains engine-backed inside `CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1`.
 - `agent/intructions/DTM-test/**` is reference-only and not part of execution/archive lifecycle.
 - `docs/architecture/module-first-recovery/README.md` is now the canonical architecture starting point; new child campaigns should be opened only after a fresh trust-gated audit against current code.
 - Separate follow-ups remain outside this campaign:

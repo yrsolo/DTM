@@ -1,7 +1,7 @@
 # Active Tasks
 
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
-- CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1: direct shortcut surface is gone and active consumers now read `snapshot` through `module/api`, but the remaining smell is deeper: the API layer still behaves like thin engine-bound proxies around `build_snapshot_engine`.
+- CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1: direct shortcut surface is gone, `read/query/update` now run through a shared runtime bundle instead of full engine-backed APIs, and the remaining smell is narrower: only attachment mutation methods still delegate through `SnapshotEngine`.
 
 ## Done
 
@@ -41,4 +41,4 @@
 - Future architecture child campaigns must start from `docs/architecture/module-first-recovery/README.md` and the new umbrella campaign trust gate.
 - Future beauty child campaigns, if any, are optional taste curation only and should be opened only when a new concrete smell is identified instead of continuing the old mandatory beauty backlog.
 - Modular-monolith umbrella campaign is complete and superseded as the primary canon.
-- Current active structural smell is the `snapshot` engine-centric application layer; `module/api` language is now in place, but the APIs still delegate through thin `_bound_engine()` proxies around `build_snapshot_engine`.
+- Current active structural smell is the remaining `snapshot` attachment-mutation engine path; `module/api` language is now in place and `read/query/update` use direct runtime bindings, but attachment mutation still jumps through `SnapshotEngine`.
