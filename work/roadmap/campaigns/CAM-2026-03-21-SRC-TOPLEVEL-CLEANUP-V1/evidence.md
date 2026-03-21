@@ -40,6 +40,9 @@
   - `src/services/readmodel_builder.py`
   - `src/services/source_policy.py`
   - `src/services/sync_service.py`
+- removed thin service-era protocol shelf that survived only as a delegating type bucket for `TimerJob`:
+  - `src/services/usecases/contracts.py`
+  - `src/services/usecases/__init__.py`
 - removed isolated tests that existed only for those dead service-era leftovers:
   - `tests/services/test_readmodel_uses_milestones_table.py`
   - `tests/services/test_source_policy.py`
@@ -51,4 +54,4 @@
 - verification after this cut stayed green:
   - `python -m unittest tests.contexts.access_api.test_masking tests.api.test_frontend_api_routing tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.api.test_command_queue_foundation tests.contexts.attachments.test_attach_task_file_job tests.services.test_pipeline_runtime -v`
   - `python -m unittest tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.api.test_frontend_api_routing tests.contexts.access_api.test_masking tests.api.test_command_queue_foundation tests.contexts.attachments.test_attach_task_file_job tests.contexts.attachments.test_delete_task_attachment_job tests.contexts.attachments.test_cleanup_task_attachments_job tests.contexts.attachments.test_generate_attachment_preview_job tests.services.test_pipeline_runtime tests.entrypoints.test_planner_runtime_entry -v`
-- next blocker is no longer any dead service-era shelf or leftover file but the remaining mixed `src/services` core, which still combines shared errors, timer runtime, source ingestion, and service-style contracts.
+- next blocker is no longer any dead service-era shelf or leftover file but the remaining mixed `src/services` core, which now reduces to shared errors, timer runtime, and source ingestion.

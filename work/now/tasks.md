@@ -1,7 +1,7 @@
 # Active Tasks
 
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
-- CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1: current cut is the visual `src/` map; dead historical roots are gone, `entrypoints_adapters` is folded into `access_api`, browser masking left `services/access`, dead service-era shelves and leftover files in `services/{notify,render,mappers,sync,pipeline_runtime,readmodel_builder,source_policy,sync_service}` are removed from tracked code, and the next architectural decision is whether the remaining `services` core is justified or the next competing-center cut.
+- CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1: current cut is the visual `src/` map; dead historical roots are gone, `entrypoints_adapters` is folded into `access_api`, browser masking left `services/access`, dead service-era shelves and leftover files in `services/{notify,render,mappers,sync,usecases,pipeline_runtime,readmodel_builder,source_policy,sync_service}` are removed from tracked code, and the next architectural decision is whether the remaining `services` core is justified or the next competing-center cut.
 
 ## Done
 

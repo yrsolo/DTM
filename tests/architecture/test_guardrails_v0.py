@@ -485,6 +485,7 @@ class GuardrailsV0TestCase(unittest.TestCase):
             ROOT / "src" / "services" / "render",
             ROOT / "src" / "services" / "notify",
             ROOT / "src" / "services" / "sync",
+            ROOT / "src" / "services" / "usecases",
             ROOT / "src" / "handlers",
             ROOT / "src" / "entrypoints_adapters",
         ]
