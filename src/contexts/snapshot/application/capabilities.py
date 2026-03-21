@@ -1,4 +1,4 @@
-"""Contract-first capability surfaces for the snapshot context."""
+"""Contract-first application APIs for the snapshot context."""
 
 from __future__ import annotations
 
@@ -9,8 +9,8 @@ from src.contexts.snapshot.internal.engine import build_snapshot_engine
 
 
 @dataclass(slots=True)
-class SnapshotReadCapability:
-    """Narrow read capability exposed to external contexts."""
+class SnapshotReadApi:
+    """Narrow read API exposed to external contexts."""
 
     _ctx: Any
     _engine: Any | None = None
@@ -28,8 +28,8 @@ class SnapshotReadCapability:
 
 
 @dataclass(slots=True)
-class SnapshotQueryCapability:
-    """Read/query capability for HTTP and access-facing consumers."""
+class SnapshotQueryApi:
+    """Read/query API for HTTP and access-facing consumers."""
 
     _ctx: Any
     _engine: Any | None = None
@@ -56,8 +56,8 @@ class SnapshotQueryCapability:
 
 
 @dataclass(slots=True)
-class SnapshotAttachmentCapability:
-    """Attachment-specific mutation capability exposed to external contexts."""
+class SnapshotAttachmentApi:
+    """Attachment-specific API exposed to external contexts."""
 
     _ctx: Any
     _engine: Any | None = None
@@ -90,8 +90,8 @@ class SnapshotAttachmentCapability:
 
 
 @dataclass(slots=True)
-class SnapshotUpdateCapability:
-    """Snapshot update capability exposed to runtime orchestration."""
+class SnapshotUpdateApi:
+    """Snapshot update API exposed to runtime orchestration."""
 
     _ctx: Any
     _engine: Any | None = None
@@ -106,8 +106,8 @@ class SnapshotUpdateCapability:
 
 
 __all__ = [
-    "SnapshotAttachmentCapability",
-    "SnapshotQueryCapability",
-    "SnapshotReadCapability",
-    "SnapshotUpdateCapability",
+    "SnapshotAttachmentApi",
+    "SnapshotQueryApi",
+    "SnapshotReadApi",
+    "SnapshotUpdateApi",
 ]

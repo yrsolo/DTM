@@ -13,8 +13,8 @@ def get_public_api():
     return get_module()
 
 
-def get_snapshot_read_capability(ctx):
-    return get_module().snapshot_read_capability(ctx)
+def get_snapshot_read_api(ctx):
+    return get_module().snapshot_read_api(ctx)
 
 
 def get_usecase(snapshot_read):

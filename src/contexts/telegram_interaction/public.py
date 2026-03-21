@@ -25,8 +25,8 @@ def get_webhook_handler(ctx):
     return get_module().webhook_handler(ctx)
 
 
-def get_snapshot_read_capability(ctx):
-    return get_module().snapshot_read_capability(ctx)
+def get_snapshot_read_api(ctx):
+    return get_module().snapshot_read_api(ctx)
 
 
 def get_usecase(snapshot_read):

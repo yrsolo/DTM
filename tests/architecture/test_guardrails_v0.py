@@ -171,26 +171,26 @@ class GuardrailsV0TestCase(unittest.TestCase):
             "access_api": {
                 "src.contexts.attachments.public",
                 "src.contexts.attachments.contracts",
-                "src.contexts.snapshot.public",
+                "src.contexts.snapshot.module",
                 "src.contexts.snapshot.contracts",
             },
             "attachments": {
-                "src.contexts.snapshot.public",
+                "src.contexts.snapshot.module",
                 "src.contexts.snapshot.contracts",
             },
             "reminders": {
-                "src.contexts.snapshot.public",
+                "src.contexts.snapshot.module",
                 "src.contexts.snapshot.contracts",
             },
             "rendering": {
-                "src.contexts.snapshot.public",
+                "src.contexts.snapshot.module",
                 "src.contexts.snapshot.contracts",
             },
             "snapshot": {
                 "src.contexts.attachments.contracts",
             },
             "telegram_interaction": {
-                "src.contexts.snapshot.public",
+                "src.contexts.snapshot.module",
                 "src.contexts.snapshot.contracts",
             },
         }

@@ -9,7 +9,7 @@ from src.commands.model import Command, RequestedBy
 from src.commands.types import ATTACH_TASK_FILE, DELETE_TASK_ATTACHMENT
 from src.contexts.attachments.public import (
     get_attachment_finalize_service,
-    get_attachment_snapshot_capability,
+    get_attachment_snapshot_api,
     get_attachment_storage,
 )
 from src.entrypoints.http.access_context import resolve_access_context
@@ -19,7 +19,7 @@ from src.entrypoints.http.response_utils import error_response, json_response, p
 from src.platform.runtime.command_runtime import get_command_runtime
 from src.services.errors import AppError
 
-get_snapshot_capability = get_attachment_snapshot_capability
+get_snapshot_attachment_api = get_attachment_snapshot_api
 get_attachment_storage_capability = get_attachment_storage
 get_attachment_finalize_capability = get_attachment_finalize_service
 
@@ -179,8 +179,8 @@ class AdminTaskAttachmentsHandler:
                 ),
             )
         try:
-            engine = get_snapshot_capability(self._ctx)
-            prep = engine.get_prep_snapshot()
+            snapshot_attachments = get_snapshot_attachment_api(self._ctx)
+            prep = snapshot_attachments.get_prep_snapshot()
         except Exception as error:
             return error_response(
                 503,
@@ -219,7 +219,7 @@ class AdminTaskAttachmentsHandler:
             filename=filename,
         )
         try:
-            record = engine.get_attachment_metadata_store().create_pending(
+            record = snapshot_attachments.get_attachment_metadata_store().create_pending(
                 task_id=task_id,
                 attachment_id=attachment_id,
                 filename=filename,
@@ -294,10 +294,10 @@ class AdminTaskAttachmentsHandler:
         if not uploaded_by:
             return error_response(400, code="uploaded_by_required", message="uploaded_by is required.")
         try:
-            engine = get_snapshot_capability(self._ctx)
+            snapshot_attachments = get_snapshot_attachment_api(self._ctx)
             finalize = get_attachment_finalize_capability(self._ctx)
             verified = finalize.finalize(task_id=task_id, attachment_id=attachment_id)
-            lookup = engine.get_attachment_metadata_store().get_by_attachment_id(attachment_id)
+            lookup = snapshot_attachments.get_attachment_metadata_store().get_by_attachment_id(attachment_id)
             if lookup is None:
                 return error_response(404, code="attachment_not_found", message="Attachment was not found.")
             _task_id, record = lookup

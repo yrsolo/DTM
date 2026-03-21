@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 
 from src.app.context import AppContext
 from src.contexts.attachments.public import get_supported_attachment_mime_types
-from src.contexts.snapshot.public import get_query_capability as _get_snapshot_query_capability
+from src.contexts.snapshot.module import get_query_api as _get_snapshot_query_api
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import html_response, json_response
@@ -31,27 +31,27 @@ from src.platform.runtime.command_runtime import get_command_runtime
 from src.worker.model import JobStatusRecord
 
 
-get_snapshot_query_capability = _get_snapshot_query_capability
+get_snapshot_query_api = _get_snapshot_query_api
 get_attachment_mime_types = get_supported_attachment_mime_types
 
 
 def get_prep_snapshot(ctx):
-    engine = get_snapshot_query_capability(ctx)
-    getter = getattr(engine, "get_prep_snapshot", None)
+    snapshot_query = get_snapshot_query_api(ctx)
+    getter = getattr(snapshot_query, "get_prep_snapshot", None)
     if callable(getter):
         return getter()
-    cache = getattr(engine, "_prep_cache", None)
+    cache = getattr(snapshot_query, "_prep_cache", None)
     if cache is not None and callable(getattr(cache, "get", None)):
         return cache.get()
     return None
 
 
 def get_raw_snapshot(ctx):
-    engine = get_snapshot_query_capability(ctx)
-    getter = getattr(engine, "get_raw_snapshot", None)
+    snapshot_query = get_snapshot_query_api(ctx)
+    getter = getattr(snapshot_query, "get_raw_snapshot", None)
     if callable(getter):
         return getter()
-    cache = getattr(engine, "_raw_cache", None)
+    cache = getattr(snapshot_query, "_raw_cache", None)
     if cache is not None and callable(getattr(cache, "get", None)):
         return cache.get()
     return None

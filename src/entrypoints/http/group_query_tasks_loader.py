@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.contexts.snapshot.public import get_query_capability
+from src.contexts.snapshot.module import get_query_api
 from src.entrypoints_adapters.api_v2_adapter import build_frontend_query
 
 
@@ -18,7 +18,7 @@ def load_work_tasks_for_group_query(
     from src.app.context import AppContext
 
     ctx = AppContext(cfg=app_cfg, deps={})
-    payload = get_query_capability(ctx).frontend_v2(
+    payload = get_query_api(ctx).frontend_v2(
         build_frontend_query(
             statuses=["work", "pre_done"],
             designer="",

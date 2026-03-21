@@ -14,7 +14,7 @@ from src.commands.types import (
     SEND_REMINDERS,
     UPDATE_SNAPSHOT,
 )
-from src.contexts.snapshot.public import get_read_capability
+from src.contexts.snapshot.module import get_read_api
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response, json_response
@@ -23,7 +23,7 @@ from src.entrypoints.triggers.trigger_plan import planned_trigger_commands, reso
 
 
 def get_prep_snapshot(ctx):
-    return get_read_capability(ctx).get_prep_snapshot()
+    return get_read_api(ctx).get_prep_snapshot()
 
 
 class AdminQueueHandler:

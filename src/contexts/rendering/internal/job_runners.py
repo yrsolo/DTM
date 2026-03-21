@@ -9,7 +9,7 @@ from src.contexts.rendering.public import (
     get_designers_usecase,
     get_render_job,
     get_request,
-    get_snapshot_read_capability as _get_rendering_snapshot_read_capability,
+    get_snapshot_read_api as _get_rendering_snapshot_read_api,
     get_timeline_usecase,
     get_window,
     get_writer,
@@ -17,7 +17,7 @@ from src.contexts.rendering.public import (
 from src.observability.batching import MetricsBatchCollector, add_flush_metrics
 
 
-get_snapshot_capability = _get_rendering_snapshot_read_capability
+get_snapshot_read_api = _get_rendering_snapshot_read_api
 
 
 class RenderTimelineJob:
@@ -32,9 +32,9 @@ class RenderTimelineJob:
 
         started_at = self._ctx.clock()
         wall_clock_started = perf_counter()
-        snapshot_engine = get_snapshot_capability(self._ctx)
+        snapshot_read = get_snapshot_read_api(self._ctx)
         usecase = get_timeline_usecase(
-            snapshot_engine,
+            snapshot_read,
             timezone_name=str(self._ctx.cfg.runtime.runtime.timezone or "Europe/Moscow"),
         )
         sheet_info = GoogleSheetInfo(**dict(self._ctx.deps.get("sheet_info", {})))
@@ -163,9 +163,9 @@ class RenderDesignersJob:
         from utils.service import GoogleSheetInfo, GoogleSheetsService
 
         wall_clock_started = perf_counter()
-        snapshot_engine = get_snapshot_capability(self._ctx)
+        snapshot_read = get_snapshot_read_api(self._ctx)
         usecase = get_designers_usecase(
-            snapshot_engine,
+            snapshot_read,
             timezone_name=str(self._ctx.cfg.runtime.runtime.timezone or "Europe/Moscow"),
         )
         sheet_info = GoogleSheetInfo(**dict(self._ctx.deps.get("sheet_info", {})))

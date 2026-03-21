@@ -12,7 +12,7 @@ from src.contexts.attachments.contracts import (
     infer_attachment_kind,
 )
 from src.contexts.attachments.public import (
-    get_attachment_snapshot_capability,
+    get_attachment_snapshot_api,
     get_attachment_storage,
     get_doc_preview_converter,
 )
@@ -21,7 +21,7 @@ from src.platform.runtime.command_runtime import get_command_runtime
 from src.platform.runtime.frontend_cache_invalidation import invalidate_default_frontend_cache_store
 from src.services.errors import AppError, TransientError, UserError
 
-get_snapshot_capability = get_attachment_snapshot_capability
+get_snapshot_attachment_api = get_attachment_snapshot_api
 get_attachment_storage_capability = get_attachment_storage
 
 
@@ -82,8 +82,8 @@ class AttachTaskFileJob:
                 snapshot_visible=True,
                 preview_state=doc_preview_state,
             )
-            engine = get_snapshot_capability(self._ctx)
-            metadata_store = engine.get_attachment_metadata_store()
+            snapshot_attachments = get_snapshot_attachment_api(self._ctx)
+            metadata_store = snapshot_attachments.get_attachment_metadata_store()
             lookup = metadata_store.get_by_attachment_id(attachment_id)
             if lookup is not None:
                 metadata_store.mark_ready(task_id=task_id, attachment_id=attachment_id)
@@ -102,7 +102,7 @@ class AttachTaskFileJob:
                             error_code=error_code,
                             error_message="Doc preview pipeline is unavailable.",
                         )
-            result = engine.attach_file_metadata(task_id=task_id, attachment=attachment)
+            result = snapshot_attachments.attach_file_metadata(task_id=task_id, attachment=attachment)
             if kind == "doc":
                 if preview_enabled:
                     preview_cmd = Command(
@@ -121,7 +121,7 @@ class AttachTaskFileJob:
                     elif not preview_queue_available:
                         result["warnings"].append("doc_preview_queue_unavailable")
             try:
-                invalidate_default_frontend_cache_store(engine.get_response_cache_store())
+                invalidate_default_frontend_cache_store(snapshot_attachments.get_response_cache_store())
             except AppError:
                 result["warnings"] = list(result.get("warnings", []) or [])
                 result["warnings"].append("frontend_response_cache_invalidation_failed")
@@ -152,8 +152,8 @@ class DeleteTaskAttachmentJob:
             task_id = self._require_text(payload, "task_id")
             attachment_id = self._require_text(payload, "attachment_id")
             deleted_by = self._require_text(payload, "deleted_by")
-            engine = get_snapshot_capability(self._ctx)
-            metadata_store = engine.get_attachment_metadata_store()
+            snapshot_attachments = get_snapshot_attachment_api(self._ctx)
+            metadata_store = snapshot_attachments.get_attachment_metadata_store()
             lookup = metadata_store.get_by_attachment_id(attachment_id)
             if lookup is None or lookup[0] != task_id:
                 raise UserError("Attachment was not found.", code="attachment_not_found")
@@ -181,9 +181,9 @@ class DeleteTaskAttachmentJob:
                 deleted_by_user_id=deleted_by,
                 warning=delete_warning or preview_warning,
             )
-            result = engine.delete_attachment(task_id=task_id, attachment_id=attachment_id)
+            result = snapshot_attachments.delete_attachment(task_id=task_id, attachment_id=attachment_id)
             try:
-                invalidate_default_frontend_cache_store(engine.get_response_cache_store())
+                invalidate_default_frontend_cache_store(snapshot_attachments.get_response_cache_store())
             except AppError:
                 result["warnings"] = list(result.get("warnings", []) or [])
                 result["warnings"].append("frontend_response_cache_invalidation_failed")
@@ -220,9 +220,9 @@ class CleanupTaskAttachmentsJob:
         payload = dict(cmd.payload or {})
         try:
             ttl_seconds = self._parse_ttl_seconds(payload)
-            engine = get_snapshot_capability(self._ctx)
+            snapshot_attachments = get_snapshot_attachment_api(self._ctx)
             storage = get_attachment_storage_capability(self._ctx)
-            result = engine.cleanup_stale_attachments(
+            result = snapshot_attachments.cleanup_stale_attachments(
                 ttl_seconds=ttl_seconds,
                 delete_object=storage.delete_object,
             )

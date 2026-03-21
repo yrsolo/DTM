@@ -6,7 +6,7 @@ from src.contexts.reminders.public import (
     get_formatter as _get_reminders_formatter,
     get_job_runner as _get_reminder_job_runner,
     get_sender as _get_reminders_sender,
-    get_snapshot_read_capability as _get_reminders_snapshot_read_capability,
+    get_snapshot_read_api as _get_reminders_snapshot_read_api,
     get_today_in_runtime_timezone as _get_today_in_runtime_timezone,
     get_usecase as _get_reminders_usecase,
     make_reminder_request as _make_reminder_request_from_module,
@@ -14,7 +14,7 @@ from src.contexts.reminders.public import (
 from src.observability import timed
 
 
-get_snapshot_capability = _get_reminders_snapshot_read_capability
+get_snapshot_read_api = _get_reminders_snapshot_read_api
 _today_in_runtime_timezone = _get_today_in_runtime_timezone
 
 
@@ -37,8 +37,8 @@ class SendRemindersJob:
     async def run(self, cmd):
         metrics = self._ctx.deps.get("metrics_client")
         logger = self._ctx.deps.get("structured_logger")
-        snapshot_engine = get_snapshot_capability(self._ctx)
-        usecase = _get_reminders_usecase(snapshot_engine)
+        snapshot_read = get_snapshot_read_api(self._ctx)
+        usecase = _get_reminders_usecase(snapshot_read)
         formatter = _get_reminders_formatter(self._ctx)
         sender = _get_reminders_sender(self._ctx)
         notify_cfg = self._ctx.cfg.runtime.notify
@@ -79,7 +79,7 @@ class SendRemindersJob:
                 sender=sender,
                 helper_character=str(self._ctx.cfg.llm.assistant.get("helper_character", "")),
                 enhancer=_make_notify_enhancer(self._ctx, mock_external=mock_llm),
-                people_lookup=snapshot_engine,
+                people_lookup=snapshot_read,
                 default_chat_id=str(self._ctx.deps.get("default_chat_id", "")).strip(),
                 enhance_concurrency=int(notify_cfg.enhance_concurrency),
                 send_retry_attempts=int(notify_cfg.send_retry_attempts),

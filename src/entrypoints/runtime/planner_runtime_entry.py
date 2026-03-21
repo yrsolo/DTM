@@ -10,7 +10,7 @@ from src.contexts.reminders.public import (
     get_formatter as _get_reminders_formatter,
     get_job_runner as _get_reminder_job_runner,
     get_sender as _get_reminders_sender,
-    get_snapshot_read_capability as _get_reminders_snapshot_read_capability,
+    get_snapshot_read_api as _get_reminders_snapshot_read_api,
     get_usecase as _get_reminders_usecase,
     make_reminder_request as _make_reminder_request,
 )
@@ -24,7 +24,7 @@ from src.services.timer_pipeline import RunRequest as TimerRunRequest
 from src.services.timer_pipeline import TimerPipeline
 
 
-get_snapshot_capability = _get_reminders_snapshot_read_capability
+get_snapshot_read_api = _get_reminders_snapshot_read_api
 
 
 def _resolve_standard_run_mode(
@@ -61,8 +61,8 @@ async def _run_reminder_mode(
 ):
     """Execute reminder-oriented runtime modes through the reminders context."""
 
-    snapshot_engine = get_snapshot_capability(app_context)
-    usecase = _get_reminders_usecase(snapshot_engine)
+    snapshot_read = get_snapshot_read_api(app_context)
+    usecase = _get_reminders_usecase(snapshot_read)
     formatter = _get_reminders_formatter(app_context)
     sender = _get_reminders_sender(app_context)
     notify_cfg = cfg.runtime.notify
@@ -75,7 +75,7 @@ async def _run_reminder_mode(
         sender=sender,
         helper_character=str(cfg.llm.assistant.get("helper_character", "")),
         enhancer=enhancer,
-        people_lookup=snapshot_engine,
+        people_lookup=snapshot_read,
         default_chat_id=str(deps.get("default_chat_id", "")).strip(),
         enhance_concurrency=int(notify_cfg.enhance_concurrency),
         send_retry_attempts=int(notify_cfg.send_retry_attempts),

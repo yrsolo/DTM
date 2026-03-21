@@ -51,10 +51,10 @@ def get_supported_attachment_mime_types() -> frozenset[str]:
     return SUPPORTED_ATTACHMENT_MIME_TYPES
 
 
-def get_attachment_snapshot_capability(ctx: AppContext):
-    """Return the attachment-scoped snapshot capability."""
+def get_attachment_snapshot_api(ctx: AppContext):
+    """Return the attachment-scoped snapshot API."""
 
-    return get_public_api(ctx).snapshot_capability()
+    return get_public_api(ctx).snapshot_api()
 
 
 def get_attachment_command_flow(ctx: AppContext):

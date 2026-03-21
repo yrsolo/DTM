@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from src.contexts.snapshot.public import get_read_capability
+from src.contexts.snapshot.module import get_read_api
 from .internal import TelegramCommandRouter, TelegramSender, TelegramUpdateParser, TelegramWebhookHandler
 from .internal.group_query_formatter import GroupQueryFormatter
 from .internal.group_query_usecase import GroupQueryUseCase
@@ -29,8 +29,8 @@ class TelegramInteractionModule:
             command_router=self.command_router(),
         )
 
-    def snapshot_read_capability(self, ctx):
-        return get_read_capability(ctx)
+    def snapshot_read_api(self, ctx):
+        return get_read_api(ctx)
 
     def usecase(self, snapshot_read):
         return GroupQueryUseCase(snapshot_read)

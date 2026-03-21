@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from src.contexts.attachments.public import (
     get_attachment_read_resolver,
-    get_attachment_snapshot_capability,
     get_attachment_storage,
 )
 from src.entrypoints.http.access_context import resolve_access_context
@@ -10,9 +9,6 @@ from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response
 from src.services.errors import AppError
-get_snapshot_capability = get_attachment_snapshot_capability
-
-
 def get_attachment_storage_capability(ctx):
     return get_attachment_storage(ctx)
 

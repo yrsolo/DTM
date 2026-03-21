@@ -5,7 +5,7 @@ from __future__ import annotations
 from src.commands.types import UPDATE_SNAPSHOT
 
 from .contracts import Window
-from .module import get_module
+from .module import get_attachment_api, get_module, get_query_api, get_read_api, get_update_api
 
 
 def get_public_api():
@@ -15,19 +15,19 @@ def get_public_api():
 
 
 def get_read_capability(ctx):
-    return get_module().read_capability(ctx)
+    return get_read_api(ctx)
 
 
 def get_attachment_capability(ctx):
-    return get_module().attachment_capability(ctx)
+    return get_attachment_api(ctx)
 
 
 def get_query_capability(ctx):
-    return get_module().query_capability(ctx)
+    return get_query_api(ctx)
 
 
 def get_update_capability(ctx):
-    return get_module().update_capability(ctx)
+    return get_update_api(ctx)
 
 def get_update_snapshot_job(ctx):
     """Return the owning snapshot update job runner."""

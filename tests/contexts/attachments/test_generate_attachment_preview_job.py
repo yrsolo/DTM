@@ -105,9 +105,9 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
         store = _FakeMetadataStore(record)
         engine = _FakeEngine(store)
         converter = _FakeConverter()
-        original_engine = module.get_snapshot_capability
+        original_engine = module.get_snapshot_attachment_api
         original_storage = module.get_attachment_storage_capability
-        module.get_snapshot_capability = lambda _ctx: engine  # type: ignore[assignment]
+        module.get_snapshot_attachment_api = lambda _ctx: engine  # type: ignore[assignment]
         module.get_attachment_storage_capability = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
         try:
             ctx = AppContext(
@@ -123,7 +123,7 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
             )
             result = GenerateAttachmentPreviewJob(ctx).run(cmd)
         finally:
-            module.get_snapshot_capability = original_engine  # type: ignore[assignment]
+            module.get_snapshot_attachment_api = original_engine  # type: ignore[assignment]
             module.get_attachment_storage_capability = original_storage  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
@@ -137,9 +137,9 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
         record = self._make_record()
         store = _FakeMetadataStore(record)
         engine = _FakeEngine(store)
-        original_engine = module.get_snapshot_capability
+        original_engine = module.get_snapshot_attachment_api
         original_storage = module.get_attachment_storage_capability
-        module.get_snapshot_capability = lambda _ctx: engine  # type: ignore[assignment]
+        module.get_snapshot_attachment_api = lambda _ctx: engine  # type: ignore[assignment]
         module.get_attachment_storage_capability = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
         try:
             ctx = AppContext(
@@ -155,7 +155,7 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
             )
             result = GenerateAttachmentPreviewJob(ctx).run(cmd)
         finally:
-            module.get_snapshot_capability = original_engine  # type: ignore[assignment]
+            module.get_snapshot_attachment_api = original_engine  # type: ignore[assignment]
             module.get_attachment_storage_capability = original_storage  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "failed")

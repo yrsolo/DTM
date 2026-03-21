@@ -5,7 +5,7 @@ from __future__ import annotations
 import time
 
 from src.app.context import AppContext
-from src.contexts.snapshot.public import get_query_capability as _get_snapshot_query_capability
+from src.contexts.snapshot.module import get_query_api as _get_snapshot_query_api
 from src.contexts.access_api.internal.frontend_response_cache import (
     build_default_frontend_cache_query_hash,
     build_response_cache_entry,
@@ -38,19 +38,19 @@ from src.services.access import mask_frontend_payload
 from src.services.access.masking import masking_version_for_hour
 
 
-get_snapshot_query_capability = _get_snapshot_query_capability
+get_snapshot_query_api = _get_snapshot_query_api
 
 
 def get_prep_snapshot(ctx):
-    return get_snapshot_query_capability(ctx).get_prep_snapshot()
+    return get_snapshot_query_api(ctx).get_prep_snapshot()
 
 
 def get_response_cache_store(ctx):
-    return get_snapshot_query_capability(ctx).get_response_cache_store()
+    return get_snapshot_query_api(ctx).get_response_cache_store()
 
 
 def query_frontend_v2(ctx, query):
-    return get_snapshot_query_capability(ctx).frontend_v2(query)
+    return get_snapshot_query_api(ctx).frontend_v2(query)
 
 
 def _path_matches(path: str, candidates: set[str]) -> bool:
@@ -217,7 +217,7 @@ class PrimaryTaskListReadApi:
         _record_stage("access_resolution", access_started)
         try:
             engine_started = time.perf_counter()
-            snapshot_query = get_snapshot_query_capability(self._ctx)
+            snapshot_query = get_snapshot_query_api(self._ctx)
             _record_stage("snapshot_query_capability", engine_started)
             frontend_query = build_frontend_query(
                 statuses=statuses,
