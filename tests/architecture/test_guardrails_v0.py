@@ -334,6 +334,7 @@ class GuardrailsV0TestCase(unittest.TestCase):
 
     def test_removed_historical_test_roots_do_not_exist(self) -> None:
         for relative in [
+            "tests/entrypoint",
             "tests/jobs",
             "tests/snapshot_engine",
             "tests/notify",
@@ -475,6 +476,7 @@ class GuardrailsV0TestCase(unittest.TestCase):
 
     def test_removed_technical_compatibility_roots_do_not_exist(self) -> None:
         removed_paths = [
+            ROOT / "src" / "entrypoint",
             ROOT / "src" / "render",
             ROOT / "src" / "notify",
             ROOT / "src" / "telegram",

@@ -1,7 +1,7 @@
 # Active Tasks
 
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
-- CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1: current cut is the visual `src/` map; dead historical roots are gone, `entrypoints_adapters` is folded into `access_api`, browser masking left `services/access`, the remaining live `services` pieces were moved into `platform` and `snapshot.adapters`, tracked `src/services` Python files are gone, and the next architectural decision is whether the dual-root entry contour `src/entrypoint` vs `src/entrypoints` is justified or should be redesigned.
+- CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1: current cut is the visual `src/` map; dead historical roots are gone, `entrypoints_adapters` is folded into `access_api`, browser masking left `services/access`, the remaining live `services` pieces were moved into `platform` and `snapshot.adapters`, the thin `src/entrypoint` package is folded into `src/entrypoints/root`, and the next architectural decision is whether the generic `src/adapters` shelf should survive as a top-level technical contour or be redistributed into `platform` and owning modules.
 
 ## Done
 

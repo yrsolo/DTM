@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import unittest
 
-from src.entrypoint.modes import Mode
-from src.entrypoint.parse_request import parse_request
+from src.entrypoints.root.modes import Mode
+from src.entrypoints.root.parse_request import parse_request
 
 
 class ParseRequestTestCase(unittest.TestCase):
@@ -39,14 +39,14 @@ class ParseRequestTestCase(unittest.TestCase):
     def test_classifies_timer_trigger_mode(self) -> None:
         parsed = parse_request(
             {"messages": [{"details": {"trigger_id": "trigger-1"}}]},
-            triggers={"trigger-1": "timer"},
+            get_trigger_modes=lambda: {"trigger-1": "timer"},
         )
         self.assertEqual(parsed.mode, Mode.TRIGGER_TIMER)
 
     def test_classifies_morning_trigger_mode(self) -> None:
         parsed = parse_request(
             {"messages": [{"details": {"trigger_id": "trigger-2"}}]},
-            triggers={"trigger-2": "morning"},
+            get_trigger_modes=lambda: {"trigger-2": "morning"},
         )
         self.assertEqual(parsed.mode, Mode.TRIGGER_MORNING)
 

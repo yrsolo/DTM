@@ -6,7 +6,7 @@ import unittest
 
 class TargetSkeletonImportsTestCase(unittest.TestCase):
     def test_target_entrypoint_handler_imports(self) -> None:
-        module = importlib.import_module("src.entrypoint.handler")
+        module = importlib.import_module("src.entrypoints.root.handler")
         self.assertTrue(hasattr(module, "handle"))
 
     def test_target_platform_runtime_imports(self) -> None:

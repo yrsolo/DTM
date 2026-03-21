@@ -52,6 +52,10 @@
   - `src/services/timer_pipeline.py`
   - `src/services/sources/*`
   - `src/services/__init__.py`
+- folded the thin top-level root dispatcher package into the canonical `entrypoints` tree:
+  - `src/entrypoint/{handler,modes,parse_request,responses}.py` -> `src/entrypoints/root/*`
+  - `index.py` now imports the top router from `src.entrypoints.root.handler`
+  - aligned tests moved from `tests/entrypoint/*` -> `tests/entrypoints/root/*`
 - moved the aligned active tests with those new owning paths:
   - `tests/platform/runtime/test_timer_pipeline.py`
   - `tests/contexts/snapshot/test_sheets_normalized_source.py`
@@ -59,14 +63,14 @@
   - `tests/services/test_readmodel_uses_milestones_table.py`
   - `tests/services/test_source_policy.py`
   - `tests/services/test_sync_source_hash_gate.py`
-- top-level `src/` map now reads through active architecture zones only:
-  - `adapters`, `app`, `archive`, `commands`, `config`, `contexts`, `core`, `entrypoint`, `entrypoints`, `infra`, `observability`, `platform`, `services`, `worker`
+- tracked top-level `src/` map now reads through active architecture zones only:
+  - `adapters`, `app`, `archive`, `commands`, `config`, `contexts`, `core`, `entrypoints`, `infra`, `observability`, `platform`, `worker`
 - `src/__pycache__` may reappear during local test runs; it is treated as Python runtime noise rather than an architecture root and is no longer part of the structural kill criteria.
-- guardrail strengthened in `tests/architecture/test_guardrails_v0.py` so removed top-level historical roots and `entrypoints_adapters` must not exist as live Python roots.
+- `src/entrypoint`, `src/services`, and `tests/entrypoint` may still exist locally as `__pycache__` directories during a dirty worktree test run; they no longer exist as tracked Python roots.
+- guardrail strengthened in `tests/architecture/test_guardrails_v0.py` so removed top-level historical roots, `entrypoints_adapters`, `src/entrypoint`, and `tests/entrypoint` must not return as tracked Python roots.
 - verification after this cut stayed green:
   - `python -m unittest tests.contexts.access_api.test_masking tests.api.test_frontend_api_routing tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.api.test_command_queue_foundation tests.contexts.attachments.test_attach_task_file_job tests.services.test_pipeline_runtime -v`
   - `python -m unittest tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.api.test_frontend_api_routing tests.contexts.access_api.test_masking tests.api.test_command_queue_foundation tests.contexts.attachments.test_attach_task_file_job tests.contexts.attachments.test_delete_task_attachment_job tests.contexts.attachments.test_cleanup_task_attachments_job tests.contexts.attachments.test_generate_attachment_preview_job tests.services.test_pipeline_runtime tests.entrypoints.test_planner_runtime_entry -v`
-- next blocker is no longer `src/services` itself. The loudest remaining competing center in the top-level map is the dual-root entry contour:
-  - `src/entrypoint`
-  - `src/entrypoints`
-- resolving that split now requires a deliberate redesign choice, not another safe cleanup pass.
+  - `python -m unittest tests.architecture.test_guardrails_v0 tests.architecture.test_target_skeleton_imports tests.entrypoints.root.test_handler tests.entrypoints.root.test_parse_request tests.entrypoints.test_import_safety tests.api.test_frontend_api_routing tests.api.test_command_queue_foundation tests.entrypoints.test_planner_runtime_entry -v`
+- next blocker is no longer the dual-root entry contour; that split is gone from tracked code.
+- the loudest remaining architectural shelf is now the generic top-level `src/adapters` root, which still mixes provider-specific integrations that likely belong either in `platform` or in owning modules.

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from src.entrypoint.handler import handle
+from src.entrypoints.root.handler import handle
 
 
 class _FakeHttpShell:
