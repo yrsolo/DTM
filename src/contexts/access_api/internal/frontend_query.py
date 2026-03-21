@@ -1,4 +1,4 @@
-"""Adapter helpers for frontend v2 -> snapshot engine query."""
+"""Frontend query helpers owned by the access_api context."""
 
 from __future__ import annotations
 

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from src.contexts.access_api.internal.frontend_query import build_frontend_query
 from src.contexts.snapshot.module import get_query_api
-from src.entrypoints_adapters.api_v2_adapter import build_frontend_query
 
 
 def load_work_tasks_for_group_query(

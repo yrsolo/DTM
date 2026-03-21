@@ -1,11 +1,10 @@
 # Backlog
 
 ## In Progress
-- none
+- CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1
 
 ## Blocked
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
-- next structural cleanup beyond current campaigns is blocked on owner approval because top-level `src` cleanup would require moving or deleting large folders
 
 ## Planned
 - none
@@ -40,7 +39,7 @@
 
 ## Notes
 - Current live execution focus is the blocked `prod` confirmation step for `CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1`.
-- The next serious structural cleanup is top-level `src` simplification; it is blocked until the owner explicitly allows large move/delete operations for competing visual roots.
+- Current active structural cleanup is top-level `src` simplification: dead historical roots are gone and `entrypoints_adapters` has been folded into `access_api`; the next decision is whether remaining technical roots like `services` are justified active zones or the next competing-center cut.
 - `agent/intructions/DTM-test/**` is reference-only and not part of execution/archive lifecycle.
 - `docs/architecture/module-first-recovery/README.md` is now the canonical architecture starting point; new child campaigns should be opened only after a fresh trust-gated audit against current code.
 - Separate follow-ups remain outside this campaign:

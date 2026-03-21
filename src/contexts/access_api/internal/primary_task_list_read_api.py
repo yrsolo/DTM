@@ -26,7 +26,7 @@ from src.entrypoints.http.frontend_query_params import (
 )
 from src.entrypoints.http.frontend_v2_docs import frontend_api_v2_doc, frontend_api_v2_doc_html
 from src.entrypoints.http.response_utils import error_response, html_response, json_response
-from src.entrypoints_adapters.api_v2_adapter import build_frontend_query
+from src.contexts.access_api.internal.frontend_query import build_frontend_query
 from src.observability.bottlenecks import (
     append_response_headers,
     is_api_metrics_enabled,

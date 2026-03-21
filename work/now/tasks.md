@@ -1,6 +1,7 @@
 # Active Tasks
 
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
+- CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1: current cut is the visual `src/` map; dead historical roots are gone, `entrypoints_adapters` has been folded into `access_api`, and the next architectural decision is whether broader technical roots like `services` are justified active zones or the next competing-center cut.
 
 ## Done
 
@@ -41,4 +42,4 @@
 - Future architecture child campaigns must start from `docs/architecture/module-first-recovery/README.md` and the new umbrella campaign trust gate.
 - Future beauty child campaigns, if any, are optional taste curation only and should be opened only when a new concrete smell is identified instead of continuing the old mandatory beauty backlog.
 - Modular-monolith umbrella campaign is complete and superseded as the primary canon.
-- Current serious structural blocker has moved up a level: the next architectural cleanup is the top-level `src` map, where removing competing visual centers will require large move/delete operations and therefore explicit owner approval.
+- Current active structural cut is the top-level `src` map: dead historical roots are gone and `entrypoints_adapters` is removed; the next decision is whether remaining technical roots like `services` are justified active zones or should be structurally reduced.

@@ -55,7 +55,6 @@ class GuardrailsV0TestCase(unittest.TestCase):
             ROOT / "src" / "services",
             ROOT / "src" / "render",
             ROOT / "src" / "notify",
-            ROOT / "src" / "entrypoints_adapters",
         ]
         for file_path in _python_files(target_paths):
             content = file_path.read_text(encoding="utf-8")
@@ -75,7 +74,6 @@ class GuardrailsV0TestCase(unittest.TestCase):
             ROOT / "src" / "services",
             ROOT / "src" / "render",
             ROOT / "src" / "notify",
-            ROOT / "src" / "entrypoints_adapters",
         ]
         for file_path in _python_files(target_paths):
             content = file_path.read_text(encoding="utf-8")
@@ -262,7 +260,6 @@ class GuardrailsV0TestCase(unittest.TestCase):
         target_paths = [
             ROOT / "src" / "render",
             ROOT / "src" / "notify",
-            ROOT / "src" / "entrypoints_adapters",
         ]
         allowed_snapshot_imports = {
             "from src.contexts.snapshot.public import",
@@ -482,6 +479,8 @@ class GuardrailsV0TestCase(unittest.TestCase):
             ROOT / "src" / "notify",
             ROOT / "src" / "telegram",
             ROOT / "src" / "services" / "attachments",
+            ROOT / "src" / "handlers",
+            ROOT / "src" / "entrypoints_adapters",
         ]
         offenders: list[str] = []
         for path in removed_paths:
@@ -490,6 +489,19 @@ class GuardrailsV0TestCase(unittest.TestCase):
             python_files = sorted(path.rglob("*.py"))
             if python_files:
                 offenders.append(str(path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_removed_top_level_historical_roots_do_not_exist_at_all(self) -> None:
+        removed_paths = [
+            ROOT / "src" / "jobs",
+            ROOT / "src" / "render",
+            ROOT / "src" / "notify",
+            ROOT / "src" / "snapshot_engine",
+            ROOT / "src" / "telegram",
+            ROOT / "src" / "handlers",
+            ROOT / "src" / "entrypoints_adapters",
+        ]
+        offenders = [str(path.relative_to(ROOT)) for path in removed_paths if path.exists()]
         self.assertEqual(offenders, [])
 
     def test_active_render_jobs_do_not_import_old_render_target_guard(self) -> None:
