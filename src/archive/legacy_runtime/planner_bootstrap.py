@@ -24,8 +24,8 @@ from core.reminder import (
     Reminder,
     TelegramNotifier,
 )
-from src.adapters.google_sheets.people_manager import PeopleManager
-from src.adapters.google_sheets.task_repository import GoogleSheetsTaskRepository
+from src.platform.integrations.google_sheets.people_manager import PeopleManager
+from src.platform.integrations.google_sheets.task_repository import GoogleSheetsTaskRepository
 from core.sheet_renderer import ServiceSheetRenderAdapter
 from src.config.loader import load_config
 from core.task_timing_processor import TaskTimingProcessor

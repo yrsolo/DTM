@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.adapters.ydb.client import YdbClient
-from src.adapters.ydb.schema import ensure_tables
+from src.platform.infra.ydb.client import YdbClient
+from src.platform.infra.ydb.schema import ensure_tables
 
 
 def run_db_migrate(

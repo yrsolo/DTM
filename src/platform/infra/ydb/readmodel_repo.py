@@ -8,8 +8,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
-from src.adapters.ydb.client import YdbClient
-from src.adapters.ydb.schema import ensure_tables
+from src.platform.infra.ydb.client import YdbClient
+from src.platform.infra.ydb.schema import ensure_tables
 
 
 def _stable_hash(payload: dict[str, Any]) -> str:

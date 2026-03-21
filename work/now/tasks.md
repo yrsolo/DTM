@@ -1,7 +1,7 @@
 # Active Tasks
 
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; `prod` live smoke remains blocked until the manual production release workflow is executed.
-- CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1: current cut is the visual `src/` map; dead historical roots are gone, `entrypoints_adapters` is folded into `access_api`, browser masking left `services/access`, the remaining live `services` pieces were moved into `platform` and `snapshot.adapters`, the thin `src/entrypoint` package is folded into `src/entrypoints/root`, loose Telegram/LLM adapters moved into `platform/integrations`, the operational store utility moved into `platform/infra`, and the next architectural decision is whether the remaining provider-only `src/adapters` root should survive as a justified contour or be redistributed into `platform` and owning modules.
+- CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1: current cut is the visual `src/` map; dead historical roots are gone, `entrypoints_adapters` is folded into `access_api`, browser masking left `services/access`, the remaining live `services` pieces were moved into `platform` and `snapshot.adapters`, the thin `src/entrypoint` package is folded into `src/entrypoints/root`, loose Telegram/LLM adapters moved into `platform/integrations`, the operational store utility moved into `platform/infra`, provider packages from the old adapter root are redistributed into `platform`, tracked `src/adapters` is gone, and the next architectural decision is whether the remaining `app` plus `platform` split is justified or should be tightened.
 
 ## Done
 

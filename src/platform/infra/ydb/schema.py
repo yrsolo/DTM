@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.adapters.ydb.client import YdbClient
+from src.platform.infra.ydb.client import YdbClient
 
 
 def _ddl_tasks(table_name: str) -> str:

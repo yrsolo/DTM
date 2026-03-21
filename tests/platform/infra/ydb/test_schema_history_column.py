@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from src.adapters.ydb.schema import ensure_tables, ensure_tasks_history_column
+from src.platform.infra.ydb.schema import ensure_tables, ensure_tasks_history_column
 
 
 class _ClientStub:

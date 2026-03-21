@@ -5,7 +5,7 @@ from __future__ import annotations
 import unittest
 from unittest.mock import patch
 
-from src.adapters.ydb.client import YdbClient
+from src.platform.infra.ydb.client import YdbClient
 
 
 class _PoolStub:
@@ -25,7 +25,7 @@ class YdbBackoffTestCase(unittest.TestCase):
         client._session_pool = _PoolStub()  # type: ignore[attr-defined]
         client._retry_settings = object()  # type: ignore[attr-defined]
 
-        with patch("src.adapters.ydb.client.time.sleep") as sleep_mock:
+        with patch("src.platform.infra.ydb.client.time.sleep") as sleep_mock:
             result = client._run(lambda session: "ok")  # noqa: SLF001
 
         self.assertEqual(result, "ok")
@@ -35,4 +35,3 @@ class YdbBackoffTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

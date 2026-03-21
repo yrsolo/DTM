@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Callable
 
-from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
+from src.platform.infra.ydb.task_repository import YdbOperationalTaskRepository
 from src.services.source_policy import build_source_policy_matrix
 
 

@@ -6,7 +6,7 @@ import unittest
 
 import pandas as pd
 
-from src.adapters.ydb.task_repository import YdbOperationalTaskRepository
+from src.platform.infra.ydb.task_repository import YdbOperationalTaskRepository
 
 
 class _RepoStub:

@@ -6,7 +6,7 @@ import json
 from dataclasses import dataclass
 from typing import Any, Callable
 
-from src.adapters.ydb.readmodel_repo import FrontendReadmodelRepo
+from src.platform.infra.ydb.readmodel_repo import FrontendReadmodelRepo
 
 
 @dataclass(frozen=True)

@@ -64,9 +64,15 @@
 - moved the operational store utility out of `src/adapters` into platform infra:
   - `src/adapters/store_ydb.py` -> `src/platform/infra/operational_store.py`
   - aligned tests moved from `tests/adapters/*store*` -> `tests/platform/infra/*`
+- moved the remaining provider packages out of `src/adapters` into role-true homes:
+  - `src/adapters/google_sheets/*` -> `src/platform/integrations/google_sheets/*`
+  - `src/adapters/ydb/*` -> `src/platform/infra/ydb/*`
+  - aligned tests moved from `tests/adapters/*ydb*` -> `tests/platform/infra/ydb/*`
 - removed dead placeholder files from the adapter root:
   - `src/adapters/google_sheets_reader.py`
   - `src/adapters/google_sheets_renderer.py`
+- removed the old tracked adapter root entirely:
+  - `src/adapters/__init__.py`
 - moved the aligned active tests with those new owning paths:
   - `tests/platform/runtime/test_timer_pipeline.py`
   - `tests/contexts/snapshot/test_sheets_normalized_source.py`
@@ -75,7 +81,7 @@
   - `tests/services/test_source_policy.py`
   - `tests/services/test_sync_source_hash_gate.py`
 - tracked top-level `src/` map now reads through active architecture zones only:
-  - `adapters`, `app`, `archive`, `commands`, `config`, `contexts`, `core`, `entrypoints`, `infra`, `observability`, `platform`, `worker`
+  - `app`, `archive`, `commands`, `config`, `contexts`, `core`, `entrypoints`, `infra`, `observability`, `platform`, `worker`
 - `src/__pycache__` may reappear during local test runs; it is treated as Python runtime noise rather than an architecture root and is no longer part of the structural kill criteria.
 - `src/entrypoint`, `src/services`, and `tests/entrypoint` may still exist locally as `__pycache__` directories during a dirty worktree test run; they no longer exist as tracked Python roots.
 - guardrail strengthened in `tests/architecture/test_guardrails_v0.py` so removed top-level historical roots, `entrypoints_adapters`, `src/entrypoint`, and `tests/entrypoint` must not return as tracked Python roots.
@@ -87,9 +93,8 @@
   - `python -m unittest tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.entrypoints.test_planner_runtime_entry tests.contexts.reminders.test_send_reminders_job tests.contexts.telegram_interaction.test_group_query_reply_job tests.api.test_command_queue_foundation tests.api.test_frontend_api_routing -v`
 - verification after the adapter-root reduction stayed green:
   - `python -m unittest tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.entrypoints.test_planner_runtime_entry tests.contexts.reminders.test_send_reminders_job tests.contexts.telegram_interaction.test_group_query_reply_job tests.api.test_command_queue_foundation tests.api.test_frontend_api_routing tests.platform.infra.test_operational_store tests.platform.infra.test_operational_store_repository -v`
-- next blocker is no longer the dual-root entry contour; that split is gone from tracked code.
-- the loudest remaining architectural shelf is now the provider-only top-level `src/adapters` root:
-  - `src/adapters/google_sheets/*`
-  - `src/adapters/ydb/*`
-- after removing loose integrations and the operational store utility, `src/adapters` now reads as a narrow provider-only contour instead of a mixed catch-all shelf.
-- from here the next step is no longer a safe loose-file cleanup. It is a design choice: keep `src/adapters` as a justified provider-integration contour, or redistribute `google_sheets/*` and `ydb/*` into `platform` and owning modules.
+- verification after removing the tracked adapter root stayed green:
+  - `python -m unittest tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.entrypoints.test_planner_runtime_entry tests.api.test_command_queue_foundation tests.api.test_frontend_api_routing tests.contexts.reminders.test_send_reminders_job tests.contexts.telegram_interaction.test_group_query_reply_job tests.contexts.snapshot.test_sheets_normalized_source tests.core.test_timing_year_modes tests.services.test_ydb_backoff tests.platform.infra.test_operational_store tests.platform.infra.test_operational_store_repository tests.platform.infra.ydb.test_operational_repo_dates tests.platform.infra.ydb.test_operational_repo_history tests.platform.infra.ydb.test_operational_repo_milestones_bulk tests.platform.infra.ydb.test_operational_repo_versions_bulk tests.platform.infra.ydb.test_operational_task_repository tests.platform.infra.ydb.test_schema_history_column -v`
+- next blocker is no longer the adapter root; tracked `src/adapters` is gone from the active repo map.
+- the loudest remaining architectural split is now the coexistence of `src/app` and `src/platform`: bootstrap/context live in `app`, while runtime/integrations/infra now live in `platform`.
+- from here the next step is no longer a safe top-level cleanup. It is a design choice: keep `app` as a justified composition/config contour, or fold it deeper into `platform` for one tighter runtime map.

@@ -334,6 +334,7 @@ class GuardrailsV0TestCase(unittest.TestCase):
 
     def test_removed_historical_test_roots_do_not_exist(self) -> None:
         for relative in [
+            "tests/adapters",
             "tests/entrypoint",
             "tests/jobs",
             "tests/snapshot_engine",
@@ -490,6 +491,7 @@ class GuardrailsV0TestCase(unittest.TestCase):
             ROOT / "src" / "services" / "usecases",
             ROOT / "src" / "services" / "sources",
             ROOT / "src" / "services",
+            ROOT / "src" / "adapters",
             ROOT / "src" / "handlers",
             ROOT / "src" / "entrypoints_adapters",
         ]
@@ -567,6 +569,8 @@ class GuardrailsV0TestCase(unittest.TestCase):
             "src.services.sources",
             "src.services.usecases",
             "src.adapters.store_ydb",
+            "src.adapters.google_sheets",
+            "src.adapters.ydb",
         )
         for file_path in _python_files(target_paths):
             if file_path == Path(__file__).resolve():

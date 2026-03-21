@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Mapping
 
-from src.adapters.google_sheets.task_repository import GoogleSheetsTaskRepository
+from src.platform.integrations.google_sheets.task_repository import GoogleSheetsTaskRepository
 from src.contexts.snapshot.adapters.sources.sheets_task_rows import (
     build_row_mappings,
     build_tasks_from_rows,

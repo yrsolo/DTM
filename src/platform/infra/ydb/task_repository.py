@@ -7,7 +7,7 @@ from typing import Any
 
 import pandas as pd
 
-from src.adapters.ydb.operational_repo import OperationalTaskRepo
+from src.platform.infra.ydb.operational_repo import OperationalTaskRepo
 
 
 class _TimingDiagnostics:

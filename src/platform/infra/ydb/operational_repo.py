@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
-from src.adapters.ydb.client import YdbClient
-from src.adapters.ydb.schema import ensure_tables
+from src.platform.infra.ydb.client import YdbClient
+from src.platform.infra.ydb.schema import ensure_tables
 
 
 def _utc_now() -> datetime:

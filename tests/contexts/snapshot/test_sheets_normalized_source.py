@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 from dataclasses import dataclass
 
-from src.adapters.google_sheets.task_repository import GoogleSheetsTaskRepository
+from src.platform.integrations.google_sheets.task_repository import GoogleSheetsTaskRepository
 from src.config.loader import load_config
 from src.contexts.snapshot.adapters.sources.sheets_normalized_source import (
     SheetsNormalizedTaskSource,

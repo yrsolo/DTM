@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from src.adapters.ydb.operational_repo import OperationalTaskRepo
+from src.platform.infra.ydb.operational_repo import OperationalTaskRepo
 
 
 class _ClientStub:

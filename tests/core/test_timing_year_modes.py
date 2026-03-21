@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import pandas as pd
 
 from core.timing_parser import TimingParser
-from src.adapters.google_sheets.task_repository import GoogleSheetsTaskRepository
+from src.platform.integrations.google_sheets.task_repository import GoogleSheetsTaskRepository
 
 
 def _build_row(task_id: int, timing: str) -> dict[str, object]:

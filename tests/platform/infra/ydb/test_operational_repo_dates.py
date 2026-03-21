@@ -5,7 +5,7 @@ from __future__ import annotations
 import unittest
 from datetime import date
 
-from src.adapters.ydb.operational_repo import _to_date
+from src.platform.infra.ydb.operational_repo import _to_date
 
 
 class YdbOperationalRepoDatesTestCase(unittest.TestCase):
