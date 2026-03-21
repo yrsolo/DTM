@@ -1,6 +1,6 @@
 # Command Ownership V2
 
-This document defines the target ownership of async command types for the modular-monolith refactor wave.
+This document defines the target ownership of async command types for the current runtime contour.
 
 Governing source:
 - [../module-first-recovery/README.md](../module-first-recovery/README.md)

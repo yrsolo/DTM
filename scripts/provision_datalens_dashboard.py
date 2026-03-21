@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import subprocess
 from pathlib import Path
@@ -10,15 +11,15 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from src.config.loader import load_config
-from src.infra.datalens_api import (
+from src.platform.integrations.datalens.api import (
     create_dashboard,
     create_ql_chart,
     datalens_dashboard_url,
     find_or_create_monitoring_connection,
     find_or_create_workbook,
 )
-from src.infra.datalens_specs import build_test_ops_dashboard_spec
-from src.infra.yc_iam import get_iam_token
+from src.platform.integrations.datalens.specs import build_test_ops_dashboard_spec
+from src.platform.integrations.yandex_cloud.iam import get_iam_token
 
 
 def _extract_workbook_id(payload: dict[str, object]) -> str:
@@ -37,15 +38,22 @@ def _yc_cli_value(command: list[str]) -> str:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Provision the test-first DataLens ops dashboard from repo specs."
+    )
+    parser.add_argument("--env", default="", choices=("test", "prod", ""))
+    parser.add_argument("--cloud-id", default="")
+    args = parser.parse_args()
+
     cfg = load_config(Path("config"))
-    env_name = str(cfg.runtime.runtime.env_default or "").strip().lower() or "dev"
+    env_name = str(args.env or cfg.runtime.runtime.env_default or "").strip().lower() or "dev"
     if env_name == "prod":
         raise RuntimeError("This provisioning script is test-first only. Switch config/env to test.")
     if not bool(cfg.runtime.datalens.enabled):
         raise RuntimeError("datalens.enabled=false in runtime config.")
 
     iam_token = _yc_cli_value(["yc", "iam", "create-token"]) or get_iam_token("", "", timeout_seconds=4.0)
-    cloud_id = _yc_cli_value(["yc", "config", "get", "cloud-id"]) or "b1g6d49mf4scmtn4kjki"
+    cloud_id = str(args.cloud_id or "").strip() or _yc_cli_value(["yc", "config", "get", "cloud-id"]) or "b1g6d49mf4scmtn4kjki"
     workbook_result = find_or_create_workbook(
         iam_token=iam_token,
         org_id=cfg.runtime.datalens.org_id,

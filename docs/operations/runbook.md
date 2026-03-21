@@ -1,4 +1,4 @@
-# Runbook (Current)
+﻿# Runbook (Current)
 
 This is the minimal operator/developer runbook for the active runtime contour.
 
@@ -93,7 +93,7 @@ Operator notes:
 ## 7) Render safety
 
 - render jobs may write only to approved target worksheets
-- source worksheet `ТАБЛИЧКА` must never be a render target
+- source worksheet `Ð¢ÐÐ‘Ð›Ð˜Ð§ÐšÐ` must never be a render target
 - unsafe target returns structured blocked result
 
 ## 8) Branching and deploy
@@ -106,15 +106,16 @@ Operator notes:
 
 Use the anti-relapse checks before shipping architectural cleanup:
 - `python scripts/check_no_monsters.py`
-- `python scripts/check_no_legacy_entrypoint_imports.py`
-- `python scripts/check_no_legacy_imports.py`
+- `python scripts/check_entrypoint_import_boundaries.py`
+- `python scripts/check_active_import_boundaries.py`
 
 Purpose:
-- prevent legacy contour from leaking back into active runtime paths
+- prevent retired contours from leaking back into active runtime paths
 - keep shells thin and import-safe
 - keep current runtime docs aligned with active code
 
 ## 10) Archive policy
 
 Current runbook does not document historical planner-era or old database contours.
-If historical troubleshooting detail is needed, use `docs/archive/*`.
+If historical troubleshooting detail is needed, use `archive/docs/*`.
+

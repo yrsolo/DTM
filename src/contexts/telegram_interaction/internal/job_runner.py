@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.contexts.telegram_interaction.public import (
     get_group_query_formatter as _get_group_query_formatter,
     get_sender as _get_group_query_sender,
-    get_snapshot_read_capability as _get_group_query_snapshot_read_capability,
+    get_snapshot_read_api as _get_group_query_snapshot_read_api,
     get_usecase as _get_group_query_usecase,
     make_group_query_request as _make_group_query_request_from_module,
 )
 
 
-get_snapshot_capability = _get_group_query_snapshot_read_capability
+get_snapshot_read_api = _get_group_query_snapshot_read_api
 
 
 def _make_group_query_request(**kwargs):
@@ -26,8 +26,8 @@ class GroupQueryReplyJob:
         self._ctx = ctx
 
     async def run(self, cmd):
-        snapshot_engine = get_snapshot_capability(self._ctx)
-        usecase = _get_group_query_usecase(snapshot_engine)
+        snapshot_read = get_snapshot_read_api(self._ctx)
+        usecase = _get_group_query_usecase(snapshot_read)
         groups, today, next_workday = usecase.select(
             _make_group_query_request(
                 mode="group_query",

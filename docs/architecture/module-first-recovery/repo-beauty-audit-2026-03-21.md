@@ -58,7 +58,7 @@ Evaluated dimensions:
 
 | Area | Score | Why it already works | What still feels unfinished | Severity | Recommended cleanup wave |
 |---|---:|---|---|---|---|
-| top path | 9/10 | `index.py -> src/entrypoint/handler.py -> platform/runtime -> owning module` is real, short, and now reads naturally from the repo root | only small shared-runtime ceremony remains around shell/context suppliers | low | optional taste curation |
+| top path | 9/10 | `index.py -> src/entrypoints/root/handler.py -> platform/runtime -> owning module` is real, short, and now reads naturally from the repo root | only small shared-runtime ceremony remains around shell/context suppliers | low | optional taste curation |
 | platform/runtime | 9/10 | runtime is clearly neutral and no longer pretends to own domain logic | bootstrap still has a little unavoidable coordination weight because it is the shared runtime seam | low | accepted imperfection |
 | snapshot | 8/10 | snapshot now clearly owns the read-model and its internal engine lives inside the context | some deeper internal technical names still sound more operational than elegant | low | optional taste curation |
 | attachments | 9/10 | strongest product-facing scenario, strongest ownership story, strongest context narrative | only deeper internal helper tone remains slightly utilitarian | low | optional taste curation |

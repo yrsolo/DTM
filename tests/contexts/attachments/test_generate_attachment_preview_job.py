@@ -4,8 +4,8 @@ import unittest
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
-from src.app.context import AppContext
-from src.commands.model import Command, RequestedBy
+from src.platform.context import AppContext
+from src.platform.runtime.commands.model import Command, RequestedBy
 from src.contexts.attachments.internal.preview_job import GenerateAttachmentPreviewJob
 from src.contexts.snapshot.internal.engine.model import AttachmentMeta
 
@@ -105,9 +105,9 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
         store = _FakeMetadataStore(record)
         engine = _FakeEngine(store)
         converter = _FakeConverter()
-        original_engine = module.get_snapshot_capability
+        original_engine = module.get_snapshot_attachment_api
         original_storage = module.get_attachment_storage_capability
-        module.get_snapshot_capability = lambda _ctx: engine  # type: ignore[assignment]
+        module.get_snapshot_attachment_api = lambda _ctx: engine  # type: ignore[assignment]
         module.get_attachment_storage_capability = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
         try:
             ctx = AppContext(
@@ -123,7 +123,7 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
             )
             result = GenerateAttachmentPreviewJob(ctx).run(cmd)
         finally:
-            module.get_snapshot_capability = original_engine  # type: ignore[assignment]
+            module.get_snapshot_attachment_api = original_engine  # type: ignore[assignment]
             module.get_attachment_storage_capability = original_storage  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
@@ -137,9 +137,9 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
         record = self._make_record()
         store = _FakeMetadataStore(record)
         engine = _FakeEngine(store)
-        original_engine = module.get_snapshot_capability
+        original_engine = module.get_snapshot_attachment_api
         original_storage = module.get_attachment_storage_capability
-        module.get_snapshot_capability = lambda _ctx: engine  # type: ignore[assignment]
+        module.get_snapshot_attachment_api = lambda _ctx: engine  # type: ignore[assignment]
         module.get_attachment_storage_capability = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
         try:
             ctx = AppContext(
@@ -155,7 +155,7 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
             )
             result = GenerateAttachmentPreviewJob(ctx).run(cmd)
         finally:
-            module.get_snapshot_capability = original_engine  # type: ignore[assignment]
+            module.get_snapshot_attachment_api = original_engine  # type: ignore[assignment]
             module.get_attachment_storage_capability = original_storage  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "failed")
@@ -164,5 +164,6 @@ class GenerateAttachmentPreviewJobTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
 
 

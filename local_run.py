@@ -1,4 +1,4 @@
-"""Local launcher for running the planner without Yandex Cloud."""
+﻿"""Local launcher for running the planner without Yandex Cloud."""
 
 import argparse
 import asyncio
@@ -12,8 +12,8 @@ from agent.reminder_alert_evaluator import (
     resolve_fail_on,
     should_fail,
 )
-from core.read_model import build_read_model
-from core.schema_snapshot import build_schema_snapshot
+from src.platform.artifacts.read_model import build_read_model
+from src.platform.artifacts.schema_snapshot import build_schema_snapshot
 from src.entrypoints.runtime.local_runtime import run_local_runtime
 
 
@@ -297,10 +297,12 @@ if __name__ == "__main__":
             persist_schema_snapshot(schema_snapshot, args.schema_snapshot_file)
             print(f"schema_snapshot_file={args.schema_snapshot_file}")
         if args.schema_snapshot_s3_key and schema_snapshot is not None:
-            from utils.storage import S3SnapshotStorage
+            from src.platform.infra.object_storage import S3SnapshotStorage
 
             storage = S3SnapshotStorage()
             storage.upload_json(args.schema_snapshot_s3_key, schema_snapshot)
             print(f"schema_snapshot_s3_key={args.schema_snapshot_s3_key}")
     if alert_evaluation is not None and should_fail(alert_evaluation["level"], effective_fail_on):
         raise SystemExit(2)
+
+

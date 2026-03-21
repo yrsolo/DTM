@@ -157,7 +157,7 @@ class PlannerRuntimeEntryTestCase(unittest.TestCase):
             return_value=object(),
         ), patch.object(
             module,
-            "get_snapshot_capability",
+            "get_snapshot_read_api",
             return_value=fake_engine,
         ), patch.object(
             module,

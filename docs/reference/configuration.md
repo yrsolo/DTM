@@ -4,7 +4,7 @@
 Typed config is loaded through:
 - `src/config/schema.py`
 - `src/config/loader.py`
-- composed in `src/app/bootstrap.py`
+- composed in `src/platform/bootstrap.py`
 
 Primary config files:
 - `config/runtime.yaml`
@@ -64,7 +64,7 @@ They are resolved through secret storage / env in loader/bootstrap only.
 Current deploy workflows map `BROWSER_AUTH_PROXY_SECRET` from Lockbox into backend function env for both test and prod contours.
 
 Browser auth secret wiring:
-- backend bootstrap reads `BROWSER_AUTH_PROXY_SECRET` in `src/app/bootstrap.py`
+- backend bootstrap reads `BROWSER_AUTH_PROXY_SECRET` in `src/platform/bootstrap.py`
 - backend trust logic consumes it in `src/entrypoints/http/access_context.py`
 - test workflow: `.github/workflows/deploy_yc_function_main.yml`
 - prod workflow: `.github/workflows/release_yc_function_prod.yml`

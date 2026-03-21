@@ -1,12 +1,12 @@
-"""Explicit queue dispatch for the target platform layer."""
+﻿"""Explicit queue dispatch for the target platform layer."""
 
 from __future__ import annotations
 
 import inspect
 from typing import Any, Mapping
 
-from src.commands.model import Command
-from src.commands.types import (
+from src.platform.runtime.commands.model import Command
+from src.platform.runtime.commands.types import (
     ATTACH_TASK_FILE,
     CLEANUP_TASK_ATTACHMENTS,
     DELETE_TASK_ATTACHMENT,
@@ -18,7 +18,7 @@ from src.commands.types import (
     SUPPORTED_COMMAND_TYPES,
     UPDATE_SNAPSHOT,
 )
-from src.worker.model import JobResult
+from src.platform.runtime.worker.model import JobResult
 
 
 async def dispatch_command(
@@ -71,3 +71,4 @@ async def dispatch_command(
         warnings=[str(item) for item in list(details.get("warnings", []) or [])],
         error=dict(error or {}) if isinstance(error, dict) and error else None,
     )
+

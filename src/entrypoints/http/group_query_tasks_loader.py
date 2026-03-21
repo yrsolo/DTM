@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.contexts.snapshot.public import query_frontend_v2
-from src.entrypoints_adapters.api_v2_adapter import build_frontend_query
+from src.contexts.access_api.internal.frontend_query import build_frontend_query
+from src.contexts.snapshot.module import get_query_api
 
 
 def load_work_tasks_for_group_query(
@@ -15,11 +15,10 @@ def load_work_tasks_for_group_query(
     app_cfg: Any,
 ) -> list[Any]:
     """Load active tasks for group-query flows from the canonical snapshot read-model."""
-    from src.app.context import AppContext
+    from src.platform.context import AppContext
 
     ctx = AppContext(cfg=app_cfg, deps={})
-    payload = query_frontend_v2(
-        ctx,
+    payload = get_query_api(ctx).frontend_v2(
         build_frontend_query(
             statuses=["work", "pre_done"],
             designer="",

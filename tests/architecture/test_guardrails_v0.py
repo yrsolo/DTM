@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from pathlib import Path
 import re
@@ -10,7 +10,12 @@ TARGET_DIRS = [
     ROOT / "src" / "entrypoint",
     ROOT / "src" / "platform",
     ROOT / "src" / "contexts",
+    ROOT / "src" / "core",
 ]
+
+ALLOWED_ENV_READ_FILES = {
+    ROOT / "src" / "platform" / "bootstrap.py",
+}
 
 
 def _python_files(paths: list[Path]) -> list[Path]:
@@ -30,6 +35,8 @@ class GuardrailsV0TestCase(unittest.TestCase):
     def test_target_layers_do_not_read_env_directly(self) -> None:
         offenders: list[str] = []
         for file_path in _python_files(TARGET_DIRS):
+            if file_path in ALLOWED_ENV_READ_FILES:
+                continue
             content = file_path.read_text(encoding="utf-8")
             if "os.getenv(" in content:
                 offenders.append(str(file_path.relative_to(ROOT)))
@@ -55,7 +62,6 @@ class GuardrailsV0TestCase(unittest.TestCase):
             ROOT / "src" / "services",
             ROOT / "src" / "render",
             ROOT / "src" / "notify",
-            ROOT / "src" / "entrypoints_adapters",
         ]
         for file_path in _python_files(target_paths):
             content = file_path.read_text(encoding="utf-8")
@@ -75,11 +81,10 @@ class GuardrailsV0TestCase(unittest.TestCase):
             ROOT / "src" / "services",
             ROOT / "src" / "render",
             ROOT / "src" / "notify",
-            ROOT / "src" / "entrypoints_adapters",
         ]
         for file_path in _python_files(target_paths):
             content = file_path.read_text(encoding="utf-8")
-            if "src.archive.legacy_runtime" in content or "from src.archive.legacy_runtime" in content:
+            if "archive.code.legacy_runtime" in content or "from archive.code.legacy_runtime" in content:
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
@@ -109,8 +114,8 @@ class GuardrailsV0TestCase(unittest.TestCase):
         import_patterns = (
             re.compile(r"^\s*from\s+src\.legacy(?:\.|\s+import)", re.MULTILINE),
             re.compile(r"^\s*import\s+src\.legacy(?:\.|\s|$)", re.MULTILINE),
-            re.compile(r"^\s*from\s+src\.archive\.legacy_runtime(?:\.|\s+import)", re.MULTILINE),
-            re.compile(r"^\s*import\s+src\.archive\.legacy_runtime(?:\.|\s|$)", re.MULTILINE),
+            re.compile(r"^\s*from\s+archive\.code\.legacy_runtime(?:\.|\s+import)", re.MULTILINE),
+            re.compile(r"^\s*import\s+archive\.code\.legacy_runtime(?:\.|\s|$)", re.MULTILINE),
         )
         for file_path in _python_files([ROOT / "tests"]):
             content = file_path.read_text(encoding="utf-8")
@@ -140,7 +145,7 @@ class GuardrailsV0TestCase(unittest.TestCase):
         self.assertNotIn("APP_TRIGGERS", content)
         self.assertNotIn("def _get_app_context", content)
 
-    def test_active_entrypoints_do_not_import_app_bootstrap_directly(self) -> None:
+    def test_active_entrypoints_do_not_import_removed_app_bootstrap(self) -> None:
         offenders: list[str] = []
         target_paths = [
             ROOT / "src" / "entrypoint",
@@ -151,6 +156,64 @@ class GuardrailsV0TestCase(unittest.TestCase):
             if "from src.app.bootstrap import" in content or "import src.app.bootstrap" in content:
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
+
+    def test_active_code_does_not_import_root_core_package(self) -> None:
+        offenders: list[str] = []
+        import_patterns = (
+            re.compile(r"^\s*from\s+core(?:\.|\s+import)", re.MULTILINE),
+            re.compile(r"^\s*import\s+core(?:\.|\s|$)", re.MULTILINE),
+        )
+        for file_path in _python_files([
+            ROOT / "index.py",
+            ROOT / "local_run.py",
+            ROOT / "src",
+            ROOT / "tests",
+            ROOT / "agent",
+            ROOT / "scripts",
+        ]):
+            content = file_path.read_text(encoding="utf-8")
+            if any(pattern.search(content) for pattern in import_patterns):
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_root_core_package_does_not_exist_as_tracked_python_root(self) -> None:
+        path = ROOT / "core"
+        if not path.exists():
+            return
+        tracked_python_files = sorted(
+            str(file_path.relative_to(ROOT))
+            for file_path in path.rglob("*.py")
+        )
+        self.assertEqual(tracked_python_files, [])
+
+    def test_active_code_does_not_import_root_utils_package(self) -> None:
+        offenders: list[str] = []
+        import_patterns = (
+            re.compile(r"^\s*from\s+utils(?:\.|\s+import)", re.MULTILINE),
+            re.compile(r"^\s*import\s+utils(?:\.|\s|$)", re.MULTILINE),
+        )
+        for file_path in _python_files([
+            ROOT / "index.py",
+            ROOT / "local_run.py",
+            ROOT / "src",
+            ROOT / "tests",
+            ROOT / "agent",
+            ROOT / "scripts",
+        ]):
+            content = file_path.read_text(encoding="utf-8")
+            if any(pattern.search(content) for pattern in import_patterns):
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_root_utils_package_does_not_exist_as_tracked_python_root(self) -> None:
+        path = ROOT / "utils"
+        if not path.exists():
+            return
+        tracked_python_files = sorted(
+            str(file_path.relative_to(ROOT))
+            for file_path in path.rglob("*.py")
+        )
+        self.assertEqual(tracked_python_files, [])
 
     def test_active_runtime_paths_do_not_import_removed_index_dispatcher(self) -> None:
         offenders: list[str] = []
@@ -171,26 +234,26 @@ class GuardrailsV0TestCase(unittest.TestCase):
             "access_api": {
                 "src.contexts.attachments.public",
                 "src.contexts.attachments.contracts",
-                "src.contexts.snapshot.public",
+                "src.contexts.snapshot.module",
                 "src.contexts.snapshot.contracts",
             },
             "attachments": {
-                "src.contexts.snapshot.public",
+                "src.contexts.snapshot.module",
                 "src.contexts.snapshot.contracts",
             },
             "reminders": {
-                "src.contexts.snapshot.public",
+                "src.contexts.snapshot.module",
                 "src.contexts.snapshot.contracts",
             },
             "rendering": {
-                "src.contexts.snapshot.public",
+                "src.contexts.snapshot.module",
                 "src.contexts.snapshot.contracts",
             },
             "snapshot": {
                 "src.contexts.attachments.contracts",
             },
             "telegram_interaction": {
-                "src.contexts.snapshot.public",
+                "src.contexts.snapshot.module",
                 "src.contexts.snapshot.contracts",
             },
         }
@@ -262,7 +325,6 @@ class GuardrailsV0TestCase(unittest.TestCase):
         target_paths = [
             ROOT / "src" / "render",
             ROOT / "src" / "notify",
-            ROOT / "src" / "entrypoints_adapters",
         ]
         allowed_snapshot_imports = {
             "from src.contexts.snapshot.public import",
@@ -310,10 +372,10 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
-    def test_app_bootstrap_does_not_build_attachment_converter_directly(self) -> None:
-        file_path = ROOT / "src" / "app" / "bootstrap.py"
+    def test_platform_bootstrap_does_not_build_attachment_converter_directly(self) -> None:
+        file_path = ROOT / "src" / "platform" / "bootstrap.py"
         content = file_path.read_text(encoding="utf-8")
-        self.assertNotIn("from src.infra.doc_preview_converter import DocPreviewConverter", content)
+        self.assertNotIn("DocPreviewConverter", content)
         self.assertNotIn("DocPreviewConverter(", content)
 
     def test_active_module_first_paths_do_not_import_jobs_directly(self) -> None:
@@ -337,11 +399,17 @@ class GuardrailsV0TestCase(unittest.TestCase):
 
     def test_removed_historical_test_roots_do_not_exist(self) -> None:
         for relative in [
+            "tests/adapters",
+            "tests/app",
+            "tests/entrypoint",
+            "tests/infra",
             "tests/jobs",
+            "tests/observability",
             "tests/snapshot_engine",
             "tests/notify",
             "tests/render",
             "tests/telegram",
+            "tests/worker",
         ]:
             path = ROOT / relative
             python_files = sorted(path.rglob("*.py")) if path.exists() else []
@@ -432,7 +500,7 @@ class GuardrailsV0TestCase(unittest.TestCase):
         self.assertNotIn("from src.entrypoints.http.task_attachment_read_handler", content)
 
     def test_access_api_internal_paths_do_not_import_old_frontend_cache_helper(self) -> None:
-        file_path = ROOT / "src" / "contexts" / "access_api" / "internal" / "frontend_v2_handler.py"
+        file_path = ROOT / "src" / "contexts" / "access_api" / "internal" / "primary_task_list_read_api.py"
         content = file_path.read_text(encoding="utf-8")
         self.assertNotIn("from src.entrypoints.http.frontend_response_cache", content)
         self.assertNotIn("import src.entrypoints.http.frontend_response_cache", content)
@@ -478,10 +546,26 @@ class GuardrailsV0TestCase(unittest.TestCase):
 
     def test_removed_technical_compatibility_roots_do_not_exist(self) -> None:
         removed_paths = [
+            ROOT / "src" / "app",
+            ROOT / "src" / "entrypoint",
             ROOT / "src" / "render",
             ROOT / "src" / "notify",
             ROOT / "src" / "telegram",
             ROOT / "src" / "services" / "attachments",
+            ROOT / "src" / "services" / "access",
+            ROOT / "src" / "services" / "mappers",
+            ROOT / "src" / "services" / "readmodels",
+            ROOT / "src" / "services" / "render",
+            ROOT / "src" / "services" / "notify",
+            ROOT / "src" / "services" / "sync",
+            ROOT / "src" / "services" / "usecases",
+            ROOT / "src" / "services" / "sources",
+            ROOT / "src" / "services",
+            ROOT / "src" / "adapters",
+            ROOT / "src" / "infra",
+            ROOT / "src" / "observability",
+            ROOT / "src" / "handlers",
+            ROOT / "src" / "entrypoints_adapters",
         ]
         offenders: list[str] = []
         for path in removed_paths:
@@ -490,6 +574,19 @@ class GuardrailsV0TestCase(unittest.TestCase):
             python_files = sorted(path.rglob("*.py"))
             if python_files:
                 offenders.append(str(path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_removed_top_level_historical_roots_do_not_exist_at_all(self) -> None:
+        removed_paths = [
+            ROOT / "src" / "jobs",
+            ROOT / "src" / "render",
+            ROOT / "src" / "notify",
+            ROOT / "src" / "snapshot_engine",
+            ROOT / "src" / "telegram",
+            ROOT / "src" / "handlers",
+            ROOT / "src" / "entrypoints_adapters",
+        ]
+        offenders = [str(path.relative_to(ROOT)) for path in removed_paths if path.exists()]
         self.assertEqual(offenders, [])
 
     def test_active_render_jobs_do_not_import_old_render_target_guard(self) -> None:
@@ -526,6 +623,57 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 
+    def test_active_runtime_paths_do_not_import_removed_services_layer(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "commands",
+            ROOT / "src" / "contexts",
+            ROOT / "src" / "entrypoint",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "infra",
+            ROOT / "src" / "platform",
+            ROOT / "src" / "worker",
+            ROOT / "tests",
+        ]
+        forbidden_markers = (
+            "src.services.errors",
+            "src.services.timer_pipeline",
+            "src.services.sources",
+            "src.services.usecases",
+            "src.adapters.store_ydb",
+            "src.adapters.google_sheets",
+        )
+        for file_path in _python_files(target_paths):
+            if file_path == Path(__file__).resolve():
+                continue
+            content = file_path.read_text(encoding="utf-8")
+            if any(marker in content for marker in forbidden_markers):
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_active_runtime_paths_do_not_import_loose_adapter_roots(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "contexts",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "platform",
+            ROOT / "tests",
+        ]
+        forbidden_markers = (
+            "src.adapters.telegram",
+            "src.adapters.llm_google",
+            "src.adapters.llm_openai",
+            "src.adapters.llm_yandex",
+        )
+        for file_path in _python_files(target_paths):
+            if file_path == Path(__file__).resolve():
+                continue
+            content = file_path.read_text(encoding="utf-8")
+            if any(marker in content for marker in forbidden_markers):
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
 
 if __name__ == "__main__":
     unittest.main()
+

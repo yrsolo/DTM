@@ -4,8 +4,8 @@ import unittest
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
-from src.app.context import AppContext
-from src.commands.model import Command, RequestedBy
+from src.platform.context import AppContext
+from src.platform.runtime.commands.model import Command, RequestedBy
 from src.contexts.attachments.internal.job_runners import CleanupTaskAttachmentsJob
 
 
@@ -36,10 +36,10 @@ class CleanupTaskAttachmentsJobTestCase(unittest.TestCase):
     def test_cleanup_job_delegates_to_engine(self) -> None:
         import src.contexts.attachments.internal.job_runners as module
 
-        original_engine = module.get_snapshot_capability
+        original_engine = module.get_snapshot_attachment_api
         original_storage = module.get_attachment_storage_capability
         engine = _FakeEngine()
-        module.get_snapshot_capability = lambda _ctx: engine  # type: ignore[assignment]
+        module.get_snapshot_attachment_api = lambda _ctx: engine  # type: ignore[assignment]
         module.get_attachment_storage_capability = lambda _ctx: _FakeStorage()  # type: ignore[assignment]
         try:
             ctx = AppContext(cfg=SimpleNamespace(), deps={})
@@ -52,7 +52,7 @@ class CleanupTaskAttachmentsJobTestCase(unittest.TestCase):
             )
             result = CleanupTaskAttachmentsJob(ctx).run(cmd)
         finally:
-            module.get_snapshot_capability = original_engine  # type: ignore[assignment]
+            module.get_snapshot_attachment_api = original_engine  # type: ignore[assignment]
             module.get_attachment_storage_capability = original_storage  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
@@ -76,5 +76,6 @@ class CleanupTaskAttachmentsJobTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
 
 

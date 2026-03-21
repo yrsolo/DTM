@@ -1,4 +1,4 @@
-"""Tests for archived readmodel freshness marker helper."""
+﻿"""Tests for archived readmodel freshness marker helper."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
-from src.archive.legacy_runtime.entrypoints.jobs.readmodel_freshness import build_readmodel_freshness_marker
+from archive.code.legacy_runtime.entrypoints.jobs.readmodel_freshness import build_readmodel_freshness_marker
 
 
 class MainReadmodelFreshnessTestCase(unittest.TestCase):
@@ -36,3 +36,4 @@ class MainReadmodelFreshnessTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

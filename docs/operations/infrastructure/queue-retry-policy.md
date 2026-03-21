@@ -101,7 +101,7 @@ Operational visibility:
 
 ## Source of truth
 
-- worker result model: `src/worker/model.py`
-- worker semantics: `src/worker/worker.py`
-- status store: `src/worker/status_store.py`
+- worker result model: `src/platform/runtime/worker/model.py`
+- worker semantics: `src/platform/runtime/worker/worker.py`
+- status store: `src/platform/runtime/worker/status_store.py`
 - worker transport shell: `src/entrypoints/queue/worker_shell.py`

@@ -1,4 +1,4 @@
-"""Scheduled trigger shell for queue-backed or direct runtime execution."""
+﻿"""Scheduled trigger shell for queue-backed or direct runtime execution."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
-from src.app.context import AppContext
-from src.commands.model import Command, RequestedBy
+from src.platform.context import AppContext
+from src.platform.runtime.commands.model import Command, RequestedBy
 from src.entrypoints.http.dto import to_gateway_response
 from src.entrypoints.http.runtime_execution import RuntimeExecutionRequest
 from src.platform.runtime.command_runtime import get_command_runtime
@@ -71,3 +71,4 @@ class TriggerShell:
             is_http_event=False,
         )
         return to_gateway_response(runtime_response)
+

@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from src.contexts.snapshot.contracts import Window
-from src.contexts.snapshot.public import get_read_capability
+from src.contexts.snapshot.module import get_read_api
 
 from .internal import DesignersRenderUseCase, GoogleSheetsPlanWriter, RenderJob, RenderRequest, RenderUseCase, SheetTarget
 
@@ -16,8 +16,8 @@ class RenderingModule:
 
     name: str = "rendering"
 
-    def snapshot_read_capability(self, ctx):
-        return get_read_capability(ctx)
+    def snapshot_read_api(self, ctx):
+        return get_read_api(ctx)
 
     def timeline_usecase(self, snapshot_read, *, timezone_name: str):
         return RenderUseCase(snapshot_read, timezone_name=timezone_name)

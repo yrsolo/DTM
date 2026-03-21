@@ -1,4 +1,4 @@
-"""Tests for timing year inference modes in repository parser."""
+﻿"""Tests for timing year inference modes in repository parser."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from types import SimpleNamespace
 
 import pandas as pd
 
-from core.timing_parser import TimingParser
-from src.adapters.google_sheets.task_repository import GoogleSheetsTaskRepository
+from src.core.timing_parser import TimingParser
+from src.platform.integrations.google_sheets.task_repository import GoogleSheetsTaskRepository
 
 
 def _build_row(task_id: int, timing: str) -> dict[str, object]:
@@ -93,3 +93,4 @@ class TimingYearModesTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

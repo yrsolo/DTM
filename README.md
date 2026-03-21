@@ -1,4 +1,4 @@
-# Designers Task Manager
+﻿# Designers Task Manager
 
 DTM is a lightweight operations hub for design teams that need one place to keep tasks, people, deadlines, reminders, and file flows in sync without building a heavy bespoke PM stack.
 
@@ -26,14 +26,14 @@ It sits on top of familiar tools, keeps reads fast and predictable, and pushes e
 
 ## Where to go next
 
-- [Документация по проекту](docs/README.md)
-- [Быстрый обзор продукта](docs/product/README.md)
-- [Архитектура и устройство runtime](docs/architecture/README.md)
+- [Project docs map](docs/README.md)
+- [Product overview](docs/product/README.md)
+- [Architecture and runtime map](docs/architecture/README.md)
 - [Active architecture canon](docs/architecture/module-first-recovery/README.md)
-- [Интеграции и внешние контуры](docs/integrations/README.md)
-- [Эксплуатация и наблюдаемость](docs/operations/README.md)
-- [Справочные схемы и контракты](docs/reference/README.md)
-- [Текущее execution-tracking пространство](work/README.md)
+- [Integrations and external contours](docs/integrations/README.md)
+- [Operations and observability](docs/operations/README.md)
+- [Reference contracts and schemas](docs/reference/README.md)
+- [Current execution tracking](work/README.md)
 
 ## Fast reading path
 
@@ -43,7 +43,7 @@ If you want the cleanest first pass through the repo:
 2. [docs/architecture/module-first-recovery/README.md](docs/architecture/module-first-recovery/README.md)
 3. [docs/integrations/attachments/frontend-card-publication.md](docs/integrations/attachments/frontend-card-publication.md)
 4. [index.py](index.py)
-5. [src/entrypoint/handler.py](src/entrypoint/handler.py)
+5. [src/entrypoints/root/handler.py](src/entrypoints/root/handler.py)
 
 ## Project posture
 
@@ -54,4 +54,5 @@ DTM deliberately prefers:
 - small browser-facing contracts over generic passthrough APIs
 - operational clarity over cleverness
 
-If you need the historical migration story or legacy investigations, use [docs/archive/README.md](docs/archive/README.md) and [work/archive/README.md](work/archive/README.md).
+If you need the historical migration story or legacy investigations, use [archive/docs/README.md](archive/docs/README.md) and [archive/work/README.md](archive/work/README.md).
+

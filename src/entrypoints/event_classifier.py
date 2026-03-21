@@ -1,4 +1,4 @@
-"""Incoming event classification for top-level entrypoint dispatch."""
+﻿"""Incoming event classification for top-level entrypoint dispatch."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any
 
-from src.commands.yandex_mq import is_message_queue_event
+from src.platform.runtime.commands.yandex_mq import is_message_queue_event
 from src.entrypoints.http.event_parser import extract_payload
 from src.entrypoints.http.runtime_mode import resolve_trigger_mode
 
@@ -56,3 +56,4 @@ def classify_event(event: Any, triggers: dict[str, str]) -> EventClassification:
         is_http_event=is_http_event,
         trigger_mode=trigger_mode,
     )
+

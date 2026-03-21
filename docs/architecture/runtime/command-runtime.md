@@ -1,4 +1,4 @@
-# Command Runtime Architecture
+﻿# Command Runtime Architecture
 
 ## Current topology
 
@@ -90,7 +90,7 @@ Operator truth sources:
 Thin top-level shell:
 
 - `index.py`
-- `src/entrypoint/handler.py`
+- `src/entrypoints/root/handler.py`
 
 Transport shells:
 
@@ -101,4 +101,5 @@ Transport shells:
 
 Local/manual runtime stays inside the same canonical shell family and is not a separate architectural center.
 
-Historical runtime detail lives in `docs/archive/*` and `src/archive/*`.
+Historical runtime detail lives in `archive/docs/*` and `archive/code/*`.
+

@@ -1,6 +1,6 @@
 # Modularity Audit 2026-03-19
 
-This audit evaluates how close the active DTM runtime is to the intended modular-monolith shape after the refactor umbrella campaign.
+This audit evaluates how close the active DTM runtime is to the intended modular-monolith shape after the previous umbrella architecture program.
 
 Assessment method:
 - verify the current context/public/module surfaces in `src/contexts/*`
@@ -20,7 +20,7 @@ Overall result:
 - service-extraction readiness: medium-low
 
 The refactor clearly improved the system:
-- active runtime no longer depends on `src.legacy`
+- active runtime no longer depends on retired roots that were later archived
 - top-level routing and queue orchestration are explicit
 - first-class context facades exist
 - snapshot boundary rules for rendering/notify/adapters are enforced by tests

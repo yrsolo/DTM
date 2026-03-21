@@ -134,7 +134,6 @@ class NotifySection:
 
 @dataclass(slots=True)
 class SourcesSection:
-    store_mode_default: str = "legacy"
     readmodel_source_default: str = "legacy"
     notify_source_default: str = "readmodel_source"
     render_source_default: str = "readmodel_source"
@@ -175,12 +174,8 @@ class TablesConfig:
 
 @dataclass(slots=True)
 class DbConfig:
-    ydb: dict[str, Any] = field(default_factory=dict)
     object_storage: dict[str, Any] = field(default_factory=dict)
     tables: dict[str, str] = field(default_factory=dict)
-    readmodel: dict[str, Any] = field(default_factory=dict)
-    compat: dict[str, Any] = field(default_factory=dict)
-    retry: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(slots=True)

@@ -10,8 +10,7 @@ This runbook explains how browser auth works operationally in the current DTM co
 - how to verify rollout and diagnose masked/full behavior.
 
 This is the canonical operator-facing runbook for the current auth wave.
-Reference handoff remains archive-only input:
-- `agent/intructions/DTM-test/BACKEND_AUTH_HANDOFF.md`
+Any owner handoff text for browser auth belongs in `agent/owner_inputs/` or archive only; it is not part of the active canon.
 
 ## Runtime components
 
@@ -105,7 +104,7 @@ Masked access applies when:
 
 ### Backend function
 Backend secret bootstrap is code-backed:
-- `src/app/bootstrap.py` reads `BROWSER_AUTH_PROXY_SECRET` from env
+- `src/platform/bootstrap.py` reads `BROWSER_AUTH_PROXY_SECRET` from env
 - `config/runtime.yaml` defines:
   - `runtime.api.auth_trusted_secret_header`
   - `runtime.api.auth_trusted_fallback`

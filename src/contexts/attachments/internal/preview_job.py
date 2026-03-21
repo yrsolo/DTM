@@ -1,18 +1,18 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from src.app.context import AppContext
-from src.commands.model import Command
+from src.platform.context import AppContext
+from src.platform.runtime.commands.model import Command
 from src.contexts.attachments.public import (
-    get_attachment_snapshot_capability,
+    get_attachment_snapshot_api,
     get_attachment_storage,
     get_doc_preview_converter,
 )
 from src.platform.runtime.frontend_cache_invalidation import invalidate_default_frontend_cache_store
-from src.services.errors import AppError, TransientError, UserError
+from src.platform.errors import AppError, TransientError, UserError
 
-get_snapshot_capability = get_attachment_snapshot_capability
+get_snapshot_attachment_api = get_attachment_snapshot_api
 get_attachment_storage_capability = get_attachment_storage
 
 
@@ -36,8 +36,8 @@ class GenerateAttachmentPreviewJob:
         try:
             task_id = self._require_text(payload, "task_id")
             attachment_id = self._require_text(payload, "attachment_id")
-            engine = get_snapshot_capability(self._ctx)
-            metadata_store = engine.get_attachment_metadata_store()
+            snapshot_attachments = get_snapshot_attachment_api(self._ctx)
+            metadata_store = snapshot_attachments.get_attachment_metadata_store()
             lookup = metadata_store.get_by_attachment_id(attachment_id)
             if lookup is None or str(lookup[0]) != task_id:
                 raise UserError("Attachment was not found.", code="attachment_not_found")
@@ -127,7 +127,7 @@ class GenerateAttachmentPreviewJob:
                 attachment_id=attachment_id,
                 derived_preview_ref=preview_key,
             )
-            engine.attach_file_metadata(
+            snapshot_attachments.attach_file_metadata(
                 task_id=task_id,
                 attachment=type(record).from_dict(
                     {
@@ -140,7 +140,7 @@ class GenerateAttachmentPreviewJob:
                 ),
             )
             try:
-                invalidate_default_frontend_cache_store(engine.get_response_cache_store())
+                invalidate_default_frontend_cache_store(snapshot_attachments.get_response_cache_store())
             except AppError:
                 return {
                     "artifact": "generate_attachment_preview",
@@ -170,3 +170,4 @@ class GenerateAttachmentPreviewJob:
 
 
 __all__ = ["GenerateAttachmentPreviewJob"]
+

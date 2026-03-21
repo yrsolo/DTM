@@ -4,8 +4,8 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-from src.app.context import AppContext
-from src.services.errors import PermanentError, TransientError, UserError
+from src.platform.context import AppContext
+from src.platform.errors import PermanentError, TransientError, UserError
 
 
 def _safe_filename(name: str) -> str:

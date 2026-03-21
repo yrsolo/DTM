@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from src.adapters.telegram import TelegramNotifier
+from src.platform.integrations.telegram.notifier import TelegramNotifier
 
 
 class TelegramSender:

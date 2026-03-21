@@ -11,9 +11,9 @@ Hash basis is stable JSON over `{values, colors}`.
 
 ## 2) Canonical timer runtime
 Runtime object:
-- `src/services/timer_pipeline.py` -> `TimerPipeline(AppContext)`
+- `src/platform/runtime/timer_pipeline.py` -> `TimerPipeline(AppContext)`
 - `TimerPipeline.run(RunRequest(...))` invokes `SnapshotEngine.update(...)`
-- top-level transport dispatch: `index.py` -> `src/entrypoint/handler.py`
+- top-level transport dispatch: `index.py` -> `src/entrypoints/root/handler.py`
 - runtime bridge for explicit modes: `src/entrypoints/runtime/runtime_shell.py`
 
 Execution order:
@@ -23,7 +23,7 @@ Execution order:
 4. on change (or force): write Raw -> build Prep -> write Prep
 5. on no-change: skip writes
 
-No YDB operational/readmodel writes are part of the canonical API v2 runtime path.
+No direct database/readmodel writes are part of the canonical API v2 runtime path.
 No legacy planner/store/readmodel-probe branch is part of the canonical standard runtime path.
 
 People routing snapshot:

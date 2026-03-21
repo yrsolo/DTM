@@ -65,7 +65,7 @@ These rules are meant to prevent the pipeline code from drowning in `if` chains,
 ## 7) No env access outside config/bootstrap
 - `os.getenv()` is allowed only in:
   - `src/config/loader.py` (or equivalent config loader)
-  - `src/app/bootstrap.py` (composition root)
+  - `src/platform/bootstrap.py` (composition root)
 - `config/constants.py` must not be imported from:
   - `src/services/**`
   - `src/core/**`
@@ -80,7 +80,7 @@ Entrypoints (`index.py`, `main.py`) must be thin wrappers:
 
 Entrypoints must not contain:
 - domain rules (normalization, year inference, timing parsing),
-- YDB SQL/YQL,
+- direct database SQL/DDL,
 - feature-flag matrices,
 - multi-step orchestration logic.
 
@@ -91,7 +91,6 @@ Source selection / rollout selection must happen in bootstrap via policy injecti
 
 Do not introduce:
 - `if READMODEL_SOURCE == ...` inside a service,
-- `if STORE_MODE == ...` inside a service,
 - similar env-driven branching in the core pipeline.
 
 ## 10) Core is domain-only
@@ -101,12 +100,12 @@ Do not introduce:
 - business rules
 
 Forbidden in `src/core/**`:
-- external SDK clients (YDB/Sheets/Telegram/OpenAI)
+- external SDK clients (Sheets/Telegram/OpenAI/Object Storage/etc.)
 - IO/network calls
 - env/config reading
 
 ## 11) Bulk reads/writes only (no N+1)
-YDB is serverless; quota matters.
+Remote backends are quota/latency sensitive.
 Do not introduce query-per-task loops.
 Prefer:
 - 1 bulk query for tasks

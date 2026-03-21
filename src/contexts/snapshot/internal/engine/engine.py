@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from typing import Any
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.contexts.attachments.contracts import (
     ATTACHMENT_STATUS_DELETED,
     ATTACHMENT_STATUS_PENDING_UPLOAD,
@@ -14,21 +14,19 @@ from src.contexts.attachments.contracts import (
     ATTACHMENT_STATUS_UPLOADED_UNVERIFIED,
     AttachmentMetadataStore,
 )
-from src.services.errors import AppError, UserError
+from src.platform.errors import AppError, UserError
 
+from src.contexts.snapshot.internal.attachment_mutations import SnapshotAttachmentMutationService
 from src.contexts.snapshot.internal.engine.model import AttachmentMeta, ExtraSnapshot, TaskExtra
 from src.contexts.snapshot.internal.engine.prep_builder import PrepBuilder
 from src.contexts.snapshot.internal.engine.query_engine import FrontendV2Query, SnapshotQueryEngine
 from src.contexts.snapshot.internal.engine.update_job import (
-    PeopleSnapshotUpdater,
-    SheetSnapshotHasher,
-    SheetsTaskNormalizer,
     TaskSourceSheetsAdapter,
-    UpdateJob,
     normalize_person_yandex_email,
     normalize_person_lookup_value,
     normalize_person_name,
 )
+from src.contexts.snapshot.internal.runtime_binding import SnapshotRuntimeBinding, build_snapshot_runtime_binding
 
 
 @dataclass(frozen=True)
@@ -68,6 +66,13 @@ class SnapshotEngine:
         self._prep_builder = prep_builder
         self._update_job_factory = update_job_factory
         self._people_update_job_factory = people_update_job_factory
+        self._attachment_mutations = SnapshotAttachmentMutationService(
+            attachment_bucket=self._attachment_bucket,
+            raw_cache=self._raw_cache,
+            prep_cache=self._prep_cache,
+            extra_store=self._extra_store,
+            prep_builder=self._prep_builder,
+        )
 
     def update(self, *, task_source: Any, force: bool = False) -> Any:
         update_job = self._update_job_factory(task_source)
@@ -156,83 +161,10 @@ class SnapshotEngine:
         return self._response_cache_store
 
     def attach_file_metadata(self, *, task_id: str, attachment: AttachmentMeta) -> dict[str, Any]:
-        raw = self._raw_cache.get()
-        if raw is None:
-            raise UserError("Raw snapshot is unavailable.", code="raw_snapshot_unavailable")
-        task_key = str(task_id or "").strip()
-        if not task_key or task_key not in raw.tasks_by_id:
-            raise UserError("Task was not found in current snapshot.", code="task_not_found")
-        metadata_store = self.get_attachment_metadata_store()
-        existing = metadata_store.list_by_task_id(task_key)
-        payload = attachment.to_dict()
-        payload["task_id"] = task_key
-        payload["status"] = ATTACHMENT_STATUS_READY
-        payload["snapshot_visible"] = True
-        ready_attachment = AttachmentMeta.from_dict(payload)
-        extra_snapshot = self._extra_store.get_snapshot()
-        items_by_task_id = dict(extra_snapshot.items_by_task_id)
-        current = items_by_task_id.get(task_key) or TaskExtra(task_id=task_key)
-        attachments = [item for item in list(existing or []) if str(item.attachment_id) != str(ready_attachment.attachment_id)]
-        attachments.append(ready_attachment)
-        attachments.sort(key=lambda item: (str(item.sort_key), item.uploaded_at_utc.isoformat(), item.attachment_id))
-        items_by_task_id[task_key] = TaskExtra(
-            task_id=current.task_id,
-            orphaned=bool(current.orphaned),
-            updated_at_utc=datetime.now(timezone.utc),
-            attachments=attachments,
-            docs=list(current.docs),
-            links=list(current.links),
-            notes=str(current.notes),
-            artifacts=list(current.artifacts),
-        )
-        self._extra_store.put_snapshot(ExtraSnapshot(version=max(int(extra_snapshot.version or 2), 1), updated_at_utc=datetime.now(timezone.utc), items_by_task_id=items_by_task_id))
-        prep_result = self._prep_builder.build(raw)
-        self._prep_cache.put(prep_result.prep)
-        return {
-            "artifact": "attach_task_file",
-            "status": "ok",
-            "task_id": task_key,
-            "attachment_id": str(ready_attachment.attachment_id),
-            "attachments_total": len(attachments),
-            "prep_written": True,
-        }
+        return self._attachment_mutations.attach_file_metadata(task_id=task_id, attachment=attachment)
 
     def delete_attachment(self, *, task_id: str, attachment_id: str) -> dict[str, Any]:
-        raw = self._raw_cache.get()
-        if raw is None:
-            raise UserError("Raw snapshot is unavailable.", code="raw_snapshot_unavailable")
-        task_key = str(task_id or "").strip()
-        if not task_key or task_key not in raw.tasks_by_id:
-            raise UserError("Task was not found in current snapshot.", code="task_not_found")
-        extra_snapshot = self._extra_store.get_snapshot()
-        current = dict(extra_snapshot.items_by_task_id or {}).get(task_key)
-        if current is None:
-            raise UserError("Attachment was not found.", code="attachment_not_found")
-        attachments = [item for item in list(current.attachments or []) if str(item.attachment_id) != str(attachment_id or "").strip()]
-        if len(attachments) == len(list(current.attachments or [])):
-            raise UserError("Attachment was not found.", code="attachment_not_found")
-        items_by_task_id = dict(extra_snapshot.items_by_task_id)
-        items_by_task_id[task_key] = TaskExtra(
-            task_id=current.task_id,
-            orphaned=bool(current.orphaned),
-            updated_at_utc=datetime.now(timezone.utc),
-            attachments=attachments,
-            docs=list(current.docs),
-            links=list(current.links),
-            notes=str(current.notes),
-            artifacts=list(current.artifacts),
-        )
-        self._extra_store.put_snapshot(ExtraSnapshot(version=max(int(extra_snapshot.version or 2), 1), updated_at_utc=datetime.now(timezone.utc), items_by_task_id=items_by_task_id))
-        prep_result = self._prep_builder.build(raw)
-        self._prep_cache.put(prep_result.prep)
-        return {
-            "artifact": "delete_task_attachment",
-            "status": "ok",
-            "task_id": task_key,
-            "attachment_id": str(attachment_id or "").strip(),
-            "attachments_total": len(attachments),
-            "prep_written": True,
-        }
+        return self._attachment_mutations.delete_attachment(task_id=task_id, attachment_id=attachment_id)
 
     def cleanup_stale_attachments(
         self,
@@ -241,166 +173,30 @@ class SnapshotEngine:
         delete_object: Any,
         now_utc: datetime | None = None,
     ) -> dict[str, Any]:
-        now = now_utc or datetime.now(timezone.utc)
-        ttl = max(int(ttl_seconds or 0), 1)
-        stale_before = now.timestamp() - ttl
-        extra_snapshot = self._extra_store.get_snapshot()
-        items_by_task_id = dict(extra_snapshot.items_by_task_id or {})
-        changed = False
-        tasks_touched = 0
-        warnings: list[str] = []
-        counts = {
-            ATTACHMENT_STATUS_PENDING_UPLOAD: 0,
-            ATTACHMENT_STATUS_UPLOADED_UNVERIFIED: 0,
-            ATTACHMENT_STATUS_DELETED: 0,
-        }
-        for task_id, current in list(items_by_task_id.items()):
-            task_key = str(task_id or "").strip()
-            if not task_key:
-                continue
-            current_attachments = list(current.attachments or [])
-            kept_attachments: list[AttachmentMeta] = []
-            task_changed = False
-            for item in current_attachments:
-                attachment_id = str(getattr(item, "attachment_id", "") or "").strip()
-                item_task_id = str(getattr(item, "task_id", "") or "").strip()
-                if not attachment_id or not item_task_id or item_task_id != task_key:
-                    kept_attachments.append(item)
-                    continue
-                status = str(getattr(item, "status", "") or "").strip().lower()
-                if status not in counts:
-                    kept_attachments.append(item)
-                    continue
-                reference_time = self._cleanup_reference_time(item)
-                if reference_time is None or reference_time.timestamp() >= stale_before:
-                    kept_attachments.append(item)
-                    continue
-                storage_key = str(getattr(item, "storage_key", "") or getattr(item, "key", "") or "").strip()
-                if storage_key:
-                    try:
-                        delete_object(key=storage_key)
-                    except AppError as error:
-                        warnings.append(f"{task_key}:{attachment_id}:{error.code}")
-                        kept_attachments.append(item)
-                        continue
-                counts[status] += 1
-                task_changed = True
-                changed = True
-            if not task_changed:
-                continue
-            tasks_touched += 1
-            items_by_task_id[task_key] = TaskExtra(
-                task_id=current.task_id,
-                orphaned=bool(current.orphaned),
-                updated_at_utc=now,
-                attachments=kept_attachments,
-                docs=list(current.docs),
-                links=list(current.links),
-                notes=str(current.notes),
-                artifacts=list(current.artifacts),
-            )
-        prep_written = False
-        if changed:
-            self._extra_store.put_snapshot(
-                ExtraSnapshot(
-                    version=max(int(extra_snapshot.version or 2), 1),
-                    updated_at_utc=now,
-                    items_by_task_id=items_by_task_id,
-                )
-            )
-            raw = self._raw_cache.get()
-            if raw is not None:
-                prep_result = self._prep_builder.build(raw)
-                self._prep_cache.put(prep_result.prep)
-                prep_written = True
-        return {
-            "artifact": "cleanup_task_attachments",
-            "status": "ok",
-            "ttl_seconds": ttl,
-            "pending_removed": counts[ATTACHMENT_STATUS_PENDING_UPLOAD],
-            "uploaded_unverified_removed": counts[ATTACHMENT_STATUS_UPLOADED_UNVERIFIED],
-            "deleted_removed": counts[ATTACHMENT_STATUS_DELETED],
-            "tasks_touched": tasks_touched,
-            "prep_written": prep_written,
-            "warnings": warnings,
-        }
-
-    @staticmethod
-    def _cleanup_reference_time(item: AttachmentMeta) -> datetime | None:
-        status = str(getattr(item, "status", "") or "").strip().lower()
-        if status == ATTACHMENT_STATUS_PENDING_UPLOAD:
-            return getattr(item, "uploaded_at_utc", None)
-        if status == ATTACHMENT_STATUS_UPLOADED_UNVERIFIED:
-            return getattr(item, "verified_at_utc", None) or getattr(item, "uploaded_at_utc", None)
-        if status == ATTACHMENT_STATUS_DELETED:
-            return getattr(item, "deleted_at_utc", None)
-        return None
+        return self._attachment_mutations.cleanup_stale_attachments(
+            ttl_seconds=ttl_seconds,
+            delete_object=delete_object,
+            now_utc=now_utc,
+        )
 
     def get_attachment_metadata_store(self) -> AttachmentMetadataStore:
-        return AttachmentMetadataStore(self._extra_store, bucket=self._attachment_bucket)
+        return self._attachment_mutations.get_attachment_metadata_store()
 
 
-def _resolve_env_prefix(value: str, env_name: str) -> str:
-    token = "{env}"
-    cleaned = str(value or "").strip()
-    if token in cleaned:
-        return cleaned.replace(token, str(env_name or "").strip().lower() or "dev")
-    return cleaned
+def build_snapshot_engine_from_runtime(binding: SnapshotRuntimeBinding) -> SnapshotEngine:
+    return SnapshotEngine(
+        attachment_bucket=binding.attachment_bucket,
+        raw_cache=binding.raw_cache,
+        prep_cache=binding.prep_cache,
+        extra_store=binding.extra_store,
+        people_store=binding.people_store,
+        response_cache_store=binding.response_cache_store,
+        query_engine=binding.query_engine,
+        prep_builder=binding.prep_builder,
+        update_job_factory=binding.update_job_factory,
+        people_update_job_factory=binding.people_update_job_factory,
+    )
 
 
 def build_snapshot_engine(ctx: AppContext) -> SnapshotEngine:
-    from src.contexts.snapshot.internal.engine.stores.s3_store import build_s3_stores
-
-    cfg = ctx.cfg
-    deps = ctx.deps
-    snap_cfg = cfg.runtime.snapshot_engine
-    db_cfg = cfg.db.object_storage
-    endpoint_url = str(db_cfg.get("endpoint_url_default", "")).strip()
-    env_name = str(cfg.runtime.runtime.env_default).strip().lower() or "dev"
-    raw_cache, prep_cache, extra_store, people_store, response_cache_store = build_s3_stores(
-        bucket=str(snap_cfg.bucket).strip(),
-        endpoint_url=endpoint_url,
-        aws_access_key_id=deps.get("aws_access_key_id"),
-        aws_secret_access_key=deps.get("aws_secret_access_key"),
-        raw_key=_resolve_env_prefix(str(snap_cfg.prefix_raw), env_name),
-        prep_key=_resolve_env_prefix(str(snap_cfg.prefix_prep), env_name),
-        extra_prefix=_resolve_env_prefix(str(snap_cfg.prefix_extra), env_name),
-        people_key=_resolve_env_prefix(str(snap_cfg.prefix_people), env_name),
-        response_prefix=_resolve_env_prefix(str(snap_cfg.prefix_responses), env_name),
-    )
-    prep_builder = PrepBuilder(extra_store)
-    query_engine = SnapshotQueryEngine(
-        env_name=cfg.runtime.runtime.env_default,
-        source_sheet_name=str(cfg.tables.google_sheets.get("source_sheet_name_default", "")),
-    )
-
-    def _update_job_factory(task_source: Any) -> UpdateJob:
-        return UpdateJob(
-            source=TaskSourceSheetsAdapter(task_source),
-            hasher=SheetSnapshotHasher(),
-            normalizer=SheetsTaskNormalizer(),
-            raw_cache=raw_cache,
-            prep_cache=prep_cache,
-            prep_builder=prep_builder,
-        )
-
-    def _people_update_job_factory(_task_source: Any) -> PeopleSnapshotUpdater:
-        people_field_map = dict(cfg.tables.field_maps.get("people", {}))
-        return PeopleSnapshotUpdater(
-            people_store=people_store,
-            source_id=f"sheet:{cfg.tables.google_sheets.get('source_sheet_name_default', '')}:people:A1:Z200",
-            people_field_map=people_field_map,
-        )
-
-    return SnapshotEngine(
-        attachment_bucket=str(snap_cfg.bucket).strip(),
-        raw_cache=raw_cache,
-        prep_cache=prep_cache,
-        extra_store=extra_store,
-        people_store=people_store,
-        response_cache_store=response_cache_store,
-        query_engine=query_engine,
-        prep_builder=prep_builder,
-        update_job_factory=_update_job_factory,
-        people_update_job_factory=_people_update_job_factory,
-    )
+    return build_snapshot_engine_from_runtime(build_snapshot_runtime_binding(ctx))

@@ -3,21 +3,21 @@ from __future__ import annotations
 from datetime import timezone
 from time import perf_counter
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.contexts.rendering.internal.target_guard import RenderTarget, validate_render_target
 from src.contexts.rendering.public import (
     get_designers_usecase,
     get_render_job,
     get_request,
-    get_snapshot_read_capability as _get_rendering_snapshot_read_capability,
+    get_snapshot_read_api as _get_rendering_snapshot_read_api,
     get_timeline_usecase,
     get_window,
     get_writer,
 )
-from src.observability.batching import MetricsBatchCollector, add_flush_metrics
+from src.platform.observability.batching import MetricsBatchCollector, add_flush_metrics
 
 
-get_snapshot_capability = _get_rendering_snapshot_read_capability
+get_snapshot_read_api = _get_rendering_snapshot_read_api
 
 
 class RenderTimelineJob:
@@ -28,13 +28,13 @@ class RenderTimelineJob:
         metrics = self._ctx.deps.get("metrics_client")
         logger = self._ctx.deps.get("structured_logger")
         collector = MetricsBatchCollector(metrics)
-        from utils.service import GoogleSheetInfo, GoogleSheetsService
+        from src.platform.integrations.google_sheets.service import GoogleSheetInfo, GoogleSheetsService
 
         started_at = self._ctx.clock()
         wall_clock_started = perf_counter()
-        snapshot_engine = get_snapshot_capability(self._ctx)
+        snapshot_read = get_snapshot_read_api(self._ctx)
         usecase = get_timeline_usecase(
-            snapshot_engine,
+            snapshot_read,
             timezone_name=str(self._ctx.cfg.runtime.runtime.timezone or "Europe/Moscow"),
         )
         sheet_info = GoogleSheetInfo(**dict(self._ctx.deps.get("sheet_info", {})))
@@ -160,12 +160,12 @@ class RenderDesignersJob:
         metrics = self._ctx.deps.get("metrics_client")
         logger = self._ctx.deps.get("structured_logger")
         collector = MetricsBatchCollector(metrics)
-        from utils.service import GoogleSheetInfo, GoogleSheetsService
+        from src.platform.integrations.google_sheets.service import GoogleSheetInfo, GoogleSheetsService
 
         wall_clock_started = perf_counter()
-        snapshot_engine = get_snapshot_capability(self._ctx)
+        snapshot_read = get_snapshot_read_api(self._ctx)
         usecase = get_designers_usecase(
-            snapshot_engine,
+            snapshot_read,
             timezone_name=str(self._ctx.cfg.runtime.runtime.timezone or "Europe/Moscow"),
         )
         sheet_info = GoogleSheetInfo(**dict(self._ctx.deps.get("sheet_info", {})))

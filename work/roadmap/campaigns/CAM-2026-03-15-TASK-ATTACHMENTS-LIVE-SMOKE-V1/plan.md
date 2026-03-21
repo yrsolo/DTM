@@ -5,12 +5,12 @@ Verify the full task-attachment lifecycle on live contours:
 - `request-upload`
 - direct upload to Object Storage
 - `finalize`
-- publication into `frontend_v2`
+- publication into the primary task-list browser payload
 - `view` / `download`
 - `delete`
 
 ## Steps
-1. Pick one live task id per contour using current `frontend_v2`.
+1. Pick one live task id per contour using the current primary browser task-list payload.
 2. Run canonical smoke on `test`.
 3. If `test` passes, run the same smoke on `prod`.
 4. Record evidence, caveats, and exact routes/status codes.
@@ -20,9 +20,9 @@ Verify the full task-attachment lifecycle on live contours:
 - `request-upload` returns a valid upload contract
 - direct PUT succeeds
 - `finalize` returns `202 accepted`
-- attachment appears in trusted/full `frontend_v2`
+- attachment appears in the trusted/full primary task-list payload
 - `view` and `download` return redirect/presigned read URLs
-- masked `frontend_v2` keeps attachments hidden
+- masked browser payload keeps attachments hidden
 - `delete` removes the attachment from published payload
 
 ## Notes

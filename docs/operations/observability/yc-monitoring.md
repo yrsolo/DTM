@@ -28,7 +28,7 @@ No service, job, or shell is allowed to branch on monitoring backend directly.
 
 YC API auth is centralized in:
 
-- `src/infra/yc_iam.py`
+- `src/platform/integrations/yandex_cloud/iam.py`
 
 Current pattern:
 

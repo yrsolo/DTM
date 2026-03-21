@@ -16,8 +16,8 @@ Use Grafana as the primary human-facing operational dashboard over a Prometheus-
 The repo stores:
 
 - Grafana metadata in typed config
-- dashboard specification in `src/infra/grafana_specs.py`
-- optional Grafana API helpers in `src/infra/grafana_api.py`
+- dashboard specification in `src/platform/integrations/grafana/specs.py`
+- optional Grafana API helpers in `src/platform/integrations/grafana/api.py`
 - dashboard JSON export script in `scripts/render_grafana_dashboard.py`
 
 The repo is the source of truth for:
@@ -155,7 +155,7 @@ What is already done:
 - folder creation works
 - dashboard import from repo spec works
 - externally shared/public dashboard is created by API
-- dashboard layout is republished from `src/infra/grafana_specs.py`, not hand-edited in Grafana
+- dashboard layout is republished from `src/platform/integrations/grafana/specs.py`, not hand-edited in Grafana
 - current public dashboard includes compact stat cards and separate info/flush panels
 - current repo dashboard spec also includes direct `/api` outer breakdown and outer-vs-inner comparison panels for latency decomposition work
 

@@ -75,12 +75,12 @@ Target formula:
 Canonical active areas:
 - `src/contexts/*`
 - `src/platform/*`
-- `src/entrypoint/*`
+- `src/entrypoints/root/*`
 - `src/contexts/snapshot/internal/engine/*`
 - `src/entrypoints/http/*`
-- `src/worker/*`
-- `src/commands/*`
-- `src/observability/*`
+- `src/platform/runtime/worker/*`
+- `src/platform/runtime/commands/*`
+- `src/platform/observability/*`
 
 Supporting areas:
 - `src/entrypoints/runtime/planner_runtime_entry.py`

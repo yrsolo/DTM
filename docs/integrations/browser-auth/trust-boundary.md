@@ -33,7 +33,7 @@ Headers currently read by backend after trusted-ingress validation:
 
 The current implementation is code-backed in:
 - `src/entrypoints/http/access_context.py`
-- `src/app/bootstrap.py`
+- `src/platform/bootstrap.py`
 
 ## Required implementation behavior
 

@@ -1,44 +1,29 @@
 # Campaign Status Registry
 
-Single source of truth for campaign lifecycle state.
-
-## In Progress
-- none
+Single source of truth for current campaign lifecycle state.
 
 ## Blocked
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
-## Done
-- CAM-2026-03-21-FINAL-AESTHETIC-CLOSEOUT-V1 completed after removing the thin runtime app-context alias boundary, renaming the last `_build_*` helper seams, and closing the beauty backlog as complete rather than still mid-polish.
-- CAM-2026-03-21-SHOWCASE-POLISH-V1 completed after aligning root and top-level docs with the active canon, adding a clean first-hop reading path, and removing stale top-level architecture pointers.
-- CAM-2026-03-21-MODULE-POLISH-V1 completed after renaming the loudest assembly-first active module methods to role-true names and removing the dead broad snapshot-engine alias from the active public surface.
-- CAM-2026-03-21-ACTIVE-HISTORY-SEPARATION-V1 completed after pushing historical/runtime predecessor references behind compact opt-in pointers in active runtime docs.
-- CAM-2026-03-21-BOOTSTRAP-READABILITY-V1 completed after removing mutable bootstrap seams from `index.py`, switching dependent tests to explicit runtime getters, and leaving `src/platform/bootstrap.py` as neutral lazy runtime glue.
-- CAM-2026-03-21-DOCS-VOICE-UNIFICATION-V1 completed after removing the most visible future-facing and transitional wording from active docs so they read like current-system documentation.
-- CAM-2026-03-21-ACTIVE-NAMING-CLEANUP-V1 completed after rewriting active module docstrings in present-tense ownership language and renaming access-api query aliases away from broad snapshot-engine wording.
-- CAM-2026-03-21-TOP-PATH-ELEGANCE-V1 completed after removing the eager top-path context lookup from `index.py`, keeping `src/entrypoint/handler.py` as the single top router, and aligning the closest top-path docs and tests.
-- CAM-2026-03-21-REPO-BEAUTY-AUDIT-V1 completed after publishing the beauty assessment, the sequential backlog, and the smell-driven beauty-wave method used to execute the next curation steps.
-- Pre-audit idealization wave completed as a safe polish pass over the active contour: docs, capability naming, and readability guardrails were aligned before external review.
-- `CAM-2026-03-20-MODULE-FIRST-RECOVERY-V1` completed after replacing the active canon with module-first recovery, finishing the delta-audit-driven cleanup, moving snapshot internals under the snapshot context, removing `src/jobs/*`, and aligning active tests with module ownership under `tests/contexts/*`.
-- `CAM-2026-03-20-ARCHITECTURE-RECOVERY-V1` completed after replacing the old architecture canon, removing the competing technical roots, and leaving `entrypoint -> platform/runtime -> owning context` as the active code map.
-- `CAM-2026-03-19-MODULARITY-AUDIT-V1` completed after recording a code-verified module autonomy audit and decoupling plan.
-- `CAM-2026-03-19-TEST-ROLLOUT-UNBLOCK-V1` completed after aligning the deploy guard with the active entrypoint contour and successfully rolling `dev` into `test`.
-- `CAM-2026-03-19-MODULAR-MONOLITH-REFORM-V1` completed as the previous architecture wave and now serves as historical precedent rather than the current canon.
-- `CAM-2026-03-16-DOCS-IA-REFRESH-V1` completed and archived after the docs information architecture refresh and link normalization wave.
-- `CAM-2026-03-16-DOC-PREVIEW-CONVERTER-V1` completed and archived after the legacy `.doc` preview split-flow and converter integration.
-- Recent completed campaigns were archived under `work/archive/campaigns/`.
-- Latest archived closeouts include the 2026-03-12 execution wave, 2026-03-14 attachment/people/audit waves, and the completed attachment cleanup wave.
+## In Progress
+- none
 
 ## Planned
 - none
 
-## Parked
-- CAM-2026-03-09-RUNTIME-DEPLANNERIZE-V1 (obsolete / already substantially delivered)
+## Recent Done
+- CAM-2026-03-21-REPO-SURFACE-FINALIZATION-V1 completed after renaming the owner-input shelf, redistributing the remaining umbrella API tests into role-true homes, moving payload snapshots into `tests/fixtures/`, rewriting the root README in Russian, and shrinking active `work/` tracking to current-state summaries.
+- CAM-2026-03-21-DATABASE-CONTOUR-REMOVAL-V1 completed after deleting the disconnected retired-database contour and clearing the last obsolete database-migration wording from active code, docs, config, and workflows.
+- CAM-2026-03-21-TESTS-ROOT-REALIGNMENT-V1 completed after rehoming the last `tests/services` files into role-true homes.
+- CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1 completed after reducing the active `src` contour to `config / contexts / core / entrypoints / platform`.
+- CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1 completed after removing the last engine-centered active path from `snapshot`.
+- CAM-2026-03-21-ACCESS-API-PRIMARY-READ-OWNER-V1 completed after making `access_api` the clear owner of the primary browser read surface.
+- CAM-2026-03-21-REPO-BEAUTY-AUDIT-V1 completed after publishing the beauty audit and the curation method used for the later cleanup waves.
 
 ## Archived
-- Completed campaigns were moved to `work/archive/campaigns/`.
-- `agent/intructions/DTM-test/**` is treated as owner-provided reference input only.
+- Completed campaigns live in `archive/work/campaigns/`.
+- `agent/owner_inputs/**` is owner-provided reference input only and must not be used as execution tracking.
 
 ## Rule
-- Update this file first when campaign state changes.
-- Keep `work/roadmap/backlog.md` aligned with the same state buckets.
+- Keep this file aligned with `work/now/tasks.md` and `work/roadmap/backlog.md`.
+- Historical closeout detail belongs in `archive/work/campaigns/`, not in this active registry.

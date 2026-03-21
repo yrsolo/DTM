@@ -1,17 +1,17 @@
-"""Platform-owned helpers for queue runtime bootstrap."""
+﻿"""Platform-owned helpers for queue runtime bootstrap."""
 
 from __future__ import annotations
 
-from src.commands.yandex_mq import YandexMessageQueueProducer
+from src.platform.runtime.commands.yandex_mq import YandexMessageQueueProducer
 from src.contexts.attachments.public import get_command_handlers as get_attachment_command_handlers
 from src.contexts.reminders.public import get_command_handlers as get_reminder_command_handlers
 from src.contexts.rendering.public import get_command_handlers as get_rendering_command_handlers
 from src.contexts.snapshot.public import get_command_handlers as get_snapshot_command_handlers
 from src.contexts.telegram_interaction.public import get_command_handlers as get_telegram_command_handlers
 from src.platform.runtime.command_runtime import CommandRuntime
-from src.worker.dispatcher import CommandDispatcher
-from src.worker.status_store import S3JobStatusStore
-from src.worker.worker import Worker
+from src.platform.runtime.worker.dispatcher import CommandDispatcher
+from src.platform.runtime.worker.status_store import S3JobStatusStore
+from src.platform.runtime.worker.worker import Worker
 
 
 def _resolve_env_prefix(value: str, env_name: str) -> str:
@@ -85,3 +85,4 @@ def build_queue_runtime(ctx, deps: dict) -> dict:
         "command_dispatcher": dispatcher,
         "command_worker": worker,
     }
+

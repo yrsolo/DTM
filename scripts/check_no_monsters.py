@@ -12,7 +12,7 @@ TEXT_RULES = [
     ("HttpRouterContext", [ROOT / "index.py", ROOT / "src" / "entrypoints" / "http"]),
     ("GroupQueryHandlerContext", [ROOT / "index.py", ROOT / "src" / "entrypoints" / "http"]),
     ("RuntimeExecutionContext", [ROOT / "index.py", ROOT / "src" / "entrypoints" / "http"]),
-    ("SyncReadmodelPipelineContext", [ROOT / "src" / "services", ROOT / "src" / "entrypoints"]),
+    ("SyncReadmodelPipelineContext", [ROOT / "src" / "platform", ROOT / "src" / "entrypoints"]),
 ]
 
 LAMBDA_SCOPE = [

@@ -1,8 +1,8 @@
-"""Public facade for the rendering context."""
+﻿"""Public facade for the rendering context."""
 
 from __future__ import annotations
 
-from src.commands.types import RENDER_DESIGNERS_SHEET, RENDER_TIMELINE_SHEET
+from src.platform.runtime.commands.types import RENDER_DESIGNERS_SHEET, RENDER_TIMELINE_SHEET
 
 from .module import get_module
 
@@ -13,8 +13,8 @@ def get_public_api():
     return get_module()
 
 
-def get_snapshot_read_capability(ctx):
-    return get_module().snapshot_read_capability(ctx)
+def get_snapshot_read_api(ctx):
+    return get_module().snapshot_read_api(ctx)
 
 
 def get_timeline_usecase(snapshot_read, *, timezone_name: str):
@@ -64,3 +64,4 @@ def get_command_handlers(ctx) -> dict[str, object]:
         RENDER_TIMELINE_SHEET: get_render_timeline_job(ctx),
         RENDER_DESIGNERS_SHEET: get_render_designers_job(ctx),
     }
+

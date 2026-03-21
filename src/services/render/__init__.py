@@ -1,2 +1,0 @@
-"""Render service modules."""
-

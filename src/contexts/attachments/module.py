@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from src.app.context import AppContext
-from src.contexts.snapshot.public import get_attachment_capability
-from src.infra.doc_preview_converter import DocPreviewConverter
+from src.platform.context import AppContext
+from src.contexts.snapshot.module import get_attachment_api
+from src.contexts.attachments.internal.doc_preview_converter import DocPreviewConverter
 
 from .internal import AttachmentFinalizeService, AttachmentReadResolver, build_attachment_storage
 
@@ -18,11 +18,16 @@ class AttachmentsModule:
     ctx: AppContext
     name: str = "attachments"
 
-    def snapshot_capability(self):
-        return get_attachment_capability(self.ctx)
+    def snapshot_api(self):
+        return get_attachment_api(self.ctx)
+
+    def command_flow(self):
+        from .application.command_flow import AttachmentCommandFlow
+
+        return AttachmentCommandFlow(self.ctx)
 
     def metadata_store(self):
-        return self.snapshot_capability().get_attachment_metadata_store()
+        return self.snapshot_api().get_attachment_metadata_store()
 
     def storage(self):
         return build_attachment_storage(self.ctx)

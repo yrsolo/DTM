@@ -10,9 +10,6 @@ __pycache__/
 /agent/__pycache__/
 /config/__pycache__/
 /data/__pycache__/
-/core/__pycache__/
-/utils/__pycache__/
-/web_prototype/__pycache__/
 /notebooks/
 /.idea/
 /venv/
@@ -21,6 +18,6 @@ __pycache__/
 /.ruff_cache/
 /.ipynb_checkpoints/
 /key/*.json
-/artifacts/*
-!/artifacts/.gitkeep
+/work/artifacts/*
+!/work/artifacts/README.md
 /agent/tmp_run_logs/

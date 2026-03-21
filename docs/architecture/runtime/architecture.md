@@ -1,4 +1,4 @@
-# Architecture (Current)
+﻿# Architecture (Current)
 
 ## Purpose
 
@@ -83,7 +83,7 @@ Flow:
 - `index.py` remains thin and import-safe
 - `src/entrypoints/**` owns transport parsing/translation only
 - `src/contexts/snapshot/internal/engine/*` owns read-side build/query/storage logic
-- context-owned jobs and `src/worker/*` own mutation execution
+- context-owned jobs and `src/platform/runtime/worker/*` own mutation execution
 - browser access policy stays at the HTTP boundary, not inside query internals
 - render/notify/group-query consume prepared snapshot data instead of inventing parallel read contours
 
@@ -107,7 +107,7 @@ The current architecture story does not treat the following as canonical runtime
 - legacy database/readmodel source paths
 - historical migration/cutover plans
 
-If historical detail is needed, use `docs/archive/*`.
+If historical detail is needed, use `archive/docs/*`.
 
 ## People registry distinction
 - `/api/v2/people` is a secret-only internal auth-support route over the canonical people snapshot.
@@ -115,3 +115,4 @@ If historical detail is needed, use `docs/archive/*`.
 - people snapshot is the canonical registry for reminder/auth lookup and internal reads.
 - people registry explicitly separates `contactEmail` from `yandexEmail` so auth/account identity is not mixed with human-contact data.
 - the HTTP API exposes a clean projection of that registry, not the raw mapped row payload.
+

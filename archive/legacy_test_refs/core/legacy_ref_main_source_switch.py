@@ -1,11 +1,11 @@
-"""Tests for archived runtime source switching to store-backed repository."""
+﻿"""Tests for archived runtime source switching to store-backed repository."""
 
 from __future__ import annotations
 
 import unittest
 from types import SimpleNamespace
 
-from src.archive.legacy_runtime.entrypoints.jobs.source_switch_job import SourceSwitchRequest, apply_task_source_switches
+from archive.code.legacy_runtime.entrypoints.jobs.source_switch_job import SourceSwitchRequest, apply_task_source_switches
 
 
 class MainSourceSwitchTestCase(unittest.TestCase):
@@ -46,3 +46,4 @@ class MainSourceSwitchTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

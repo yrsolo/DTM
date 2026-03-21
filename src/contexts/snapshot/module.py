@@ -3,150 +3,51 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
-
-from src.contexts.snapshot.internal.engine import build_snapshot_engine
-
-
-@dataclass(slots=True)
-class SnapshotReadCapability:
-    """Narrow read capability exposed to external contexts."""
-
-    _module: "SnapshotModule"
-    _ctx: Any
-    _engine: Any | None = None
-
-    def _bound_engine(self):
-        if self._engine is None:
-            self._engine = self._module.engine(self._ctx)
-        return self._engine
-
-    def get_prep_snapshot(self):
-        return self._bound_engine().get_prep_snapshot()
-
-    def get_people_snapshot(self):
-        return self._bound_engine().get_people_snapshot()
-
-
-@dataclass(slots=True)
-class SnapshotQueryCapability:
-    """Read/query capability for HTTP and access-facing consumers."""
-
-    _module: "SnapshotModule"
-    _ctx: Any
-    _engine: Any | None = None
-
-    def _bound_engine(self):
-        if self._engine is None:
-            self._engine = self._module.engine(self._ctx)
-        return self._engine
-
-    def get_prep_snapshot(self):
-        return self._bound_engine().get_prep_snapshot()
-
-    def get_raw_snapshot(self):
-        return self._bound_engine().get_raw_snapshot()
-
-    def get_people_snapshot(self):
-        return self._bound_engine().get_people_snapshot()
-
-    def get_response_cache_store(self):
-        return self._bound_engine().get_response_cache_store()
-
-    def frontend_v2(self, query):
-        return self._bound_engine().frontend_v2(query)
-
-
-@dataclass(slots=True)
-class SnapshotAttachmentCapability:
-    """Attachment-specific mutation capability exposed to external contexts."""
-
-    _module: "SnapshotModule"
-    _ctx: Any
-    _engine: Any | None = None
-
-    def _bound_engine(self):
-        if self._engine is None:
-            self._engine = self._module.engine(self._ctx)
-        return self._engine
-
-    def get_attachment_metadata_store(self):
-        return self._bound_engine().get_attachment_metadata_store()
-
-    def get_prep_snapshot(self):
-        return self._bound_engine().get_prep_snapshot()
-
-    def attach_file_metadata(self, *, task_id: str, attachment):
-        return self._bound_engine().attach_file_metadata(task_id=task_id, attachment=attachment)
-
-    def delete_attachment(self, *, task_id: str, attachment_id: str):
-        return self._bound_engine().delete_attachment(task_id=task_id, attachment_id=attachment_id)
-
-    def cleanup_stale_attachments(self, *, ttl_seconds: int, delete_object):
-        return self._bound_engine().cleanup_stale_attachments(
-            ttl_seconds=ttl_seconds,
-            delete_object=delete_object,
-        )
-
-    def get_response_cache_store(self):
-        return self._bound_engine().get_response_cache_store()
-
-
-@dataclass(slots=True)
-class SnapshotUpdateCapability:
-    """Snapshot update capability exposed to runtime orchestration."""
-
-    _module: "SnapshotModule"
-    _ctx: Any
-    _engine: Any | None = None
-
-    def _bound_engine(self):
-        if self._engine is None:
-            self._engine = self._module.engine(self._ctx)
-        return self._engine
-
-    def update(self, *, task_source: Any, force: bool = False):
-        return self._bound_engine().update(task_source=task_source, force=force)
+from .application.capabilities import (
+    SnapshotAttachmentApi,
+    SnapshotQueryApi,
+    SnapshotReadApi,
+    SnapshotUpdateApi,
+)
+from .internal.runtime_binding import build_snapshot_runtime_binding
 
 
 @dataclass(frozen=True, slots=True)
 class SnapshotModule:
-    """Own the snapshot read-model surface and exported capabilities."""
+    """Own the snapshot read-model surface and exported application APIs."""
 
     name: str = "snapshot"
 
-    def engine(self, ctx):
-        return build_snapshot_engine(ctx)
+    def read_api(self, ctx) -> SnapshotReadApi:
+        return SnapshotReadApi(build_snapshot_runtime_binding(ctx))
 
-    def read_capability(self, ctx) -> SnapshotReadCapability:
-        return SnapshotReadCapability(self, ctx)
+    def attachment_api(self, ctx) -> SnapshotAttachmentApi:
+        return SnapshotAttachmentApi(build_snapshot_runtime_binding(ctx))
 
-    def attachment_capability(self, ctx) -> SnapshotAttachmentCapability:
-        return SnapshotAttachmentCapability(self, ctx)
+    def query_api(self, ctx) -> SnapshotQueryApi:
+        return SnapshotQueryApi(build_snapshot_runtime_binding(ctx))
 
-    def query_capability(self, ctx) -> SnapshotQueryCapability:
-        return SnapshotQueryCapability(self, ctx)
-
-    def update_capability(self, ctx) -> SnapshotUpdateCapability:
-        return SnapshotUpdateCapability(self, ctx)
-
-    def get_prep_snapshot(self, ctx):
-        return self.engine(ctx).get_prep_snapshot()
-
-    def get_raw_snapshot(self, ctx):
-        return self.engine(ctx).get_raw_snapshot()
-
-    def get_people_snapshot(self, ctx):
-        return self.engine(ctx).get_people_snapshot()
-
-    def get_response_cache_store(self, ctx):
-        return self.engine(ctx).get_response_cache_store()
-
-    def query_frontend_v2(self, ctx, query):
-        return self.engine(ctx).frontend_v2(query)
+    def update_api(self, ctx) -> SnapshotUpdateApi:
+        return SnapshotUpdateApi(build_snapshot_runtime_binding(ctx))
 
 
 def get_module() -> SnapshotModule:
     """Return the canonical module surface for the snapshot context."""
 
     return SnapshotModule()
+
+
+def get_read_api(ctx) -> SnapshotReadApi:
+    return get_module().read_api(ctx)
+
+
+def get_attachment_api(ctx) -> SnapshotAttachmentApi:
+    return get_module().attachment_api(ctx)
+
+
+def get_query_api(ctx) -> SnapshotQueryApi:
+    return get_module().query_api(ctx)
+
+
+def get_update_api(ctx) -> SnapshotUpdateApi:
+    return get_module().update_api(ctx)

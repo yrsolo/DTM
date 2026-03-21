@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.entrypoints.http.runtime_execution import RuntimeExecutionRequest, RuntimeExecutor
 from src.entrypoints.runtime.planner_runtime_entry import PlannerRuntimeRequest, run_planner_runtime
 

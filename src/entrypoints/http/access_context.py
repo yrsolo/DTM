@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from hmac import compare_digest
 
-from src.app.context import AppContext
+from src.platform.context import AppContext
 from src.entrypoints.http.dto import HttpRequest
 
 

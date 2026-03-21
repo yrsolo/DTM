@@ -2,13 +2,7 @@
 
 from __future__ import annotations
 
-from src.commands.types import (
-    ATTACH_TASK_FILE,
-    CLEANUP_TASK_ATTACHMENTS,
-    DELETE_TASK_ATTACHMENT,
-    GENERATE_ATTACHMENT_PREVIEW,
-)
-from src.app.context import AppContext
+from src.platform.context import AppContext
 
 from .internal.contracts import SUPPORTED_ATTACHMENT_MIME_TYPES
 
@@ -57,50 +51,19 @@ def get_supported_attachment_mime_types() -> frozenset[str]:
     return SUPPORTED_ATTACHMENT_MIME_TYPES
 
 
-def get_attachment_snapshot_capability(ctx: AppContext):
-    """Return the attachment-scoped snapshot capability."""
+def get_attachment_snapshot_api(ctx: AppContext):
+    """Return the attachment-scoped snapshot API."""
 
-    return get_public_api(ctx).snapshot_capability()
-
-
-def get_attach_task_file_job(ctx: AppContext):
-    """Return the owning attachment job runner for attach-file mutations."""
-
-    from .internal.job_runners import AttachTaskFileJob
-
-    return AttachTaskFileJob(ctx)
+    return get_public_api(ctx).snapshot_api()
 
 
-def get_delete_task_attachment_job(ctx: AppContext):
-    """Return the owning attachment job runner for delete mutations."""
+def get_attachment_command_flow(ctx: AppContext):
+    """Return the module-owned attachment command flow."""
 
-    from .internal.job_runners import DeleteTaskAttachmentJob
-
-    return DeleteTaskAttachmentJob(ctx)
-
-
-def get_cleanup_task_attachments_job(ctx: AppContext):
-    """Return the owning attachment job runner for cleanup mutations."""
-
-    from .internal.job_runners import CleanupTaskAttachmentsJob
-
-    return CleanupTaskAttachmentsJob(ctx)
-
-
-def get_generate_attachment_preview_job(ctx: AppContext):
-    """Return the owning attachment job runner for preview generation."""
-
-    from .internal.preview_job import GenerateAttachmentPreviewJob
-
-    return GenerateAttachmentPreviewJob(ctx)
+    return get_public_api(ctx).command_flow()
 
 
 def get_command_handlers(ctx: AppContext) -> dict[str, object]:
     """Return the attachment-owned queue command handlers."""
 
-    return {
-        ATTACH_TASK_FILE: get_attach_task_file_job(ctx),
-        DELETE_TASK_ATTACHMENT: get_delete_task_attachment_job(ctx),
-        CLEANUP_TASK_ATTACHMENTS: get_cleanup_task_attachments_job(ctx),
-        GENERATE_ATTACHMENT_PREVIEW: get_generate_attachment_preview_job(ctx),
-    }
+    return get_attachment_command_flow(ctx).command_handlers()

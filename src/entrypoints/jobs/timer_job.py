@@ -3,15 +3,53 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Protocol
 
-from src.app.context import AppContext
-from src.services.usecases.contracts import (
-    BuildReadmodelUseCase,
-    NotifyUseCase,
-    RenderUseCase,
-    SyncUseCase,
-)
+from src.platform.context import AppContext
+
+
+@dataclass(slots=True)
+class SyncResult:
+    success: bool
+    changed: bool
+    message: str = ""
+
+
+@dataclass(slots=True)
+class BuildResult:
+    success: bool
+    built: bool
+    message: str = ""
+
+
+@dataclass(slots=True)
+class RenderResult:
+    success: bool
+    rendered: bool
+    message: str = ""
+
+
+@dataclass(slots=True)
+class NotifyResult:
+    success: bool
+    sent: bool
+    message: str = ""
+
+
+class SyncUseCase(Protocol):
+    def run(self, ctx: AppContext) -> SyncResult: ...
+
+
+class BuildReadmodelUseCase(Protocol):
+    def run(self, ctx: AppContext) -> BuildResult: ...
+
+
+class RenderUseCase(Protocol):
+    def run(self, ctx: AppContext) -> RenderResult: ...
+
+
+class NotifyUseCase(Protocol):
+    def run(self, ctx: AppContext) -> NotifyResult: ...
 
 
 @dataclass(slots=True)
@@ -48,4 +86,3 @@ class TimerJob:
             notify_result = self.notify.run(ctx)
             report["steps"].append({"step": "notify", "success": bool(notify_result.success)})
         return report
-

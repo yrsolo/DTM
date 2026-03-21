@@ -2,19 +2,22 @@ from __future__ import annotations
 
 from time import perf_counter
 
-from src.app.context import AppContext
-from src.contexts.snapshot.public import get_update_capability as _get_snapshot_update_capability
-from src.observability import timed
-from src.observability.batching import (
+from src.platform.context import AppContext
+from src.contexts.snapshot.application.capabilities import SnapshotUpdateApi
+from src.platform.observability import timed
+from src.platform.observability.batching import (
     MetricsBatchCollector,
     add_flush_metrics,
     is_detailed_metrics_enabled,
 )
-from src.observability.buffered_metrics import managed_metrics_scope
-from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
+from src.platform.observability.buffered_metrics import managed_metrics_scope
+from src.contexts.snapshot.adapters.sources.sheets_normalized_source import (
+    build_sheets_normalized_task_source,
+)
 
 
-get_snapshot_capability = _get_snapshot_update_capability
+def get_snapshot_update_api(ctx):
+    return SnapshotUpdateApi(ctx)
 
 
 class UpdateSnapshotJob:
@@ -40,7 +43,7 @@ class UpdateSnapshotJob:
                 "dtm.snapshot.update_duration_ms",
                 {"env": env_name, "module": "snapshot", "operation": "update", "result": "finished"},
             ):
-                result = get_snapshot_capability(self._ctx).update(
+                result = get_snapshot_update_api(self._ctx).update(
                     task_source=task_source,
                     force=bool(cmd.payload.get("force_refresh", False)),
                 )
@@ -106,4 +109,4 @@ class UpdateSnapshotJob:
         }
 
 
-__all__ = ["UpdateSnapshotJob", "get_snapshot_capability"]
+__all__ = ["UpdateSnapshotJob", "get_snapshot_update_api"]

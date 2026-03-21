@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Iterable
 
-from src.app.timezone_utils import format_sheet_timestamp, now_in_timezone, today_in_timezone
+from src.core.timezone_utils import format_sheet_timestamp, now_in_timezone, today_in_timezone
 from src.contexts.snapshot.contracts import TaskView
-from utils.func import GetColor, RGBColor
+from src.contexts.rendering.internal.colors import GetColor, RGBColor
 
 from .model import RenderBorder, RenderCell, RenderPlan, RenderRequest
 
