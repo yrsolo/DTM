@@ -11,7 +11,9 @@ from src.observability.batching import (
     is_detailed_metrics_enabled,
 )
 from src.observability.buffered_metrics import managed_metrics_scope
-from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
+from src.contexts.snapshot.adapters.sources.sheets_normalized_source import (
+    build_sheets_normalized_task_source,
+)
 
 
 def get_snapshot_update_api(ctx):

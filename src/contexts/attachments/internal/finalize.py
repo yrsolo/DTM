@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from src.services.errors import UserError
+from src.platform.errors import UserError
 
 from .policy import canonicalize_attachment_mime
 

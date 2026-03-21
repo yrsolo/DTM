@@ -14,7 +14,7 @@ from src.contexts.attachments.contracts import (
     AttachmentMetadataStore,
 )
 from src.contexts.snapshot.internal.engine.model import AttachmentMeta, ExtraSnapshot, TaskExtra
-from src.services.errors import AppError, UserError
+from src.platform.errors import AppError, UserError
 
 
 @dataclass(slots=True)

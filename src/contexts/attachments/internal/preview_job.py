@@ -10,7 +10,7 @@ from src.contexts.attachments.public import (
     get_doc_preview_converter,
 )
 from src.platform.runtime.frontend_cache_invalidation import invalidate_default_frontend_cache_store
-from src.services.errors import AppError, TransientError, UserError
+from src.platform.errors import AppError, TransientError, UserError
 
 get_snapshot_attachment_api = get_attachment_snapshot_api
 get_attachment_storage_capability = get_attachment_storage

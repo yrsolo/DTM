@@ -6,7 +6,7 @@ from typing import Any
 from src.commands.serializer import command_from_json
 from src.observability.batching import MetricsBatchCollector, add_flush_metrics
 from src.observability.buffered_metrics import managed_metrics_scope
-from src.services.errors import PermanentError, TransientError, UserError
+from src.platform.errors import PermanentError, TransientError, UserError
 
 from .model import JobResult
 

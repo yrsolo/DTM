@@ -1,4 +1,4 @@
-"""Google Sheets backed task source without planner coupling."""
+"""Snapshot-owned Google Sheets task source."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping
 
 from src.adapters.google_sheets.task_repository import GoogleSheetsTaskRepository
-from src.services.sources.sheets_task_rows import (
+from src.contexts.snapshot.adapters.sources.sheets_task_rows import (
     build_row_mappings,
     build_tasks_from_rows,
     validate_required_columns,

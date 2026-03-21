@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from src.entrypoints.http.access_context import AccessContext
-from src.services.errors import UserError
+from src.platform.errors import UserError
 
 from .contracts import (
     ATTACHMENT_KIND_DOC,

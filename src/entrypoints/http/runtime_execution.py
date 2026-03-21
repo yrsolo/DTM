@@ -11,7 +11,7 @@ from src.adapters.telegram import TelegramNotifier
 from src.app.context import AppContext
 from src.entrypoints.http.dto import HttpResponse
 from src.entrypoints.http.response_utils import error_response
-from src.services.errors import AppError, PermanentError, TransientError, UserError
+from src.platform.errors import AppError, PermanentError, TransientError, UserError
 
 
 @dataclass(frozen=True)

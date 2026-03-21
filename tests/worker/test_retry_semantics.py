@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 from src.commands.model import Command, RequestedBy
 from src.commands.serializer import command_to_json
-from src.services.errors import PermanentError, TransientError
+from src.platform.errors import PermanentError, TransientError
 from src.worker.model import JobResult, JobStatusRecord
 from src.worker.worker import Worker
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import unittest
 from datetime import datetime, timedelta, timezone
 
-from src.services.errors import TransientError
+from src.platform.errors import TransientError
 from src.contexts.snapshot.internal.engine.engine import SnapshotEngine
 from src.contexts.snapshot.internal.engine.model import AttachmentMeta, ExtraSnapshot, RawSnapshot, TaskExtra, TaskSheet
 

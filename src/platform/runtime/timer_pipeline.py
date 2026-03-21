@@ -1,4 +1,4 @@
-"""Canonical timer pipeline runtime (snapshot-engine cutover)."""
+"""Timer-driven snapshot refresh orchestration for runtime entrypoints."""
 
 from __future__ import annotations
 

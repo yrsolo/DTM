@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from src.commands.model import Command
-from src.services.errors import PermanentError, TransientError
+from src.platform.errors import PermanentError, TransientError
 
 from .model import JobResult, JobStatusRecord
 

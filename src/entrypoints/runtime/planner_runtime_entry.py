@@ -19,9 +19,11 @@ from src.entrypoints.jobs.runtime_context_job import RuntimeContextRequest, reso
 from src.entrypoints.jobs.timer_job import TimerJob
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES, is_legacy_mode
 from src.platform.runtime.render_runtime import run_render_runtime
-from src.services.sources.sheets_normalized_source import build_sheets_normalized_task_source
-from src.services.timer_pipeline import RunRequest as TimerRunRequest
-from src.services.timer_pipeline import TimerPipeline
+from src.contexts.snapshot.adapters.sources.sheets_normalized_source import (
+    build_sheets_normalized_task_source,
+)
+from src.platform.runtime.timer_pipeline import RunRequest as TimerRunRequest
+from src.platform.runtime.timer_pipeline import TimerPipeline
 
 
 get_snapshot_read_api = _get_reminders_snapshot_read_api

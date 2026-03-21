@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from src.app.context import AppContext
 from src.commands.model import Command, RequestedBy
 from src.contexts.attachments.internal.job_runners import DeleteTaskAttachmentJob
-from src.services.errors import TransientError
+from src.platform.errors import TransientError
 
 
 class _FakeMetadataStore:

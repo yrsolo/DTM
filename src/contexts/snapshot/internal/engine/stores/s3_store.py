@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from src.services.errors import PermanentError, TransientError
+from src.platform.errors import PermanentError, TransientError
 from src.contexts.snapshot.internal.engine.model import ExtraSnapshot, PeopleSnapshot, PrepSnapshot, RawSnapshot, TaskExtra
 from src.contexts.snapshot.internal.engine.serialization import (
     dumps_json,

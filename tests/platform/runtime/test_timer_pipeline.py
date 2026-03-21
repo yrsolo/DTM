@@ -10,7 +10,7 @@ from src.app.context import AppContext
 
 
 def _import_timer_pipeline():
-    module = importlib.import_module("src.services.timer_pipeline")
+    module = importlib.import_module("src.platform.runtime.timer_pipeline")
     return importlib.reload(module)
 
 

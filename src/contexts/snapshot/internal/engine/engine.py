@@ -14,7 +14,7 @@ from src.contexts.attachments.contracts import (
     ATTACHMENT_STATUS_UPLOADED_UNVERIFIED,
     AttachmentMetadataStore,
 )
-from src.services.errors import AppError, UserError
+from src.platform.errors import AppError, UserError
 
 from src.contexts.snapshot.internal.attachment_mutations import SnapshotAttachmentMutationService
 from src.contexts.snapshot.internal.engine.model import AttachmentMeta, ExtraSnapshot, TaskExtra

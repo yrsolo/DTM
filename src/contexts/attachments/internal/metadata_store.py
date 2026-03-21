@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from src.contexts.snapshot.contracts import AttachmentMeta, ExtraSnapshot, TaskExtra
-from src.services.errors import UserError
+from src.platform.errors import UserError
 
 from .contracts import (
     ATTACHMENT_STATUS_DELETED,

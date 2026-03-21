@@ -486,6 +486,8 @@ class GuardrailsV0TestCase(unittest.TestCase):
             ROOT / "src" / "services" / "notify",
             ROOT / "src" / "services" / "sync",
             ROOT / "src" / "services" / "usecases",
+            ROOT / "src" / "services" / "sources",
+            ROOT / "src" / "services",
             ROOT / "src" / "handlers",
             ROOT / "src" / "entrypoints_adapters",
         ]
@@ -542,6 +544,32 @@ class GuardrailsV0TestCase(unittest.TestCase):
                 offenders.append(str(file_path.relative_to(ROOT)))
                 continue
             if "get_attachment_snapshot_engine" in content:
+                offenders.append(str(file_path.relative_to(ROOT)))
+        self.assertEqual(offenders, [])
+
+    def test_active_runtime_paths_do_not_import_removed_services_layer(self) -> None:
+        offenders: list[str] = []
+        target_paths = [
+            ROOT / "src" / "commands",
+            ROOT / "src" / "contexts",
+            ROOT / "src" / "entrypoint",
+            ROOT / "src" / "entrypoints",
+            ROOT / "src" / "infra",
+            ROOT / "src" / "platform",
+            ROOT / "src" / "worker",
+            ROOT / "tests",
+        ]
+        forbidden_markers = (
+            "src.services.errors",
+            "src.services.timer_pipeline",
+            "src.services.sources",
+            "src.services.usecases",
+        )
+        for file_path in _python_files(target_paths):
+            if file_path == Path(__file__).resolve():
+                continue
+            content = file_path.read_text(encoding="utf-8")
+            if any(marker in content for marker in forbidden_markers):
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
 

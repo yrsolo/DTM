@@ -19,7 +19,7 @@ from src.contexts.attachments.public import (
 from src.contexts.snapshot.contracts import AttachmentMeta
 from src.platform.runtime.command_runtime import get_command_runtime
 from src.platform.runtime.frontend_cache_invalidation import invalidate_default_frontend_cache_store
-from src.services.errors import AppError, TransientError, UserError
+from src.platform.errors import AppError, TransientError, UserError
 
 get_snapshot_attachment_api = get_attachment_snapshot_api
 get_attachment_storage_capability = get_attachment_storage

@@ -46,4 +46,4 @@ Single source of truth for campaign lifecycle state.
 ## Rule
 - Update this file first when campaign state changes.
 - Keep `work/roadmap/backlog.md` aligned with the same state buckets.
-- Current focus inside `CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1`: dead roots are removed, `entrypoints_adapters` is gone, browser masking is folded into `access_api`, dead service-era shelves and leftover files in `services/{notify,render,mappers,sync,usecases,pipeline_runtime,readmodel_builder,source_policy,sync_service}` are gone from tracked code, and the next architectural decision is whether the remaining `services` core is justified or the next competing-center cut.
+- Current focus inside `CAM-2026-03-21-SRC-TOPLEVEL-CLEANUP-V1`: dead roots are removed, `entrypoints_adapters` is gone, browser masking is folded into `access_api`, the remaining live `services` pieces are now split between `platform` and `snapshot.adapters`, tracked `src/services` Python files are gone, and the next architectural decision is whether the dual-root entry contour `src/entrypoint` vs `src/entrypoints` is justified or should be redesigned.

@@ -1,4 +1,4 @@
-"""Task source contracts for timer/runtime pipelines."""
+"""Task source contracts owned by the snapshot adapters contour."""
 
 from __future__ import annotations
 

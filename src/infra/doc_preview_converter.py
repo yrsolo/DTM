@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import requests
 
-from src.services.errors import TransientError
+from src.platform.errors import TransientError
 
 
 @dataclass(frozen=True, slots=True)

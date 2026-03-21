@@ -43,6 +43,18 @@
 - removed thin service-era protocol shelf that survived only as a delegating type bucket for `TimerJob`:
   - `src/services/usecases/contracts.py`
   - `src/services/usecases/__init__.py`
+- moved the last live technical pieces out of `src/services` into role-true homes:
+  - `src/platform/errors.py`
+  - `src/platform/runtime/timer_pipeline.py`
+  - `src/contexts/snapshot/adapters/sources/*`
+- removed the old tracked `src/services` Python surface entirely:
+  - `src/services/errors.py`
+  - `src/services/timer_pipeline.py`
+  - `src/services/sources/*`
+  - `src/services/__init__.py`
+- moved the aligned active tests with those new owning paths:
+  - `tests/platform/runtime/test_timer_pipeline.py`
+  - `tests/contexts/snapshot/test_sheets_normalized_source.py`
 - removed isolated tests that existed only for those dead service-era leftovers:
   - `tests/services/test_readmodel_uses_milestones_table.py`
   - `tests/services/test_source_policy.py`
@@ -54,4 +66,7 @@
 - verification after this cut stayed green:
   - `python -m unittest tests.contexts.access_api.test_masking tests.api.test_frontend_api_routing tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.api.test_command_queue_foundation tests.contexts.attachments.test_attach_task_file_job tests.services.test_pipeline_runtime -v`
   - `python -m unittest tests.architecture.test_guardrails_v0 tests.entrypoints.test_import_safety tests.api.test_frontend_api_routing tests.contexts.access_api.test_masking tests.api.test_command_queue_foundation tests.contexts.attachments.test_attach_task_file_job tests.contexts.attachments.test_delete_task_attachment_job tests.contexts.attachments.test_cleanup_task_attachments_job tests.contexts.attachments.test_generate_attachment_preview_job tests.services.test_pipeline_runtime tests.entrypoints.test_planner_runtime_entry -v`
-- next blocker is no longer any dead service-era shelf or leftover file but the remaining mixed `src/services` core, which now reduces to shared errors, timer runtime, and source ingestion.
+- next blocker is no longer `src/services` itself. The loudest remaining competing center in the top-level map is the dual-root entry contour:
+  - `src/entrypoint`
+  - `src/entrypoints`
+- resolving that split now requires a deliberate redesign choice, not another safe cleanup pass.

@@ -1,4 +1,4 @@
-"""Application-level error taxonomy for entrypoint boundaries."""
+"""Platform-level application error taxonomy for runtime boundaries."""
 
 from __future__ import annotations
 
@@ -30,4 +30,3 @@ class UserError(AppError):
 
     def __init__(self, message: str, *, code: str = "user_error") -> None:
         super().__init__(message, code=code)
-

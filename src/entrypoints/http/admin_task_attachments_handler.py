@@ -17,7 +17,7 @@ from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response, json_response, path_matches
 from src.platform.runtime.command_runtime import get_command_runtime
-from src.services.errors import AppError
+from src.platform.errors import AppError
 
 get_snapshot_attachment_api = get_attachment_snapshot_api
 get_attachment_storage_capability = get_attachment_storage

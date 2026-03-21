@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.services.errors import PermanentError, TransientError
+from src.platform.errors import PermanentError, TransientError
 
 from .model import Command
 from .queue import CommandQueueProducer, QueueMessage
