@@ -3,7 +3,7 @@
 Single source of truth for campaign lifecycle state.
 
 ## In Progress
-- none
+- CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1
 
 ## Blocked
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
@@ -33,7 +33,7 @@ Single source of truth for campaign lifecycle state.
 - Latest archived closeouts include the 2026-03-12 execution wave, 2026-03-14 attachment/people/audit waves, and the completed attachment cleanup wave.
 
 ## Planned
-- CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1
+- none
 
 ## Parked
 - CAM-2026-03-09-RUNTIME-DEPLANNERIZE-V1 (obsolete / already substantially delivered)

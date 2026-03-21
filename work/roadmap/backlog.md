@@ -1,13 +1,13 @@
 # Backlog
 
 ## In Progress
-- none
+- CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1
 
 ## Blocked
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## Planned
-- CAM-2026-03-21-SNAPSHOT-MODULE-SURFACE-V1
+- none
 
 ## Done
 - CAM-2026-03-21-ATTACHMENTS-MODULE-FIRST-FLOW-V1 completed after replacing the public job-shaped grammar in `attachments` with one module-owned command flow and keeping jobs as internal delivery details.

@@ -29,27 +29,6 @@ def get_query_capability(ctx):
 def get_update_capability(ctx):
     return get_module().update_capability(ctx)
 
-
-def get_prep_snapshot(ctx):
-    return get_module().get_prep_snapshot(ctx)
-
-
-def get_raw_snapshot(ctx):
-    return get_module().get_raw_snapshot(ctx)
-
-
-def get_people_snapshot(ctx):
-    return get_module().get_people_snapshot(ctx)
-
-
-def get_response_cache_store(ctx):
-    return get_module().get_response_cache_store(ctx)
-
-
-def query_frontend_v2(ctx, query):
-    return get_module().query_frontend_v2(ctx, query)
-
-
 def get_update_snapshot_job(ctx):
     """Return the owning snapshot update job runner."""
 
@@ -67,14 +46,9 @@ def get_command_handlers(ctx) -> dict[str, object]:
 __all__ = [
     "Window",
     "get_attachment_capability",
-    "get_people_snapshot",
-    "get_prep_snapshot",
     "get_public_api",
     "get_query_capability",
-    "get_raw_snapshot",
     "get_read_capability",
-    "get_response_cache_store",
     "get_update_capability",
     "get_update_snapshot_job",
-    "query_frontend_v2",
 ]
