@@ -62,6 +62,24 @@ def get_trigger_shell() -> TriggerShell:
     return _TRIGGER_SHELL
 
 
+async def handle_http_event(event, payload, is_http_event):
+    """Handle an HTTP-facing top-path event through the platform shell boundary."""
+
+    return await get_http_shell().handle(event, payload, is_http_event)
+
+
+async def handle_queue_event(event):
+    """Handle a queue event through the platform shell boundary."""
+
+    return await get_worker_shell().handle_queue_event(event)
+
+
+async def handle_trigger_event(trigger_mode: str, event):
+    """Handle a named trigger event through the platform shell boundary."""
+
+    return await get_trigger_shell().handle_trigger(trigger_mode, event)
+
+
 __all__ = [
     "get_http_shell",
     "get_runtime_shell",
@@ -69,5 +87,8 @@ __all__ = [
     "get_trigger_modes",
     "get_trigger_shell",
     "get_worker_shell",
+    "handle_http_event",
+    "handle_queue_event",
+    "handle_trigger_event",
 ]
 

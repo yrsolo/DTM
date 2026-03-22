@@ -12,6 +12,7 @@ Single source of truth for current campaign lifecycle state.
 - none
 
 ## Recent Done
+- CAM-2026-03-22-CRITIC2-STRUCTURAL-CLOSEOUT-V1 completed after replacing `snapshot/internal/runtime_binding.py` with role-true internal builders, tightening `access_api` browser-read seams, shrinking `PrimaryTaskListReadService` via an observability helper, hiding top-entry shell objects behind direct `handle_*` seams, and removing the leftover named-job public shape from `rendering`.
 - CAM-2026-03-22-DOCS-CANON-REBUILD-V1 completed after collapsing active docs to `product / architecture / modules / operations / reference`, archiving the old `integrations` plus recovery-era architecture trees, rewriting the root README in Russian, and stripping active docs of migration-era narrative.
 - CAM-2026-03-22-LOCAL-GOOGLE-CREDENTIALS-ENV-CLEANUP-V1 completed after removing the checked-in Google key fallback, switching local/runtime tooling to env-first credential resolution, and deleting the root `key/` shelf while keeping cloud deploy on Lockbox-provided `GOOGLE_KEY_JSON`.
 - CAM-2026-03-22-PYCACHE-SURFACE-CLEANUP-V1 completed after removing all repo-local `__pycache__` directories outside `.venv`, including root, `src`, `tests`, `agent`, and `config`.

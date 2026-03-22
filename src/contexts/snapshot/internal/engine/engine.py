@@ -26,13 +26,13 @@ from src.contexts.snapshot.internal.engine.update_job import (
     normalize_person_lookup_value,
     normalize_person_name,
 )
-from src.contexts.snapshot.internal.runtime_binding import (
-    build_snapshot_attachment_mutation_service,
+from src.contexts.snapshot.internal.attachment_runtime import build_snapshot_attachment_mutation_service
+from src.contexts.snapshot.internal.query_runtime import (
     build_snapshot_prep_builder,
     build_snapshot_query_engine,
-    build_snapshot_stores,
-    run_snapshot_update,
 )
+from src.contexts.snapshot.internal.stores import build_snapshot_stores
+from src.contexts.snapshot.internal.update_runtime import run_snapshot_update
 
 
 @dataclass(frozen=True)

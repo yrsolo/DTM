@@ -4,6 +4,7 @@
 
 ## Recent Done
 
+- CAM-2026-03-22-CRITIC2-STRUCTURAL-CLOSEOUT-V1 completed: `snapshot` no longer reads through one broad `runtime_binding` hub, `access_api` browser-read seams and frontend observability are calmer, the top path now injects direct `handle_*` seams instead of shell getters, and `rendering.public` no longer exports named render jobs.
 - CAM-2026-03-22-DOCS-CANON-REBUILD-V1 completed: active docs were rebuilt around `product / architecture / modules / operations / reference`, the old `integrations` and recovery-era architecture trees moved to `archive/docs/**`, and root/docs navigation was rewritten for the current system instead of the migration story.
 - CAM-2026-03-22-LOCAL-GOOGLE-CREDENTIALS-ENV-CLEANUP-V1 completed: the checked-in Google key fallback disappeared, local/runtime tooling now resolves credentials only from env inputs, and cloud deploy continues to use Lockbox-backed `GOOGLE_KEY_JSON`.
 - CAM-2026-03-22-PYCACHE-SURFACE-CLEANUP-V1 completed: all repo-local `__pycache__` directories outside `.venv` were removed, so root, `src`, `tests`, `agent`, and `config` read as source-only surfaces again.

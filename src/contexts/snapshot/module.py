@@ -9,10 +9,16 @@ from .application.capabilities import (
     SnapshotReadApi,
     SnapshotUpdateApi,
 )
-from .internal.runtime_binding import (
+from .internal.attachment_runtime import (
     build_snapshot_attachment_mutation_service,
+)
+from .internal.query_runtime import (
     build_snapshot_query_engine,
+)
+from .internal.stores import (
     build_snapshot_stores,
+)
+from .internal.update_runtime import (
     run_snapshot_update,
 )
 

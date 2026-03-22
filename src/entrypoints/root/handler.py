@@ -13,9 +13,9 @@ async def handle(
     event: Any,
     _context: Any,
     *,
-    get_http_shell,
-    get_worker_shell,
-    get_trigger_shell,
+    handle_http_event,
+    handle_queue_event,
+    handle_trigger_event,
     get_telegram_webhook_path=lambda: "/telegram",
     get_trigger_modes=lambda: {},
 ) -> dict[str, Any]:
@@ -33,17 +33,17 @@ async def handle(
             Mode.HTTP_ACCESS_API
             | Mode.TELEGRAM_WEBHOOK
         ):
-            return await get_http_shell().handle(
+            return await handle_http_event(
                 event if isinstance(event, dict) else {},
                 parsed.payload,
                 True,
             )
         case Mode.QUEUE_WORKER:
-            return await get_worker_shell().handle_queue_event(event)
+            return await handle_queue_event(event)
         case Mode.TRIGGER_TIMER:
-            return await get_trigger_shell().handle_trigger("timer", event)
+            return await handle_trigger_event("timer", event)
         case Mode.TRIGGER_MORNING:
-            return await get_trigger_shell().handle_trigger("morning", event)
+            return await handle_trigger_event("morning", event)
         case Mode.UNKNOWN:
             return unknown_route_response()
         case _:

@@ -7,7 +7,7 @@ Entry points в DTM должны быть тонкими.
 Они могут:
 - принять вход;
 - собрать request/runtime context;
-- вызвать module API или runtime shell;
+- вызвать module API или platform-owned `handle_*` seam;
 - превратить результат в HTTP response или execution result.
 
 Они не должны:
@@ -27,5 +27,5 @@ Entry points в DTM должны быть тонкими.
 ## Практическая проверка
 
 Если сценарий нельзя объяснить через
-`entrypoint -> platform/runtime shell -> owning module`,
+`entrypoint -> platform-owned handle seam -> owning module`,
 значит архитектура начала терять форму.
