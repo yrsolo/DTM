@@ -5,19 +5,8 @@ from time import perf_counter
 
 from src.platform.context import AppContext
 from src.contexts.rendering.internal.target_guard import RenderTarget, validate_render_target
-from src.contexts.rendering.public import (
-    get_designers_usecase,
-    get_render_job,
-    get_request,
-    get_snapshot_read_api as _get_rendering_snapshot_read_api,
-    get_timeline_usecase,
-    get_window,
-    get_writer,
-)
+from src.contexts.rendering.public import get_execution_api
 from src.platform.observability.batching import MetricsBatchCollector, add_flush_metrics
-
-
-get_snapshot_read_api = _get_rendering_snapshot_read_api
 
 
 class RenderTimelineJob:
@@ -32,8 +21,9 @@ class RenderTimelineJob:
 
         started_at = self._ctx.clock()
         wall_clock_started = perf_counter()
-        snapshot_read = get_snapshot_read_api(self._ctx)
-        usecase = get_timeline_usecase(
+        execution_api = get_execution_api(self._ctx)
+        snapshot_read = execution_api.snapshot_read_api()
+        usecase = execution_api.timeline_usecase(
             snapshot_read,
             timezone_name=str(self._ctx.cfg.runtime.runtime.timezone or "Europe/Moscow"),
         )
@@ -71,7 +61,7 @@ class RenderTimelineJob:
                 "duration_ms": int((self._ctx.clock() - started_at).total_seconds() * 1000),
                 "error": {"code": "render_target_unsafe"},
             }
-        writer = get_writer(
+        writer = execution_api.writer(
             GoogleSheetsService(
                 str(self._ctx.deps.get("key_json", "")),
                 dry_run=bool(cmd.payload.get("dry_run", False)),
@@ -79,11 +69,11 @@ class RenderTimelineJob:
             spreadsheet_name=sheet_info.spreadsheet_name,
             worksheet_name=target_worksheet,
         )
-        request = get_request(
-            window=get_window(start=None, end=None, mode="intersects"),
+        request = execution_api.request(
+            window=execution_api.window(start=None, end=None, mode="intersects"),
             statuses=statuses,
         )
-        result = get_render_job(usecase, writer).run(request)
+        result = execution_api.job(usecase, writer).run(request)
         warnings = list(result.warnings)
         if not result.applied and not warnings:
             warnings = ["empty_render_plan"]
@@ -163,8 +153,9 @@ class RenderDesignersJob:
         from src.platform.integrations.google_sheets.service import GoogleSheetInfo, GoogleSheetsService
 
         wall_clock_started = perf_counter()
-        snapshot_read = get_snapshot_read_api(self._ctx)
-        usecase = get_designers_usecase(
+        execution_api = get_execution_api(self._ctx)
+        snapshot_read = execution_api.snapshot_read_api()
+        usecase = execution_api.designers_usecase(
             snapshot_read,
             timezone_name=str(self._ctx.cfg.runtime.runtime.timezone or "Europe/Moscow"),
         )
@@ -191,7 +182,7 @@ class RenderDesignersJob:
                 "warnings": list(target_warnings),
                 "error": {"code": "render_target_unsafe"},
             }
-        writer = get_writer(
+        writer = execution_api.writer(
             GoogleSheetsService(
                 str(self._ctx.deps.get("key_json", "")),
                 dry_run=bool(cmd.payload.get("dry_run", False)),
@@ -199,9 +190,9 @@ class RenderDesignersJob:
             spreadsheet_name=sheet_info.spreadsheet_name,
             worksheet_name=target_worksheet,
         )
-        result = get_render_job(usecase, writer).run(
-            get_request(
-                window=get_window(start=None, end=None, mode="intersects"),
+        result = execution_api.job(usecase, writer).run(
+            execution_api.request(
+                window=execution_api.window(start=None, end=None, mode="intersects"),
                 statuses=list(cmd.payload.get("statuses", ["work", "pre_done"])),
             )
         )

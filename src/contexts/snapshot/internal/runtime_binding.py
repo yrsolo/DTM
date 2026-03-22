@@ -1,11 +1,11 @@
-"""Shared runtime bundle for snapshot module APIs and engine assembly."""
+"""Role-true runtime builders for the snapshot context."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
 
-from src.platform.context import AppContext
+from src.contexts.snapshot.internal.attachment_mutations import SnapshotAttachmentMutationService
 from src.contexts.snapshot.internal.engine.prep_builder import PrepBuilder
 from src.contexts.snapshot.internal.engine.query_engine import SnapshotQueryEngine
 from src.contexts.snapshot.internal.engine.update_job import (
@@ -16,11 +16,12 @@ from src.contexts.snapshot.internal.engine.update_job import (
     UpdateJob,
 )
 from src.contexts.snapshot.internal.engine.stores.s3_store import build_s3_stores
+from src.platform.context import AppContext
 
 
 @dataclass(frozen=True, slots=True)
-class SnapshotRuntimeBinding:
-    """Own the concrete stores and factories used by snapshot module APIs."""
+class SnapshotStores:
+    """Store bundle shared across snapshot application services."""
 
     attachment_bucket: str
     raw_cache: Any
@@ -28,10 +29,6 @@ class SnapshotRuntimeBinding:
     extra_store: Any
     people_store: Any
     response_cache_store: Any
-    query_engine: SnapshotQueryEngine
-    prep_builder: PrepBuilder
-    update_job_factory: Any
-    people_update_job_factory: Any
 
 
 def _resolve_env_prefix(value: str, env_name: str) -> str:
@@ -42,8 +39,8 @@ def _resolve_env_prefix(value: str, env_name: str) -> str:
     return cleaned
 
 
-def build_snapshot_runtime_binding(ctx: AppContext) -> SnapshotRuntimeBinding:
-    """Build the concrete runtime bundle consumed by snapshot APIs."""
+def build_snapshot_stores(ctx: AppContext) -> SnapshotStores:
+    """Build the concrete store bundle shared by snapshot APIs."""
 
     cfg = ctx.cfg
     deps = ctx.deps
@@ -62,39 +59,68 @@ def build_snapshot_runtime_binding(ctx: AppContext) -> SnapshotRuntimeBinding:
         people_key=_resolve_env_prefix(str(snap_cfg.prefix_people), env_name),
         response_prefix=_resolve_env_prefix(str(snap_cfg.prefix_responses), env_name),
     )
-    prep_builder = PrepBuilder(extra_store)
-    query_engine = SnapshotQueryEngine(
-        env_name=cfg.runtime.runtime.env_default,
-        source_sheet_name=str(cfg.tables.google_sheets.get("source_sheet_name_default", "")),
-    )
-
-    def _update_job_factory(task_source: Any) -> UpdateJob:
-        return UpdateJob(
-            source=TaskSourceSheetsAdapter(task_source),
-            hasher=SheetSnapshotHasher(),
-            normalizer=SheetsTaskNormalizer(),
-            raw_cache=raw_cache,
-            prep_cache=prep_cache,
-            prep_builder=prep_builder,
-        )
-
-    def _people_update_job_factory(_task_source: Any) -> PeopleSnapshotUpdater:
-        people_field_map = dict(cfg.tables.field_maps.get("people", {}))
-        return PeopleSnapshotUpdater(
-            people_store=people_store,
-            source_id=f"sheet:{cfg.tables.google_sheets.get('source_sheet_name_default', '')}:people:A1:Z200",
-            people_field_map=people_field_map,
-        )
-
-    return SnapshotRuntimeBinding(
+    return SnapshotStores(
         attachment_bucket=str(snap_cfg.bucket).strip(),
         raw_cache=raw_cache,
         prep_cache=prep_cache,
         extra_store=extra_store,
         people_store=people_store,
         response_cache_store=response_cache_store,
-        query_engine=query_engine,
-        prep_builder=prep_builder,
-        update_job_factory=_update_job_factory,
-        people_update_job_factory=_people_update_job_factory,
     )
+
+
+def build_snapshot_prep_builder(stores: SnapshotStores) -> PrepBuilder:
+    """Build the prep builder over the shared snapshot extra store."""
+
+    return PrepBuilder(stores.extra_store)
+
+
+def build_snapshot_query_engine(ctx: AppContext) -> SnapshotQueryEngine:
+    """Build the frontend query engine for snapshot reads."""
+
+    return SnapshotQueryEngine(
+        env_name=ctx.cfg.runtime.runtime.env_default,
+        source_sheet_name=str(ctx.cfg.tables.google_sheets.get("source_sheet_name_default", "")),
+    )
+
+
+def build_snapshot_attachment_mutation_service(
+    ctx: AppContext,
+    *,
+    stores: SnapshotStores | None = None,
+) -> SnapshotAttachmentMutationService:
+    """Build the attachment mutation service for snapshot projection updates."""
+
+    active_stores = stores or build_snapshot_stores(ctx)
+    return SnapshotAttachmentMutationService(
+        attachment_bucket=active_stores.attachment_bucket,
+        raw_cache=active_stores.raw_cache,
+        prep_cache=active_stores.prep_cache,
+        extra_store=active_stores.extra_store,
+        prep_builder=build_snapshot_prep_builder(active_stores),
+    )
+
+
+def run_snapshot_update(ctx: AppContext, *, task_source: Any, force: bool = False):
+    """Run the snapshot update flow without exposing a broad runtime bag."""
+
+    stores = build_snapshot_stores(ctx)
+    prep_builder = build_snapshot_prep_builder(stores)
+    update_job = UpdateJob(
+        source=TaskSourceSheetsAdapter(task_source),
+        hasher=SheetSnapshotHasher(),
+        normalizer=SheetsTaskNormalizer(),
+        raw_cache=stores.raw_cache,
+        prep_cache=stores.prep_cache,
+        prep_builder=prep_builder,
+    )
+    result = update_job.run(force=force)
+    people_field_map = dict(ctx.cfg.tables.field_maps.get("people", {}))
+    people_updater = PeopleSnapshotUpdater(
+        people_store=stores.people_store,
+        source_id=f"sheet:{ctx.cfg.tables.google_sheets.get('source_sheet_name_default', '')}:people:A1:Z200",
+        people_field_map=people_field_map,
+    )
+    people_updater.run(TaskSourceSheetsAdapter(task_source))
+    return result
+

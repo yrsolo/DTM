@@ -9,7 +9,12 @@ from .application.capabilities import (
     SnapshotReadApi,
     SnapshotUpdateApi,
 )
-from .internal.runtime_binding import build_snapshot_runtime_binding
+from .internal.runtime_binding import (
+    build_snapshot_attachment_mutation_service,
+    build_snapshot_query_engine,
+    build_snapshot_stores,
+    run_snapshot_update,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,16 +24,42 @@ class SnapshotModule:
     name: str = "snapshot"
 
     def read_api(self, ctx) -> SnapshotReadApi:
-        return SnapshotReadApi(build_snapshot_runtime_binding(ctx))
+        stores = build_snapshot_stores(ctx)
+        return SnapshotReadApi(
+            _prep_snapshot_getter=stores.prep_cache.get,
+            _people_snapshot_getter=stores.people_store.get,
+        )
 
     def attachment_api(self, ctx) -> SnapshotAttachmentApi:
-        return SnapshotAttachmentApi(build_snapshot_runtime_binding(ctx))
+        stores = build_snapshot_stores(ctx)
+        return SnapshotAttachmentApi(
+            _prep_snapshot_getter=stores.prep_cache.get,
+            _response_cache_store=stores.response_cache_store,
+            _mutation_service_builder=lambda: build_snapshot_attachment_mutation_service(ctx, stores=stores),
+        )
 
     def query_api(self, ctx) -> SnapshotQueryApi:
-        return SnapshotQueryApi(build_snapshot_runtime_binding(ctx))
+        stores = build_snapshot_stores(ctx)
+        query_engine = build_snapshot_query_engine(ctx)
+        return SnapshotQueryApi(
+            _prep_snapshot_getter=stores.prep_cache.get,
+            _raw_snapshot_getter=stores.raw_cache.get,
+            _people_snapshot_getter=stores.people_store.get,
+            _response_cache_store=stores.response_cache_store,
+            _frontend_query_executor=lambda prep, query: query_engine.query_frontend_v2(
+                prep,
+                query,
+            ),
+        )
 
     def update_api(self, ctx) -> SnapshotUpdateApi:
-        return SnapshotUpdateApi(build_snapshot_runtime_binding(ctx))
+        return SnapshotUpdateApi(
+            _update_runner=lambda *, task_source, force=False: run_snapshot_update(
+                ctx,
+                task_source=task_source,
+                force=force,
+            )
+        )
 
 
 def get_module() -> SnapshotModule:

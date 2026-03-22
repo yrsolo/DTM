@@ -19,10 +19,10 @@ DTM — это внутренняя операционная система дл
 Attachment flow — хороший пример базового продуктового паттерна DTM:
 - тяжёлая mutation идёт async;
 - оператор ждёт не просто upload acceptance, а publication/readiness;
-- браузер потом читает уже подготовленный cached или snapshot-backed payload вместо тяжёлой сборки карточки на каждый запрос.
+- браузер потом читает уже подготовленный payload вместо тяжёлой live-сборки карточки.
 
 ## Куда идти дальше
 
 - [capabilities.md](capabilities.md)
-- [../architecture/runtime/architecture.md](../architecture/runtime/architecture.md)
+- [../architecture/overview.md](../architecture/overview.md)
 - [../operations/runbook.md](../operations/runbook.md)

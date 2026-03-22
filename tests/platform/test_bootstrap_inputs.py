@@ -51,6 +51,14 @@ class BootstrapInputsTestCase(unittest.TestCase):
                 self.assertTrue(Path(resolved).exists())
                 self.assertEqual(Path(resolved).read_text(encoding="utf-8"), '{"type":"service_account"}')
 
+    def test_resolve_google_key_json_path_returns_empty_when_no_inputs_exist(self) -> None:
+        with patch.dict(
+            os.environ,
+            {"GOOGLE_KEY_JSON": "", "GOOGLE_KEY_JSON_PATH": "", "GOOGLE_KEY_JSON_B64": ""},
+            clear=False,
+        ):
+            self.assertEqual(bootstrap_module._resolve_google_key_json_path(), "")
+
 
 if __name__ == "__main__":
     unittest.main()

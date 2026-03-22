@@ -4,16 +4,21 @@ from datetime import datetime, timezone
 
 from src.platform.context import AppContext
 from src.platform.runtime.commands.model import Command
-from src.contexts.attachments.public import (
-    get_attachment_snapshot_api,
-    get_attachment_storage,
-    get_doc_preview_converter,
-)
+from src.contexts.attachments.public import get_attachment_api
 from src.platform.runtime.frontend_cache_invalidation import invalidate_default_frontend_cache_store
 from src.platform.errors import AppError, TransientError, UserError
 
-get_snapshot_attachment_api = get_attachment_snapshot_api
-get_attachment_storage_capability = get_attachment_storage
+
+def get_attachment_storage_capability(ctx: AppContext):
+    return get_attachment_api(ctx).storage()
+
+
+def get_snapshot_attachment_api(ctx: AppContext):
+    return get_attachment_api(ctx).snapshot_api()
+
+
+def get_doc_preview_converter(ctx: AppContext):
+    return get_attachment_api(ctx).doc_preview_converter()
 
 
 class GenerateAttachmentPreviewJob:

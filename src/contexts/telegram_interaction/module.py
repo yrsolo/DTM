@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from src.contexts.snapshot.module import get_read_api
+from .application.interaction_api import TelegramInteractionApi
 from .internal import TelegramCommandRouter, TelegramSender, TelegramUpdateParser, TelegramWebhookHandler
 from .internal.group_query_formatter import GroupQueryFormatter
 from .internal.group_query_usecase import GroupQueryUseCase
@@ -48,6 +49,9 @@ class TelegramInteractionModule:
         from .internal.group_query_request import GroupQueryRequest
 
         return GroupQueryRequest(**kwargs)
+
+    def interaction_api(self, ctx):
+        return TelegramInteractionApi(ctx, self)
 
 
 def get_module() -> TelegramInteractionModule:

@@ -1,24 +1,7 @@
 from __future__ import annotations
 
 from src.platform.context import AppContext
-from src.contexts.telegram_interaction.public import (
-    get_group_query_formatter as _get_group_query_formatter,
-    get_sender as _get_group_query_sender,
-    get_snapshot_read_api as _get_group_query_snapshot_read_api,
-    get_usecase as _get_group_query_usecase,
-    make_group_query_request as _make_group_query_request_from_module,
-)
-
-
-get_snapshot_read_api = _get_group_query_snapshot_read_api
-
-
-def _make_group_query_request(**kwargs):
-    return _make_group_query_request_from_module(**kwargs)
-
-
-def _make_group_query_sender(ctx: AppContext):
-    return _get_group_query_sender(ctx)
+from src.contexts.telegram_interaction.public import get_interaction_api
 
 
 class GroupQueryReplyJob:
@@ -26,17 +9,18 @@ class GroupQueryReplyJob:
         self._ctx = ctx
 
     async def run(self, cmd):
-        snapshot_read = get_snapshot_read_api(self._ctx)
-        usecase = _get_group_query_usecase(snapshot_read)
+        interaction_api = get_interaction_api(self._ctx)
+        snapshot_read = interaction_api.snapshot_read_api()
+        usecase = interaction_api.usecase(snapshot_read)
         groups, today, next_workday = usecase.select(
-            _make_group_query_request(
+            interaction_api.request(
                 mode="group_query",
                 statuses=list(cmd.payload.get("statuses", ["work", "pre_done"])),
                 include_today=bool(cmd.payload.get("include_today", True)),
                 include_next_workday=bool(cmd.payload.get("include_next_workday", True)),
             )
         )
-        formatter = _get_group_query_formatter()
+        formatter = interaction_api.group_query_formatter()
         action = str(cmd.payload.get("action", "tasks")).strip().lower() or "tasks"
         requester_name = str(cmd.payload.get("requester_name", "")).strip()
         if action == "deadlines":
@@ -48,7 +32,7 @@ class GroupQueryReplyJob:
                 today=today,
                 next_workday=next_workday,
             )
-        sender = _make_group_query_sender(self._ctx)
+        sender = interaction_api.sender()
         await sender.send_message(cmd.payload.get("chat_id"), reply, parse_mode=None)
         return {
             "artifact": "group_query_reply",

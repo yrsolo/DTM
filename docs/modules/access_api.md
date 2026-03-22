@@ -1,53 +1,27 @@
-# Access API
+# `access_api`
 
-## Purpose
+## Роль
 
-`access_api` owns:
-- frontend-facing HTTP read surface
-- access/auth interpretation at the backend boundary
-- masked/open response policy
-- browser-safe DTO assembly
-- cached primary task-list delivery, including card data and attachment visibility in the browser payload
+`access_api` — это хозяин основного browser-facing read-side.
 
-## Public facade expectation
+Он отвечает за:
+- сборку главного task-list payload;
+- masked/full access policy на backend boundary;
+- browser-safe DTO shape;
+- выдачу `/info`-related operational reads.
 
-Target context shape:
+## Главные входы
 
-```text
-src/contexts/access_api/
-  public.py
-  module.py
-  contracts/
-  application/
-  domain/
-  adapters/
-```
+- browser task-list read;
+- operational info read;
+- attachment read/view/download surface, которая нужна браузеру.
 
-## Allowed dependencies
+## Что модуль не должен делать
 
-- `snapshot.public` or other public context contracts needed to assemble browser-safe payloads
-- access/masking logic owned by the context
-- platform/entrypoint transport shells delegating into the context facade
-- runtime-owned invalidation/read-freshness signals where the primary read-model scenario depends on them
+- хранить transport orchestration в роутере;
+- тянуть внутренности `snapshot`, `attachments` или `rendering`;
+- размывать ownership между несколькими handler-catalog слоями.
 
-## Forbidden dependencies
+## Finish line
 
-- direct dependence on worker/runtime details
-- direct imports into snapshot/rendering/attachments internals
-- browser-facing behavior hidden inside transport router code
-
-## Commands owned
-
-- no primary queue commands are expected here as the ownership center
-
-## Routes owned
-
-- frontend/public API routes
-- masked/open access read surface
-
-## Active implementation notes
-
-- owning handler implementation now lives under `src/contexts/access_api/internal/*`
-- `src/contexts/access_api/module.py` builds frontend root, frontend v2, info, people snapshot, and attachment read handlers from the context-owned internal package
-- `src/entrypoints/http/*` remains transport-only and delegates through the access-api public facade
-- in the primary read-model scenario, `access_api` is the browser-facing finish line: attachment is considered delivered only when it appears in the cached main browser payload
+Если пользователь открыл интерфейс и получил стабильный payload карточек и вложений, это finish line `access_api`.

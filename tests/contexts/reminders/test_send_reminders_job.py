@@ -40,6 +40,35 @@ class _FakeSnapshotEngine:
     pass
 
 
+class _FakeDeliveryApi:
+    def __init__(self) -> None:
+        self.snapshot_read = _FakeSnapshotEngine()
+
+    def snapshot_read_api(self):
+        return self.snapshot_read
+
+    def usecase(self, snapshot_read):  # noqa: ANN001
+        return snapshot_read
+
+    def formatter(self):
+        return "formatter"
+
+    def sender(self):
+        return "sender"
+
+    def enhancer(self, *, mock_external: bool):  # noqa: ARG002
+        return None
+
+    def today_in_runtime_timezone(self):
+        return date(2026, 3, 7)
+
+    def job_runner(self, **kwargs):  # noqa: ANN003
+        return _FakeReminderJob(**kwargs)
+
+    def request(self, **kwargs):  # noqa: ANN003
+        return SimpleNamespace(**kwargs)
+
+
 class _FakeMetrics:
     def __init__(self) -> None:
         self.counters = []
@@ -100,14 +129,11 @@ class SendRemindersJobTestCase(unittest.TestCase):
     def test_morning_skips_on_saturday(self) -> None:
         import src.contexts.reminders.internal.job_runner as module
 
-        original_get_snapshot_read_api = module.get_snapshot_read_api
-        original_make_job_runner = module._make_reminder_job_runner
-        original_today = module._today_in_runtime_timezone
+        original_get_delivery_api = module.get_delivery_api
         _FakeReminderJob.last_request = None
         _FakeReminderJob.run_calls = 0
-        module.get_snapshot_read_api = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
-        module._make_reminder_job_runner = lambda **kwargs: _FakeReminderJob(**kwargs)  # type: ignore[assignment]
-        module._today_in_runtime_timezone = lambda _ctx: date(2026, 3, 7)  # type: ignore[assignment]
+        delivery_api = _FakeDeliveryApi()
+        module.get_delivery_api = lambda _ctx: delivery_api  # type: ignore[assignment]
         try:
             result = asyncio.run(
                 SendRemindersJob(_ctx()).run(
@@ -121,9 +147,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
                 )
             )
         finally:
-            module.get_snapshot_read_api = original_get_snapshot_read_api  # type: ignore[assignment]
-            module._make_reminder_job_runner = original_make_job_runner  # type: ignore[assignment]
-            module._today_in_runtime_timezone = original_today  # type: ignore[assignment]
+            module.get_delivery_api = original_get_delivery_api  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
         self.assertEqual(result["mode"], "morning")
@@ -134,13 +158,11 @@ class SendRemindersJobTestCase(unittest.TestCase):
     def test_morning_skips_on_sunday(self) -> None:
         import src.contexts.reminders.internal.job_runner as module
 
-        original_get_snapshot_read_api = module.get_snapshot_read_api
-        original_make_job_runner = module._make_reminder_job_runner
-        original_today = module._today_in_runtime_timezone
+        original_get_delivery_api = module.get_delivery_api
         _FakeReminderJob.run_calls = 0
-        module.get_snapshot_read_api = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
-        module._make_reminder_job_runner = lambda **kwargs: _FakeReminderJob(**kwargs)  # type: ignore[assignment]
-        module._today_in_runtime_timezone = lambda _ctx: date(2026, 3, 8)  # type: ignore[assignment]
+        delivery_api = _FakeDeliveryApi()
+        delivery_api.today_in_runtime_timezone = lambda: date(2026, 3, 8)  # type: ignore[method-assign]
+        module.get_delivery_api = lambda _ctx: delivery_api  # type: ignore[assignment]
         try:
             result = asyncio.run(
                 SendRemindersJob(_ctx()).run(
@@ -154,9 +176,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
                 )
             )
         finally:
-            module.get_snapshot_read_api = original_get_snapshot_read_api  # type: ignore[assignment]
-            module._make_reminder_job_runner = original_make_job_runner  # type: ignore[assignment]
-            module._today_in_runtime_timezone = original_today  # type: ignore[assignment]
+            module.get_delivery_api = original_get_delivery_api  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
         self.assertIn("morning_weekend_skipped", result["warnings"])
@@ -165,14 +185,11 @@ class SendRemindersJobTestCase(unittest.TestCase):
     def test_test_mode_still_runs_on_saturday(self) -> None:
         import src.contexts.reminders.internal.job_runner as module
 
-        original_get_snapshot_read_api = module.get_snapshot_read_api
-        original_make_job_runner = module._make_reminder_job_runner
-        original_today = module._today_in_runtime_timezone
+        original_get_delivery_api = module.get_delivery_api
         _FakeReminderJob.last_request = None
         _FakeReminderJob.run_calls = 0
-        module.get_snapshot_read_api = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
-        module._make_reminder_job_runner = lambda **kwargs: _FakeReminderJob(**kwargs)  # type: ignore[assignment]
-        module._today_in_runtime_timezone = lambda _ctx: date(2026, 3, 7)  # type: ignore[assignment]
+        delivery_api = _FakeDeliveryApi()
+        module.get_delivery_api = lambda _ctx: delivery_api  # type: ignore[assignment]
         try:
             result = asyncio.run(
                 SendRemindersJob(_ctx()).run(
@@ -186,9 +203,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
                 )
             )
         finally:
-            module.get_snapshot_read_api = original_get_snapshot_read_api  # type: ignore[assignment]
-            module._make_reminder_job_runner = original_make_job_runner  # type: ignore[assignment]
-            module._today_in_runtime_timezone = original_today  # type: ignore[assignment]
+            module.get_delivery_api = original_get_delivery_api  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
         self.assertEqual(_FakeReminderJob.run_calls, 1)
@@ -197,14 +212,12 @@ class SendRemindersJobTestCase(unittest.TestCase):
     def test_morning_passes_friday_today_override_to_reminder_request(self) -> None:
         import src.contexts.reminders.internal.job_runner as module
 
-        original_get_snapshot_read_api = module.get_snapshot_read_api
-        original_make_job_runner = module._make_reminder_job_runner
-        original_today = module._today_in_runtime_timezone
+        original_get_delivery_api = module.get_delivery_api
         _FakeReminderJob.last_request = None
         _FakeReminderJob.run_calls = 0
-        module.get_snapshot_read_api = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
-        module._make_reminder_job_runner = lambda **kwargs: _FakeReminderJob(**kwargs)  # type: ignore[assignment]
-        module._today_in_runtime_timezone = lambda _ctx: date(2026, 3, 6)  # type: ignore[assignment]
+        delivery_api = _FakeDeliveryApi()
+        delivery_api.today_in_runtime_timezone = lambda: date(2026, 3, 6)  # type: ignore[method-assign]
+        module.get_delivery_api = lambda _ctx: delivery_api  # type: ignore[assignment]
         try:
             result = asyncio.run(
                 SendRemindersJob(_ctx()).run(
@@ -218,9 +231,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
                 )
             )
         finally:
-            module.get_snapshot_read_api = original_get_snapshot_read_api  # type: ignore[assignment]
-            module._make_reminder_job_runner = original_make_job_runner  # type: ignore[assignment]
-            module._today_in_runtime_timezone = original_today  # type: ignore[assignment]
+            module.get_delivery_api = original_get_delivery_api  # type: ignore[assignment]
 
         self.assertEqual(result["status"], "ok")
         self.assertEqual(_FakeReminderJob.run_calls, 1)

@@ -3,7 +3,6 @@ from __future__ import annotations
 from time import perf_counter
 
 from src.platform.context import AppContext
-from src.contexts.snapshot.application.capabilities import SnapshotUpdateApi
 from src.platform.observability import timed
 from src.platform.observability.batching import (
     MetricsBatchCollector,
@@ -17,7 +16,9 @@ from src.contexts.snapshot.adapters.sources.sheets_normalized_source import (
 
 
 def get_snapshot_update_api(ctx):
-    return SnapshotUpdateApi(ctx)
+    from src.contexts.snapshot.module import get_update_api as _get_update_api
+
+    return _get_update_api(ctx)
 
 
 class UpdateSnapshotJob:

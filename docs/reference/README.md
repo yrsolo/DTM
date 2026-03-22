@@ -1,19 +1,17 @@
 # Справочник
 
-Здесь лежат самые сухие и стабильные документы: конфиги, runtime modes, схемы статусов и общие контракты.
+Здесь лежат сухие и стабильные документы: конфиг, контракты, режимы и схемы.
 
-## Start here
+## Начать отсюда
 
 - [configuration.md](configuration.md)
 - [contracts.md](contracts.md)
 - [runtime-modes.md](runtime-modes.md)
 - [job-status-schema.md](job-status-schema.md)
+- [browser-auth.md](browser-auth.md)
 
-## Deep dives
+## Когда читать этот раздел
 
-- [../architecture/runtime/dataflow.md](../architecture/runtime/dataflow.md)
-- [../integrations/browser-auth/contract.md](../integrations/browser-auth/contract.md)
-
-## When to use this folder
-
-Используй этот раздел, когда нужен точный reference-ответ, а не narrative-объяснение.
+- когда нужен точный ответ по wire-shape, config или runtime mode;
+- когда narrative-объяснение уже не нужно;
+- когда надо проверить стабильный контракт, а не историческую эволюцию.

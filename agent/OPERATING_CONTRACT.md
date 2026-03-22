@@ -57,4 +57,19 @@ At stage boundary (stage done), report in plain language before entering next st
 - next stage initial task estimate (count),
 - explicit owner confirmation request to proceed (`go/no-go`).
 
+## Temporary Owner Authorization (2026-03-22)
+Temporary rule for the active repo-finalization phase.
+
+- Owner pre-authorizes sequential execution of bounded cleanup/refactor/polish waves without per-wave confirmation.
+- Agent should continue autonomously while all of the following stay true:
+  - the direction is already implied by the current owner goals: aesthetics, architectural cleanliness, proportionality, and anti-overengineering;
+  - the cut is local or moderately scoped and does not require a business/product choice;
+  - the change improves the repo toward a calmer, more canonical shape rather than adding speculative abstraction.
+- Agent must stop and escalate only on a real strategic blocker, for example:
+  - multiple plausible target architectures with non-obvious long-term consequences,
+  - destructive moves affecting large preserved history or externally referenced assets,
+  - production/security/cost-sensitive decisions,
+  - uncertainty about whether a remaining contour is truly active or should be archived when that cannot be verified from code and runnable artifacts.
+- This authorization is temporary and applies only to the current repo-finalization program; keep the note explicit and removable once the repo reaches a stable finished state.
+
 

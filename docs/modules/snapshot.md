@@ -1,52 +1,26 @@
-# Snapshot
+# `snapshot`
 
-## Purpose
+## Роль
 
-`snapshot` owns:
-- ingestion
-- normalization
-- state build/update
-- prepared read-side state and public query-facing contracts
-- projection of attachment state into the primary task-list read-model
+`snapshot` владеет read-model контуром:
+- ingestion из источников;
+- normalization;
+- state build/update;
+- prepared snapshot storage;
+- projection attachment state в основной read-side.
 
-## Public facade expectation
+## Главные входы
 
-Target context shape:
+- `update_snapshot`;
+- query/read APIs для других модулей;
+- attachment mutation support там, где metadata должна стать частью read-model.
 
-```text
-src/contexts/snapshot/
-  public.py
-  module.py
-  contracts/
-  application/
-  domain/
-  adapters/
-```
+## Что модуль не должен делать
 
-## Allowed dependencies
+- становиться browser delivery layer;
+- становиться transport-owned engine;
+- тянуть ownership других модулей к себе.
 
-- source adapters needed for ingestion
-- persistence/query adapters owned by the context
-- domain normalization code and state models
+## Finish line
 
-## Forbidden dependencies
-
-- rendering reaching directly into snapshot internals
-- transport/runtime ownership of snapshot business rules
-- direct env/config access outside approved config/bootstrap layers
-
-## Commands owned
-
-- `update_snapshot`
-
-## Routes owned
-
-- no primary frontend route ownership is expected here
-- snapshot exposes public contracts/facades for other contexts, especially `access_api` and `rendering`
-
-For the primary read scenario, `snapshot` is the point where mutation-state becomes visible read-side state in the main browser payload.
-
-## Current implementation notes
-
-- current implementation spans `src/core/*`, `src/contexts/snapshot/adapters/sources/*`, `src/contexts/snapshot/internal/engine/*`, and snapshot job wiring
-- the old top-level `src/snapshot_engine/*` root is removed; the read-side engine now lives physically inside the snapshot context
+Если изменение стало видимым в подготовленном read-model, это finish line `snapshot`.

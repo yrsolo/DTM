@@ -1,54 +1,56 @@
-﻿# Runtime Modes (Current)
+# Режимы runtime
 
-## Supported standard modes
+## Поддерживаемые режимы
 
 ### `timer`
-- canonical scheduled mode
-- updates snapshot storage
-- may trigger render/notify flows depending on caller path, but standard timer runtime is snapshot-first
+- основной scheduled mode;
+- обновляет snapshot storage;
+- может запускать render/reminder-related flows через канонический runtime contour.
 
 ### `sync-only`
-- explicit rebuild mode
-- updates raw/prep snapshots
-- used for manual refresh and local/test smoke
+- явный rebuild mode;
+- обновляет raw/prep snapshots;
+- используется для manual refresh и local/test smoke.
 
 ### `render_v2`
-- renders Google Sheets views from Prep snapshot
-- supported targets:
+- рендерит Google Sheets views из prep snapshot;
+- поддерживает:
   - timeline sheet (`Задачи`)
   - designers sheet (`Дизайнеры`)
 
 ### `reminder_v2`
-- sends reminder flow through new notify contour
+- запускает reminder flow через текущий reminder contour.
 
 ### `reminders-only`
-- reminder-only execution without sync/update
+- выполняет только reminder delivery без sync/update.
 
 ### `morning`
-- production-like reminder mode for workday delivery
-- Saturday/Sunday runs are skipped with a successful structured no-op result
-- Friday still includes `next_workday = Monday` when next-workday reminders are enabled
+- production-like reminder mode для рабочих дней;
+- в субботу и воскресенье даёт успешный structured no-op;
+- в пятницу всё ещё считает `next_workday = Monday`, если это нужно для reminder logic.
 
 ### `test`
-- safe operator/developer mode
-- test-chat routing for reminders
-- safe defaults for mocks where configured
+- безопасный operator/developer mode;
+- использует test-chat routing и safe defaults там, где это предусмотрено.
 
 ## Transport mapping
-- HTTP explicit runtime requests go through:
+
+- HTTP runtime requests идут через:
   - `src/entrypoints/http/http_shell.py`
   - `src/entrypoints/runtime/runtime_shell.py`
-- scheduled triggers go through:
+- scheduled triggers идут через:
   - `src/entrypoints/triggers/trigger_shell.py`
-- queue worker jobs bypass ad-hoc mode routing and execute explicit command jobs
+- queue worker jobs исполняют explicit command jobs без ad-hoc mode routing.
 
-## Unsupported legacy modes
-Legacy planner/store modes are not part of the standard runtime anymore.
+## Неподдерживаемые старые режимы
 
-Behavior:
-- HTTP: explicit unsupported response
-- runtime shell/debug: structured `unsupported_mode`
+Planner/store-era modes больше не входят в стандартный runtime.
+
+Поведение:
+- HTTP возвращает structured unsupported response;
+- runtime/debug shell возвращает `unsupported_mode`.
 
 ## Timezone policy
-- human-facing render timestamps use `runtime.timezone` (default `Europe/Moscow`)
-- JSON/system timestamps remain UTC ISO
+
+- human-facing render timestamps используют `runtime.timezone` (по умолчанию `Europe/Moscow`);
+- system/JSON timestamps остаются в UTC ISO.

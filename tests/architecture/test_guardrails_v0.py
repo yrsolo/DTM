@@ -532,10 +532,10 @@ class GuardrailsV0TestCase(unittest.TestCase):
     def test_active_runtime_docs_do_not_use_wrapper_language_for_canonical_paths(self) -> None:
         offenders: list[str] = []
         target_files = [
-            ROOT / "docs" / "architecture" / "runtime" / "module-map.md",
-            ROOT / "docs" / "architecture" / "runtime" / "entrypoints.md",
-            ROOT / "docs" / "architecture" / "runtime" / "command-runtime.md",
-            ROOT / "docs" / "integrations" / "attachments" / "backend-flow.md",
+            ROOT / "docs" / "architecture" / "overview.md",
+            ROOT / "docs" / "architecture" / "entrypoints.md",
+            ROOT / "docs" / "architecture" / "runtime-flow.md",
+            ROOT / "docs" / "modules" / "attachments.md",
         ]
         forbidden_markers = ("transitional wrapper", "compatibility wrapper", "legacy wrapper")
         for file_path in target_files:
@@ -672,6 +672,101 @@ class GuardrailsV0TestCase(unittest.TestCase):
             if any(marker in content for marker in forbidden_markers):
                 offenders.append(str(file_path.relative_to(ROOT)))
         self.assertEqual(offenders, [])
+
+    def test_reminders_public_surface_stays_small_and_delivery_owned(self) -> None:
+        file_path = ROOT / "src" / "contexts" / "reminders" / "public.py"
+        content = file_path.read_text(encoding="utf-8")
+        self.assertIn("def get_delivery_api(", content)
+        self.assertIn("def get_command_handlers(", content)
+        for removed_helper in (
+            "def get_public_api(",
+            "def get_snapshot_read_api(",
+            "def get_usecase(",
+            "def get_formatter(",
+            "def get_sender(",
+            "def get_enhancer(",
+            "def get_today_in_runtime_timezone(",
+            "def get_job_runner(",
+            "def make_reminder_request(",
+        ):
+            self.assertNotIn(removed_helper, content)
+
+    def test_rendering_public_surface_stays_small_and_execution_owned(self) -> None:
+        file_path = ROOT / "src" / "contexts" / "rendering" / "public.py"
+        content = file_path.read_text(encoding="utf-8")
+        self.assertIn("def get_execution_api(", content)
+        self.assertIn("def get_command_handlers(", content)
+        for removed_helper in (
+            "def get_public_api(",
+            "def get_snapshot_read_api(",
+            "def get_timeline_usecase(",
+            "def get_designers_usecase(",
+            "def get_window(",
+            "def get_request(",
+            "def get_writer(",
+            "def get_render_job(",
+        ):
+            self.assertNotIn(removed_helper, content)
+
+    def test_telegram_public_surface_stays_small_and_interaction_owned(self) -> None:
+        file_path = ROOT / "src" / "contexts" / "telegram_interaction" / "public.py"
+        content = file_path.read_text(encoding="utf-8")
+        self.assertIn("def get_interaction_api(", content)
+        self.assertIn("def get_webhook_handler(", content)
+        self.assertIn("def get_command_handlers(", content)
+        for removed_helper in (
+            "def get_public_api(",
+            "def get_update_parser(",
+            "def get_command_router(",
+            "def get_snapshot_read_api(",
+            "def get_usecase(",
+            "def get_group_query_formatter(",
+            "def get_sender(",
+            "def make_group_query_request(",
+            "def get_group_query_reply_job(",
+        ):
+            self.assertNotIn(removed_helper, content)
+
+    def test_snapshot_public_surface_uses_canonical_api_names(self) -> None:
+        file_path = ROOT / "src" / "contexts" / "snapshot" / "public.py"
+        content = file_path.read_text(encoding="utf-8")
+        self.assertIn("get_read_api", content)
+        self.assertIn("get_attachment_api", content)
+        self.assertIn("get_query_api", content)
+        self.assertIn("get_update_api", content)
+        for removed_helper in (
+            "def get_public_api(",
+            "def get_read_capability(",
+            "def get_attachment_capability(",
+            "def get_query_capability(",
+            "def get_update_capability(",
+        ):
+            self.assertNotIn(removed_helper, content)
+
+    def test_attachments_public_surface_stays_small_and_api_owned(self) -> None:
+        file_path = ROOT / "src" / "contexts" / "attachments" / "public.py"
+        content = file_path.read_text(encoding="utf-8")
+        self.assertIn("def get_attachment_api(", content)
+        self.assertIn("def get_supported_attachment_mime_types(", content)
+        self.assertIn("def get_command_handlers(", content)
+        for removed_helper in (
+            "def get_public_api(",
+            "def get_attachment_storage(",
+            "def get_attachment_metadata_store(",
+            "def get_attachment_finalize_service(",
+            "def get_attachment_read_resolver(",
+            "def get_doc_preview_converter(",
+            "def get_attachment_snapshot_api(",
+            "def get_attachment_command_flow(",
+        ):
+            self.assertNotIn(removed_helper, content)
+
+    def test_operational_info_read_api_stays_thin_and_service_owned(self) -> None:
+        file_path = ROOT / "src" / "contexts" / "access_api" / "internal" / "operational_info_read_api.py"
+        content = file_path.read_text(encoding="utf-8")
+        self.assertIn("OperationalInfoReadService", content)
+        self.assertNotIn("def _summary_payload(", content)
+        self.assertNotIn("def _detail_payload(", content)
 
 
 if __name__ == "__main__":

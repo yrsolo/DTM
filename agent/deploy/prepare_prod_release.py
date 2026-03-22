@@ -33,8 +33,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--google-key-file",
         type=Path,
-        default=Path("key") / "google_key_poised-backbone-191400-4e9fc454915f.json",
-        help="Google key JSON file path.",
+        default=None,
+        help="Optional Google key JSON file path. If omitted, GOOGLE_KEY_JSON / GOOGLE_KEY_JSON_B64 / GOOGLE_KEY_JSON_PATH from .env are used.",
     )
     parser.add_argument(
         "--yc-binary",
@@ -63,11 +63,11 @@ def _run_lockbox_sync(args: argparse.Namespace) -> int:
         args.secret_name,
         "--env-file",
         str(args.env_file),
-        "--google-key-file",
-        str(args.google_key_file),
         "--yc-binary",
         str(args.yc_binary),
     ]
+    if args.google_key_file is not None:
+        command.extend(["--google-key-file", str(args.google_key_file)])
     for key in REQUIRED_PROD_KEYS:
         command.extend(["--require-key", key])
     if args.dry_run:

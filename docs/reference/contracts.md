@@ -1,11 +1,11 @@
-﻿# Contracts (Current)
+# Контракты
 
-This document defines the current runtime contracts that shape the live snapshot-first contour.
-It intentionally excludes legacy database/storage schemas and historical migration contracts.
+Этот документ фиксирует текущие runtime contracts системы.  
+Исторические storage/schema детали в active canon не входят.
 
-## 1) Normalized task contract
+## 1. Normalized task contract
 
-Minimum canonical task fields observed in the active runtime:
+Минимальные канонические поля задачи:
 - `task_id`
 - `title`
 - `brand`
@@ -20,14 +20,14 @@ Minimum canonical task fields observed in the active runtime:
 - `max_date`
 - `milestones`
 
-Notes:
-- `status` is the normalized workflow status derived from sheet color/text mapping.
-- `history` is the raw human-facing source status/history text preserved for runtime consumers.
-- task identity is snapshot-centric and stable across the active runtime contour.
+Важно:
+- `status` — нормализованный workflow status;
+- `history` — исходный human-facing status/history text;
+- task identity стабильна внутри snapshot-based runtime contour.
 
-## 2) Milestone contract
+## 2. Milestone contract
 
-Milestone fields used by the active runtime:
+Поля milestone:
 - `idx`
 - `type`
 - `planned`
@@ -35,28 +35,33 @@ Milestone fields used by the active runtime:
 - `status`
 - `raw_text`
 
-Invariant:
-- `milestones` must never be empty for a runtime task view.
+Инвариант:
+- `milestones` не должны быть пустыми в runtime task view.
 
-## 3) Snapshot contracts
+## 3. Snapshot contracts
 
 ### Raw snapshot
-Represents normalized sheet source state before extra metadata merge.
+
+Нормализованное состояние source data до merge с extra metadata.
 
 ### Prep snapshot
-Represents the canonical read-side snapshot used by:
-- frontend/API reads,
-- render jobs,
-- reminder flows,
-- group-query selection,
-- attachment metadata exposure.
+
+Канонический read-side snapshot для:
+- frontend/API reads;
+- render jobs;
+- reminder flows;
+- group-query selection;
+- attachment visibility.
 
 ### Extra snapshot
-Represents bulk metadata that augments raw/prep snapshots:
-- attachment metadata,
-- orphan flags and other auxiliary task metadata.
 
-Attachment metadata fields:
+Bulk metadata поверх raw/prep snapshots:
+- attachment metadata;
+- orphan flags;
+- прочая вспомогательная task metadata.
+
+## 4. Attachment metadata
+
 - `attachment_id`
 - `task_id`
 - `filename_original`
@@ -66,7 +71,7 @@ Attachment metadata fields:
 - `size_bytes`
 - `status`
 - `storage_bucket` (internal only)
-- `storage_key` (internal only; not exposed by frontend API)
+- `storage_key` (internal only)
 - `storage_etag`
 - `storage_version`
 - `uploaded_by_user_id`
@@ -78,44 +83,38 @@ Attachment metadata fields:
 - `error_message`
 - `snapshot_visible`
 - `preview_capabilities`
-- future enrichment fields are reserved but may be null in v1
 
-## 4) Frontend API v2 contract
+## 5. Frontend payload contract
 
-Canonical response shape remains:
+Каноническая структура ответа:
 - `meta`
 - `filters`
 - `summary`
 - `entities`
 - `tasks`
 
-Current behavioral guarantees:
-- filtering stays query-driven over prep snapshot,
-- masking changes sensitive values but preserves payload shape,
-- `milestones` remain full for selected tasks,
-- ids, dates, statuses, and summary/meta structure remain stable across full/masked modes.
+Гарантии:
+- filtering идёт по prep snapshot;
+- masking меняет чувствительные значения, но не форму payload;
+- `milestones` остаются полными;
+- ids, dates, statuses и summary/meta structure стабильны между `full` и `masked`.
 
-Attachment publication guarantees:
-- `tasks[].attachments` contains only `ready` + visible attachments
-- frontend DTO never exposes storage internals
-- masked mode returns empty attachments arrays
-- browser content access goes through trusted read routes, not direct storage keys
+Attachment guarantees:
+- `tasks[].attachments` содержит только `ready` и visible attachments;
+- frontend DTO не раскрывает storage internals;
+- masked mode возвращает пустые attachments arrays.
 
-## 5) Hashing and freshness contracts
+## 6. Hashing и freshness
 
-### Stable source hash
-- built from stable JSON over sheet values/colors
-- used to decide whether snapshot rebuild is necessary
+Stable source hash:
+- строится из стабильного JSON по sheet values/colors;
+- используется для решения, нужен ли rebuild.
 
-### Content-level task hashing
-- must include milestone timing fields
-- must not let cosmetic-only markers redefine task identity
+Content-level task hashing:
+- должен учитывать milestone timing fields;
+- не должен переопределяться косметическими маркерами.
 
-## 6) Runtime mode contract view
+## 7. Related reference
 
-See `docs/reference/runtime-modes.md` for current supported modes and transport mapping.
-
-## Archive pointer
-
-Historical schema detail lives only under `archive/docs/`.
-
+Режимы runtime описаны в [runtime-modes.md](runtime-modes.md).  
+Исторические schema details лежат в `archive/docs/`.
