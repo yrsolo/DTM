@@ -2,17 +2,17 @@
 
 ## Роль
 
-`access_api` — это хозяин основного browser-facing read-side.
+`access_api` — это хозяин первичного browser read-model.
 
 Он отвечает за:
-- сборку главного task-list payload;
+- сборку главного task-list payload как канонического browser read-model;
 - masked/full access policy на backend boundary;
 - browser-safe DTO shape;
 - выдачу `/info`-related operational reads.
 
 ## Главные входы
 
-- browser task-list read;
+- primary browser read-model;
 - operational info read;
 - attachment read/view/download surface, которая нужна браузеру.
 
@@ -24,4 +24,4 @@
 
 ## Finish line
 
-Если пользователь открыл интерфейс и получил стабильный payload карточек и вложений, это finish line `access_api`.
+Если пользователь открыл интерфейс и получил стабильный browser read-model карточек и вложений, это finish line `access_api`.

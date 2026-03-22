@@ -10,6 +10,7 @@
 - none
 
 ## Recent Done
+- CAM-2026-03-22-CRITIC3-CANON-ALIGNMENT-V1 completed after making `access_api` read through one explicit primary browser read-model term across code, router wiring, module/public seams, and active docs, so the active code map and docs map now describe the same main browser path.
 - CAM-2026-03-22-CRITIC2-STRUCTURAL-CLOSEOUT-V1 completed after replacing the visible `snapshot` runtime hub with role-true builders, hiding shell objects behind direct top-entry `handle_*` seams, shrinking the primary browser read orchestration, and removing the named render-job public catalog.
 - CAM-2026-03-22-DOCS-CANON-REBUILD-V1 completed after rebuilding active docs around five reader-first sections, archiving the old `integrations` contour and recovery-era architecture trees, and rewriting root/docs navigation for the current system.
 - CAM-2026-03-22-LOCAL-GOOGLE-CREDENTIALS-ENV-CLEANUP-V1 completed after removing the checked-in Google key fallback and making local/runtime tooling env-first while leaving cloud deploy on the existing Lockbox `GOOGLE_KEY_JSON` secret path.

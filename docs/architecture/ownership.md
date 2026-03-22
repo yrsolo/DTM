@@ -2,7 +2,7 @@
 
 ## Главные owning modules
 
-- `access_api` — основной browser-facing read-side
+- `access_api` — хозяин первичного browser read-model
 - `attachments` — lifecycle вложений и publication readiness
 - `snapshot` — ingestion, state build и read-model projection
 - `rendering` — sheet rendering use-cases
@@ -19,7 +19,7 @@
 
 ## Главные finish lines
 
-- Основной read-side finish line: payload из `access_api`
+- Основной read-side finish line: первичный browser read-model из `access_api`
 - Attachment publication finish line: видимость attachment в основном task-list payload
 - Operator finish line: данные и диагностика в `/info`
 

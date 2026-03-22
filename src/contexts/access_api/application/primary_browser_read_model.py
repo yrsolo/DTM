@@ -1,4 +1,4 @@
-"""Application-owned primary browser read surface for the access API context."""
+"""Application-owned primary browser read-model surface for the access API context."""
 
 from __future__ import annotations
 
@@ -11,8 +11,8 @@ from ..internal.primary_task_list_read_api import PrimaryTaskListReadApi
 from ..internal.task_attachment_read_api import TaskAttachmentReadApi
 
 
-class PrimaryBrowserReadApi:
-    """Own browser-facing reads through the access_api application layer."""
+class PrimaryBrowserReadModel:
+    """Own the primary browser read model through the access_api application layer."""
 
     def __init__(self, ctx) -> None:
         self._root_read = BrowserRootReadApi(ctx)
@@ -35,4 +35,4 @@ class PrimaryBrowserReadApi:
         return None
 
 
-__all__ = ["PrimaryBrowserReadApi"]
+__all__ = ["PrimaryBrowserReadModel"]
