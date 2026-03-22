@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from src.contexts.snapshot.contracts import Window
 from src.contexts.snapshot.module import get_read_api
 
+from .application.execution_api import RenderingExecutionApi
 from .internal import DesignersRenderUseCase, GoogleSheetsPlanWriter, RenderJob, RenderRequest, RenderUseCase, SheetTarget
 
 
@@ -42,6 +43,9 @@ class RenderingModule:
 
     def job(self, usecase, writer):
         return RenderJob(usecase, writer)
+
+    def execution_api(self, ctx):
+        return RenderingExecutionApi(ctx, self)
 
 
 def get_module() -> RenderingModule:

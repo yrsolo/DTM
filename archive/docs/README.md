@@ -1,23 +1,18 @@
 # Архив документации
 
-Здесь хранится историческая документация: legacy-архитектура, migration-era решения, старые расследования и superseded планы.
+Здесь хранится историческая документация: старые архитектурные каноны, migration-era рекомендации, superseded audits, прежние operator docs и другие материалы, которые больше не являются текущим источником истины.
 
-## Start here
+## Что сюда переехало
 
-- [doc_legacy/README.md](doc_legacy/README.md)
-- [system_legacy/README.md](system_legacy/README.md)
-- [ops/README.md](ops/README.md)
+- прежние active architecture centers (`module-first-recovery`, `recovery`, старый `runtime` canon, `snapshot-engine`)
+- старый `integrations/` contour
+- future skeletons и stale audits
+- более ранние legacy/system/db/process документы
 
-## Deep dives
+## Когда сюда идти
 
-- [architecture_legacy/README.md](architecture_legacy/README.md)
-- [db/README.md](db/README.md)
-- [contracts/README.md](contracts/README.md)
+- когда нужен исторический контекст;
+- когда надо понять, как система эволюционировала;
+- когда active docs ссылаются на historical background.
 
-## When to use this folder
-
-Используй архив только когда нужен исторический контекст, старые решения или миграционные артефакты, которые больше не являются текущим источником истины.
-
-## Historical status
-
-Материалы в архиве не описывают canonical current runtime. Для текущего состояния системы начинай с [../README.md](../README.md).
+Для текущего состояния системы начинай с [../README.md](../README.md) и [../docs/README.md](../docs/README.md).

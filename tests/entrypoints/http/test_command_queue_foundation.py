@@ -21,6 +21,7 @@ from src.entrypoints.http.admin_queue_handler import AdminQueueHandler
 from src.entrypoints.http.dto import HttpRequest
 from src.entrypoints.http.job_status_handler import JobStatusHandler
 from src.platform import bootstrap as runtime_bootstrap
+from src.platform.shell import get_trigger_modes
 from src.platform.runtime.worker.model import JobStatusRecord
 
 
@@ -609,7 +610,7 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
 
     def test_index_enqueues_trigger_event_when_queue_is_configured(self) -> None:
         runtime_deps = runtime_bootstrap.get_runtime_deps()
-        trigger_modes = runtime_bootstrap.get_trigger_modes()
+        trigger_modes = get_trigger_modes()
         original_producer = runtime_deps.get("command_queue_producer")
         original_status_store = runtime_deps.get("job_status_store")
         original_triggers = dict(trigger_modes)

@@ -1,22 +1,14 @@
-# Продуктовый слой
+# Продукт
 
-В этой папке лежат самые короткие и понятные материалы про DTM: что это за система, какую пользу она даёт и какие сценарии покрывает.
+Этот раздел объясняет DTM простым языком: что это за система, какую практическую пользу она даёт и какие рабочие сценарии покрывает.
 
-## Start here
+## Начать отсюда
 
-- [overview.md](overview.md) — быстрый обзор DTM простым языком
-- [capabilities.md](capabilities.md) — список ключевых возможностей и рабочих сценариев
+- [overview.md](overview.md)
+- [capabilities.md](capabilities.md)
 
-## Deep dives
+## Дальше по смыслу
 
-- [../architecture/README.md](../architecture/README.md)
-- [../integrations/attachments/backend-flow.md](../integrations/attachments/backend-flow.md)
+- [../architecture/overview.md](../architecture/overview.md)
+- [../modules/README.md](../modules/README.md)
 - [../operations/runbook.md](../operations/runbook.md)
-
-## When to use this folder
-
-Используй этот раздел, когда нужно:
-
-- быстро ввести человека в контекст проекта
-- объяснить, зачем DTM существует и где его ценность
-- получить обзор без погружения в код и внутренние контракты

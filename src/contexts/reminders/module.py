@@ -11,7 +11,9 @@ from src.platform.integrations.llm.google import AsyncGoogleLLMChatAgent
 from src.platform.integrations.llm.openai import AsyncOpenAIChatAgent
 from src.platform.integrations.llm.yandex import AsyncYandexLLMChatAgent
 from src.platform.integrations.telegram.notifier import TelegramNotifier
+from src.platform.runtime.commands.types import SEND_REMINDERS
 
+from .application import ReminderDeliveryApi
 from .internal import ReminderFormatter, ReminderJob, ReminderUseCase
 
 
@@ -102,6 +104,14 @@ class RemindersModule:
         from .internal.model import ReminderRequest
 
         return ReminderRequest(**kwargs)
+
+    def delivery_api(self, ctx):
+        return ReminderDeliveryApi(ctx, self)
+
+    def command_handlers(self, ctx) -> dict[str, object]:
+        from .internal.job_runner import SendRemindersJob
+
+        return {SEND_REMINDERS: SendRemindersJob(ctx)}
 
 
 def get_module() -> RemindersModule:

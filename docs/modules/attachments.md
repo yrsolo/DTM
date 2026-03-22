@@ -1,67 +1,34 @@
-# Attachments
+# `attachments`
 
-## Purpose
+## Роль
 
-`attachments` owns the attachment mutation lifecycle and publication readiness:
-- request upload
-- direct upload contract handoff
-- finalize
-- metadata publication
-- preview lifecycle
-- delete lifecycle
-- cleanup lifecycle
-- view / download / read access policy
+`attachments` владеет жизненным циклом вложений:
+- request-upload;
+- finalize;
+- attach/delete mutations;
+- preview lifecycle;
+- publication readiness;
+- read access policy для view/download.
 
-For the primary read-model scenario, `attachments` owns mutation and publication readiness, but not direct frontend cache control or browser payload delivery.
+## Канонический сценарий
 
-## Public facade expectation
+1. Backend выдаёт upload contract.
+2. Браузер загружает бинарник напрямую в Object Storage.
+3. `finalize` подтверждает объект и ставит mutation в очередь.
+4. Worker публикует metadata в snapshot-based read-model.
+5. Вложение становится видимым в основном browser payload.
 
-Target context shape:
+## Что модуль не должен делать
 
-```text
-src/contexts/attachments/
-  public.py
-  module.py
-  contracts/
-  application/
-  domain/
-  adapters/
-```
+- управлять frontend cache как самостоятельный owner;
+- отдавать основной browser payload;
+- прятать success-criteria в transport shell.
 
-External callers should use the context facade only, not internal files.
+## Finish line
 
-## Allowed dependencies
+Вложение считается опубликованным не в момент upload или finalize, а когда оно появилось в основном task-list payload.
 
-- `platform` transport/runtime shells
-- shared contracts/utilities kept intentionally small
-- storage/object adapters owned by the context
-- snapshot public contracts only where publication/read-side interaction is necessary
-- runtime invalidation/publication intents where eventual task-list freshness must be coordinated
+## Где смотреть дальше
 
-## Forbidden dependencies
-
-- deep imports into another context's internals
-- ownership leakage into generic runtime/worker modules
-- direct transport logic as the place where business rules live
-- direct ownership of frontend cache helpers or main task-list payload delivery
-
-## Commands owned
-
-- `attach_task_file`
-- `delete_task_attachment`
-- `cleanup_task_attachments`
-- `generate_attachment_preview`
-
-## Routes owned
-
-- attachment request-upload paths
-- attachment finalize paths
-- attachment delete paths
-- attachment read/view/download paths
-
-## Active implementation notes
-
-- current implementation is spread across HTTP handlers, jobs, services, and snapshot-engine-facing pieces
-- preserve current behavior first, then consolidate into one context facade
-- `attachments` remains the first full extraction target after early bootstrap discipline and guardrails are in place
-- attachment success should be judged by appearance in the cached main task-list payload, not by upload/finalize alone
+- [../architecture/runtime-flow.md](../architecture/runtime-flow.md)
+- [../operations/runbook.md](../operations/runbook.md)

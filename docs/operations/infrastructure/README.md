@@ -1,17 +1,19 @@
-# Infrastructure
+# Инфраструктура
 
-В этой папке собраны инфраструктурные документы, напрямую связанные с очередями и runtime-повторными попытками.
+Здесь лежат инфраструктурные документы, которые напрямую связаны с очередями, retry-политикой и runtime execution wiring.
 
-## Start here
+## Начать отсюда
 
 - [queue-setup.md](queue-setup.md)
 - [queue-retry-policy.md](queue-retry-policy.md)
 
-## Deep dives
+## Дальше
 
-- [../../architecture/runtime/command-runtime.md](../../architecture/runtime/command-runtime.md)
+- [../../operations/runbook.md](../../operations/runbook.md)
 - [../../reference/job-status-schema.md](../../reference/job-status-schema.md)
 
-## When to use this folder
+## Когда читать этот раздел
 
-Используй этот раздел, когда нужно разбираться с очередями, DLQ, trigger topology и retry semantics.
+- когда нужно разбираться с очередями и DLQ;
+- когда нужно проверить retry semantics;
+- когда надо понять инфраструктурную часть command execution.

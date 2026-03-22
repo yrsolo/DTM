@@ -8,9 +8,7 @@ from uuid import uuid4
 from src.platform.runtime.commands.model import Command, RequestedBy
 from src.platform.runtime.commands.types import ATTACH_TASK_FILE, DELETE_TASK_ATTACHMENT
 from src.contexts.attachments.public import (
-    get_attachment_finalize_service,
-    get_attachment_snapshot_api,
-    get_attachment_storage,
+    get_attachment_api,
 )
 from src.entrypoints.http.access_context import resolve_access_context
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
@@ -18,11 +16,6 @@ from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response, json_response, path_matches
 from src.platform.runtime.command_runtime import get_command_runtime
 from src.platform.errors import AppError
-
-get_snapshot_attachment_api = get_attachment_snapshot_api
-get_attachment_storage_capability = get_attachment_storage
-get_attachment_finalize_capability = get_attachment_finalize_service
-
 
 class AdminTaskAttachmentsHandler:
     def __init__(self, ctx) -> None:
@@ -179,7 +172,8 @@ class AdminTaskAttachmentsHandler:
                 ),
             )
         try:
-            snapshot_attachments = get_snapshot_attachment_api(self._ctx)
+            attachments_api = get_attachment_api(self._ctx)
+            snapshot_attachments = attachments_api.snapshot_api()
             prep = snapshot_attachments.get_prep_snapshot()
         except Exception as error:
             return error_response(
@@ -211,7 +205,7 @@ class AdminTaskAttachmentsHandler:
                 ),
             )
         attachment_id = str(body.get("attachment_id", "")).strip() or uuid4().hex
-        storage = get_attachment_storage_capability(self._ctx)
+        storage = attachments_api.storage()
         object_key = storage.build_object_key(
             env_name=str(self._ctx.cfg.runtime.runtime.env_default or ""),
             task_id=task_id,
@@ -294,8 +288,9 @@ class AdminTaskAttachmentsHandler:
         if not uploaded_by:
             return error_response(400, code="uploaded_by_required", message="uploaded_by is required.")
         try:
-            snapshot_attachments = get_snapshot_attachment_api(self._ctx)
-            finalize = get_attachment_finalize_capability(self._ctx)
+            attachments_api = get_attachment_api(self._ctx)
+            snapshot_attachments = attachments_api.snapshot_api()
+            finalize = attachments_api.finalize_service()
             verified = finalize.finalize(task_id=task_id, attachment_id=attachment_id)
             lookup = snapshot_attachments.get_attachment_metadata_store().get_by_attachment_id(attachment_id)
             if lookup is None:

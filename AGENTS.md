@@ -147,3 +147,9 @@ Follow `agent/OPERATING_CONTRACT.md` escalation procedure. :contentReference[oai
 - Telegram notification language: Russian only.
 - Telegram notification style: include one suitable emoji in title/details (for example `🚨` for blockers, `✅` for completion, `❓` for decision).
 
+## Temporary repo-finalization autonomy note (2026-03-22)
+- During the current repo-finalization phase, owner pre-authorizes sequential bounded cleanup/refactor/polish waves without per-wave confirmation.
+- Prefer continuing with the option that best matches repo ideals: beauty, cleanliness, proportionality, and anti-overengineering.
+- Escalation is still required for real strategic blockers, but not for ordinary local architectural choices whose preferred direction is already clear from those ideals.
+- This is a temporary note and should be removed once the repo-finalization phase ends.
+

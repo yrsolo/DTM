@@ -31,11 +31,11 @@ FORBIDDEN_IMPORT_PREFIXES = (
 )
 INDEX_ALLOWED_IMPORTS = {
     "src.entrypoints.root.handler.handle",
-    "src.platform.bootstrap.get_http_shell",
-    "src.platform.bootstrap.get_telegram_webhook_path",
-    "src.platform.bootstrap.get_trigger_modes",
-    "src.platform.bootstrap.get_trigger_shell",
-    "src.platform.bootstrap.get_worker_shell",
+    "src.platform.shell.get_http_shell",
+    "src.platform.shell.get_telegram_webhook_path",
+    "src.platform.shell.get_trigger_modes",
+    "src.platform.shell.get_trigger_shell",
+    "src.platform.shell.get_worker_shell",
 }
 
 

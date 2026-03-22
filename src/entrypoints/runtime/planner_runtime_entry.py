@@ -5,15 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from src.contexts.reminders.public import (
-    get_enhancer as _get_reminders_enhancer,
-    get_formatter as _get_reminders_formatter,
-    get_job_runner as _get_reminder_job_runner,
-    get_sender as _get_reminders_sender,
-    get_snapshot_read_api as _get_reminders_snapshot_read_api,
-    get_usecase as _get_reminders_usecase,
-    make_reminder_request as _make_reminder_request,
-)
+from src.contexts.reminders.public import get_delivery_api as get_reminder_delivery_api
 from src.entrypoints.jobs.quality_report_job import print_quality_report as _print_quality_report
 from src.entrypoints.jobs.runtime_context_job import RuntimeContextRequest, resolve_runtime_context
 from src.entrypoints.jobs.timer_job import TimerJob
@@ -24,9 +16,6 @@ from src.contexts.snapshot.adapters.sources.sheets_normalized_source import (
 )
 from src.platform.runtime.timer_pipeline import RunRequest as TimerRunRequest
 from src.platform.runtime.timer_pipeline import TimerPipeline
-
-
-get_snapshot_read_api = _get_reminders_snapshot_read_api
 
 
 def _resolve_standard_run_mode(
@@ -46,12 +35,6 @@ def _resolve_standard_run_mode(
         if trigger_id:
             return str((triggers or {}).get(trigger_id, "test")).strip().lower()
     return "test"
-
-
-def _make_notify_enhancer(*, ctx: Any, mock_external: bool):
-    return _get_reminders_enhancer(ctx, mock_external=mock_external)
-
-
 async def _run_reminder_mode(
     *,
     app_context: Any,
@@ -63,15 +46,16 @@ async def _run_reminder_mode(
 ):
     """Execute reminder-oriented runtime modes through the reminders context."""
 
-    snapshot_read = get_snapshot_read_api(app_context)
-    usecase = _get_reminders_usecase(snapshot_read)
-    formatter = _get_reminders_formatter(app_context)
-    sender = _get_reminders_sender(app_context)
+    delivery_api = get_reminder_delivery_api(app_context)
+    snapshot_read = delivery_api.snapshot_read_api()
+    usecase = delivery_api.usecase(snapshot_read)
+    formatter = delivery_api.formatter()
+    sender = delivery_api.sender()
     notify_cfg = cfg.runtime.notify
     llm_mode = str(notify_cfg.llm_mode_default or "provider")
     mock_llm = bool(mock_external or llm_mode == "draft_only" or runtime_env == "test")
-    enhancer = _make_notify_enhancer(ctx=app_context, mock_external=mock_llm)
-    reminder_result = await _get_reminder_job_runner(
+    enhancer = delivery_api.enhancer(mock_external=mock_llm)
+    reminder_result = await delivery_api.job_runner(
         usecase=usecase,
         formatter=formatter,
         sender=sender,
@@ -88,7 +72,7 @@ async def _run_reminder_mode(
         runtime_env=runtime_env,
         mock_llm=mock_llm,
     ).run(
-        _make_reminder_request(
+        delivery_api.request(
             mode=normalized_mode,
             statuses=["work", "pre_done"],
             include_today=True,

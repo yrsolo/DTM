@@ -1,121 +1,87 @@
-﻿# Runbook (Current)
+# Runbook
 
-This is the minimal operator/developer runbook for the active runtime contour.
+Это минимальный operator runbook для текущего контура.
 
-## 1) Local setup
-1. Create `.env.dev` or copy from `.env.dev.example`.
-2. Ensure Google credentials are available through the supported runtime inputs.
-3. Ensure Object Storage credentials are available for snapshot/job-status paths.
+## 1. Локальный запуск
 
-## 2) Browser auth operations
+1. Создай `.env.dev` или скопируй `.env.dev.example`.
+2. Подай Google credentials через поддерживаемые env inputs.
+3. Проверь Object Storage credentials для snapshot и job-status путей.
 
-Browser auth procedure is maintained separately:
-- `docs/integrations/browser-auth/runbook.md`
+## 2. Snapshot refresh
 
-Use that runbook for:
-- auth/session route ownership
-- callback paths
-- proxy-secret/Lockbox wiring
-- test/prod rollout verification
+Канонический refresh flow:
 
-## 3) Snapshot refresh
+1. прочитать Google Sheets;
+2. нормализовать raw snapshot;
+3. смержить extra metadata;
+4. записать raw/prep snapshots в Object Storage.
 
-Canonical refresh flow:
-- fetch Sheets snapshot
-- normalize to raw snapshot
-- merge extra metadata into prep snapshot
-- write raw/prep snapshots to Object Storage
+Канонический read path после этого:
+- browser/API читают prep snapshot;
+- render/reminder/group-query используют тот же read-model контур.
 
-Current data layout:
-- raw snapshot
-- prep snapshot
-- extra bulk snapshot
-- people snapshot
+## 3. Browser и auth
 
-Canonical read path:
-- API v2 reads prep snapshot
-- render/reminder/group-query consume the same snapshot contour
+Backend часть browser auth описана отдельно:
+- [browser-auth.md](browser-auth.md)
+- [../reference/browser-auth.md](../reference/browser-auth.md)
 
-## 4) Reminder and Telegram operations
+Используй их, когда нужно:
+- проверить trusted ingress;
+- понять masked/full behavior;
+- проверить `/ops/auth/*` и `/ops/api/*` разделение.
 
-Reminder runtime source:
-- tasks from prep snapshot
-- people routing from people snapshot
+## 4. Reminder и Telegram
 
-Reminder delivery policy:
-- `morning` is workday-only
-- Saturday/Sunday `morning` runs are skipped without Telegram delivery
-- Friday `morning` still includes Monday as the next workday
+- reminder runtime читает задачи из prep snapshot;
+- people routing идёт через people snapshot;
+- webhook intake в Telegram должен быстро parse -> route -> enqueue -> return.
 
-Webhook intake policy:
-- webhook only, no polling
-- validate Telegram secret header
-- parse typed update
-- map to internal command
-- enqueue and return quickly
+Отдельный operator note:
+- [telegram-webhook.md](telegram-webhook.md)
 
-## 5) `/info` operator dashboard
+## 5. `/info`
 
-`/info` is the operational dashboard for:
-- snapshot state
-- queue live state
-- job history
-- build/runtime metadata
-- bottleneck traces and telemetry
+`/info` — операторская точка входа для:
+- snapshot state;
+- queue live state;
+- job history;
+- build/runtime metadata;
+- attachment harness;
+- bottleneck traces и telemetry.
 
-Use `/info` first when diagnosing:
-- queue/render/reminder behavior
-- recent job state
-- browser/API access behavior
+Если нужно быстро понять, что происходит в живом контуре, начинай с `/info`.
 
-## 6) Task attachments
+## 6. Attachments
 
-Canonical attachment routes and lifecycle are documented in:
-- `docs/integrations/attachments/backend-flow.md`
+Канонический operator flow:
 
-Operator notes:
-- upload path is `request-upload -> direct PUT -> finalize -> worker attach`
-- delete path is asynchronous and removes published metadata after worker execution
-- stale attachment cleanup is available through hidden enqueue path:
-  - `POST /admin/commands/cleanup-task-attachments`
-  - default TTL is `86400`
-- `test` contour smoke is verified; `prod` smoke requires manual production release workflow before verification because pushing `main` alone does not deploy the live function
-- `/info` now includes `Attachment Harness` for the reserved probe task:
-  - request upload contract
-  - direct browser upload to storage
-  - finalize
-  - poll worker job
-  - verify probe-task attachment state
-  - test `view` / `download`
-  - delete and verify disappearance
-- browser-safe harness buttons depend on the existing external auth attachment facade under `/ops/auth/attachments/*` or `/test/ops/auth/attachments/*`
+1. `request-upload`
+2. direct PUT в Object Storage
+3. `finalize`
+4. worker attach publication
+5. `view` / `download` / `delete`
 
-## 7) Render safety
+Важно:
+- attachment success меряется публикацией во frontend payload;
+- `test` contour smoke уже подтверждён;
+- `prod` smoke остаётся blocked до ручного production release workflow.
 
-- render jobs may write only to approved target worksheets
-- source worksheet `Ð¢ÐÐ‘Ð›Ð˜Ð§ÐšÐ` must never be a render target
-- unsafe target returns structured blocked result
+## 7. Branching и deploy
 
-## 8) Branching and deploy
+1. Разработка идёт в `dev`.
+2. `test` deploy идёт через активный workflow для test.
+3. `prod` release остаётся owner-controlled и запускается вручную.
 
-1. Development goes to `dev`.
-2. Push/merge flow for `test` follows the active test deploy workflow.
-3. Production release remains owner-controlled and is triggered manually from the production release workflow.
+## 8. Guardrails
 
-## 9) Guardrails
+Перед shipping structural cleanups:
 
-Use the anti-relapse checks before shipping architectural cleanup:
 - `python scripts/check_no_monsters.py`
 - `python scripts/check_entrypoint_import_boundaries.py`
 - `python scripts/check_active_import_boundaries.py`
 
-Purpose:
-- prevent retired contours from leaking back into active runtime paths
-- keep shells thin and import-safe
-- keep current runtime docs aligned with active code
+## 9. История
 
-## 10) Archive policy
-
-Current runbook does not document historical planner-era or old database contours.
-If historical troubleshooting detail is needed, use `archive/docs/*`.
-
+Исторические runbook'и, migration-era notes и superseded operator docs лежат только в `archive/docs/`.

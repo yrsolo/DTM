@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .application.browser_read_api import BrowserReadApi
+from .application.browser_read_api import PrimaryBrowserReadApi
 
 
 @dataclass(frozen=True, slots=True)
@@ -13,8 +13,8 @@ class AccessApiModule:
 
     name: str = "access_api"
 
-    def browser_read_api(self, ctx):
-        return BrowserReadApi(ctx)
+    def primary_browser_read_api(self, ctx):
+        return PrimaryBrowserReadApi(ctx)
 
 
 def get_module() -> AccessApiModule:

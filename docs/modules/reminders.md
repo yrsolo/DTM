@@ -1,52 +1,25 @@
-# Reminders
+# `reminders`
 
-## Purpose
+## Роль
 
-`reminders` owns reminder business logic:
-- candidate selection
-- reminder payload building
-- styling/enhancement
-- delivery orchestration
-- retry/accounting behavior that belongs to reminder execution
+`reminders` владеет reminder-сценарием:
+- выбором кандидатов;
+- сборкой reminder payload;
+- enrichment/styling;
+- delivery orchestration;
+- retry/accounting логикой reminder execution.
 
-## Public facade expectation
+## Главные входы
 
-Target context shape:
+- queue-backed `send_reminders`;
+- planner/runtime execution path для scheduled reminder runs.
 
-```text
-src/contexts/reminders/
-  public.py
-  module.py
-  contracts/
-  application/
-  domain/
-  adapters/
-```
+## Что модуль не должен делать
 
-## Allowed dependencies
+- превращаться в trigger shell;
+- зависеть от deep Telegram internals;
+- размазывать reminder semantics по `platform` и transport code.
 
-- delivery adapters owned by the context
-- optional LLM styling adapter owned by the context
-- public contracts from other contexts if reminder flow needs prepared state
+## Finish line
 
-## Forbidden dependencies
-
-- treating `morning` trigger semantics as the reminder domain itself
-- deep imports into Telegram internals or runtime transport internals
-- business rules inside trigger shells
-
-## Commands owned
-
-- `send_reminders`
-
-## Routes owned
-
-- no primary HTTP routes are expected as the main ownership center in this wave
-- trigger intake remains platform-owned; reminder execution ownership remains here
-
-## Active implementation notes
-
-- reminders remain an active operational priority
-- keep behavior stable while separating reminder logic from trigger semantics and transport details
-- reminders must not depend on deep Telegram redesign; Telegram is reserve capability, reminders are active product/runtime flow
-- Telegram support for reminders should be maintained as an existing delivery channel, not as a reason to re-center the architecture on Telegram
+Напоминание считается выполненным, когда модуль принял решение, собрал payload и довёл delivery через свой канонический execution surface.

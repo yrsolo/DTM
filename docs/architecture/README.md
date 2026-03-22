@@ -1,26 +1,17 @@
-﻿# ÐÑ€Ñ…Ð¸Ñ‚ÐµÐºÑ‚ÑƒÑ€Ð°
+# Архитектура
 
-Ð—Ð´ÐµÑÑŒ ÑÐ¾Ð±Ñ€Ð°Ð½Ñ‹ Ð¼Ð°Ñ‚ÐµÑ€Ð¸Ð°Ð»Ñ‹ Ð¾ Ñ‚Ð¾Ð¼, ÐºÐ°Ðº ÑƒÑÑ‚Ñ€Ð¾ÐµÐ½ Ñ‚ÐµÐºÑƒÑ‰Ð¸Ð¹ DTM runtime, Ð¸ Ð½Ð¾Ñ€Ð¼Ð°Ñ‚Ð¸Ð²Ð½Ñ‹Ðµ Ð´Ð¾ÐºÑƒÐ¼ÐµÐ½Ñ‚Ñ‹ Ð´Ð»Ñ active module-first canon.
+В этом разделе лежит только текущий canon системы.  
+Здесь нет migration-story, recovery-wave narrative и исторических рекомендаций.
 
-## Start here
+## Начать отсюда
 
-- [module-first-recovery/README.md](module-first-recovery/README.md) â€” active normative canon Ð´Ð»Ñ current module-first runtime
-- [runtime/README.md](runtime/README.md) â€” Ñ‚ÐµÐºÑƒÑ‰Ð¸Ð¹ production-like runtime
-- [snapshot-engine/README.md](snapshot-engine/README.md) â€” read-side Ð¸ snapshot model
+- [overview.md](overview.md)
+- [runtime-flow.md](runtime-flow.md)
+- [entrypoints.md](entrypoints.md)
+- [ownership.md](ownership.md)
 
-## Deep dives
+## Когда читать этот раздел
 
-- [runtime/architecture.md](runtime/architecture.md)
-- [runtime/dataflow.md](runtime/dataflow.md)
-- [runtime/context-ownership-map.md](runtime/context-ownership-map.md)
-- [snapshot-engine/architecture.md](snapshot-engine/architecture.md)
-
-## When to use this folder
-
-Ð˜ÑÐ¿Ð¾Ð»ÑŒÐ·ÑƒÐ¹ ÑÑ‚Ð¾Ñ‚ Ñ€Ð°Ð·Ð´ÐµÐ», ÐºÐ¾Ð³Ð´Ð° Ð½ÑƒÐ¶Ð½Ð¾:
-
-- Ð¿Ð¾Ð½ÑÑ‚ÑŒ Ñ‚ÐµÐºÑƒÑ‰Ð¸Ð¹ runtime contour
-- Ð¿Ð¾Ð½ÑÑ‚ÑŒ Ñ†ÐµÐ»ÐµÐ²Ð¾Ð¹ module-first contract Ð´Ð»Ñ Ð½Ð¾Ð²Ñ‹Ñ… ÐºÐ°Ð¼Ð¿Ð°Ð½Ð¸Ð¹
-- Ñ€Ð°Ð·Ð¾Ð±Ñ€Ð°Ñ‚ÑŒÑÑ, Ð³Ð´Ðµ Ð¿Ñ€Ð¾Ñ…Ð¾Ð´Ð¸Ñ‚ Ð³Ñ€Ð°Ð½Ð¸Ñ†Ð° Ð¼ÐµÐ¶Ð´Ñƒ read path, async jobs Ð¸ HTTP boundary
-- Ð±Ñ‹ÑÑ‚Ñ€Ð¾ Ð½Ð°Ð¹Ñ‚Ð¸ ÑÐ¸ÑÑ‚ÐµÐ¼Ð½Ñ‹Ð¹ deep dive Ð¿Ð¾ Ð½ÑƒÐ¶Ð½Ð¾Ð¼Ñƒ subsystem
-
+- чтобы быстро понять текущую форму DTM;
+- чтобы увидеть, где проходят реальные границы между `entrypoints`, `platform`, `contexts` и `core`;
+- чтобы проверить, кто владеет read-path, async-командами и publication-aftermath.

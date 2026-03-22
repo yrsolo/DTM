@@ -1,58 +1,53 @@
-﻿# Designers Task Manager
+# DTM
 
-DTM is a lightweight operations hub for design teams that need one place to keep tasks, people, deadlines, reminders, and file flows in sync without building a heavy bespoke PM stack.
+DTM — внутренняя операционная система для команд, которые ведут задачи, сроки, людей и вложения вокруг Google Sheets, но хотят читать данные быстро, мутировать их безопасно и сопровождать всё это без ручной магии.
 
-It sits on top of familiar tools, keeps reads fast and predictable, and pushes expensive or risky work into controlled async jobs.
+Проще говоря, репозиторий решает три задачи:
+- собирает и нормализует данные из рабочих таблиц;
+- строит стабильный read-model для браузера и операторских сценариев;
+- выносит тяжёлые и рискованные действия в явные асинхронные команды.
 
-## What DTM gives you
+## Что здесь важно
 
-- A browser-safe operational API over prepared task data
-- Snapshot-based reads that stay stable under load
-- Queue-backed mutations for refresh, renders, reminders, and attachments
-- Operator tooling in `/info` for diagnostics and live contour checks
-- File attachment flow with upload, finalize, view, download, and delete
-- Google Sheets as the practical source system for task operations
+- Браузер читает уже подготовленный payload, а не собирает карточки на лету.
+- Refresh, reminders, rendering и attachment-mutations идут через очередь и worker.
+- `/info` служит операторской точкой входа для диагностики и live-smoke.
+- Вложения считаются опубликованными только когда они появились в основном browser read-model.
 
-## Who it is for
+## Для кого проект
 
-- Design operations teams
-- Managers coordinating designers through Sheets-centric workflows
-- Engineers supporting internal planning and reminder automations
-- Operators who need clear runbooks and observable async flows
+- для design operations и production-команд;
+- для инженеров, которые поддерживают внутренний planning/runtime contour;
+- для операторов, которым нужны понятные runbook'и и диагностические инструменты.
 
-## Architecture tags
+## Технологии
 
-`snapshot-first` `queue-backed` `google-sheets` `browser-safe-reads` `async-mutations` `object-storage` `serverless`
+`python` `yandex-cloud` `yandex-message-queue` `object-storage` `google-sheets` `telegram` `grafana`
 
-## Where to go next
+## Куда читать дальше
 
-- [Project docs map](docs/README.md)
-- [Product overview](docs/product/README.md)
-- [Architecture and runtime map](docs/architecture/README.md)
-- [Active architecture canon](docs/architecture/module-first-recovery/README.md)
-- [Integrations and external contours](docs/integrations/README.md)
-- [Operations and observability](docs/operations/README.md)
-- [Reference contracts and schemas](docs/reference/README.md)
-- [Current execution tracking](work/README.md)
+- [Карта документации](docs/README.md)
+- [Короткий обзор продукта](docs/product/overview.md)
+- [Текущая архитектура](docs/architecture/README.md)
+- [Модули и зоны ответственности](docs/modules/README.md)
+- [Эксплуатация и runbook](docs/operations/README.md)
+- [Конфиг и контракты](docs/reference/README.md)
+- [Текущее выполнение и tracking](work/README.md)
 
-## Fast reading path
-
-If you want the cleanest first pass through the repo:
+## Быстрый путь по репозиторию
 
 1. [docs/product/overview.md](docs/product/overview.md)
-2. [docs/architecture/module-first-recovery/README.md](docs/architecture/module-first-recovery/README.md)
-3. [docs/integrations/attachments/frontend-card-publication.md](docs/integrations/attachments/frontend-card-publication.md)
-4. [index.py](index.py)
-5. [src/entrypoints/root/handler.py](src/entrypoints/root/handler.py)
+2. [docs/architecture/overview.md](docs/architecture/overview.md)
+3. [docs/modules/access_api.md](docs/modules/access_api.md)
+4. [docs/modules/attachments.md](docs/modules/attachments.md)
+5. [index.py](index.py)
 
-## Project posture
+## Принципы репозитория
 
-DTM deliberately prefers:
+DTM сознательно предпочитает:
+- стабильные read-paths вместо тяжёлых live-сборок;
+- явные async-команды вместо скрытых side effects;
+- небольшие понятные контракты вместо универсальных фасадов;
+- операционную прозрачность вместо clever-решений.
 
-- deterministic read paths over live query improvisation
-- explicit async jobs over hidden side effects
-- small browser-facing contracts over generic passthrough APIs
-- operational clarity over cleverness
-
-If you need the historical migration story or legacy investigations, use [archive/docs/README.md](archive/docs/README.md) and [archive/work/README.md](archive/work/README.md).
-
+История миграций, старые аудиты и superseded документы лежат в [archive/docs/README.md](archive/docs/README.md) и [archive/work/README.md](archive/work/README.md).

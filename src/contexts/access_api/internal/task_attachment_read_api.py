@@ -1,20 +1,19 @@
 from __future__ import annotations
 
-from src.contexts.attachments.public import (
-    get_attachment_read_resolver,
-    get_attachment_storage,
-)
+from src.contexts.attachments.public import get_attachment_api
 from src.entrypoints.http.access_context import resolve_access_context
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.event_parser import normalize_path
 from src.entrypoints.http.response_utils import error_response
 from src.platform.errors import AppError
+
+
 def get_attachment_storage_capability(ctx):
-    return get_attachment_storage(ctx)
+    return get_attachment_api(ctx).storage()
 
 
 def get_attachment_read_capability(ctx):
-    return get_attachment_read_resolver(ctx)
+    return get_attachment_api(ctx).read_resolver()
 
 
 class TaskAttachmentReadApi:

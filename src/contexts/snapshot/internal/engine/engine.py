@@ -26,7 +26,13 @@ from src.contexts.snapshot.internal.engine.update_job import (
     normalize_person_lookup_value,
     normalize_person_name,
 )
-from src.contexts.snapshot.internal.runtime_binding import SnapshotRuntimeBinding, build_snapshot_runtime_binding
+from src.contexts.snapshot.internal.runtime_binding import (
+    build_snapshot_attachment_mutation_service,
+    build_snapshot_prep_builder,
+    build_snapshot_query_engine,
+    build_snapshot_stores,
+    run_snapshot_update,
+)
 
 
 @dataclass(frozen=True)
@@ -55,6 +61,7 @@ class SnapshotEngine:
         prep_builder: PrepBuilder,
         update_job_factory: Any,
         people_update_job_factory: Any,
+        update_runner: Any | None = None,
     ) -> None:
         self._attachment_bucket = str(attachment_bucket or "").strip()
         self._raw_cache = raw_cache
@@ -66,6 +73,7 @@ class SnapshotEngine:
         self._prep_builder = prep_builder
         self._update_job_factory = update_job_factory
         self._people_update_job_factory = people_update_job_factory
+        self._update_runner = update_runner
         self._attachment_mutations = SnapshotAttachmentMutationService(
             attachment_bucket=self._attachment_bucket,
             raw_cache=self._raw_cache,
@@ -75,6 +83,8 @@ class SnapshotEngine:
         )
 
     def update(self, *, task_source: Any, force: bool = False) -> Any:
+        if self._update_runner is not None:
+            return self._update_runner(task_source=task_source, force=force)
         update_job = self._update_job_factory(task_source)
         result = update_job.run(force=force)
         people_updater = self._people_update_job_factory(task_source)
@@ -183,20 +193,27 @@ class SnapshotEngine:
         return self._attachment_mutations.get_attachment_metadata_store()
 
 
-def build_snapshot_engine_from_runtime(binding: SnapshotRuntimeBinding) -> SnapshotEngine:
-    return SnapshotEngine(
-        attachment_bucket=binding.attachment_bucket,
-        raw_cache=binding.raw_cache,
-        prep_cache=binding.prep_cache,
-        extra_store=binding.extra_store,
-        people_store=binding.people_store,
-        response_cache_store=binding.response_cache_store,
-        query_engine=binding.query_engine,
-        prep_builder=binding.prep_builder,
-        update_job_factory=binding.update_job_factory,
-        people_update_job_factory=binding.people_update_job_factory,
-    )
-
-
 def build_snapshot_engine(ctx: AppContext) -> SnapshotEngine:
-    return build_snapshot_engine_from_runtime(build_snapshot_runtime_binding(ctx))
+    stores = build_snapshot_stores(ctx)
+    prep_builder = build_snapshot_prep_builder(stores)
+    query_engine = build_snapshot_query_engine(ctx)
+    attachment_mutations = build_snapshot_attachment_mutation_service(ctx, stores=stores)
+    engine = SnapshotEngine(
+        attachment_bucket=stores.attachment_bucket,
+        raw_cache=stores.raw_cache,
+        prep_cache=stores.prep_cache,
+        extra_store=stores.extra_store,
+        people_store=stores.people_store,
+        response_cache_store=stores.response_cache_store,
+        query_engine=query_engine,
+        prep_builder=prep_builder,
+        update_job_factory=lambda task_source: None,
+        people_update_job_factory=lambda task_source: None,
+        update_runner=lambda *, task_source, force=False: run_snapshot_update(
+            ctx,
+            task_source=task_source,
+            force=force,
+        ),
+    )
+    engine._attachment_mutations = attachment_mutations
+    return engine

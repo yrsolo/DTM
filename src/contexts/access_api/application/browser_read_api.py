@@ -1,4 +1,4 @@
-"""Application-owned browser read entry for the access API context."""
+"""Application-owned primary browser read surface for the access API context."""
 
 from __future__ import annotations
 
@@ -11,8 +11,8 @@ from ..internal.primary_task_list_read_api import PrimaryTaskListReadApi
 from ..internal.task_attachment_read_api import TaskAttachmentReadApi
 
 
-class BrowserReadApi:
-    """Dispatch browser-facing reads through the access_api application layer."""
+class PrimaryBrowserReadApi:
+    """Own browser-facing reads through the access_api application layer."""
 
     def __init__(self, ctx) -> None:
         self._read_routes = [
@@ -31,4 +31,4 @@ class BrowserReadApi:
         return None
 
 
-__all__ = ["BrowserReadApi"]
+__all__ = ["PrimaryBrowserReadApi"]

@@ -1,11 +1,12 @@
 # Evidence - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## Trust gate
-- source: deployed `test` and `prod` attachment routes, current attachment docs, current attachment code, current production release workflow
+- source: deployed `test` and `prod` attachment routes, current active attachment docs, current attachment code, current production release workflow
 - last_verified_at: 2026-03-21
 - verified_by: Codex
 - evidence:
-  - `docs/integrations/attachments/backend-flow.md`
+  - `docs/modules/attachments.md`
+  - `docs/operations/runbook.md`
   - `src/entrypoints/http/admin_task_attachments_handler.py`
   - `src/contexts/access_api/internal/task_attachment_read_api.py`
   - `.github/workflows/release_yc_function_prod.yml`

@@ -1,6 +1,6 @@
-# Yandex Message Queue Setup
+# Настройка очереди
 
-## Queues per environment
+## Очереди по контурам
 
 ### Test
 
@@ -12,32 +12,30 @@
 - `dtm-prod-commands`
 - `dtm-prod-commands-dlq`
 
-## Why DLQ
+## Зачем нужна DLQ
 
-Main queue processes commands.
-DLQ stores poison/problem commands that exceeded retry policy at the queue level.
+Основная очередь обрабатывает команды.  
+DLQ хранит проблемные сообщения, которые исчерпали retry-политику на уровне очереди.
 
-## Recommended settings
+## Рекомендуемые параметры
 
-- queue type: `Standard`
-- visibility timeout: `60-180s`
-- max receive count: `5-10`
-- dead-letter queue: matching environment DLQ
+- тип очереди: `Standard`
+- `visibility timeout`: `60-180s`
+- `max receive count`: `5-10`
+- dead-letter queue: отдельная DLQ того же контура
 
-## Current trigger topology
+## Текущая topology
 
-Current runtime topology is **not** a separate worker function.
+DTM сейчас не использует отдельную worker function.
 
-Per environment:
+В каждом контуре один и тот же Cloud Function object принимает:
+- HTTP gateway events;
+- Message Queue trigger events.
 
-- the same deployed Cloud Function object handles:
-  - HTTP gateway events
-  - Message Queue trigger events
+Именно это и считается канонической текущей topology.
 
-This document intentionally reflects the current one-function topology.
+## Практические замечания
 
-## Notes
-
-- one trigger per main queue
-- queue and trigger must live in the same cloud/folder setup expected by deployment
-- queue behavior must match `docs/operations/infrastructure/queue-retry-policy.md`
+- для каждой основной очереди должен быть свой trigger;
+- очередь и trigger должны жить в той же cloud/folder схеме, что ожидает deploy;
+- поведение очереди должно совпадать с [queue-retry-policy.md](queue-retry-policy.md).

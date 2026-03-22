@@ -6,7 +6,7 @@ from time import perf_counter
 
 from src.platform.context import AppContext
 from src.contexts.access_api.public import (
-    get_browser_read_api,
+    get_primary_browser_read_api,
 )
 from src.entrypoints.http.dto import HttpRequest, HttpResponse
 from src.entrypoints.http.admin_queue_handler import AdminQueueHandler
@@ -24,7 +24,7 @@ class HttpRouter:
         self._admin_task_attachments_handler = AdminTaskAttachmentsHandler(ctx)
         self._admin_queue_handler = AdminQueueHandler(ctx)
         self._job_status_handler = JobStatusHandler(ctx)
-        self._browser_read_api = get_browser_read_api(ctx)
+        self._primary_browser_read_api = get_primary_browser_read_api(ctx)
 
     @staticmethod
     def _with_headers(response: HttpResponse, extra_headers: dict[str, str]) -> HttpResponse:
@@ -43,7 +43,7 @@ class HttpRouter:
             ("admin_task_attachments", self._admin_task_attachments_handler.handle),
             ("admin_queue", self._admin_queue_handler.handle),
             ("job_status", self._job_status_handler.handle),
-            ("browser_read", self._browser_read_api.handle),
+            ("browser_read", self._primary_browser_read_api.handle),
         ]
         for name, handler in handlers:
             precheck_ms = (perf_counter() - started_at) * 1000.0

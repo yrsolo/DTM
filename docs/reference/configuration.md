@@ -1,12 +1,13 @@
-﻿# Configuration (Current)
+# Конфигурация
 
 ## Source of truth
-Typed config is loaded through:
+
+Typed config загружается через:
 - `src/config/schema.py`
 - `src/config/loader.py`
-- composed in `src/platform/bootstrap.py`
+- `src/platform/bootstrap.py`
 
-Primary config files:
+Основные config files:
 - `config/runtime.yaml`
 - `config/tables.yaml`
 - `config/db.yaml`
@@ -15,96 +16,116 @@ Primary config files:
 - `config/deploy.yaml`
 
 ## Runtime contour
+
 - `runtime.env`: `dev|test|prod`
-- `runtime.timezone`: default `Europe/Moscow`
-- `runtime.bottleneck_metrics_level`: `off|stages|debug` profiling policy for detailed bottleneck analytics
-- `runtime.metrics_delivery_mode`: `buffered|off` delivery policy for runtime metrics writes
+- `runtime.timezone`: по умолчанию `Europe/Moscow`
+- `runtime.bottleneck_metrics_level`: `off|stages|debug`
+- `runtime.metrics_delivery_mode`: `buffered|off`
 - `runtime.snapshot_engine.*`: snapshot/Object Storage settings
-- `runtime.queue.*`: Yandex Message Queue settings
-- `runtime.telegram.*`: webhook and sender settings
-- `runtime.notify.*`: reminder retry/enhancer/test-chat policy
-- `runtime.monitoring.*`: Yandex Monitoring backend settings
-- `runtime.prometheus.*`: Prometheus-compatible sink settings
-- `runtime.grafana.*`: Grafana dashboard/embed metadata
-- `runtime.api.auth_trusted_secret_header`: trusted proxy secret header name for browser-facing auth
-- `runtime.api.auth_trusted_fallback`: direct/untrusted browser fallback mode (`masked`)
-- `runtime.api.auth_mask_dictionary_version`: deterministic masking dictionary version
-- `runtime.api.frontend_response_cache_ttl_minutes`: TTL for default frontend response cache entries
-- `runtime.snapshot_engine.prefix_responses`: Object Storage prefix for cached frontend responses
+- `runtime.queue.*`: queue settings
+- `runtime.telegram.*`: webhook и sender settings
+- `runtime.notify.*`: reminder delivery settings
+- `runtime.monitoring.*`: Monitoring backend settings
+- `runtime.prometheus.*`: Prometheus sink settings
+- `runtime.grafana.*`: Grafana metadata
+- `runtime.api.*`: browser auth, masking и frontend cache settings
 
-Current profiling policy:
-- `off` keeps only baseline runtime metrics
-- `stages` emits stage timings/counters for bottleneck analysis
-- `debug` emits stage timings plus debug trace details for short investigations
+## Profiling и metrics policy
 
-Current metrics delivery policy:
-- `buffered` accumulates runtime metrics in memory per request/job and performs one best-effort flush at the end
-- `off` disables runtime metrics writes through the main `metrics_client`
+`runtime.bottleneck_metrics_level`:
+- `off` — только базовые метрики;
+- `stages` — stage timings и counters;
+- `debug` — stage timings плюс расширенные trace details.
 
-Current API metrics policy:
-- `runtime.monitoring.emit_api_metrics=false` disables remote/runtime metric emission for `/api` and `/info` hot paths
-- in-process traces, `Server-Timing`, and `/info` bottleneck diagnostics stay available
+`runtime.metrics_delivery_mode`:
+- `buffered` — один best-effort flush в конце request/job;
+- `off` — runtime metrics writes выключены.
 
-Backward compatibility:
-- legacy `runtime.dev_mode_metrics=true` is still treated as `stages` until cleanup removes the old boolean
-- `METRICS_DELIVERY_MODE` may override YAML at runtime for quick operator disable/restore
+Для hot paths:
+- `runtime.monitoring.emit_api_metrics=false` выключает remote metric emission для `/api` и `/info`;
+- при этом in-process traces, `Server-Timing` и `/info` bottleneck diagnostics остаются доступны.
 
-## Secrets
-Secrets stay outside repo config files:
+## Временная backward compatibility
+
+Пока ещё поддерживаются два старых compatibility хвоста:
+
+- `runtime.dev_mode_metrics=true` трактуется как `stages`;
+- `METRICS_DELIVERY_MODE` может временно переопределять YAML для operator disable/restore.
+
+Это compatibility detail, а не желаемый долгосрочный способ настройки.
+
+## Секреты
+
+Секреты не живут в repo config files:
+
 - Google credentials
 - Object Storage credentials
 - Telegram token
 - LLM provider tokens
-- Yandex Cloud auth/service secrets
-- `YANDEX_PROMETHEUS_API_KEY` / `YMP_API_KEY`
+- Yandex Cloud service secrets
+- `YANDEX_PROMETHEUS_API_KEY`
 - `GRAFANA_TOKEN`
 - `BROWSER_AUTH_PROXY_SECRET`
 
-They are resolved through secret storage / env in loader/bootstrap only.
-Current deploy workflows map `BROWSER_AUTH_PROXY_SECRET` from Lockbox into backend function env for both test and prod contours.
+Они подаются через env/secret storage и читаются только в loader/bootstrap.
 
-Browser auth secret wiring:
-- backend bootstrap reads `BROWSER_AUTH_PROXY_SECRET` in `src/platform/bootstrap.py`
-- backend trust logic consumes it in `src/entrypoints/http/access_context.py`
-- test workflow: `.github/workflows/deploy_yc_function_main.yml`
-- prod workflow: `.github/workflows/release_yc_function_prod.yml`
-- external auth contour must use the same Lockbox-backed secret value when forwarding `X-DTM-Proxy-Secret`
-- operator verification steps live in `docs/integrations/browser-auth/runbook.md`
+## Browser auth secret wiring
+
+- backend bootstrap читает `BROWSER_AUTH_PROXY_SECRET`;
+- backend trust logic использует его в `src/entrypoints/http/access_context.py`;
+- test deploy wiring живёт в `.github/workflows/deploy_yc_function_main.yml`;
+- prod deploy wiring живёт в `.github/workflows/release_yc_function_prod.yml`;
+- внешний auth contour должен использовать тот же Lockbox-backed secret value.
+
+Operator verification steps:
+- [../operations/browser-auth.md](../operations/browser-auth.md)
+
+## Google credentials
+
+Локально и в tooling поддерживаются:
+- `GOOGLE_KEY_JSON_PATH`
+- `GOOGLE_KEY_JSON`
+- `GOOGLE_KEY_JSON_B64`
+
+Deploy workflows уже получают `GOOGLE_KEY_JSON` из Lockbox.  
+Checked-in `key/` fallback больше не используется.
 
 ## Object Storage
-Used for:
-- raw snapshot
-- prep snapshot
-- people snapshot
-- extra metadata
-- attachment binaries
-- job status/history
+
+Object Storage используется для:
+- raw snapshot;
+- prep snapshot;
+- people snapshot;
+- extra metadata;
+- attachment binaries;
+- job status/history.
 
 ## Queue
-Queue config defines:
-- enabled flag
-- queue URLs for test/prod
-- status/history prefixes
-- endpoint/auth data for live queue introspection
+
+Queue config задаёт:
+- enabled flag;
+- queue URLs для `test` и `prod`;
+- status/history prefixes;
+- endpoint/auth data для live queue introspection.
 
 ## Deploy workflows
-Current workflows:
-- `.github/workflows/deploy_yc_function_main.yml` — deploy on push to `test`
-- `.github/workflows/release_yc_function_prod.yml` — manual prod release
+
+- `.github/workflows/deploy_yc_function_main.yml` — deploy при push в `test`
+- `.github/workflows/release_yc_function_prod.yml` — ручной prod release
 
 ## Config policy
-- no `os.getenv()` outside loader/bootstrap
-- services receive typed config objects
-- env-based branching belongs in bootstrap/policy selection, not inside core services
+
+- `os.getenv()` не должен использоваться вне loader/bootstrap;
+- сервисы получают typed config objects;
+- env-driven branching должен жить в bootstrap/policy selection, а не в core services.
 
 ## People registry
-- `config/tables.yaml -> field_maps.people` is the source-of-truth mapping for full people-registry columns.
-- secret-only internal route `GET /api/v2/people` reuses `BROWSER_AUTH_PROXY_SECRET` and `runtime.api.auth_trusted_secret_header`.
-- people snapshot stores the full normalized registry from sheet `Люди` and is separate from `frontend_v2.entities.people`.
-- canonical people-registry mail fields are:
-  - `contact_email` / `contactEmail` for ordinary human contact
-  - `yandex_email` / `yandexEmail` for Yandex-account identity
-- `/api/v2/people` returns only canonical projection fields; mapped raw attributes stay internal in storage.
+
+- `config/tables.yaml -> field_maps.people` — source-of-truth mapping для people-registry;
+- secret-only route `GET /api/v2/people` использует `BROWSER_AUTH_PROXY_SECRET`;
+- people snapshot хранится отдельно от frontend payload;
+- canonical mail fields:
+  - `contact_email` / `contactEmail`
+  - `yandex_email` / `yandexEmail`
 - canonical derived activity field:
   - `is_active` / `isActive`
-  - becomes `false` only for explicit vacation/termination markers; `.` is not treated as inactive

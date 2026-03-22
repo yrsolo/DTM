@@ -1,150 +1,84 @@
 # Prometheus Integration
 
-## Goal
+## Зачем это нужно
 
-Add a Prometheus-compatible second metrics sink so Grafana can become the primary human-facing dashboard while Yandex Monitoring remains the existing baseline sink.
+Prometheus-compatible sink нужен как второй metrics backend, чтобы Grafana могла быть основной dashboard поверхностью, не ломая уже существующую observability через Yandex Monitoring.
 
-## Selected backend policy
+## Текущая политика
 
-Current policy is dual write:
+Используется dual write:
 
-- keep `YandexMonitoringMetricsClient`
-- add `YandexManagedPrometheusRemoteWriteClient`
-- use `CompositeMetricsClient` when both are enabled
+- `YandexMonitoringMetricsClient` остаётся;
+- `YandexManagedPrometheusRemoteWriteClient` добавляется как второй sink;
+- при включении обоих используется `CompositeMetricsClient`.
 
-This preserves the current Monitoring-based observability and `/info` evidence while making Grafana possible without changing instrumentation points.
+Это даёт Grafana без перестройки instrumentation points.
 
-## Runtime topology
+## Что при этом не меняется
 
-The runtime topology does not change:
+- topology runtime остаётся прежней;
+- одна Cloud Function на контур принимает и HTTP, и MQ trigger;
+- `/info` остаётся операторской control surface.
 
-- one deployed Cloud Function object per environment
-- HTTP and MQ trigger handled by the same function object
+Prometheus здесь только дополнительный metrics sink.
 
-Prometheus is only an additional metrics sink.
+## Конфиг
 
-## Config
-
-Typed config lives in:
+Основной конфиг живёт в:
 
 - `config/runtime.yaml`
 - `src/config/schema.py`
 - `src/config/loader.py`
 
-Prometheus section:
+Секция `prometheus` задаёт:
+- включение;
+- backend;
+- write endpoint;
+- folder/workspace ids;
+- service/namespace labels;
+- timeout.
 
-- `prometheus.enabled`
-- `prometheus.backend`
-- `prometheus.endpoint_write`
-- `prometheus.folder_id`
-- `prometheus.workspace_id_test`
-- `prometheus.workspace_id_prod`
-- `prometheus.service`
-- `prometheus.namespace`
-- `prometheus.timeout_seconds`
-
-Current selected backend value:
-
-- `yandex_managed_prometheus`
-
-Current workspace policy:
-
-- one shared Yandex Managed Prometheus workspace for both `test` and `prod`
-- environment separation happens by metric label `env`
-
-Grafana section:
-
-- `grafana.enabled`
-- `grafana.public_base_url`
-- `grafana.dashboard_uid_test`
-- `grafana.dashboard_uid_prod`
-- `grafana.dashboard_url_test`
-- `grafana.dashboard_url_prod`
-- `grafana.embed_url_test`
-- `grafana.embed_url_prod`
-- `grafana.folder_name_test`
-- `grafana.folder_name_prod`
-
-## Backend behavior
+## Поведение backend
 
 `YandexManagedPrometheusRemoteWriteClient`:
 
-- keeps the existing `MetricsClient` interface
-- converts logical metric names to Prometheus-safe names by replacing dots with underscores
-- writes samples through Prometheus Remote Write, not text exposition push
-- keeps the same labels:
-  - `env`
-  - `module`
-  - `operation`
-  - `result`
-- adds global labels:
-  - `service="dtm"`
-  - `namespace="dtm"`
-- is nonfatal:
-  - Prometheus write failures are logged
-  - business operations must not fail because Prometheus is unavailable
+- использует тот же `MetricsClient` interface;
+- нормализует metric names в Prometheus-safe форму;
+- пишет через Remote Write;
+- сохраняет `env`, `module`, `operation`, `result`;
+- добавляет глобальные labels `service="dtm"` и `namespace="dtm"`;
+- не валит бизнес-операции при ошибке write path.
 
-Required secret:
+## Секреты
 
+Основной секрет:
 - `YANDEX_PROMETHEUS_API_KEY`
-- fallback legacy name: `YMP_API_KEY`
 
-Secret resolution happens only in `src/platform/bootstrap.py`.
+Совместимый fallback name пока ещё поддерживается:
+- `YMP_API_KEY`
 
-## Metric name mapping
+Секрет читается только в `src/platform/bootstrap.py`.
 
-Examples:
+## Текущее состояние
 
-- logical `dtm.snapshot.fetch_sheet_ms` -> Prometheus `dtm_snapshot_fetch_sheet_ms`
-- logical `dtm.render.build_plan_ms` -> Prometheus `dtm_render_build_plan_ms`
-- logical `dtm.api.requests_total` -> Prometheus `dtm_api_requests_total`
+Repo-side foundation уже собран:
 
-Monitoring names stay unchanged. Normalization happens only inside the Prometheus backend.
+- typed config;
+- remote-write backend;
+- composite dual-write client;
+- additive `/info` metadata;
+- Grafana dashboard spec.
 
-## Current rollout state
+## Путь к валидации
 
-Repo-side remote-write foundation is implemented:
-
-- typed config
-- YMP Remote Write backend
-- composite dual-write client
-- additive `/info` metadata
-- Grafana dashboard spec
-
-Current live `test` facts:
-
-- shared workspace id: `mon73oiiclfbmmqbjejn`
-- write endpoint:
-  - `https://monitoring.api.cloud.yandex.net/prometheus/workspaces/mon73oiiclfbmmqbjejn/api/v1/write`
-- query endpoint:
-  - `https://monitoring.api.cloud.yandex.net/prometheus/workspaces/mon73oiiclfbmmqbjejn/api/v1/query`
-- Grafana datasource name:
-  - `DTM YMP Test`
-
-## Manual Yandex-side step
-
-The remaining Yandex-side workspace creation is documented in:
-
-- [yandex-prometheus-workspace-setup.md](yandex-prometheus-workspace-setup.md)
-
-Datasource can be provisioned or updated from the repo with:
-
-```powershell
-python scripts/provision_grafana_datasource.py --env test --workspace-id mon73oiiclfbmmqbjejn
-```
-
-## Acceptance path
-
-Remaining rollout path:
-
-1. deploy `test` with `prometheus.enabled=true`
-2. verify live sample ingestion into YMP
-3. open Grafana dashboard and confirm non-empty panels
+1. deploy `test` с `prometheus.enabled=true`;
+2. убедиться, что sample ingestion живой;
+3. открыть Grafana dashboard и проверить непустые panels.
 
 ## Failure policy
 
-Prometheus emission is best-effort only:
+Prometheus emission остаётся best-effort:
 
-- failures log `prometheus_metric_flush_failed`
-- Monitoring emission remains intact
-- `/info` remains the operator control page regardless of Prometheus availability
+- ошибки логируются;
+- Monitoring sink остаётся рабочим;
+- `/info` продолжает быть usable независимо от Prometheus.

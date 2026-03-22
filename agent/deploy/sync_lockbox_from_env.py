@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import subprocess
 from pathlib import Path
@@ -58,8 +59,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--google-key-file",
         type=Path,
-        default=Path("key") / "google_key_poised-backbone-191400-4e9fc454915f.json",
-        help="Path to Google service-account JSON file for GOOGLE_KEY_JSON payload entry.",
+        default=None,
+        help="Optional path to Google service-account JSON file for GOOGLE_KEY_JSON payload entry.",
     )
     parser.add_argument(
         "--yc-binary",
@@ -81,14 +82,36 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _build_payload_entries(env_map: dict[str, str], google_key_file: Path) -> list[dict[str, str]]:
+def _resolve_google_key_text(env_map: dict[str, str], google_key_file: Path | None) -> str:
+    """Resolve GOOGLE_KEY_JSON payload text from env-map or optional local file."""
+
+    key_text = str(env_map.get("GOOGLE_KEY_JSON", "")).strip()
+    key_b64 = str(env_map.get("GOOGLE_KEY_JSON_B64", "")).strip()
+    key_path = str(env_map.get("GOOGLE_KEY_JSON_PATH", "")).strip()
+
+    if key_b64:
+        return base64.b64decode(key_b64).decode("utf-8")
+    if key_text:
+        return key_text
+    if key_path:
+        path = Path(key_path)
+        if path.exists():
+            return path.read_text(encoding="utf-8")
+    if google_key_file and google_key_file.exists():
+        return google_key_file.read_text(encoding="utf-8")
+    return ""
+
+
+def _build_payload_entries(env_map: dict[str, str], google_key_file: Path | None) -> list[dict[str, str]]:
     """Build Lockbox payload entries from env values and optional Google key JSON."""
     payload: list[dict[str, str]] = []
     for key, value in env_map.items():
+        if key in {"GOOGLE_KEY_JSON", "GOOGLE_KEY_JSON_B64", "GOOGLE_KEY_JSON_PATH"}:
+            continue
         if value:
             payload.append({"key": key, "text_value": value})
-    if google_key_file.exists():
-        google_text = google_key_file.read_text(encoding="utf-8")
+    google_text = _resolve_google_key_text(env_map, google_key_file)
+    if google_text:
         payload = [item for item in payload if item["key"] != "GOOGLE_KEY_JSON"]
         payload.append({"key": "GOOGLE_KEY_JSON", "text_value": google_text})
     return payload

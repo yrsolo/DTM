@@ -18,8 +18,6 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from dotenv import load_dotenv
-from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
 
 DEFAULT_WORKFLOW_FILE = "deploy_yc_function_main.yml"
 DEFAULT_WORKSHEET_NAME = "Задачи"
@@ -88,7 +86,7 @@ def _load_google_key_path() -> str:
         tmp_file.write_text(key_text, encoding="utf-8")
         return str(tmp_file)
 
-    return "key/google_key_poised-backbone-191400-4e9fc454915f.json"
+    return ""
 
 
 def _api_json(url: str, headers: dict[str, str] | None = None) -> dict[str, Any]:
@@ -156,6 +154,9 @@ def _read_sheet_cell(
     worksheet_name: str,
     cell: str,
 ) -> str:
+    from google.oauth2.service_account import Credentials
+    from googleapiclient.discovery import build
+
     creds = Credentials.from_service_account_file(credentials_path)
     sheets = build("sheets", "v4", credentials=creds)
     drive = build("drive", "v3", credentials=creds)
@@ -264,6 +265,11 @@ def main() -> int:
             poll_sec=args.deploy_poll_sec,
         )
         print(f"deploy_ready run_id={run_id}")
+
+    if not args.google_key_json_path:
+        raise SystemExit(
+            "google_key_missing: set GOOGLE_KEY_JSON_PATH or GOOGLE_KEY_JSON / GOOGLE_KEY_JSON_B64 for local sheet reads"
+        )
 
     payload: dict[str, Any] = {"mode": args.mode}
     if args.dry_run:

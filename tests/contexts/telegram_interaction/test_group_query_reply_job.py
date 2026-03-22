@@ -31,6 +31,33 @@ class _FakeSender:
         return None
 
 
+class _FakeInteractionApi:
+    def __init__(self, *, prep: PrepSnapshot, sender: _FakeSender) -> None:
+        self._snapshot_read = _FakeSnapshotEngine(prep)
+        self._sender = sender
+
+    def snapshot_read_api(self):
+        return self._snapshot_read
+
+    def usecase(self, snapshot_read):  # noqa: ANN001
+        from src.contexts.telegram_interaction.internal.group_query_usecase import GroupQueryUseCase
+
+        return GroupQueryUseCase(snapshot_read)
+
+    def group_query_formatter(self):
+        from src.contexts.telegram_interaction.internal.group_query_formatter import GroupQueryFormatter
+
+        return GroupQueryFormatter()
+
+    def sender(self):
+        return self._sender
+
+    def request(self, **kwargs):  # noqa: ANN003
+        from src.contexts.telegram_interaction.internal.group_query_request import GroupQueryRequest
+
+        return GroupQueryRequest(**kwargs)
+
+
 def _task(task_id: str, owner: str, milestone_day: date, *, title: str) -> TaskView:
     return TaskView(
         sheet=TaskSheet(
@@ -55,8 +82,7 @@ class GroupQueryReplyJobTestCase(unittest.TestCase):
     def test_group_query_reply_job_sends_selected_tasks(self) -> None:
         import src.contexts.telegram_interaction.internal.job_runner as module
 
-        orig_get_snapshot_read_api = module.get_snapshot_read_api
-        orig_make_sender = module._make_group_query_sender
+        orig_get_interaction_api = module.get_interaction_api
         try:
             today = date.today()
             prep = PrepSnapshot(
@@ -70,8 +96,7 @@ class GroupQueryReplyJobTestCase(unittest.TestCase):
                 indexes=PrepIndexes(),
             )
             sender = _FakeSender()
-            module.get_snapshot_read_api = lambda _ctx: _FakeSnapshotEngine(prep)  # type: ignore[assignment]
-            module._make_group_query_sender = lambda _ctx: sender  # type: ignore[assignment]
+            module.get_interaction_api = lambda _ctx: _FakeInteractionApi(prep=prep, sender=sender)  # type: ignore[assignment]
 
             ctx = AppContext(cfg=SimpleNamespace(), deps={"tg_bot_token": "x", "default_chat_id": "0"})
             cmd = Command(
@@ -88,8 +113,7 @@ class GroupQueryReplyJobTestCase(unittest.TestCase):
             self.assertIn("Ð¡ÐµÐ³Ð¾Ð´Ð½ÑÑˆÐ½ÑÑ Ð·Ð°Ð´Ð°Ñ‡Ð°", sender.sent[0][1])
             self.assertNotIn("Ð§ÑƒÐ¶Ð°Ñ Ð·Ð°Ð´Ð°Ñ‡Ð°", sender.sent[0][1])
         finally:
-            module.get_snapshot_read_api = orig_get_snapshot_read_api  # type: ignore[assignment]
-            module._make_group_query_sender = orig_make_sender  # type: ignore[assignment]
+            module.get_interaction_api = orig_get_interaction_api  # type: ignore[assignment]
 
 
 if __name__ == "__main__":

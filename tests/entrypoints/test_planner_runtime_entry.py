@@ -52,6 +52,37 @@ class _FakeReminderRunner:
         return self.result
 
 
+class _FakeReminderDeliveryApi:
+    def __init__(self, *, snapshot_read, runner, today=None) -> None:  # noqa: ANN001
+        self._snapshot_read = snapshot_read
+        self._runner = runner
+        self._today = today
+
+    def snapshot_read_api(self):
+        return self._snapshot_read
+
+    def usecase(self, snapshot_read):  # noqa: ANN001
+        return snapshot_read
+
+    def formatter(self):
+        return "formatter"
+
+    def sender(self):
+        return "sender"
+
+    def enhancer(self, *, mock_external: bool):  # noqa: ARG002
+        return None
+
+    def today_in_runtime_timezone(self):
+        return self._today
+
+    def job_runner(self, **kwargs):  # noqa: ARG002, ANN003
+        return self._runner
+
+    def request(self, **kwargs):  # noqa: ANN003
+        return SimpleNamespace(**kwargs)
+
+
 class _FakeTimerPipeline:
     instances = []
 
@@ -157,28 +188,8 @@ class PlannerRuntimeEntryTestCase(unittest.TestCase):
             return_value=object(),
         ), patch.object(
             module,
-            "get_snapshot_read_api",
-            return_value=fake_engine,
-        ), patch.object(
-            module,
-            "_get_reminders_usecase",
-            return_value="usecase",
-        ), patch.object(
-            module,
-            "_get_reminders_formatter",
-            return_value="formatter",
-        ), patch.object(
-            module,
-            "_get_reminders_sender",
-            return_value="sender",
-        ), patch.object(
-            module,
-            "_make_notify_enhancer",
-            return_value=None,
-        ), patch.object(
-            module,
-            "_get_reminder_job_runner",
-            return_value=runner,
+            "get_reminder_delivery_api",
+            return_value=_FakeReminderDeliveryApi(snapshot_read=fake_engine, runner=runner),
         ), patch.object(
             module,
             "TimerPipeline",
