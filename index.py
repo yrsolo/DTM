@@ -2,11 +2,11 @@
 
 from src.entrypoints.root.handler import handle as handle_entrypoint
 from src.platform.shell import (
-    get_http_shell,
+    handle_http_event,
+    handle_queue_event,
+    handle_trigger_event,
     get_telegram_webhook_path,
     get_trigger_modes,
-    get_trigger_shell,
-    get_worker_shell,
 )
 
 
@@ -15,9 +15,9 @@ async def handler(event, _):
     return await handle_entrypoint(
         event,
         _,
-        get_http_shell=get_http_shell,
-        get_worker_shell=get_worker_shell,
-        get_trigger_shell=get_trigger_shell,
+        handle_http_event=handle_http_event,
+        handle_queue_event=handle_queue_event,
+        handle_trigger_event=handle_trigger_event,
         get_telegram_webhook_path=get_telegram_webhook_path,
         get_trigger_modes=get_trigger_modes,
     )

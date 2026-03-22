@@ -10,7 +10,8 @@
 ## Главные входы
 
 - queue-backed rendering commands;
-- application-owned execution API для render jobs.
+- application-owned execution API для render jobs;
+- queue handlers, собранные через module-owned surface, а не через public job catalog.
 
 ## Что модуль не должен делать
 

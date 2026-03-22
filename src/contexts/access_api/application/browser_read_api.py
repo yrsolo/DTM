@@ -15,16 +15,20 @@ class PrimaryBrowserReadApi:
     """Own browser-facing reads through the access_api application layer."""
 
     def __init__(self, ctx) -> None:
-        self._read_routes = [
-            BrowserRootReadApi(ctx).handle,
-            PrimaryTaskListReadApi(ctx).handle,
-            OperationalInfoReadApi(ctx).handle,
-            PeopleDirectoryReadApi(ctx).handle,
-            TaskAttachmentReadApi(ctx).handle,
-        ]
+        self._root_read = BrowserRootReadApi(ctx)
+        self._primary_task_list_read = PrimaryTaskListReadApi(ctx)
+        self._operational_info_read = OperationalInfoReadApi(ctx)
+        self._people_directory_read = PeopleDirectoryReadApi(ctx)
+        self._task_attachment_read = TaskAttachmentReadApi(ctx)
 
     def handle(self, req: HttpRequest) -> HttpResponse | None:
-        for route in self._read_routes:
+        for route in (
+            self._root_read.handle,
+            self._primary_task_list_read.handle,
+            self._operational_info_read.handle,
+            self._people_directory_read.handle,
+            self._task_attachment_read.handle,
+        ):
             response = route(req)
             if response is not None:
                 return response

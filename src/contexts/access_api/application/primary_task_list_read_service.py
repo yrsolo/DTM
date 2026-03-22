@@ -27,12 +27,10 @@ from src.entrypoints.http.frontend_query_params import (
 from src.entrypoints.http.response_utils import error_response, json_response
 from src.platform.context import AppContext
 from src.platform.observability.bottlenecks import (
-    append_response_headers,
     is_api_metrics_enabled,
-    is_stage_metrics_enabled,
-    new_stage_trace_id,
-    record_api_stage,
 )
+
+from .frontend_access_observer import FrontendAccessObserver
 
 
 class PrimaryTaskListReadService:
@@ -52,14 +50,6 @@ class PrimaryTaskListReadService:
         self._prep_snapshot_getter = prep_snapshot_getter
         self._response_cache_store_getter = response_cache_store_getter
         self._frontend_query_executor = frontend_query_executor
-
-    @staticmethod
-    def _with_headers(response: HttpResponse, extra_headers: dict[str, str]) -> HttpResponse:
-        return HttpResponse(
-            status=response.status,
-            body=response.body,
-            headers=append_response_headers(response.headers, extra_headers),
-        )
 
     def _snapshot_query_api(self):
         return self._snapshot_query_api_getter(self._ctx)
@@ -99,32 +89,6 @@ class PrimaryTaskListReadService:
             "fallbackReason": access.fallback_reason,
         }
 
-    def _frontend_debug_headers(
-        self,
-        *,
-        req: HttpRequest,
-        trace_id: str,
-        route_class: str,
-        access_mode: str,
-        cache_result: str,
-        handler_total_ms: float,
-        inner_total_ms: float,
-    ) -> dict[str, str]:
-        if not is_stage_metrics_enabled(self._ctx):
-            return {}
-        if req.path != "/api/v2/frontend":
-            return {}
-        if route_class != "api":
-            return {}
-        return {
-            "X-DTM-Trace-Id": trace_id,
-            "X-DTM-Frontend-Handler-Ms": f"{round(float(handler_total_ms), 3):.3f}",
-            "X-DTM-Frontend-Inner-Ms": f"{round(float(inner_total_ms), 3):.3f}",
-            "X-DTM-Frontend-Route": route_class,
-            "X-DTM-Frontend-Access-Mode": access_mode,
-            "X-DTM-Frontend-Cache-Result": cache_result,
-        }
-
     def execute(self, req: HttpRequest) -> HttpResponse:
         params = dict(req.query)
         query_parse_started = time.perf_counter()
@@ -142,59 +106,16 @@ class PrimaryTaskListReadService:
                 details=window_error.get("details", {}),
             )
 
-        started = time.perf_counter()
-        trace_id = new_stage_trace_id()
-        stage_samples: list[tuple[str, float]] = [("query_parse", query_parse_ms)]
-
-        def _record_stage(stage: str, started_at: float) -> None:
-            stage_samples.append((stage, (time.perf_counter() - started_at) * 1000.0))
-
-        def _emit_stages(
-            *,
-            route_class: str,
-            access_mode: str,
-            cache_result: str,
-            result: str = "success",
-            debug_fields: dict[str, object] | None = None,
-        ) -> float:
-            for stage, duration_ms in stage_samples:
-                record_api_stage(
-                    self._ctx,
-                    trace_id=trace_id,
-                    operation="frontend_access",
-                    stage=stage,
-                    duration_ms=duration_ms,
-                    result=result,
-                    route=route_class,
-                    access_mode=access_mode,
-                    cache_result=cache_result,
-                    debug_fields=debug_fields,
-                )
-            handler_total_ms = (time.perf_counter() - started) * 1000.0
-            record_api_stage(
-                self._ctx,
-                trace_id=trace_id,
-                operation="frontend_access",
-                stage="handler_total",
-                duration_ms=handler_total_ms,
-                result=result,
-                route=route_class,
-                access_mode=access_mode,
-                cache_result=cache_result,
-                debug_fields=debug_fields,
-            )
-            return handler_total_ms
-
-        def _inner_total_ms() -> float:
-            return float(sum(duration_ms for _, duration_ms in stage_samples))
+        observer = FrontendAccessObserver(self._ctx, req)
+        observer.add_sample("query_parse", query_parse_ms)
 
         access_started = time.perf_counter()
         access = resolve_access_context(self._ctx, req)
-        _record_stage("access_resolution", access_started)
+        observer.stage("access_resolution", access_started)
         try:
             query_api_started = time.perf_counter()
             snapshot_query = self._snapshot_query_api()
-            _record_stage("snapshot_query_api", query_api_started)
+            observer.stage("snapshot_query_api", query_api_started)
             frontend_query = build_frontend_query(
                 statuses=statuses,
                 designer=designer,
@@ -204,7 +125,7 @@ class PrimaryTaskListReadService:
             )
         except Exception as error:
             route_class = resolve_frontend_route_class(req, access)
-            _emit_stages(
+            observer.emit(
                 route_class=route_class,
                 access_mode=access.mode,
                 cache_result="bypass",
@@ -237,10 +158,10 @@ class PrimaryTaskListReadService:
         prep_started = time.perf_counter()
         try:
             prep = self._prep_snapshot()
-            _record_stage("prep_snapshot_access", prep_started)
+            observer.stage("prep_snapshot_access", prep_started)
             cache_store = self._response_cache_store()
         except Exception as error:
-            _emit_stages(
+            observer.emit(
                 route_class=route_class,
                 access_mode=access.mode,
                 cache_result="bypass",
@@ -254,7 +175,7 @@ class PrimaryTaskListReadService:
                 details={"source": "snapshot", "errorType": type(error).__name__},
             )
         if prep is None:
-            _emit_stages(
+            observer.emit(
                 route_class=route_class,
                 access_mode=access.mode,
                 cache_result="bypass",
@@ -278,7 +199,7 @@ class PrimaryTaskListReadService:
             }
             cache_read_started = time.perf_counter()
             cached_entry = cache_store.get(cache_key)
-            _record_stage("response_cache_read", cache_read_started)
+            observer.stage("response_cache_read", cache_read_started)
             if metrics is not None and is_api_metrics_enabled(self._ctx):
                 metrics.timing(
                     "dtm.api.response_cache.read_ms",
@@ -295,41 +216,39 @@ class PrimaryTaskListReadService:
                 ttl_minutes=cache_ttl_minutes,
                 hour_bucket=hour_bucket,
             ):
-                _record_stage("response_cache_freshness", freshness_started)
+                observer.stage("response_cache_freshness", freshness_started)
                 if metrics is not None and is_api_metrics_enabled(self._ctx):
                     metrics.counter("dtm.api.response_cache.hit_total", labels=dict(cache_labels))
                 payload = cached_payload_with_access(dict(cached_entry.get("payload", {}) or {}), access)
                 response_started = time.perf_counter()
                 http_response = json_response(200, payload)
-                _record_stage("response_build", response_started)
-                handler_total_ms = _emit_stages(
+                observer.stage("response_build", response_started)
+                handler_total_ms = observer.emit(
                     route_class=route_class,
                     access_mode=access.mode,
                     cache_result="hit",
                     debug_fields={"path": req.path, "cacheKey": cache_key},
                 )
-                return self._with_headers(
+                return FrontendAccessObserver.with_headers(
                     http_response,
-                    self._frontend_debug_headers(
+                    observer.debug_headers(
                         req=req,
-                        trace_id=trace_id,
                         route_class=route_class,
                         access_mode=access.mode,
                         cache_result="hit",
                         handler_total_ms=handler_total_ms,
-                        inner_total_ms=_inner_total_ms(),
                     ),
                 )
-            _record_stage("response_cache_freshness", freshness_started)
+            observer.stage("response_cache_freshness", freshness_started)
             if metrics is not None and is_api_metrics_enabled(self._ctx):
                 metrics.counter("dtm.api.response_cache.miss_total", labels=dict(cache_labels))
 
         try:
             payload_build_started = time.perf_counter()
             payload = dict(self._execute_frontend_query(frontend_query))
-            _record_stage("frontend_payload_build", payload_build_started)
+            observer.stage("frontend_payload_build", payload_build_started)
         except Exception as error:
-            _emit_stages(
+            observer.emit(
                 route_class=route_class,
                 access_mode=access.mode,
                 cache_result="miss" if cache_eligible and cache_store is not None else "bypass",
@@ -353,7 +272,7 @@ class PrimaryTaskListReadService:
             metrics_client=metrics if is_api_metrics_enabled(self._ctx) else None,
             metrics_labels=self._metrics_labels(mode=access.mode, result="success"),
         )
-        _record_stage("masking", masking_started)
+        observer.stage("masking", masking_started)
 
         if cache_eligible and cache_store is not None:
             cache_labels = {
@@ -375,7 +294,7 @@ class PrimaryTaskListReadService:
                     hour_bucket=hour_bucket,
                 ),
             )
-            _record_stage("response_cache_write", cache_write_started)
+            observer.stage("response_cache_write", cache_write_started)
             if metrics is not None and is_api_metrics_enabled(self._ctx):
                 metrics.timing(
                     "dtm.api.response_cache.write_ms",
@@ -386,23 +305,21 @@ class PrimaryTaskListReadService:
 
         response_started = time.perf_counter()
         http_response = json_response(200, payload)
-        _record_stage("response_build", response_started)
+        observer.stage("response_build", response_started)
         cache_result = "miss" if cache_eligible and cache_store is not None else "bypass"
-        handler_total_ms = _emit_stages(
+        handler_total_ms = observer.emit(
             route_class=route_class,
             access_mode=access.mode,
             cache_result=cache_result,
             debug_fields={"path": req.path},
         )
-        return self._with_headers(
+        return FrontendAccessObserver.with_headers(
             http_response,
-            self._frontend_debug_headers(
+            observer.debug_headers(
                 req=req,
-                trace_id=trace_id,
                 route_class=route_class,
                 access_mode=access.mode,
                 cache_result=cache_result,
                 handler_total_ms=handler_total_ms,
-                inner_total_ms=_inner_total_ms(),
             ),
         )

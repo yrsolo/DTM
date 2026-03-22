@@ -41,9 +41,9 @@ class HandlerTopPathTestCase(unittest.IsolatedAsyncioTestCase):
         response = await handle(
             {"path": "/info", "httpMethod": "GET"},
             None,
-            get_http_shell=lambda: http_shell,
-            get_worker_shell=lambda: worker_shell,
-            get_trigger_shell=lambda: trigger_shell,
+            handle_http_event=http_shell.handle,
+            handle_queue_event=worker_shell.handle_queue_event,
+            handle_trigger_event=trigger_shell.handle_trigger,
             get_trigger_modes=lambda: {},
         )
 
@@ -71,9 +71,9 @@ class HandlerTopPathTestCase(unittest.IsolatedAsyncioTestCase):
         response = await handle(
             event,
             None,
-            get_http_shell=lambda: http_shell,
-            get_worker_shell=lambda: worker_shell,
-            get_trigger_shell=lambda: trigger_shell,
+            handle_http_event=http_shell.handle,
+            handle_queue_event=worker_shell.handle_queue_event,
+            handle_trigger_event=trigger_shell.handle_trigger,
             get_trigger_modes=lambda: {},
         )
 
@@ -91,9 +91,9 @@ class HandlerTopPathTestCase(unittest.IsolatedAsyncioTestCase):
         response = await handle(
             event,
             None,
-            get_http_shell=lambda: http_shell,
-            get_worker_shell=lambda: worker_shell,
-            get_trigger_shell=lambda: trigger_shell,
+            handle_http_event=http_shell.handle,
+            handle_queue_event=worker_shell.handle_queue_event,
+            handle_trigger_event=trigger_shell.handle_trigger,
             get_trigger_modes=lambda: {"trigger-1": "timer"},
         )
 
@@ -106,9 +106,9 @@ class HandlerTopPathTestCase(unittest.IsolatedAsyncioTestCase):
         response = await handle(
             {"body": {"healthcheck": True}},
             None,
-            get_http_shell=lambda: (_ for _ in ()).throw(AssertionError("http shell should not be used")),
-            get_worker_shell=lambda: (_ for _ in ()).throw(AssertionError("worker shell should not be used")),
-            get_trigger_shell=lambda: (_ for _ in ()).throw(AssertionError("trigger shell should not be used")),
+            handle_http_event=lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("http shell should not be used")),
+            handle_queue_event=lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("worker shell should not be used")),
+            handle_trigger_event=lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("trigger shell should not be used")),
             get_trigger_modes=lambda: (_ for _ in ()).throw(AssertionError("trigger modes should not be resolved")),
             get_telegram_webhook_path=lambda: (_ for _ in ()).throw(
                 AssertionError("telegram webhook path should not be resolved")
@@ -126,9 +126,9 @@ class HandlerTopPathTestCase(unittest.IsolatedAsyncioTestCase):
         response = await handle(
             {"path": "/custom-telegram", "httpMethod": "POST"},
             None,
-            get_http_shell=lambda: http_shell,
-            get_worker_shell=lambda: worker_shell,
-            get_trigger_shell=lambda: trigger_shell,
+            handle_http_event=http_shell.handle,
+            handle_queue_event=worker_shell.handle_queue_event,
+            handle_trigger_event=trigger_shell.handle_trigger,
             get_trigger_modes=lambda: {},
             get_telegram_webhook_path=lambda: calls.append("resolved") or "/custom-telegram",
         )
