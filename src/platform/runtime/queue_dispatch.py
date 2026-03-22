@@ -8,6 +8,7 @@ from typing import Any, Mapping
 from src.platform.runtime.commands.model import Command
 from src.platform.runtime.commands.types import (
     ATTACH_TASK_FILE,
+    CLEANUP_JOB_STATUSES,
     CLEANUP_TASK_ATTACHMENTS,
     DELETE_TASK_ATTACHMENT,
     GENERATE_ATTACHMENT_PREVIEW,

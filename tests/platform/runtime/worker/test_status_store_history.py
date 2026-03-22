@@ -35,6 +35,12 @@ class _MemoryStatusStore(S3JobStatusStore):
         value = self._memory.get(key)
         return None if value is None else dict(value)
 
+    def _delete_key(self, key: str) -> None:  # type: ignore[override]
+        self._memory.pop(key, None)
+
+    def _list_status_keys(self) -> list[str]:  # type: ignore[override]
+        return sorted(key for key in self._memory if key.startswith("jobs/test/status/"))
+
 
 class JobStatusStoreHistoryTestCase(unittest.TestCase):
     def test_put_finished_appends_terminal_history_only(self) -> None:
@@ -116,6 +122,95 @@ class JobStatusStoreHistoryTestCase(unittest.TestCase):
         self.assertIsNotNone(stored)
         self.assertEqual(stored.status, "failed_retryable")
         self.assertTrue(stored.retryable)
+
+    def test_prune_terminal_statuses_before_deletes_only_old_terminal_records(self) -> None:
+        store = _MemoryStatusStore()
+        old = datetime(2026, 3, 9, 8, 0, tzinfo=timezone.utc)
+        recent = datetime(2026, 3, 9, 12, 0, tzinfo=timezone.utc)
+        store._memory["jobs/test/status/success-old.json"] = {
+            "job_id": "success-old",
+            "command_type": "update_snapshot",
+            "status": "success",
+            "requested_at_utc": "2026-03-09T07:00:00Z",
+            "finished_at_utc": "2026-03-09T08:00:00Z",
+        }
+        store._memory["jobs/test/status/running.json"] = {
+            "job_id": "running",
+            "command_type": "update_snapshot",
+            "status": "running",
+            "requested_at_utc": "2026-03-09T07:00:00Z",
+        }
+        store._memory["jobs/test/status/failed-no-finished.json"] = {
+            "job_id": "failed-no-finished",
+            "command_type": "send_reminders",
+            "status": "failed_terminal",
+            "requested_at_utc": "2026-03-09T07:00:00Z",
+        }
+        store._memory["jobs/test/status/success-recent.json"] = {
+            "job_id": "success-recent",
+            "command_type": "render_timeline_sheet",
+            "status": "success",
+            "requested_at_utc": "2026-03-09T11:00:00Z",
+            "finished_at_utc": "2026-03-09T12:00:00Z",
+        }
+        store._memory["jobs/test/latest/update_snapshot.json"] = {"job_id": "latest"}
+        store._memory["jobs/test/history/index.json"] = {"items": [{"job_id": "history"}]}
+
+        summary = store.prune_terminal_statuses_before(datetime(2026, 3, 9, 10, 0, tzinfo=timezone.utc))
+
+        self.assertEqual(summary["scanned"], 4)
+        self.assertEqual(summary["eligible"], 1)
+        self.assertEqual(summary["deleted"], 1)
+        self.assertEqual(summary["kept_non_terminal"], 1)
+        self.assertEqual(summary["kept_without_finished_at"], 1)
+        self.assertNotIn("jobs/test/status/success-old.json", store._memory)
+        self.assertIn("jobs/test/status/running.json", store._memory)
+        self.assertIn("jobs/test/status/failed-no-finished.json", store._memory)
+        self.assertIn("jobs/test/status/success-recent.json", store._memory)
+        self.assertIn("jobs/test/latest/update_snapshot.json", store._memory)
+        self.assertIn("jobs/test/history/index.json", store._memory)
+
+    def test_prune_terminal_statuses_before_honors_dry_run(self) -> None:
+        store = _MemoryStatusStore()
+        store._memory["jobs/test/status/success-old.json"] = {
+            "job_id": "success-old",
+            "command_type": "update_snapshot",
+            "status": "success",
+            "requested_at_utc": "2026-03-09T07:00:00Z",
+            "finished_at_utc": "2026-03-09T08:00:00Z",
+        }
+
+        summary = store.prune_terminal_statuses_before(
+            datetime(2026, 3, 9, 10, 0, tzinfo=timezone.utc),
+            dry_run=True,
+        )
+
+        self.assertEqual(summary["eligible"], 1)
+        self.assertEqual(summary["deleted"], 0)
+        self.assertTrue(summary["dry_run"])
+        self.assertIn("jobs/test/status/success-old.json", store._memory)
+
+    def test_prune_terminal_statuses_before_honors_limit(self) -> None:
+        store = _MemoryStatusStore()
+        for idx in range(3):
+            store._memory[f"jobs/test/status/success-{idx}.json"] = {
+                "job_id": f"success-{idx}",
+                "command_type": "update_snapshot",
+                "status": "success",
+                "requested_at_utc": "2026-03-09T07:00:00Z",
+                "finished_at_utc": f"2026-03-09T08:0{idx}:00Z",
+            }
+
+        summary = store.prune_terminal_statuses_before(
+            datetime(2026, 3, 9, 10, 0, tzinfo=timezone.utc),
+            limit=2,
+        )
+
+        self.assertEqual(summary["eligible"], 2)
+        self.assertEqual(summary["deleted"], 2)
+        self.assertTrue(summary["limit_reached"])
+        remaining = [key for key in store._memory if key.startswith("jobs/test/status/")]
+        self.assertEqual(len(remaining), 1)
 
 
 if __name__ == "__main__":

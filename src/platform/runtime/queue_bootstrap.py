@@ -9,6 +9,8 @@ from src.contexts.rendering.public import get_command_handlers as get_rendering_
 from src.contexts.snapshot.public import get_command_handlers as get_snapshot_command_handlers
 from src.contexts.telegram_interaction.public import get_command_handlers as get_telegram_command_handlers
 from src.platform.runtime.command_runtime import CommandRuntime
+from src.platform.runtime.commands.types import CLEANUP_JOB_STATUSES
+from src.platform.runtime.maintenance import CleanupJobStatusesJob
 from src.platform.runtime.worker.dispatcher import CommandDispatcher
 from src.platform.runtime.worker.status_store import S3JobStatusStore
 from src.platform.runtime.worker.worker import Worker
@@ -30,7 +32,9 @@ def _resolve_queue_url(cfg) -> str:
 
 
 def _build_command_handlers(ctx) -> dict[str, object]:
-    handlers: dict[str, object] = {}
+    handlers: dict[str, object] = {
+        CLEANUP_JOB_STATUSES: CleanupJobStatusesJob(ctx),
+    }
     handlers.update(get_snapshot_command_handlers(ctx))
     handlers.update(get_reminder_command_handlers(ctx))
     handlers.update(get_rendering_command_handlers(ctx))

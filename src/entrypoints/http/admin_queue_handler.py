@@ -8,6 +8,7 @@ from uuid import uuid4
 from src.platform.runtime.commands.model import Command, RequestedBy
 from src.platform.runtime.commands.types import (
     ATTACH_TASK_FILE,
+    CLEANUP_JOB_STATUSES,
     CLEANUP_TASK_ATTACHMENTS,
     RENDER_DESIGNERS_SHEET,
     RENDER_TIMELINE_SHEET,
@@ -86,24 +87,51 @@ class AdminQueueHandler:
                 requested_by=self._requested_by(req),
                 payload=dict(payload),
             )
-            record = command_runtime.enqueue(cmd)
+            try:
+                record = command_runtime.enqueue(cmd)
+            except Exception as error:
+                commands.append(
+                    {
+                        "command_type": cmd.type,
+                        "status": "enqueue_failed",
+                        "payload": dict(cmd.payload),
+                        "error": {
+                            "type": type(error).__name__,
+                            "message": str(error),
+                        },
+                    }
+                )
+                continue
             commands.append(
                 {
                     "job_id": cmd.job_id,
                     "command_type": cmd.type,
                     "queued_at": record.requested_at_utc.isoformat(),
+                    "status": "accepted",
                     "payload": dict(cmd.payload),
                 }
+            )
+        accepted_commands = [item for item in commands if str(item.get("status", "")) == "accepted"]
+        if not accepted_commands:
+            return error_response(
+                503,
+                code="command_batch_enqueue_failed",
+                message="Failed to enqueue any planned commands.",
+                details={
+                    "artifact": artifact,
+                    "queued_count": 0,
+                    "commands": commands,
+                },
             )
         return json_response(
             202,
             {
                 "artifact": artifact,
-                "status": "accepted",
-                "queued_count": len(commands),
+                "status": "accepted" if len(accepted_commands) == len(commands) else "partial_accept",
+                "queued_count": len(accepted_commands),
                 "commands": commands,
-                "job_id": commands[0]["job_id"],
-                "command_type": commands[0]["command_type"],
+                "job_id": accepted_commands[0]["job_id"],
+                "command_type": accepted_commands[0]["command_type"],
             },
         )
 
@@ -218,6 +246,21 @@ class AdminQueueHandler:
                     "force_test_chat": bool(body.get("force_test_chat", False)),
                     "mock_external": bool(body.get("mock_external", False)),
                 },
+                req=req,
+            )
+        if path == "/admin/commands/cleanup-job-statuses":
+            payload = {
+                "dry_run": bool(body.get("dry_run", False)),
+            }
+            if body.get("delete_before_utc") not in {None, ""}:
+                payload["delete_before_utc"] = str(body.get("delete_before_utc", "")).strip()
+            if body.get("older_than_hours") not in {None, ""}:
+                payload["older_than_hours"] = body.get("older_than_hours")
+            if body.get("limit") not in {None, ""}:
+                payload["limit"] = body.get("limit")
+            return self._enqueue(
+                command_type=CLEANUP_JOB_STATUSES,
+                payload=payload,
                 req=req,
             )
         if path == "/admin/commands/emulate-trigger":

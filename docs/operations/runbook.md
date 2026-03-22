@@ -53,6 +53,29 @@ Backend часть browser auth описана отдельно:
 
 Если нужно быстро понять, что происходит в живом контуре, начинай с `/info`.
 
+## 5.1. Cleanup старых job statuses
+
+`jobs/{env}/status/{job_id}.json` — это короткоживущий operational lookup, а не долгосрочный архив.
+
+Канонический cleanup:
+- nightly/утренний maintenance идёт через `morning` trigger;
+- по умолчанию удаляются terminal statuses старше `24` часов;
+- `latest/*` и `history/*` сохраняются как компактная operator-facing память.
+
+Ручной enqueue:
+- `POST /admin/commands/cleanup-job-statuses`
+
+Поддерживаемый payload:
+- `delete_before_utc` — точный UTC cutoff в ISO-8601;
+- `older_than_hours` — retention относительно текущего времени;
+- `dry_run` — только посчитать, ничего не удалять;
+- `limit` — ограничить число eligible deletions за один запуск.
+
+Ограничения:
+- задавай либо `delete_before_utc`, либо `older_than_hours`;
+- команда не трогает `accepted` и `running`;
+- команда не удаляет `jobs/{env}/latest/*` и `jobs/{env}/history/*`.
+
 ## 6. Attachments
 
 Канонический operator flow:

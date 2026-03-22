@@ -12,6 +12,7 @@ Single source of truth for current campaign lifecycle state.
 - none
 
 ## Recent Done
+- CAM-2026-03-22-JOB-STATUS-RETENTION-CLEANUP-V1 completed after adding a platform-owned `cleanup_job_statuses` command, wiring `morning` as a best-effort orchestration slot for cleanup plus reminders, and documenting terminal-status retention in the active runtime canon.
 - CAM-2026-03-22-CRITIC3-CANON-ALIGNMENT-V1 completed after renaming the `access_api` primary browser read surface to one explicit read-model term across code, router wiring, module/public seams, and active docs, so the repo and the docs now tell the same calm story about the main browser path.
 - CAM-2026-03-22-CRITIC2-STRUCTURAL-CLOSEOUT-V1 completed after replacing `snapshot/internal/runtime_binding.py` with role-true internal builders, tightening `access_api` browser-read seams, shrinking `PrimaryTaskListReadService` via an observability helper, hiding top-entry shell objects behind direct `handle_*` seams, and removing the leftover named-job public shape from `rendering`.
 - CAM-2026-03-22-DOCS-CANON-REBUILD-V1 completed after collapsing active docs to `product / architecture / modules / operations / reference`, archiving the old `integrations` plus recovery-era architecture trees, rewriting the root README in Russian, and stripping active docs of migration-era narrative.

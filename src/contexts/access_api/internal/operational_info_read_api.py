@@ -254,6 +254,7 @@ class OperationalInfoReadApi:
     def _latest_jobs_payload(self, status_store: Any) -> dict[str, Any]:
         latest_jobs: dict[str, Any] = {}
         for command_type in (
+            "cleanup_job_statuses",
             "update_snapshot",
             "send_reminders",
             "render_timeline_sheet",

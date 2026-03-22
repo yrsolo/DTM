@@ -117,6 +117,36 @@ class S3JobStatusStore:
             raise PermanentError("Job status payload must be an object", code="job_status_invalid")
         return payload
 
+    def _delete_key(self, key: str) -> None:
+        try:
+            self._get_client().delete_object(Bucket=self._bucket, Key=key)
+        except Exception as error:
+            raise TransientError(str(error), code="job_status_delete_failed") from error
+
+    def _list_status_keys(self) -> list[str]:
+        keys: list[str] = []
+        token = None
+        while True:
+            kwargs: dict[str, Any] = {
+                "Bucket": self._bucket,
+                "Prefix": self._status_prefix,
+                "MaxKeys": 1000,
+            }
+            if token:
+                kwargs["ContinuationToken"] = token
+            try:
+                response = self._get_client().list_objects_v2(**kwargs)
+            except Exception as error:
+                raise TransientError(str(error), code="job_status_list_failed") from error
+            for item in response.get("Contents", []) or []:
+                key = str(item.get("Key", "")).strip()
+                if key:
+                    keys.append(key)
+            if not response.get("IsTruncated"):
+                break
+            token = response.get("NextContinuationToken")
+        return keys
+
     def _get_json_list(self, key: str) -> list[dict[str, Any]]:
         payload = self._get_json(key)
         if payload is None:
@@ -268,4 +298,57 @@ class S3JobStatusStore:
     def get_recent_by_command(self, command_type: str, limit: int = 10) -> list[JobStatusRecord]:
         items = self._get_json_list(self._history_by_command_key(str(command_type).strip()))
         return [self._record_from_dict(item) for item in items[: max(0, int(limit))]]
+
+    def prune_terminal_statuses_before(
+        self,
+        delete_before_utc: datetime,
+        *,
+        dry_run: bool = False,
+        limit: int | None = None,
+    ) -> dict[str, Any]:
+        cutoff = delete_before_utc
+        if cutoff.tzinfo is None:
+            cutoff = cutoff.replace(tzinfo=timezone.utc)
+        cutoff = cutoff.astimezone(timezone.utc)
+        max_items = None if limit is None else max(0, int(limit))
+        terminal_statuses = {"success", "failed_retryable", "failed_terminal"}
+        summary: dict[str, Any] = {
+            "scanned": 0,
+            "eligible": 0,
+            "deleted": 0,
+            "kept_non_terminal": 0,
+            "kept_without_finished_at": 0,
+            "dry_run": bool(dry_run),
+            "delete_before_utc": _to_iso(cutoff),
+        }
+        if max_items is not None:
+            summary["limit"] = max_items
+            if max_items == 0:
+                return summary
+        for key in self._list_status_keys():
+            payload = self._get_json(key)
+            if payload is None:
+                continue
+            summary["scanned"] += 1
+            status = str(payload.get("status", "")).strip().lower()
+            if status not in terminal_statuses:
+                summary["kept_non_terminal"] += 1
+                continue
+            try:
+                finished_at = _from_iso(payload.get("finished_at_utc"))
+            except Exception:
+                finished_at = None
+            if finished_at is None:
+                summary["kept_without_finished_at"] += 1
+                continue
+            if finished_at >= cutoff:
+                continue
+            summary["eligible"] += 1
+            if not dry_run:
+                self._delete_key(key)
+                summary["deleted"] += 1
+            if max_items is not None and summary["eligible"] >= max_items:
+                summary["limit_reached"] = True
+                break
+        return summary
 

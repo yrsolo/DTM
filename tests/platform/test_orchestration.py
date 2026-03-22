@@ -19,9 +19,13 @@ class OrchestrationTestCase(unittest.TestCase):
             ["update_snapshot", "render_timeline_sheet", "render_designers_sheet"],
         )
 
-    def test_morning_plan_contains_reminder_command(self) -> None:
+    def test_morning_plan_contains_cleanup_then_reminder_commands(self) -> None:
         planned = planned_trigger_commands("morning")
-        self.assertEqual([command_type for command_type, _payload in planned], ["send_reminders"])
+        self.assertEqual(
+            [command_type for command_type, _payload in planned],
+            ["cleanup_job_statuses", "send_reminders"],
+        )
+        self.assertEqual(planned[0][1], {"older_than_hours": 24, "dry_run": False})
 
 
 if __name__ == "__main__":
