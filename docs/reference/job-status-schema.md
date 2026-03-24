@@ -76,8 +76,21 @@ Worker начал выполнение.
 
 ## Retention
 
-- последние `50` jobs overall
-- последние `20` jobs per command type
+- `status/{job_id}.json` — короткоживущий operational lookup для конкретной команды;
+- `latest/{command_type}.json` — последнее состояние по типу команды;
+- `history/index.json` и `history/by-command/*` — компактная операторская память.
+
+Platform runtime удаляет terminal `status/{job_id}.json` старше retention cutoff через команду `cleanup_job_statuses`.
+
+Правила cleanup:
+- удаляются только `success`, `failed_retryable`, `failed_terminal`;
+- требуется `finished_at_utc < delete_before_utc`;
+- `accepted` и `running` не удаляются;
+- `latest/*` и `history/*` не трогаются.
+
+Операционный baseline:
+- `morning` trigger по умолчанию удаляет terminal statuses старше `24` часов;
+- ручной admin enqueue позволяет задать точный `delete_before_utc` или `older_than_hours`.
 
 Этого достаточно для `/info` и коротких operator investigations.  
 Это не замена долгосрочным логам.

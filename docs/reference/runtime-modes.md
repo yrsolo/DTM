@@ -25,9 +25,13 @@
 - выполняет только reminder delivery без sync/update.
 
 ### `morning`
-- production-like reminder mode для рабочих дней;
-- в субботу и воскресенье даёт успешный structured no-op;
-- в пятницу всё ещё считает `next_workday = Monday`, если это нужно для reminder logic.
+- platform-owned утренний orchestration slot;
+- enqueue независимые утренние события best-effort;
+- по умолчанию ставит в очередь:
+  - `cleanup_job_statuses` с retention `24` часа;
+  - `send_reminders` в утреннем режиме;
+- failure одной команды не блокирует enqueue остальных;
+- в субботу и воскресенье reminder logic всё ещё может дать structured no-op, но сам `morning` не считается reminder-specific mode.
 
 ### `test`
 - безопасный operator/developer mode;

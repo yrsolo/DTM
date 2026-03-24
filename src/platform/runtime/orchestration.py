@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from src.platform.runtime.commands.types import (
+    CLEANUP_JOB_STATUSES,
     RENDER_DESIGNERS_SHEET,
     RENDER_TIMELINE_SHEET,
     SEND_REMINDERS,
@@ -32,6 +33,13 @@ def handle_morning_trigger(_event: Any = None) -> list[tuple[str, dict[str, Any]
     """Return the canonical morning orchestration command plan."""
 
     return [
+        (
+            CLEANUP_JOB_STATUSES,
+            {
+                "older_than_hours": 24,
+                "dry_run": False,
+            },
+        ),
         (
             SEND_REMINDERS,
             {

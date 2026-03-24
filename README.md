@@ -4,15 +4,24 @@ DTM — внутренняя операционная система для ко
 
 Проще говоря, репозиторий решает три задачи:
 - собирает и нормализует данные из рабочих таблиц;
-- строит стабильный read-model для браузера и операторских сценариев;
+- строит первичный browser read-model для браузера и операторских сценариев;
 - выносит тяжёлые и рискованные действия в явные асинхронные команды.
 
 ## Что здесь важно
 
-- Браузер читает уже подготовленный payload, а не собирает карточки на лету.
+- Браузер читает первичный browser read-model, а не собирает карточки на лету.
 - Refresh, reminders, rendering и attachment-mutations идут через очередь и worker.
 - `/info` служит операторской точкой входа для диагностики и live-smoke.
 - Вложения считаются опубликованными только когда они появились в основном browser read-model.
+
+## Активная карта кода
+
+Сейчас active canon репозитория читается через пять корневых зон:
+- `src/config` — typed config loading;
+- `src/core` — shared domain rules;
+- `src/contexts` — owning modules;
+- `src/entrypoints` — thin intake and execution seams;
+- `src/platform` — runtime assembly, infra and integrations.
 
 ## Для кого проект
 

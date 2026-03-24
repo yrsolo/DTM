@@ -7,7 +7,6 @@ import unittest
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import patch
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
 if str(ROOT_DIR) not in sys.path:
@@ -26,10 +25,13 @@ from src.platform.runtime.worker.model import JobStatusRecord
 
 
 class _FakeProducer:
-    def __init__(self) -> None:
+    def __init__(self, *, fail_types=None) -> None:
         self.commands: list[Command] = []
+        self.fail_types = set(fail_types or [])
 
     def send(self, cmd: Command) -> None:
+        if cmd.type in self.fail_types:
+            raise RuntimeError(f"enqueue blocked for {cmd.type}")
         self.commands.append(cmd)
 
 
@@ -138,27 +140,6 @@ class _FakeSnapshotEngine:
         return self._attachment_store
 
 
-class _FakeBoto3Client:
-    content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-
-    def generate_presigned_url(self, *args, **kwargs):
-        return "https://example.test/upload"
-
-    def head_object(self, *args, **kwargs):
-        return {
-            "ContentLength": 128,
-            "ContentType": self.content_type,
-            "ETag": '"etag-1"',
-            "VersionId": "v1",
-        }
-
-
-class _FakeBoto3Module:
-    @staticmethod
-    def client(*args, **kwargs):
-        return _FakeBoto3Client()
-
-
 class _FakeAttachmentFinalizeService:
     def finalize(self, *, task_id, attachment_id):  # noqa: ANN001
         return SimpleNamespace(
@@ -167,6 +148,36 @@ class _FakeAttachmentFinalizeService:
             storage_etag='"etag-1"',
             storage_version="v1",
         )
+
+
+class _FakeAttachmentStorage:
+    def build_object_key(self, *, env_name, task_id, attachment_id, filename):  # noqa: ANN001
+        safe_filename = str(filename).replace(" ", "-")
+        return f"attachments/{env_name}/{task_id}/{attachment_id}-{safe_filename}"
+
+    def generate_upload_contract(self, *, key, mime_type):  # noqa: ANN001
+        return {
+            "method": "PUT",
+            "uploadUrl": "https://example.test/upload",
+            "expiresIn": 900,
+            "headers": {"Content-Type": mime_type},
+        }
+
+
+class _FakeAttachmentApi:
+    def __init__(self, *, snapshot_api, finalize_service=None, storage=None) -> None:
+        self._snapshot_api = snapshot_api
+        self._finalize_service = finalize_service or _FakeAttachmentFinalizeService()
+        self._storage = storage or _FakeAttachmentStorage()
+
+    def snapshot_api(self):
+        return self._snapshot_api
+
+    def finalize_service(self):
+        return self._finalize_service
+
+    def storage(self):
+        return self._storage
 
 
 class CommandQueueFoundationTestCase(unittest.TestCase):
@@ -235,6 +246,73 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
             ["update_snapshot", "render_timeline_sheet", "render_designers_sheet"],
         )
 
+    def test_admin_queue_handler_emulates_morning_trigger_with_cleanup_first(self) -> None:
+        producer = _FakeProducer()
+        status_store = _FakeStatusStore()
+        handler = AdminQueueHandler(_FakeCtx(producer=producer, status_store=status_store))
+        response = handler.handle(
+            HttpRequest(
+                method="POST",
+                path="/admin/commands/emulate-trigger",
+                body={"trigger_id": "a1smsif4rc82qbj1e3hf"},
+                is_http_event=True,
+            )
+        )
+        self.assertIsNotNone(response)
+        self.assertEqual(response.status, 202)
+        payload = json.loads(response.body)
+        self.assertEqual(payload["trigger_mode"], "morning")
+        self.assertEqual(payload["queued_count"], 2)
+        self.assertEqual(
+            [item["command_type"] for item in payload["commands"]],
+            ["cleanup_job_statuses", "send_reminders"],
+        )
+        self.assertEqual(
+            [cmd.type for cmd in producer.commands],
+            ["cleanup_job_statuses", "send_reminders"],
+        )
+
+    def test_admin_queue_handler_enqueues_cleanup_job_statuses_command(self) -> None:
+        producer = _FakeProducer()
+        status_store = _FakeStatusStore()
+        handler = AdminQueueHandler(_FakeCtx(producer=producer, status_store=status_store))
+        response = handler.handle(
+            HttpRequest(
+                method="POST",
+                path="/admin/commands/cleanup-job-statuses",
+                body={"older_than_hours": 48, "dry_run": True, "limit": 5},
+                is_http_event=True,
+            )
+        )
+        self.assertIsNotNone(response)
+        self.assertEqual(response.status, 202)
+        self.assertEqual(len(producer.commands), 1)
+        self.assertEqual(producer.commands[0].type, "cleanup_job_statuses")
+        self.assertEqual(producer.commands[0].payload["older_than_hours"], 48)
+        self.assertTrue(producer.commands[0].payload["dry_run"])
+        self.assertEqual(producer.commands[0].payload["limit"], 5)
+
+    def test_admin_queue_handler_batch_is_best_effort(self) -> None:
+        producer = _FakeProducer(fail_types={"cleanup_job_statuses"})
+        status_store = _FakeStatusStore()
+        handler = AdminQueueHandler(_FakeCtx(producer=producer, status_store=status_store))
+        response = handler.handle(
+            HttpRequest(
+                method="POST",
+                path="/admin/commands/emulate-trigger",
+                body={"trigger_id": "a1smsif4rc82qbj1e3hf"},
+                is_http_event=True,
+            )
+        )
+        self.assertIsNotNone(response)
+        self.assertEqual(response.status, 202)
+        payload = json.loads(response.body)
+        self.assertEqual(payload["status"], "partial_accept")
+        self.assertEqual(payload["queued_count"], 1)
+        self.assertEqual(payload["commands"][0]["status"], "enqueue_failed")
+        self.assertEqual(payload["commands"][1]["status"], "accepted")
+        self.assertEqual([cmd.type for cmd in producer.commands], ["send_reminders"])
+
     def test_admin_queue_handler_enqueues_attach_task_file_command(self) -> None:
         producer = _FakeProducer()
         status_store = _FakeStatusStore()
@@ -288,34 +366,33 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
     def test_admin_queue_handler_returns_upload_contract_for_existing_task(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
 
-        original_get_snapshot_attachment_api = module.get_snapshot_attachment_api
-        module.get_snapshot_attachment_api = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        original_get_attachment_api = module.get_attachment_api
+        module.get_attachment_api = lambda _ctx: _FakeAttachmentApi(snapshot_api=_FakeSnapshotEngine())  # type: ignore[assignment]
         try:
             handler = AdminTaskAttachmentsHandler(_FakeCtx())
-            with patch.dict(sys.modules, {"boto3": _FakeBoto3Module()}):
-                response = handler.handle(
-                    HttpRequest(
-                        method="POST",
-                        path="/admin/task-attachments/request-upload",
-                        body={
-                            "task_id": "task-1",
-                            "filename": "spec final.docx",
-                            "mime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                            "size": 128,
-                            "uploaded_by": "tester",
-                        },
-                        headers={
-                            "X-DTM-Proxy-Secret": "proxy-secret-test",
-                            "x-dtm-access-mode": "full",
-                            "x-dtm-authenticated": "1",
-                            "x-dtm-contour": "test",
-                            "x-dtm-user-status": "approved",
-                        },
-                        is_http_event=True,
-                    )
+            response = handler.handle(
+                HttpRequest(
+                    method="POST",
+                    path="/admin/task-attachments/request-upload",
+                    body={
+                        "task_id": "task-1",
+                        "filename": "spec final.docx",
+                        "mime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        "size": 128,
+                        "uploaded_by": "tester",
+                    },
+                    headers={
+                        "X-DTM-Proxy-Secret": "proxy-secret-test",
+                        "x-dtm-access-mode": "full",
+                        "x-dtm-authenticated": "1",
+                        "x-dtm-contour": "test",
+                        "x-dtm-user-status": "approved",
+                    },
+                    is_http_event=True,
                 )
+            )
         finally:
-            module.get_snapshot_attachment_api = original_get_snapshot_attachment_api  # type: ignore[assignment]
+            module.get_attachment_api = original_get_attachment_api  # type: ignore[assignment]
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 200)
         payload = json.loads(response.body)
@@ -336,46 +413,42 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
     def test_admin_task_attachments_handler_finalizes_and_enqueues_attach_command(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
 
-        original_get_snapshot_attachment_api = module.get_snapshot_attachment_api
-        original_build_finalize_service = module.get_attachment_finalize_capability
+        original_get_attachment_api = module.get_attachment_api
         engine = _FakeSnapshotEngine()
-        module.get_snapshot_attachment_api = lambda _ctx: engine  # type: ignore[assignment]
-        module.get_attachment_finalize_capability = lambda _ctx: _FakeAttachmentFinalizeService()  # type: ignore[assignment]
+        module.get_attachment_api = lambda _ctx: _FakeAttachmentApi(snapshot_api=engine)  # type: ignore[assignment]
         producer = _FakeProducer()
         status_store = _FakeStatusStore()
         try:
             handler = AdminTaskAttachmentsHandler(_FakeCtx(producer=producer, status_store=status_store))
-            with patch.dict(sys.modules, {"boto3": _FakeBoto3Module()}):
-                engine.get_attachment_metadata_store().lookup["a1"] = (
-                    "task-1",
-                    SimpleNamespace(
-                        task_id="task-1",
-                        attachment_id="a1",
-                        storage_key="attachments/test/task-1/a1-spec-final.docx",
-                        filename_display="spec final.docx",
-                        mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                        size_bytes=128,
-                        preview="",
-                    ),
+            engine.get_attachment_metadata_store().lookup["a1"] = (
+                "task-1",
+                SimpleNamespace(
+                    task_id="task-1",
+                    attachment_id="a1",
+                    storage_key="attachments/test/task-1/a1-spec-final.docx",
+                    filename_display="spec final.docx",
+                    mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    size_bytes=128,
+                    preview="",
                 )
-                response = handler.handle(
-                    HttpRequest(
-                        method="POST",
-                        path="/admin/task-attachments/finalize",
-                        body={"task_id": "task-1", "attachment_id": "a1", "uploaded_by": "tester"},
-                        headers={
-                            "X-DTM-Proxy-Secret": "proxy-secret-test",
-                            "x-dtm-access-mode": "full",
-                            "x-dtm-authenticated": "1",
-                            "x-dtm-contour": "test",
-                            "x-dtm-user-status": "approved",
-                        },
-                        is_http_event=True,
-                    )
+            )
+            response = handler.handle(
+                HttpRequest(
+                    method="POST",
+                    path="/admin/task-attachments/finalize",
+                    body={"task_id": "task-1", "attachment_id": "a1", "uploaded_by": "tester"},
+                    headers={
+                        "X-DTM-Proxy-Secret": "proxy-secret-test",
+                        "x-dtm-access-mode": "full",
+                        "x-dtm-authenticated": "1",
+                        "x-dtm-contour": "test",
+                        "x-dtm-user-status": "approved",
+                    },
+                    is_http_event=True,
                 )
+            )
         finally:
-            module.get_snapshot_attachment_api = original_get_snapshot_attachment_api  # type: ignore[assignment]
-            module.get_attachment_finalize_capability = original_build_finalize_service  # type: ignore[assignment]
+            module.get_attachment_api = original_get_attachment_api  # type: ignore[assignment]
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 202)
         payload = json.loads(response.body)
@@ -421,8 +494,8 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
     def test_admin_task_attachments_handler_request_upload_returns_task_not_found_details(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
 
-        original_get_snapshot_attachment_api = module.get_snapshot_attachment_api
-        module.get_snapshot_attachment_api = lambda _ctx: _FakeSnapshotEngine(tasks_by_id={})  # type: ignore[assignment]
+        original_get_attachment_api = module.get_attachment_api
+        module.get_attachment_api = lambda _ctx: _FakeAttachmentApi(snapshot_api=_FakeSnapshotEngine(tasks_by_id={}))  # type: ignore[assignment]
         try:
             handler = AdminTaskAttachmentsHandler(_FakeCtx())
             response = handler.handle(
@@ -447,7 +520,7 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
                 )
             )
         finally:
-            module.get_snapshot_attachment_api = original_get_snapshot_attachment_api  # type: ignore[assignment]
+            module.get_attachment_api = original_get_attachment_api  # type: ignore[assignment]
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 404)
         payload = json.loads(response.body)
@@ -483,34 +556,33 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
     def test_admin_queue_handler_returns_upload_contract_for_pdf(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
 
-        original_get_snapshot_attachment_api = module.get_snapshot_attachment_api
-        module.get_snapshot_attachment_api = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        original_get_attachment_api = module.get_attachment_api
+        module.get_attachment_api = lambda _ctx: _FakeAttachmentApi(snapshot_api=_FakeSnapshotEngine())  # type: ignore[assignment]
         try:
             handler = AdminTaskAttachmentsHandler(_FakeCtx())
-            with patch.dict(sys.modules, {"boto3": _FakeBoto3Module()}):
-                response = handler.handle(
-                    HttpRequest(
-                        method="POST",
-                        path="/admin/task-attachments/request-upload",
-                        body={
-                            "task_id": "task-1",
-                            "filename": "spec-final.pdf",
-                            "mime": "application/pdf",
-                            "size": 128,
-                            "uploaded_by": "tester",
-                        },
-                        headers={
-                            "X-DTM-Proxy-Secret": "proxy-secret-test",
-                            "x-dtm-access-mode": "full",
-                            "x-dtm-authenticated": "1",
-                            "x-dtm-contour": "test",
-                            "x-dtm-user-status": "approved",
-                        },
-                        is_http_event=True,
-                    )
+            response = handler.handle(
+                HttpRequest(
+                    method="POST",
+                    path="/admin/task-attachments/request-upload",
+                    body={
+                        "task_id": "task-1",
+                        "filename": "spec-final.pdf",
+                        "mime": "application/pdf",
+                        "size": 128,
+                        "uploaded_by": "tester",
+                    },
+                    headers={
+                        "X-DTM-Proxy-Secret": "proxy-secret-test",
+                        "x-dtm-access-mode": "full",
+                        "x-dtm-authenticated": "1",
+                        "x-dtm-contour": "test",
+                        "x-dtm-user-status": "approved",
+                    },
+                    is_http_event=True,
                 )
+            )
         finally:
-            module.get_snapshot_attachment_api = original_get_snapshot_attachment_api  # type: ignore[assignment]
+            module.get_attachment_api = original_get_attachment_api  # type: ignore[assignment]
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 200)
         payload = json.loads(response.body)
@@ -521,34 +593,33 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
     def test_admin_queue_handler_returns_upload_contract_for_legacy_doc(self) -> None:
         import src.entrypoints.http.admin_task_attachments_handler as module
 
-        original_get_snapshot_attachment_api = module.get_snapshot_attachment_api
-        module.get_snapshot_attachment_api = lambda _ctx: _FakeSnapshotEngine()  # type: ignore[assignment]
+        original_get_attachment_api = module.get_attachment_api
+        module.get_attachment_api = lambda _ctx: _FakeAttachmentApi(snapshot_api=_FakeSnapshotEngine())  # type: ignore[assignment]
         try:
             handler = AdminTaskAttachmentsHandler(_FakeCtx())
-            with patch.dict(sys.modules, {"boto3": _FakeBoto3Module()}):
-                response = handler.handle(
-                    HttpRequest(
-                        method="POST",
-                        path="/admin/task-attachments/request-upload",
-                        body={
-                            "task_id": "task-1",
-                            "filename": "spec-final.doc",
-                            "mime": "application/msword",
-                            "size": 128,
-                            "uploaded_by": "tester",
-                        },
-                        headers={
-                            "X-DTM-Proxy-Secret": "proxy-secret-test",
-                            "x-dtm-access-mode": "full",
-                            "x-dtm-authenticated": "1",
-                            "x-dtm-contour": "test",
-                            "x-dtm-user-status": "approved",
-                        },
-                        is_http_event=True,
-                    )
+            response = handler.handle(
+                HttpRequest(
+                    method="POST",
+                    path="/admin/task-attachments/request-upload",
+                    body={
+                        "task_id": "task-1",
+                        "filename": "spec-final.doc",
+                        "mime": "application/msword",
+                        "size": 128,
+                        "uploaded_by": "tester",
+                    },
+                    headers={
+                        "X-DTM-Proxy-Secret": "proxy-secret-test",
+                        "x-dtm-access-mode": "full",
+                        "x-dtm-authenticated": "1",
+                        "x-dtm-contour": "test",
+                        "x-dtm-user-status": "approved",
+                    },
+                    is_http_event=True,
                 )
+            )
         finally:
-            module.get_snapshot_attachment_api = original_get_snapshot_attachment_api  # type: ignore[assignment]
+            module.get_attachment_api = original_get_attachment_api  # type: ignore[assignment]
         self.assertIsNotNone(response)
         self.assertEqual(response.status, 200)
         payload = json.loads(response.body)
@@ -642,6 +713,38 @@ class CommandQueueFoundationTestCase(unittest.TestCase):
             [cmd.type for cmd in producer.commands],
             ["update_snapshot", "render_timeline_sheet", "render_designers_sheet"],
         )
+
+    def test_index_enqueues_morning_trigger_best_effort(self) -> None:
+        runtime_deps = runtime_bootstrap.get_runtime_deps()
+        trigger_modes = get_trigger_modes()
+        original_producer = runtime_deps.get("command_queue_producer")
+        original_status_store = runtime_deps.get("job_status_store")
+        original_triggers = dict(trigger_modes)
+        producer = _FakeProducer(fail_types={"cleanup_job_statuses"})
+        status_store = _FakeStatusStore()
+        runtime_deps["command_queue_producer"] = producer
+        runtime_deps["job_status_store"] = status_store
+        trigger_modes.clear()
+        trigger_modes["trigger-2"] = "morning"
+        try:
+            event = {"messages": [{"details": {"trigger_id": "trigger-2"}}]}
+            response = asyncio.run(index.handler(event, None))
+        finally:
+            runtime_deps["command_queue_producer"] = original_producer
+            runtime_deps["job_status_store"] = original_status_store
+            trigger_modes.clear()
+            trigger_modes.update(original_triggers)
+        self.assertEqual(response["statusCode"], 200)
+        payload = json.loads(response["body"])
+        self.assertEqual(payload["status"], "partial_accept")
+        self.assertEqual(payload["queued_count"], 1)
+        self.assertEqual(
+            [item["command_type"] for item in payload["commands"]],
+            ["cleanup_job_statuses", "send_reminders"],
+        )
+        self.assertEqual(payload["commands"][0]["status"], "enqueue_failed")
+        self.assertEqual(payload["commands"][1]["status"], "accepted")
+        self.assertEqual([cmd.type for cmd in producer.commands], ["send_reminders"])
 
 
 if __name__ == "__main__":

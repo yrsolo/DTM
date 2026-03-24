@@ -8,6 +8,7 @@ Process, tracking и кампании живут в `work/`. История и s
 - [product/overview.md](product/overview.md)
 - [architecture/overview.md](architecture/overview.md)
 - [modules/README.md](modules/README.md)
+- root [README.md](../README.md) как карта active code map
 
 ## Если сопровождаешь живой контур
 

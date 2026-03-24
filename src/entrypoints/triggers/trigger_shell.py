@@ -38,28 +38,58 @@ class TriggerShell:
                 requested_by=RequestedBy(source="trigger"),
                 payload=dict(payload),
             )
-            command_runtime.enqueue(cmd)
+            try:
+                command_runtime.enqueue(cmd)
+            except Exception as error:
+                commands.append(
+                    {
+                        "command_type": cmd.type,
+                        "status": "enqueue_failed",
+                        "payload": dict(cmd.payload),
+                        "error": {
+                            "type": type(error).__name__,
+                            "message": str(error),
+                        },
+                    }
+                )
+                continue
             commands.append(
                 {
                     "job_id": cmd.job_id,
                     "command_type": cmd.type,
+                    "status": "accepted",
                     "payload": dict(cmd.payload),
                 }
             )
+        accepted_commands = [item for item in commands if str(item.get("status", "")) == "accepted"]
+        if not accepted_commands:
+            return {
+                "artifact": "command_batch_enqueue_failed" if len(commands) > 1 else "command_enqueue_failed",
+                "status": "failed",
+                "trigger_mode": mode,
+                "queued_count": 0,
+                "commands": commands,
+                "error": {
+                    "code": "trigger_enqueue_failed",
+                    "message": "Failed to enqueue any planned trigger commands.",
+                },
+            }
         return {
             "artifact": "command_batch_enqueued" if len(commands) > 1 else "command_enqueued",
-            "status": "accepted",
+            "status": "accepted" if len(accepted_commands) == len(commands) else "partial_accept",
             "trigger_mode": mode,
-            "queued_count": len(commands),
+            "queued_count": len(accepted_commands),
             "commands": commands,
-            "job_id": commands[0]["job_id"],
-            "command_type": commands[0]["command_type"],
+            "job_id": accepted_commands[0]["job_id"],
+            "command_type": accepted_commands[0]["command_type"],
         }
 
     async def handle_trigger(self, trigger_mode: str, event: Any) -> dict[str, Any]:
         enqueue_result = self._enqueue_trigger_command(trigger_mode=trigger_mode)
         if enqueue_result is not None:
-            return {"statusCode": 200, "body": json.dumps(enqueue_result, ensure_ascii=False)}
+            queued_count = int(enqueue_result.get("queued_count", 0) or 0)
+            status_code = 200 if queued_count > 0 else 503
+            return {"statusCode": status_code, "body": json.dumps(enqueue_result, ensure_ascii=False)}
         runtime_response = await self._runtime_shell.execute(
             RuntimeExecutionRequest(
                 mode=str(trigger_mode or "").strip().lower(),
