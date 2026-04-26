@@ -4,6 +4,8 @@
 
 ## Recent Done
 
+- CAM-2026-04-26-REMINDER-MODEL-CONFIG-MAP-V1 completed: reminder OpenAI model overrides now live in `models.openai_by_mode`, with runtime fallback to `openai_default`.
+- CAM-2026-04-26-MORNING-NOTIFICATIONS-GPT55-V1 completed: `morning` reminder enhancement now uses OpenAI `gpt-5.5` via `models.openai_by_mode`, while other reminder modes keep `openai_default`.
 - CAM-2026-03-22-JOB-STATUS-RETENTION-CLEANUP-V1 completed: `morning` is now a platform-owned best-effort orchestration slot, `cleanup_job_statuses` can be enqueued manually with `delete_before_utc` or `older_than_hours`, and terminal job-status lookup files now have a documented retention policy without touching `latest/*` or `history/*`.
 - CAM-2026-03-22-CRITIC3-CANON-ALIGNMENT-V1 completed: `access_api` now exposes one explicit primary browser read-model seam end-to-end, the application file/import names match that canon, and README plus architecture/module docs tell the same active code-map story.
 - CAM-2026-03-22-CRITIC2-STRUCTURAL-CLOSEOUT-V1 completed: `snapshot` no longer reads through one broad `runtime_binding` hub, `access_api` browser-read seams and frontend observability are calmer, the top path now injects direct `handle_*` seams instead of shell getters, and `rendering.public` no longer exports named render jobs.

@@ -68,7 +68,7 @@ async def _run_reminder_mode(
         send_retry_backoff_seconds=float(notify_cfg.send_retry_backoff_seconds),
         send_retry_backoff_multiplier=float(notify_cfg.send_retry_backoff_multiplier),
         llm_mode=llm_mode,
-        llm_model=str(cfg.llm.models.get("openai_default", "")),
+        llm_model=delivery_api.llm_model_for_mode(normalized_mode),
         runtime_env=runtime_env,
         mock_llm=mock_llm,
     ).run(

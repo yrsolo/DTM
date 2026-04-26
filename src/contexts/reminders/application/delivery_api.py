@@ -29,6 +29,9 @@ class ReminderDeliveryApi:
     def enhancer(self, *, mock_external: bool):
         return self._module.enhancer(self._ctx, mock_external=mock_external)
 
+    def llm_model_for_mode(self, mode: str) -> str:
+        return self._module.llm_model_for_mode(self._ctx, mode)
+
     def today_in_runtime_timezone(self):
         return self._module.today_in_runtime_timezone(self._ctx)
 

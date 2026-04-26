@@ -25,10 +25,12 @@ class _FakeReminderResult:
 
 class _FakeReminderJob:
     last_request = None
+    last_kwargs = None
     run_calls = 0
 
     def __init__(self, **kwargs):  # noqa: ANN003
         self.kwargs = kwargs
+        type(self).last_kwargs = kwargs
 
     async def run(self, req):  # noqa: ANN001
         type(self).last_request = req
@@ -58,6 +60,11 @@ class _FakeDeliveryApi:
 
     def enhancer(self, *, mock_external: bool):  # noqa: ARG002
         return None
+
+    def llm_model_for_mode(self, mode: str):
+        if str(mode).strip().lower() == "morning":
+            return "gpt-5.5"
+        return "gpt-test"
 
     def today_in_runtime_timezone(self):
         return date(2026, 3, 7)
@@ -131,6 +138,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
 
         original_get_delivery_api = module.get_delivery_api
         _FakeReminderJob.last_request = None
+        _FakeReminderJob.last_kwargs = None
         _FakeReminderJob.run_calls = 0
         delivery_api = _FakeDeliveryApi()
         module.get_delivery_api = lambda _ctx: delivery_api  # type: ignore[assignment]
@@ -187,6 +195,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
 
         original_get_delivery_api = module.get_delivery_api
         _FakeReminderJob.last_request = None
+        _FakeReminderJob.last_kwargs = None
         _FakeReminderJob.run_calls = 0
         delivery_api = _FakeDeliveryApi()
         module.get_delivery_api = lambda _ctx: delivery_api  # type: ignore[assignment]
@@ -208,12 +217,14 @@ class SendRemindersJobTestCase(unittest.TestCase):
         self.assertEqual(result["status"], "ok")
         self.assertEqual(_FakeReminderJob.run_calls, 1)
         self.assertEqual(_FakeReminderJob.last_request.mode, "test")
+        self.assertEqual(_FakeReminderJob.last_kwargs["llm_model"], "gpt-test")
 
     def test_morning_passes_friday_today_override_to_reminder_request(self) -> None:
         import src.contexts.reminders.internal.job_runner as module
 
         original_get_delivery_api = module.get_delivery_api
         _FakeReminderJob.last_request = None
+        _FakeReminderJob.last_kwargs = None
         _FakeReminderJob.run_calls = 0
         delivery_api = _FakeDeliveryApi()
         delivery_api.today_in_runtime_timezone = lambda: date(2026, 3, 6)  # type: ignore[method-assign]
@@ -236,6 +247,7 @@ class SendRemindersJobTestCase(unittest.TestCase):
         self.assertEqual(result["status"], "ok")
         self.assertEqual(_FakeReminderJob.run_calls, 1)
         self.assertEqual(_FakeReminderJob.last_request.today_override.isoformat(), "2026-03-06")
+        self.assertEqual(_FakeReminderJob.last_kwargs["llm_model"], "gpt-5.5")
 
 
 if __name__ == "__main__":

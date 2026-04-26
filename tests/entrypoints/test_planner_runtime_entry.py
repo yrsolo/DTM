@@ -73,6 +73,11 @@ class _FakeReminderDeliveryApi:
     def enhancer(self, *, mock_external: bool):  # noqa: ARG002
         return None
 
+    def llm_model_for_mode(self, mode: str):
+        if str(mode).strip().lower() == "morning":
+            return "gpt-5.5"
+        return "gpt-test"
+
     def today_in_runtime_timezone(self):
         return self._today
 

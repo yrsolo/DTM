@@ -10,6 +10,8 @@
 - none
 
 ## Recent Done
+- CAM-2026-04-26-REMINDER-MODEL-CONFIG-MAP-V1 completed after moving reminder model overrides to a generic `models.openai_by_mode` config map with fallback tests.
+- CAM-2026-04-26-MORNING-NOTIFICATIONS-GPT55-V1 completed after adding a config-driven morning OpenAI model override and focused tests for queued plus direct reminder execution.
 - CAM-2026-03-22-JOB-STATUS-RETENTION-CLEANUP-V1 completed after adding platform-owned job-status retention cleanup, making `morning` enqueue cleanup plus reminders best-effort, and documenting the short-lived role of `jobs/{env}/status/{job_id}.json`.
 - CAM-2026-03-22-CRITIC3-CANON-ALIGNMENT-V1 completed after making `access_api` read through one explicit primary browser read-model term across code, router wiring, module/public seams, and active docs, so the active code map and docs map now describe the same main browser path.
 - CAM-2026-03-22-CRITIC2-STRUCTURAL-CLOSEOUT-V1 completed after replacing the visible `snapshot` runtime hub with role-true builders, hiding shell objects behind direct top-entry `handle_*` seams, shrinking the primary browser read orchestration, and removing the named render-job public catalog.
