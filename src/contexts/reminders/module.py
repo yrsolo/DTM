@@ -90,6 +90,15 @@ class RemindersModule:
             retry_backoff_seconds=retry_backoff,
         )
 
+    def llm_model_for_mode(self, ctx, mode: str) -> str:
+        models = dict(getattr(ctx.cfg.llm, "models", {}) or {})
+        default_model = str(models.get("openai_default", "")).strip()
+        by_mode = models.get("openai_by_mode", {})
+        if not isinstance(by_mode, dict):
+            return default_model
+        mode_model = str(by_mode.get(str(mode or "").strip().lower(), "")).strip()
+        return mode_model or default_model
+
     def today_in_runtime_timezone(self, ctx):
         timezone_name = str(ctx.cfg.runtime.runtime.timezone or "Europe/Moscow").strip() or "Europe/Moscow"
         try:

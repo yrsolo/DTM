@@ -62,7 +62,7 @@ class SendRemindersJob:
                 send_retry_backoff_seconds=float(notify_cfg.send_retry_backoff_seconds),
                 send_retry_backoff_multiplier=float(notify_cfg.send_retry_backoff_multiplier),
                 llm_mode=llm_mode,
-                llm_model=str(self._ctx.cfg.llm.models.get("openai_default", "")),
+                llm_model=delivery_api.llm_model_for_mode(mode),
                 runtime_env=str(self._ctx.cfg.runtime.runtime.env_default),
                 mock_llm=mock_llm,
             ).run(

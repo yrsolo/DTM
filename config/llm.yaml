@@ -7,6 +7,8 @@ llm:
 
 models:
   openai_default: gpt-4o
+  openai_by_mode:
+    morning: gpt-5.5
   google_default: gemini-2.0-flash
   yandex_default_suffix: yandexgpt/latest
 
