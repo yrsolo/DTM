@@ -4,12 +4,13 @@
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## In Progress
-- CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1
+- none
 
 ## Planned
 - none
 
 ## Recent Done
+- CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1 completed after publishing the showcase and replacing decorative architecture art with hybrid symbolic-module diagrams whose topology is verified against the current backend and frontend.
 - CAM-2026-06-15-GITHUB-PAGES-SHOWCASE-V1 completed after adding a responsive GitHub Pages presentation with generated architecture visuals, verified product copy, HLS promo playback, and backend/frontend repository links.
 - CAM-2026-04-26-REMINDER-MODEL-CONFIG-MAP-V1 completed after moving reminder model overrides to a generic `models.openai_by_mode` config map with fallback tests.
 - CAM-2026-04-26-MORNING-NOTIFICATIONS-GPT55-V1 completed after adding a config-driven morning OpenAI model override and focused tests for queued plus direct reminder execution.

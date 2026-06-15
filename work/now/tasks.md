@@ -1,10 +1,10 @@
 # Active Tasks
 
-- CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1: publishing the showcase, then replacing decorative architecture art with technically accurate labeled diagrams and saved prompts.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; the only remaining blocker is rerunning the same smoke after the manual production release workflow is executed.
 
 ## Recent Done
 
+- CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1 completed: GitHub Pages is live, architecture visuals now combine symbolic volumetric modules with code-verified interaction topology, and reproducible backplate prompts are published.
 - CAM-2026-06-15-GITHUB-PAGES-SHOWCASE-V1 completed: added a publish-ready GitHub Pages showcase with generated architecture visuals, verified backend/frontend interaction copy, HLS promo video, repository links, and responsive browser checks.
 - CAM-2026-04-26-REMINDER-MODEL-CONFIG-MAP-V1 completed: reminder OpenAI model overrides now live in `models.openai_by_mode`, with runtime fallback to `openai_default`.
 - CAM-2026-04-26-MORNING-NOTIFICATIONS-GPT55-V1 completed: `morning` reminder enhancement now uses OpenAI `gpt-5.5` via `models.openai_by_mode`, while other reminder modes keep `openai_default`.
