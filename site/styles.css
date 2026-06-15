@@ -198,31 +198,23 @@ h2 { margin: 20px 0 0; font-size: clamp(42px, 6.5vw, 90px); line-height: .96; le
 .flow-list li { padding: 15px 0; display: grid; grid-template-columns: 112px 1fr; border-bottom: 1px solid var(--line); color: #b7bcb7; font-family: Consolas, monospace; font-size: 10px; line-height: 1.5; }
 .flow-list span { color: var(--lime); text-transform: uppercase; }
 .architecture-visual { position: relative; min-height: 620px; overflow: hidden; background: #080a0b; }
-.architecture-visual::after { content: ""; position: absolute; inset: 0; box-shadow: inset 80px 0 100px rgba(17,19,21,.85); pointer-events: none; }
-.architecture-visual img { width: 100%; height: 100%; display: block; object-fit: cover; }
-.visual-label {
+.architecture-visual::after { content: ""; position: absolute; inset: 0; box-shadow: inset 40px 0 70px rgba(17,19,21,.58); pointer-events: none; }
+.architecture-visual img { width: 100%; height: 100%; display: block; object-fit: contain; }
+.architecture-open {
   position: absolute;
   z-index: 2;
-  padding: 7px 10px;
-  border: 1px solid rgba(200,255,65,.35);
-  border-radius: 7px;
+  right: 16px;
+  bottom: 16px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
   background: rgba(6,8,8,.76);
-  color: #e4e7df;
+  color: #d8ddd8;
   font-family: Consolas, monospace;
   font-size: 9px;
-  letter-spacing: .05em;
+  letter-spacing: .04em;
   backdrop-filter: blur(12px);
 }
-.label-source { left: 5%; top: 37%; }
-.label-core { left: 39%; top: 31%; }
-.label-store { right: 7%; top: 18%; }
-.label-read { right: 6%; top: 53%; }
-.label-queue { left: 40%; bottom: 12%; }
-.label-ui { left: 42%; top: 44%; }
-.label-bff { left: 47%; top: 11%; }
-.label-auth { right: 8%; top: 11%; }
-.label-mobile { right: 6%; top: 53%; }
-.label-labs { left: 5%; bottom: 20%; }
 .contract-strip {
   margin-top: 22px;
   padding: 12px;
@@ -291,7 +283,6 @@ footer { width: min(calc(100% - 40px), var(--max)); margin: 0 auto; padding: 36p
   .architecture-section { width: calc(100% - 12px); }
   .architecture-copy { padding: 30px 22px; }
   .architecture-visual { min-height: 360px; }
-  .visual-label { display: none; }
   .flow-list li { grid-template-columns: 1fr; gap: 6px; }
   .video-shell { border-radius: 12px; }
   footer { width: calc(100% - 24px); align-items: flex-start; flex-direction: column; gap: 18px; }
