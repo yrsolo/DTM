@@ -1,10 +1,10 @@
 # Active Tasks
 
-- CAM-2026-06-15-SHOWCASE-MEDIA-FIX-RASTER-DIAGRAMS-V1: fix the showcase video player, replace SVG architecture tabs with generated raster-style technical diagrams, remove hero repository CTA buttons, and rewrite the annotation into clear project copy.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; the only remaining blocker is rerunning the same smoke after the manual production release workflow is executed.
 
 ## Recent Done
 
+- CAM-2026-06-15-SHOWCASE-MEDIA-FIX-RASTER-DIAGRAMS-V1 completed: fixed the showcase video player with an H.264 MP4/poster path, replaced architecture tabs with generated raster-style technical diagrams, removed the hero CTA button row, rewrote the annotation, saved prompts, and verified public Pages deployment.
 - CAM-2026-06-15-SHOWCASE-SHADOWGEN-REDESIGN-V1 completed: GitHub Pages now uses a shorter ShadowGen-style light landing with media tabs, compact project/stack sections, repository links, accurate hybrid diagrams, saved generation prompts, and a verified public deployment.
 - CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1 completed: GitHub Pages is live, architecture visuals now combine symbolic volumetric modules with code-verified interaction topology, and reproducible backplate prompts are published.
 - CAM-2026-06-15-GITHUB-PAGES-SHOWCASE-V1 completed: added a publish-ready GitHub Pages showcase with generated architecture visuals, verified backend/frontend interaction copy, HLS promo video, repository links, and responsive browser checks.
