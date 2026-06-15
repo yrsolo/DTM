@@ -232,6 +232,10 @@ h3 {
   background: #172a31;
 }
 
+.video-fallback[hidden] {
+  display: none;
+}
+
 .video-fallback a {
   color: #8bdbe3;
   font-weight: 800;
