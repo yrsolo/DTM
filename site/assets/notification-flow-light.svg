@@ -20,7 +20,7 @@
   </defs>
   <rect width="1600" height="900" fill="url(#bg)"/>
   <text x="80" y="86" class="k">NOTIFICATION · REMINDERS DELIVERY</text>
-  <text x="80" y="132" class="title">Напоминания собираются из snapshot-контекста и доставляются через Telegram</text>
+  <text x="80" y="132" class="title">Notifications: snapshot context → queue → Telegram</text>
 
   <path d="M270 360 C360 360 385 360 465 360" class="flow"/>
   <path d="M700 360 C790 360 815 360 900 360" class="flow"/>
