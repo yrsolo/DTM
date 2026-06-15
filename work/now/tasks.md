@@ -1,5 +1,6 @@
 # Active Tasks
 
+- CAM-2026-06-15-SHOWCASE-MEDIA-FIX-RASTER-DIAGRAMS-V1: fix the showcase video player, replace SVG architecture tabs with generated raster-style technical diagrams, remove hero repository CTA buttons, and rewrite the annotation into clear project copy.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; the only remaining blocker is rerunning the same smoke after the manual production release workflow is executed.
 
 ## Recent Done

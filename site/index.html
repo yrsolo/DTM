@@ -50,12 +50,6 @@
         </p>
         <p class="authors">Yuri Soloviev&nbsp; | &nbsp;DTM</p>
 
-        <div class="hero-actions" aria-label="Основные ссылки">
-          <a class="button button-dark" href="https://github.com/yrsolo/DTM" target="_blank" rel="noreferrer">Backend repo</a>
-          <a class="button" href="https://github.com/yrsolo/DTM-front" target="_blank" rel="noreferrer">Frontend repo</a>
-          <a class="button" href="#media">Смотреть схему</a>
-        </div>
-
         <div class="media-tabs" id="media" aria-label="Материалы проекта">
           <div class="tab-list" role="tablist" aria-label="Переключатель материалов">
             <button class="tab active" type="button" role="tab" aria-selected="true" data-panel="video">video</button>
@@ -67,10 +61,12 @@
 
           <section class="media-panel active" data-panel="video" role="tabpanel">
             <div class="video-frame">
-              <video id="promo-video" controls playsinline preload="metadata" poster="./assets/screen-workspace.svg" aria-label="Промо-видео DTM"></video>
+              <video id="promo-video" controls playsinline preload="none" poster="./assets/video-poster.jpg" aria-label="Промо-видео DTM">
+                <source src="./assets/DTM_promo_h264.mp4" type="video/mp4" />
+              </video>
               <div class="video-fallback" id="video-fallback" hidden>
-                <p>Браузер не смог запустить HLS-поток.</p>
-                <a href="https://storage.yandexcloud.net/dtm-presets/video/DTM_hi.m3u8">Открыть видео напрямую</a>
+                <p>Браузер не смог запустить встроенное видео.</p>
+                <a href="./assets/DTM_promo_h264.mp4">Открыть MP4 напрямую</a>
               </div>
             </div>
             <p class="caption">Короткое промо: как таблица превращается в рабочий интерфейс и управляемый процесс.</p>
@@ -84,22 +80,22 @@
           </section>
 
           <section class="media-panel" data-panel="back" role="tabpanel" hidden>
-            <a class="visual-link" href="./assets/backend-flow-light.svg" target="_blank" rel="noreferrer">
-              <img src="./assets/backend-flow-light.svg" alt="Backend схема DTM: Google Sheets, snapshot, object storage, access API, queue и workers" />
+            <a class="visual-link" href="./assets/backend-generated.png" target="_blank" rel="noreferrer">
+              <img src="./assets/backend-generated.png" alt="Генеративная backend-схема DTM: Google Sheets, snapshot, object storage, access API, очередь и workers" />
             </a>
             <p class="caption">Backend: быстрый read-path отделён от команд, очередей и тяжёлых worker-операций.</p>
           </section>
 
           <section class="media-panel" data-panel="front" role="tabpanel" hidden>
-            <a class="visual-link" href="./assets/frontend-flow-light.svg" target="_blank" rel="noreferrer">
-              <img src="./assets/frontend-flow-light.svg" alt="Frontend схема DTM: React SPA, snapshot lifecycle, views, auth и backend contracts" />
+            <a class="visual-link" href="./assets/frontend-generated.png" target="_blank" rel="noreferrer">
+              <img src="./assets/frontend-generated.png" alt="Генеративная frontend-схема DTM: desktop, mobile, Telegram Mini App, React SPA, snapshot lifecycle и access plane" />
             </a>
             <p class="caption">Frontend: одна React/Vite SPA собирает desktop, mobile, analytics, admin и Telegram-shell поверх общих контрактов.</p>
           </section>
 
           <section class="media-panel" data-panel="notification" role="tabpanel" hidden>
-            <a class="visual-link" href="./assets/notification-flow-light.svg" target="_blank" rel="noreferrer">
-              <img src="./assets/notification-flow-light.svg" alt="Схема уведомлений DTM: planner, reminder context, LLM enhancer, queue и Telegram delivery" />
+            <a class="visual-link" href="./assets/notification-generated.png" target="_blank" rel="noreferrer">
+              <img src="./assets/notification-generated.png" alt="Генеративная схема уведомлений DTM: scheduler, reminder context, LLM enhancer, queue, worker и Telegram delivery" />
             </a>
             <p class="caption">Уведомления: планировщик собирает контекст задач, усиливает текст и доставляет напоминания в Telegram.</p>
           </section>
@@ -109,18 +105,21 @@
       <section class="section two-column" id="summary">
         <div>
           <p class="kicker">АННОТАЦИЯ</p>
-          <h2>Проект про операционную ясность, а не про ещё один task tracker.</h2>
+          <h2>DTM показывает работу дизайн-отдела без ручных отчётов.</h2>
         </div>
         <div class="body-copy">
           <p>
-            DTM оставляет привычный источник данных команды — Google Sheets, но строит вокруг него
-            production-like контур: нормализация, snapshot-модель, browser-facing API, интерфейсы
-            для разных сценариев и асинхронные операции с наблюдаемым статусом.
+            В дизайн-команде задачи часто живут в таблице: там удобно быстро менять сроки,
+            ответственных и статусы. Проблема начинается, когда по этой таблице нужно понять,
+            что происходит прямо сейчас: кто перегружен, какие задачи горят, где есть вложения,
+            что уже готово к показу и кому нужно напомнить о дедлайне.
           </p>
           <p>
-            В резюме это пет-проект; по устройству это полноценная система для дизайн-отдела,
-            где важны скорость чтения, аккуратные границы модулей, предсказуемые права доступа
-            и понятная эксплуатация.
+            DTM берёт таблицу как источник правды и собирает из неё рабочий интерфейс:
+            таймлайн проекта, карточки задач, аналитику по загрузке, доступы для разных ролей,
+            вложения и Telegram-уведомления. Для команды это выглядит как понятная витрина
+            текущей работы, а внутри устроено как сервис с подготовленными снимками данных,
+            очередями для тяжёлых действий и отдельными backend/frontend-репозиториями.
           </p>
         </div>
       </section>
@@ -136,7 +135,7 @@
           <article class="card">
             <h3>Frontend</h3>
             <p>React/Vite SPA с desktop timeline, analytics, mobile shell, admin tools и browser contracts.</p>
-            <div class="chips"><span>React</span><span>TypeScript</span><span>Vite</span><span>SVG UI</span></div>
+            <div class="chips"><span>React</span><span>TypeScript</span><span>Vite</span><span>generated media</span></div>
           </article>
           <article class="card">
             <h3>Operations</h3>
@@ -187,7 +186,6 @@
       <a href="https://github.com/yrsolo" target="_blank" rel="noreferrer">yrsolo on GitHub →</a>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.6.15/dist/hls.min.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

@@ -1,26 +1,3 @@
-const video = document.querySelector("#promo-video");
-const fallback = document.querySelector("#video-fallback");
-const source = "https://storage.yandexcloud.net/dtm-presets/video/DTM_hi.m3u8";
-
-function showVideoFallback() {
-  if (fallback) fallback.hidden = false;
-}
-
-if (video) {
-  if (video.canPlayType("application/vnd.apple.mpegurl")) {
-    video.src = source;
-  } else if (window.Hls?.isSupported()) {
-    const hls = new window.Hls({ enableWorker: true });
-    hls.loadSource(source);
-    hls.attachMedia(video);
-    hls.on(window.Hls.Events.ERROR, (_, data) => {
-      if (data.fatal) showVideoFallback();
-    });
-  } else {
-    showVideoFallback();
-  }
-}
-
 const tabs = [...document.querySelectorAll(".tab")];
 const panels = [...document.querySelectorAll(".media-panel")];
 

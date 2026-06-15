@@ -6,7 +6,7 @@ Single source of truth for current campaign lifecycle state.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## In Progress
-- none
+- CAM-2026-06-15-SHOWCASE-MEDIA-FIX-RASTER-DIAGRAMS-V1
 
 ## Planned
 - none
