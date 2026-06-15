@@ -1,5 +1,6 @@
 # Active Tasks
 
+- CAM-2026-06-15-SHOWCASE-SHADOWGEN-REDESIGN-V1: redesign the GitHub Pages showcase into a shorter ShadowGen-style light landing with media tabs, accurate hybrid module diagrams, repository links, and redeploy to the public Pages URL.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; the only remaining blocker is rerunning the same smoke after the manual production release workflow is executed.
 
 ## Recent Done
