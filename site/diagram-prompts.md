@@ -41,3 +41,5 @@ Constraints: no words, no letters, no logos, no people, no fake UI screenshots, 
 - Preserve lane topology and color semantics.
 - Reject outputs that invent services, databases, or connections.
 - Use the backplate at low opacity so the SVG remains readable without it.
+- Keep module symbols slightly volumetric and recognizable, while keeping connections flat, explicit, and technically authoritative.
+- Prefer one short module name plus one short role line; move detailed explanation into page copy instead of the diagram.
