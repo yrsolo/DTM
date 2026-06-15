@@ -35,3 +35,9 @@
   - evidence: Local static server returned HTTP 200 for `/` and `assets/DTM_promo_h264.mp4`. Local HTML reference check found no missing local assets, confirmed generated PNG tab references, no old SVG tab references, and no hero CTA row.
   - trust_level: high
   - notes: Desktop screenshots were rendered with headless Edge for the video and backend tab.
+- source: public GitHub Pages deployment
+  - last_verified_at: 2026-06-16
+  - verified_by: Codex
+  - evidence: GitHub Actions `Deploy GitHub Pages showcase` completed successfully for `feat: add generated showcase diagrams and stable video` on `main`. Public checks returned HTTP 200 for `/`, `assets/DTM_promo_h264.mp4`, `video-poster.jpg`, all three generated PNG diagrams, and `diagram-prompts.md`; public HTML contains generated PNG references, no HLS runtime, and no hero CTA row.
+  - trust_level: high
+  - notes: Live screenshot of `https://yrsolo.github.io/DTM/#back` shows the generated raster backend diagram.
