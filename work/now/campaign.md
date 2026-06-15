@@ -6,12 +6,13 @@ Single source of truth for current campaign lifecycle state.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## In Progress
-- CAM-2026-06-16-SHOWCASE-COPY-MEDIA-POLISH-V1
+- none
 
 ## Planned
 - none
 
 ## Recent Done
+- CAM-2026-06-16-SHOWCASE-COPY-MEDIA-POLISH-V1 completed after polishing the showcase media/copy: notification assistant persona, real site screenshot, clearer scheme captions, live product link, and verified Pages deployment.
 - CAM-2026-06-15-SHOWCASE-MEDIA-FIX-RASTER-DIAGRAMS-V1 completed after fixing the showcase video path, replacing SVG diagrams with generated raster technical infographics, removing the hero CTA row, rewriting the annotation, and verifying Pages.
 - CAM-2026-06-15-SHOWCASE-SHADOWGEN-REDESIGN-V1 completed after the public DTM showcase was redesigned into a shorter ShadowGen-style light landing with tabbed media, accurate hybrid diagrams, saved prompts, and verified Pages deployment.
 - CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1 completed after deploying the public showcase and refining architecture visuals into technically accurate hybrid diagrams.

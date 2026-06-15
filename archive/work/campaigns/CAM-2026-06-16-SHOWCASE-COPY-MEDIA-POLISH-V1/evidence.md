@@ -35,3 +35,9 @@
   - evidence: Local asset reference parser found 9 local refs and 0 missing files. Local server returned HTTP 200 for `/` and the URL-encoded screenshot path. Headless Edge rendered `#screen` and `#notification` screenshots for visual review. `https://dtm.solofarm.ru` returned HTTP 200.
   - trust_level: high
   - notes: The notification image is 1672x941; the provided site screenshot is 1933x1054.
+- source: public GitHub Pages deployment
+  - last_verified_at: 2026-06-16
+  - verified_by: Codex
+  - evidence: GitHub Actions `Deploy GitHub Pages showcase` completed successfully for `feat: polish showcase media and captions` on `main`. Public checks returned HTTP 200 for `/`, the URL-encoded screenshot asset, and `assets/notification-generated.png`; public HTML contains the screenshot reference and `https://dtm.solofarm.ru`. A live `#notification` screenshot shows the virtual assistant character.
+  - trust_level: high
+  - notes: Public Pages deployment is updated.
