@@ -55,6 +55,16 @@ Text: no generated text, no labels, no letters.
 Constraints: no logos, no people, no fake email/SMS channels, no invented notification vendor, no code text, no watermark, no blurry microtext, no decorative dust, keep the topology technically plausible and readable.
 ```
 
+## Notification Persona Edit
+
+```text
+Edit the provided DTM notification workflow infographic. Preserve the entire image style, canvas, lighting, arrows, scheduler clock, task tray, AI processor, queue cassette, worker server, Telegram phone/cards, and bottom analytics rail.
+
+Change only the lower-left transparent tray that currently contains assorted objects (camera, plant, vase, chair, shoe, cube). Replace that tray with a friendly young female virtual assistant character, the persona from whose voice notifications are written. She should fit the same light isometric 3D infographic style: approachable, professional, warm, slightly stylized, seated or standing on a small clean platform, with a small chat/notification aura or message cards around her. Keep her non-photorealistic, product-infographic friendly, no brand logos, no text, no letters.
+
+Important constraints: do not alter the main flow topology; keep the teal connection line from the persona area into the reminder/status flow; keep the warm off-white background and subtle grid; keep all other modules in their original positions; no extra people; no watermark; no generated text.
+```
+
 ## Regeneration Rules
 
 - Use the attached reference style: light isometric product-engineering infographic, not a dry vector architecture chart.
