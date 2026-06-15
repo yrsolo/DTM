@@ -21,7 +21,7 @@
   </defs>
   <rect width="1600" height="900" fill="url(#bg)"/>
   <text x="80" y="86" class="k">BACKEND · READ PATH + COMMAND PATH</text>
-  <text x="80" y="132" class="title">Быстрый snapshot для браузера, тяжёлые действия через очередь</text>
+  <text x="80" y="132" class="title">Backend: snapshot read-path + command queue</text>
 
   <path d="M242 270 C390 270 410 270 535 270" class="rail"/>
   <path d="M760 270 C882 270 900 270 1020 270" class="rail"/>

@@ -20,7 +20,7 @@
   </defs>
   <rect width="1600" height="900" fill="url(#bg)"/>
   <text x="80" y="86" class="k">FRONTEND · ONE SPA + SHARED CONTRACTS</text>
-  <text x="80" y="132" class="title">Один интерфейс для desktop, mobile, analytics и admin-сценариев</text>
+  <text x="80" y="132" class="title">Frontend: React SPA + shared browser contracts</text>
 
   <g transform="translate(80 230)">
     <rect width="220" height="118" rx="22" class="module"/>
