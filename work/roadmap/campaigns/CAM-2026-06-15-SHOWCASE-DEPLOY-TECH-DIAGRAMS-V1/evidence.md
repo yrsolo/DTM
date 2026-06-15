@@ -10,11 +10,25 @@
 | frontend architecture | 2026-06-15 | Codex | current public `yrsolo/DTM-front` runnable artifacts | high | Must remain the source for diagram labels and flow. |
 
 ## Completed Tasks
-- [ ] `CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1-P01-T001`
-- [ ] `CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1-P02-T001`
-- [ ] `CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1-P02-T002`
-- [ ] `CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1-P02-T003`
+- [x] `CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1-P01-T001`
+- [x] `CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1-P02-T001`
+- [x] `CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1-P02-T002`
+- [x] `CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1-P02-T003`
 - [ ] `CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1-P03-T001`
 
 ## Verification
-- Pending.
+- Initial deployment:
+  - commit `63b6068` pushed to `main`
+  - GitHub Pages enabled with workflow build type
+  - workflow run `27567188974` completed successfully
+  - `https://yrsolo.github.io/DTM/` returned HTTP 200 and contained the required repository links
+- Technical diagram verification:
+  - backend sources: active `docs/architecture/*`, `docs/modules/*`, and current module/entrypoint/runtime code
+  - frontend sources: current public `DTM-front` `SYSTEM_ARCHITECTURE.md`, `DATA_FLOW.md`, `App.tsx`, and `useSnapshot.ts`
+  - generated backplates saved as `site/assets/*-backplate-v2.png`
+  - exact prompts saved in `site/diagram-prompts.md`
+  - deterministic labels and connections saved in `site/assets/*-architecture.svg`
+  - SVG XML parse passed
+  - rendered diagram review passed after correcting clipped labels
+  - local page checks passed at `1440x1000` and `390x844`
+  - no horizontal overflow or browser console errors

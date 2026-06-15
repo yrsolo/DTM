@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Frontend architecture of DTM</title>
+  <desc id="desc">Verified browser, snapshot, and auth planes of DTM-front.</desc>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity=".035"/>
+    </pattern>
+    <marker id="cyanArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#72dce8"/></marker>
+    <marker id="limeArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#c8ff41"/></marker>
+    <marker id="violetArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#b39be8"/></marker>
+    <style>
+      .lane{fill:#0d1012;fill-opacity:.94;stroke:#ffffff;stroke-opacity:.14;stroke-width:1.5}
+      .node{fill:#101519;stroke:#c8ff41;stroke-opacity:.62;stroke-width:1.5}
+      .data{stroke:#72dce8}.auth{stroke:#b39be8}.module{fill:#121619;stroke:#ffffff;stroke-opacity:.22;stroke-width:1.2}
+      .t{fill:#f1f2ed;font-family:Inter,Arial,sans-serif;font-size:18px;font-weight:650}
+      .s{fill:#98a19b;font-family:Consolas,monospace;font-size:12px}
+      .entry{fill:#f1f2ed;font-family:Inter,Arial,sans-serif;font-size:15px;font-weight:650}
+      .mt{fill:#f1f2ed;font-family:Inter,Arial,sans-serif;font-size:15px;font-weight:650}
+      .k{fill:#c8ff41;font-family:Consolas,monospace;font-size:11px;font-weight:700;letter-spacing:1.5px}
+      .kc{fill:#72dce8;font-family:Consolas,monospace;font-size:11px;font-weight:700;letter-spacing:1.5px}
+      .kv{fill:#b39be8;font-family:Consolas,monospace;font-size:11px;font-weight:700;letter-spacing:1.5px}
+      .flow{fill:none;stroke:#c8ff41;stroke-width:2;marker-end:url(#limeArrow)}
+      .dflow{fill:none;stroke:#72dce8;stroke-width:2;marker-end:url(#cyanArrow)}
+      .vflow{fill:none;stroke:#b39be8;stroke-width:2;marker-end:url(#violetArrow)}
+      .dash{stroke-dasharray:7 7}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#090b0c"/>
+  <image href="frontend-backplate-v2.png" width="1600" height="900" opacity=".07" preserveAspectRatio="xMidYMid slice"/>
+  <rect width="1600" height="900" fill="url(#grid)"/>
+
+  <text x="50" y="48" class="k">CLIENT SURFACES + REACT/VITE SPA</text>
+  <rect x="35" y="70" width="1030" height="390" rx="18" class="lane"/>
+  <g>
+    <rect x="65" y="125" width="190" height="85" rx="12" class="node"/>
+    <text x="90" y="158" class="entry">Desktop browser</text><text x="90" y="184" class="s">timeline · analytics · admin</text>
+    <rect x="65" y="230" width="190" height="85" rx="12" class="node"/>
+    <text x="90" y="263" class="entry">Mobile web</text><text x="90" y="289" class="s">/m · /mobile</text>
+    <rect x="65" y="335" width="190" height="85" rx="12" class="node"/>
+    <text x="90" y="368" class="entry">Telegram Mini App</text><text x="90" y="394" class="s">/app + initData session</text>
+  </g>
+  <path d="M255 168H325M255 273H325M255 378H325" class="flow"/>
+
+  <g>
+    <rect x="325" y="100" width="700" height="330" rx="16" class="node"/>
+    <text x="350" y="135" class="k">APPS/WEB · ONE SPA</text>
+    <rect x="350" y="160" width="650" height="85" rx="10" class="module"/>
+    <text x="375" y="193" class="t">Layout.tsx · runtime composition hub</text>
+    <text x="375" y="220" class="s">auth session · snapshot lifecycle · view/filter state · presets · workbench host</text>
+    <rect x="350" y="270" width="120" height="65" rx="8" class="module"/><text x="367" y="296" class="t" font-size="14">Timeline</text><text x="367" y="317" class="s">/</text>
+    <rect x="482" y="270" width="120" height="65" rx="8" class="module"/><text x="499" y="296" class="t" font-size="14">Analytics</text><text x="499" y="317" class="s">/analytics</text>
+    <rect x="614" y="270" width="120" height="65" rx="8" class="module"/><text x="631" y="296" class="t" font-size="14">Admin</text><text x="631" y="317" class="s">/admin</text>
+    <rect x="746" y="270" width="120" height="65" rx="8" class="module"/><text x="763" y="296" class="t" font-size="14">Mobile</text><text x="763" y="317" class="s">/app · /m</text>
+    <rect x="878" y="270" width="122" height="65" rx="8" class="module"/><text x="895" y="296" class="t" font-size="14">Labs/tools</text><text x="895" y="317" class="s">sort · promo</text>
+    <text x="350" y="382" class="s">App.tsx = thin route composition · presentation reads SnapshotV1</text>
+  </g>
+
+  <text x="50" y="505" class="kc">SNAPSHOT DATA PLANE</text>
+  <rect x="35" y="525" width="1030" height="325" rx="18" class="lane"/>
+  <g>
+    <rect x="65" y="585" width="150" height="105" rx="12" class="node data"/>
+    <text x="85" y="616" class="kc">CONFIG</text><text x="85" y="645" class="mt">runtimeContour</text><text x="85" y="670" class="s">public.yaml</text>
+    <rect x="260" y="585" width="155" height="105" rx="12" class="node data"/>
+    <text x="280" y="616" class="kc">LIFECYCLE</text><text x="280" y="645" class="mt">useSnapshot</text><text x="280" y="670" class="s">warm start · refresh</text>
+    <rect x="460" y="585" width="145" height="105" rx="12" class="node data"/>
+    <text x="480" y="616" class="kc">CLIENT</text><text x="480" y="645" class="mt">api.ts</text><text x="480" y="670" class="s">ETag · windows</text>
+    <rect x="650" y="585" width="160" height="105" rx="12" class="node data"/>
+    <text x="670" y="616" class="kc">BOUNDARY</text><text x="670" y="645" class="mt">normalize.ts</text><text x="670" y="670" class="s">to SnapshotV1</text>
+    <rect x="855" y="585" width="170" height="105" rx="12" class="node data"/>
+    <text x="875" y="616" class="kc">CONTRACT</text><text x="875" y="645" class="mt">@dtm/schema</text><text x="875" y="670" class="s">selectors → pages</text>
+  </g>
+  <path d="M215 638H260M415 638H460M605 638H650M810 638H855" class="dflow"/>
+  <g>
+    <rect x="260" y="735" width="350" height="70" rx="10" class="node data"/>
+    <text x="282" y="765" class="t">Browser cache</text><text x="282" y="790" class="s">localStorage warm start · stale fallback</text>
+  </g>
+  <path d="M435 735V690" class="dflow dash"/>
+
+  <text x="1105" y="48" class="kv">BROWSER-FACING SERVICES</text>
+  <rect x="1090" y="70" width="475" height="780" rx="18" class="lane"/>
+  <g>
+    <rect x="1120" y="125" width="410" height="170" rx="14" class="node data"/>
+    <text x="1145" y="160" class="kc">OPS/BFF</text>
+    <text x="1145" y="194" class="t">Backend access_api</text>
+    <text x="1145" y="223" class="s">GET /v2/frontend · prepared browser payload</text>
+    <text x="1145" y="248" class="s">masked/full policy · attachments reads</text>
+    <text x="1145" y="273" class="s">source: yrsolo/DTM</text>
+  </g>
+  <path d="M1120 210H1025" class="dflow"/>
+  <path d="M1120 245H605V585" class="dflow dash"/>
+
+  <g>
+    <rect x="1120" y="345" width="410" height="275" rx="14" class="node auth"/>
+    <text x="1145" y="380" class="kv">OPS/AUTH · APPS/AUTH</text>
+    <text x="1145" y="414" class="t">Serverless auth/admin facade</text>
+    <rect x="1145" y="442" width="165" height="55" rx="8" class="module"/><text x="1160" y="466" class="s">sessions + access</text><text x="1160" y="486" class="s">Yandex / Telegram</text>
+    <rect x="1330" y="442" width="175" height="55" rx="8" class="module"/><text x="1345" y="466" class="s">admin governance</text><text x="1345" y="486" class="s">users · temp links</text>
+    <rect x="1145" y="517" width="165" height="55" rx="8" class="module"/><text x="1160" y="541" class="s">preset catalog</text><text x="1160" y="561" class="s">export / CRUD</text>
+    <rect x="1330" y="517" width="175" height="55" rx="8" class="module"/><text x="1345" y="541" class="s">shared app-state</text><text x="1345" y="561" class="s">analytics configs</text>
+    <text x="1145" y="597" class="s">cookie sessions · access headers → ops/bff</text>
+  </g>
+  <path d="M1120 485H1025" class="vflow"/>
+  <path d="M1120 400H1000V202" class="vflow dash"/>
+
+  <g>
+    <rect x="1120" y="675" width="185" height="120" rx="12" class="node auth"/>
+    <text x="1145" y="708" class="kv">AUTH STORAGE</text><text x="1145" y="740" class="t">YDB</text><text x="1145" y="765" class="s">users · sessions</text>
+    <rect x="1345" y="675" width="185" height="120" rx="12" class="node auth"/>
+    <text x="1370" y="708" class="kv">OBJECT STORAGE</text><text x="1370" y="740" class="t">dtm-presets</text><text x="1370" y="765" class="s">presets · app-state</text>
+  </g>
+  <path d="M1212 620V675M1437 620V675" class="vflow"/>
+</svg>

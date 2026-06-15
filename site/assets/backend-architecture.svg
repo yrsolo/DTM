@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Backend architecture of DTM</title>
+  <desc id="desc">Verified read path and asynchronous mutation path of the DTM backend.</desc>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity=".035"/>
+    </pattern>
+    <marker id="cyanArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#72dce8"/>
+    </marker>
+    <marker id="amberArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#e5a45d"/>
+    </marker>
+    <marker id="limeArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#c8ff41"/>
+    </marker>
+    <style>
+      .lane{fill:#0d1012;fill-opacity:.94;stroke:#ffffff;stroke-opacity:.14;stroke-width:1.5}
+      .node{fill:#101519;stroke:#72dce8;stroke-opacity:.64;stroke-width:1.5}
+      .async{stroke:#e5a45d}
+      .module{fill:#121619;stroke:#ffffff;stroke-opacity:.22;stroke-width:1.2}
+      .monitor{fill:#0f1315;stroke:#ffffff;stroke-opacity:.14}
+      .t{fill:#f1f2ed;font-family:Inter,Arial,sans-serif;font-size:18px;font-weight:650}
+      .s{fill:#98a19b;font-family:Consolas,monospace;font-size:12px}
+      .mt{fill:#f1f2ed;font-family:Inter,Arial,sans-serif;font-size:14px;font-weight:650}
+      .ms{fill:#98a19b;font-family:Consolas,monospace;font-size:10px}
+      .k{fill:#72dce8;font-family:Consolas,monospace;font-size:11px;font-weight:700;letter-spacing:1.5px}
+      .ka{fill:#e5a45d;font-family:Consolas,monospace;font-size:11px;font-weight:700;letter-spacing:1.5px}
+      .kl{fill:#c8ff41;font-family:Consolas,monospace;font-size:11px;font-weight:700;letter-spacing:1.5px}
+      .flow{fill:none;stroke:#72dce8;stroke-width:2;marker-end:url(#cyanArrow)}
+      .aflow{fill:none;stroke:#e5a45d;stroke-width:2;marker-end:url(#amberArrow)}
+      .pflow{fill:none;stroke:#c8ff41;stroke-width:2.4;marker-end:url(#limeArrow)}
+      .dash{stroke-dasharray:7 7}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#090b0c"/>
+  <image href="backend-backplate-v2.png" width="1600" height="900" opacity=".08" preserveAspectRatio="xMidYMid slice"/>
+  <rect width="1600" height="900" fill="url(#grid)"/>
+
+  <text x="60" y="48" class="k">PRIMARY READ PATH · PREPARED BROWSER MODEL</text>
+  <rect x="40" y="70" width="1520" height="300" rx="18" class="lane"/>
+
+  <g>
+    <rect x="75" y="150" width="205" height="125" rx="13" class="node"/>
+    <text x="100" y="188" class="k">SOURCE</text>
+    <text x="100" y="220" class="t">Google Sheets</text>
+    <text x="100" y="247" class="s">tasks · milestones · people</text>
+  </g>
+  <path d="M280 212H355" class="flow"/>
+  <text x="298" y="195" class="s">bulk read</text>
+
+  <g>
+    <rect x="355" y="108" width="390" height="210" rx="15" class="node"/>
+    <text x="380" y="142" class="k">CONTEXT: SNAPSHOT</text>
+    <rect x="380" y="165" width="150" height="55" rx="8" class="module"/>
+    <text x="395" y="188" class="mt">source adapters</text>
+    <text x="395" y="207" class="ms">sheets_normalized_source</text>
+    <rect x="550" y="165" width="170" height="55" rx="8" class="module"/>
+    <text x="565" y="188" class="mt">domain normalize</text>
+    <text x="565" y="207" class="ms">core rules + contracts</text>
+    <rect x="380" y="240" width="150" height="55" rx="8" class="module"/>
+    <text x="395" y="263" class="mt">state build/update</text>
+    <text x="395" y="282" class="ms">prepared projections</text>
+    <rect x="550" y="240" width="170" height="55" rx="8" class="module"/>
+    <text x="565" y="263" class="mt">read/query API</text>
+    <text x="565" y="282" class="ms">module-owned surface</text>
+  </g>
+  <path d="M745 212H820" class="flow"/>
+
+  <g>
+    <rect x="820" y="150" width="210" height="125" rx="13" class="node"/>
+    <text x="845" y="188" class="k">OBJECT STORAGE</text>
+    <text x="845" y="220" class="t">Prepared artifacts</text>
+    <text x="845" y="247" class="s">snapshots/* · attachments/*</text>
+  </g>
+  <path d="M1030 212H1105" class="flow"/>
+
+  <g>
+    <rect x="1105" y="118" width="260" height="190" rx="15" class="node"/>
+    <text x="1130" y="152" class="k">CONTEXT: ACCESS_API</text>
+    <text x="1130" y="188" class="t">Primary browser read-model</text>
+    <text x="1130" y="218" class="s">masked / full access policy</text>
+    <text x="1130" y="241" class="s">browser-safe DTO + attachments</text>
+    <text x="1130" y="275" class="s">GET /ops/bff/v2/frontend</text>
+  </g>
+  <path d="M1365 212H1430" class="flow"/>
+  <g>
+    <rect x="1430" y="156" width="95" height="112" rx="13" class="node"/>
+    <text x="1450" y="198" class="t">SPA</text>
+    <text x="1450" y="224" class="s">DTM-front</text>
+  </g>
+
+  <text x="60" y="420" class="ka">ASYNC MUTATION PATH · EXPLICIT COMMANDS</text>
+  <rect x="40" y="442" width="1520" height="300" rx="18" class="lane"/>
+  <g>
+    <rect x="75" y="490" width="210" height="205" rx="13" class="node async"/>
+    <text x="100" y="525" class="ka">INTAKE</text>
+    <rect x="100" y="550" width="160" height="32" rx="7" class="module"/><text x="115" y="571" class="s">HTTP / admin</text>
+    <rect x="100" y="594" width="160" height="32" rx="7" class="module"/><text x="115" y="615" class="s">Telegram webhook</text>
+    <rect x="100" y="638" width="160" height="32" rx="7" class="module"/><text x="115" y="659" class="s">timer / trigger</text>
+  </g>
+  <path d="M285 592H360" class="aflow"/>
+  <g>
+    <rect x="360" y="515" width="220" height="155" rx="13" class="node async"/>
+    <text x="385" y="550" class="ka">THIN ENTRYPOINTS</text>
+    <text x="385" y="582" class="t">platform shell</text>
+    <text x="385" y="610" class="s">validate · route · enqueue</text>
+    <text x="385" y="634" class="s">no domain orchestration</text>
+  </g>
+  <path d="M580 592H650" class="aflow"/>
+  <g>
+    <rect x="650" y="515" width="220" height="155" rx="13" class="node async"/>
+    <text x="675" y="550" class="ka">YANDEX MESSAGE QUEUE</text>
+    <text x="675" y="582" class="t">Command envelope</text>
+    <text x="675" y="610" class="s">job_id · type · payload</text>
+    <text x="675" y="634" class="s">retryable execution boundary</text>
+  </g>
+  <path d="M870 592H940" class="aflow"/>
+  <g>
+    <rect x="940" y="515" width="210" height="155" rx="13" class="node async"/>
+    <text x="965" y="550" class="ka">WORKER SHELL</text>
+    <text x="965" y="582" class="t">dispatcher</text>
+    <text x="965" y="610" class="s">typed errors · job status</text>
+    <text x="965" y="634" class="s">module command handlers</text>
+  </g>
+  <path d="M1150 592H1210" class="aflow"/>
+  <g>
+    <rect x="1210" y="480" width="300" height="225" rx="13" class="node async"/>
+    <text x="1235" y="515" class="ka">OWNING CONTEXTS</text>
+    <rect x="1235" y="540" width="115" height="45" rx="7" class="module"/><text x="1250" y="568" class="s">attachments</text>
+    <rect x="1370" y="540" width="115" height="45" rx="7" class="module"/><text x="1385" y="568" class="s">rendering</text>
+    <rect x="1235" y="603" width="115" height="45" rx="7" class="module"/><text x="1250" y="631" class="s">reminders</text>
+    <rect x="1370" y="603" width="115" height="45" rx="7" class="module"/><text x="1382" y="631" class="s">telegram</text>
+    <text x="1235" y="680" class="s">execute use-case · publish result</text>
+  </g>
+  <path d="M1360 480V400H550V318" class="pflow"/>
+  <text x="865" y="392" class="kl">FINISH LINE: RESULT VISIBLE IN PRIMARY BROWSER PAYLOAD</text>
+
+  <rect x="40" y="775" width="1520" height="80" rx="14" class="monitor"/>
+  <text x="70" y="808" class="k">OPERATIONAL RAIL</text>
+  <text x="70" y="835" class="s">job status + history</text>
+  <text x="345" y="835" class="s">metrics + structured logs</text>
+  <text x="690" y="835" class="s">Prometheus / Yandex Monitoring</text>
+  <text x="1110" y="835" class="s">Grafana / DataLens / /info</text>
+</svg>
