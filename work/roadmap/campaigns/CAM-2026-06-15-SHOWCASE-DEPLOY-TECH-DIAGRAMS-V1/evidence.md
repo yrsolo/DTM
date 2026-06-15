@@ -30,5 +30,6 @@
   - deterministic labels and connections saved in `site/assets/*-architecture.svg`
   - SVG XML parse passed
   - rendered diagram review passed after correcting clipped labels
+  - owner feedback incorporated: exact topology retained while major modules received symbolic volumetric icons and lifted panels
   - local page checks passed at `1440x1000` and `390x844`
   - no horizontal overflow or browser console errors

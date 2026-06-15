@@ -2,6 +2,18 @@
   <title id="title">Backend architecture of DTM</title>
   <desc id="desc">Verified read path and asynchronous mutation path of the DTM backend.</desc>
   <defs>
+    <linearGradient id="panel3d" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1b252a"/>
+      <stop offset=".52" stop-color="#101619"/>
+      <stop offset="1" stop-color="#080b0d"/>
+    </linearGradient>
+    <linearGradient id="module3d" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#20282c"/>
+      <stop offset="1" stop-color="#0b0f11"/>
+    </linearGradient>
+    <filter id="lift" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="7" stdDeviation="7" flood-color="#000" flood-opacity=".55"/>
+    </filter>
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
       <path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity=".035"/>
     </pattern>
@@ -16,9 +28,9 @@
     </marker>
     <style>
       .lane{fill:#0d1012;fill-opacity:.94;stroke:#ffffff;stroke-opacity:.14;stroke-width:1.5}
-      .node{fill:#101519;stroke:#72dce8;stroke-opacity:.64;stroke-width:1.5}
+      .node{fill:url(#panel3d);stroke:#72dce8;stroke-opacity:.64;stroke-width:1.5;filter:url(#lift)}
       .async{stroke:#e5a45d}
-      .module{fill:#121619;stroke:#ffffff;stroke-opacity:.22;stroke-width:1.2}
+      .module{fill:url(#module3d);stroke:#ffffff;stroke-opacity:.22;stroke-width:1.2}
       .monitor{fill:#0f1315;stroke:#ffffff;stroke-opacity:.14}
       .t{fill:#f1f2ed;font-family:Inter,Arial,sans-serif;font-size:18px;font-weight:650}
       .s{fill:#98a19b;font-family:Consolas,monospace;font-size:12px}
@@ -31,10 +43,38 @@
       .aflow{fill:none;stroke:#e5a45d;stroke-width:2;marker-end:url(#amberArrow)}
       .pflow{fill:none;stroke:#c8ff41;stroke-width:2.4;marker-end:url(#limeArrow)}
       .dash{stroke-dasharray:7 7}
+      .ico{fill:#11181b;stroke:#72dce8;stroke-width:1.5}
+      .icoa{fill:#16130f;stroke:#e5a45d;stroke-width:1.5}
+      .icol{fill:#13180d;stroke:#c8ff41;stroke-width:1.5}
     </style>
+    <g id="cube">
+      <path d="M5 14L22 5l17 9-17 9Z" class="ico"/>
+      <path d="M5 14v20l17 9V23Z" class="ico"/>
+      <path d="M39 14v20l-17 9V23Z" class="ico"/>
+    </g>
+    <g id="stack">
+      <path d="M4 10l18-7 18 7-18 7Z" class="ico"/>
+      <path d="M4 21l18 7 18-7M4 31l18 7 18-7" fill="none" stroke="#72dce8" stroke-width="2"/>
+    </g>
+    <g id="queue">
+      <rect x="3" y="5" width="38" height="34" rx="6" class="icoa"/>
+      <path d="M11 14h20M11 22h25M11 30h16" stroke="#e5a45d" stroke-width="2"/>
+    </g>
+    <g id="worker">
+      <path d="M22 4l6 6 8-1 2 8 6 5-6 6-2 8-8-1-6 6-6-6-8 1-2-8-6-6 6-5 2-8 8 1Z" class="icoa"/>
+      <circle cx="22" cy="22" r="7" fill="none" stroke="#e5a45d" stroke-width="2"/>
+    </g>
+    <g id="browser">
+      <rect x="3" y="5" width="40" height="34" rx="6" class="ico"/>
+      <path d="M3 14h40M10 10h1M15 10h1M20 10h1" stroke="#72dce8" stroke-width="2"/>
+    </g>
+    <g id="sheet">
+      <path d="M8 3h29l7 7v34H8Z" class="ico"/>
+      <path d="M15 16h22M15 24h22M15 32h22M23 16v22M31 16v22" stroke="#72dce8" stroke-width="1.5"/>
+    </g>
   </defs>
   <rect width="1600" height="900" fill="#090b0c"/>
-  <image href="backend-backplate-v2.png" width="1600" height="900" opacity=".08" preserveAspectRatio="xMidYMid slice"/>
+  <image href="backend-backplate-v2.png" width="1600" height="900" opacity=".16" preserveAspectRatio="xMidYMid slice"/>
   <rect width="1600" height="900" fill="url(#grid)"/>
 
   <text x="60" y="48" class="k">PRIMARY READ PATH · PREPARED BROWSER MODEL</text>
@@ -45,6 +85,7 @@
     <text x="100" y="188" class="k">SOURCE</text>
     <text x="100" y="220" class="t">Google Sheets</text>
     <text x="100" y="247" class="s">tasks · milestones · people</text>
+    <use href="#sheet" x="214" y="168"/>
   </g>
   <path d="M280 212H355" class="flow"/>
   <text x="298" y="195" class="s">bulk read</text>
@@ -52,6 +93,7 @@
   <g>
     <rect x="355" y="108" width="390" height="210" rx="15" class="node"/>
     <text x="380" y="142" class="k">CONTEXT: SNAPSHOT</text>
+    <use href="#cube" x="674" y="114"/>
     <rect x="380" y="165" width="150" height="55" rx="8" class="module"/>
     <text x="395" y="188" class="mt">source adapters</text>
     <text x="395" y="207" class="ms">sheets_normalized_source</text>
@@ -72,6 +114,7 @@
     <text x="845" y="188" class="k">OBJECT STORAGE</text>
     <text x="845" y="220" class="t">Prepared artifacts</text>
     <text x="845" y="247" class="s">snapshots/* · attachments/*</text>
+    <use href="#stack" x="960" y="169"/>
   </g>
   <path d="M1030 212H1105" class="flow"/>
 
@@ -82,12 +125,14 @@
     <text x="1130" y="218" class="s">masked / full access policy</text>
     <text x="1130" y="241" class="s">browser-safe DTO + attachments</text>
     <text x="1130" y="275" class="s">GET /ops/bff/v2/frontend</text>
+    <use href="#browser" x="1300" y="135"/>
   </g>
   <path d="M1365 212H1430" class="flow"/>
   <g>
     <rect x="1430" y="156" width="95" height="112" rx="13" class="node"/>
     <text x="1450" y="198" class="t">SPA</text>
     <text x="1450" y="224" class="s">DTM-front</text>
+    <use href="#browser" x="1463" y="174"/>
   </g>
 
   <text x="60" y="420" class="ka">ASYNC MUTATION PATH · EXPLICIT COMMANDS</text>
@@ -95,6 +140,7 @@
   <g>
     <rect x="75" y="490" width="210" height="205" rx="13" class="node async"/>
     <text x="100" y="525" class="ka">INTAKE</text>
+    <use href="#queue" x="218" y="500"/>
     <rect x="100" y="550" width="160" height="32" rx="7" class="module"/><text x="115" y="571" class="s">HTTP / admin</text>
     <rect x="100" y="594" width="160" height="32" rx="7" class="module"/><text x="115" y="615" class="s">Telegram webhook</text>
     <rect x="100" y="638" width="160" height="32" rx="7" class="module"/><text x="115" y="659" class="s">timer / trigger</text>
@@ -106,6 +152,7 @@
     <text x="385" y="582" class="t">platform shell</text>
     <text x="385" y="610" class="s">validate · route · enqueue</text>
     <text x="385" y="634" class="s">no domain orchestration</text>
+    <use href="#cube" x="518" y="525"/>
   </g>
   <path d="M580 592H650" class="aflow"/>
   <g>
@@ -114,6 +161,7 @@
     <text x="675" y="582" class="t">Command envelope</text>
     <text x="675" y="610" class="s">job_id · type · payload</text>
     <text x="675" y="634" class="s">retryable execution boundary</text>
+    <use href="#queue" x="808" y="525"/>
   </g>
   <path d="M870 592H940" class="aflow"/>
   <g>
@@ -122,6 +170,7 @@
     <text x="965" y="582" class="t">dispatcher</text>
     <text x="965" y="610" class="s">typed errors · job status</text>
     <text x="965" y="634" class="s">module command handlers</text>
+    <use href="#worker" x="1084" y="520"/>
   </g>
   <path d="M1150 592H1210" class="aflow"/>
   <g>
@@ -132,6 +181,7 @@
     <rect x="1235" y="603" width="115" height="45" rx="7" class="module"/><text x="1250" y="631" class="s">reminders</text>
     <rect x="1370" y="603" width="115" height="45" rx="7" class="module"/><text x="1382" y="631" class="s">telegram</text>
     <text x="1235" y="680" class="s">execute use-case · publish result</text>
+    <use href="#cube" x="1450" y="490"/>
   </g>
   <path d="M1360 480V400H550V318" class="pflow"/>
   <text x="865" y="392" class="kl">FINISH LINE: RESULT VISIBLE IN PRIMARY BROWSER PAYLOAD</text>
