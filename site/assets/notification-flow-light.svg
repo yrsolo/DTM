@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">DTM notification flow</title>
+  <desc id="desc">Hybrid 3D-style diagram showing reminder planning, context assembly, LLM enhancement, queue execution, and Telegram delivery.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#fffdfa"/><stop offset="1" stop-color="#eee7d8"/></linearGradient>
+    <linearGradient id="cube" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e2eee9"/></linearGradient>
+    <linearGradient id="cube2" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3dfd0"/></linearGradient>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M2 2 10 6 2 10Z" fill="#2f6f79"/></marker>
+    <filter id="shadow" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="20" stdDeviation="18" flood-color="#243036" flood-opacity=".14"/></filter>
+    <style>
+      .title{font:900 38px Georgia,serif;fill:#222b30}
+      .k{font:900 15px Inter,Arial,sans-serif;letter-spacing:.12em;fill:#a7552f}
+      .h{font:850 22px Inter,Arial,sans-serif;fill:#1f2d34}
+      .s{font:700 15px Inter,Arial,sans-serif;fill:#607178}
+      .module{fill:url(#cube);stroke:#cbd8d4;stroke-width:2;filter:url(#shadow)}
+      .module2{fill:url(#cube2);stroke:#ddc6b6;stroke-width:2;filter:url(#shadow)}
+      .flow{fill:none;stroke:#2f6f79;stroke-width:5;marker-end:url(#arrow)}
+      .note{fill:#fffdfa;stroke:#d9d2c4;stroke-width:2}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <text x="80" y="86" class="k">NOTIFICATION · REMINDERS DELIVERY</text>
+  <text x="80" y="132" class="title">Напоминания собираются из snapshot-контекста и доставляются через Telegram</text>
+
+  <path d="M270 360 C360 360 385 360 465 360" class="flow"/>
+  <path d="M700 360 C790 360 815 360 900 360" class="flow"/>
+  <path d="M1128 360 C1218 360 1245 360 1328 360" class="flow"/>
+  <path d="M1018 505 C1018 585 970 620 880 620" class="flow"/>
+
+  <g transform="translate(80 275)">
+    <rect width="210" height="170" rx="24" class="module"/>
+    <circle cx="58" cy="62" r="24" fill="#2f6f79" opacity=".88"/>
+    <path d="M112 50h58M112 80h78M42 112h128" stroke="#2f6f79" stroke-width="9" stroke-linecap="round" opacity=".75"/>
+    <text x="24" y="215" class="h">Scheduler</text>
+    <text x="24" y="242" class="s">morning · timer · manual trigger</text>
+  </g>
+
+  <g transform="translate(480 245)">
+    <rect width="240" height="230" rx="28" class="module"/>
+    <rect x="36" y="44" width="168" height="44" rx="14" fill="#fffdfa" stroke="#cbd8d4"/>
+    <rect x="36" y="110" width="168" height="44" rx="14" fill="#fffdfa" stroke="#cbd8d4"/>
+    <rect x="36" y="176" width="168" height="22" rx="11" fill="#2f6f79" opacity=".82"/>
+    <text x="26" y="275" class="h">Reminder context</text>
+    <text x="26" y="302" class="s">tasks · deadlines · owners</text>
+  </g>
+
+  <g transform="translate(915 245)">
+    <rect width="240" height="230" rx="28" class="module2"/>
+    <path d="M62 74 C88 38 142 38 168 74 C195 112 162 166 115 158 C72 151 41 114 62 74Z" fill="#fffdfa" stroke="#ddc6b6" stroke-width="2"/>
+    <path d="M88 95h65M78 122h86" stroke="#b76035" stroke-width="9" stroke-linecap="round"/>
+    <text x="28" y="275" class="h">Text enhancer</text>
+    <text x="28" y="302" class="s">OpenAI mode config · fallback</text>
+  </g>
+
+  <g transform="translate(1340 260)">
+    <rect width="180" height="200" rx="28" class="module"/>
+    <rect x="46" y="34" width="88" height="120" rx="18" fill="#20343d"/>
+    <path d="M62 62h54M62 88h42M62 114h54" stroke="#8bdbe3" stroke-width="7" stroke-linecap="round"/>
+    <text x="-4" y="248" class="h">Telegram delivery</text>
+    <text x="-4" y="275" class="s">groups · users · Mini App</text>
+  </g>
+
+  <g transform="translate(580 570)">
+    <rect width="310" height="145" rx="24" class="module2"/>
+    <text x="32" y="60" class="h">Message Queue worker</text>
+    <text x="32" y="92" class="s">retry · typed errors · job status</text>
+  </g>
+
+  <rect x="80" y="770" width="1440" height="66" rx="22" class="note"/>
+  <text x="112" y="812" class="h">Visible result:</text>
+  <text x="278" y="812" class="s">sent reminder, delivery status, logs, and updated browser-visible job status.</text>
+</svg>

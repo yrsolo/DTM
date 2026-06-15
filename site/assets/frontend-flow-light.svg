@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">DTM frontend architecture</title>
+  <desc id="desc">Hybrid 3D-style frontend diagram showing React surfaces, snapshot lifecycle, shared contracts, and backend-facing services.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#fffdfa"/><stop offset="1" stop-color="#ede9dc"/></linearGradient>
+    <linearGradient id="ui" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e4eeea"/></linearGradient>
+    <linearGradient id="api" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f2dfd0"/></linearGradient>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M2 2 10 6 2 10Z" fill="#2f6f79"/></marker>
+    <filter id="shadow" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="20" stdDeviation="18" flood-color="#243036" flood-opacity=".14"/></filter>
+    <style>
+      .title{font:900 38px Georgia,serif;fill:#222b30}
+      .k{font:900 15px Inter,Arial,sans-serif;letter-spacing:.12em;fill:#a7552f}
+      .h{font:850 22px Inter,Arial,sans-serif;fill:#1f2d34}
+      .s{font:700 15px Inter,Arial,sans-serif;fill:#607178}
+      .module{fill:url(#ui);stroke:#cbd8d4;stroke-width:2;filter:url(#shadow)}
+      .service{fill:url(#api);stroke:#ddc6b6;stroke-width:2;filter:url(#shadow)}
+      .flow{fill:none;stroke:#2f6f79;stroke-width:5;marker-end:url(#arrow)}
+      .thin{fill:none;stroke:#c8d4d0;stroke-width:2}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <text x="80" y="86" class="k">FRONTEND · ONE SPA + SHARED CONTRACTS</text>
+  <text x="80" y="132" class="title">Один интерфейс для desktop, mobile, analytics и admin-сценариев</text>
+
+  <g transform="translate(80 230)">
+    <rect width="220" height="118" rx="22" class="module"/>
+    <text x="30" y="52" class="h">Desktop</text><text x="30" y="82" class="s">timeline · analytics</text>
+  </g>
+  <g transform="translate(80 390)">
+    <rect width="220" height="118" rx="22" class="module"/>
+    <text x="30" y="52" class="h">Mobile web</text><text x="30" y="82" class="s">/m · /mobile</text>
+  </g>
+  <g transform="translate(80 550)">
+    <rect width="220" height="118" rx="22" class="module"/>
+    <text x="30" y="52" class="h">Telegram App</text><text x="30" y="82" class="s">initData session</text>
+  </g>
+
+  <path d="M315 290 C380 290 405 290 465 290" class="flow"/>
+  <path d="M315 450 C380 450 405 450 465 450" class="flow"/>
+  <path d="M315 610 C380 610 405 610 465 610" class="flow"/>
+
+  <g transform="translate(480 205)">
+    <rect width="430" height="500" rx="32" class="module"/>
+    <text x="38" y="58" class="h">React / Vite SPA</text>
+    <text x="38" y="88" class="s">Layout.tsx · runtime composition hub</text>
+    <g transform="translate(38 136)">
+      <rect width="150" height="78" rx="16" fill="#fffdfa" stroke="#cbd8d4"/><text x="22" y="34" class="h" font-size="18">Timeline</text><text x="22" y="58" class="s">/</text>
+      <rect x="186" width="150" height="78" rx="16" fill="#fffdfa" stroke="#cbd8d4"/><text x="208" y="34" class="h" font-size="18">Analytics</text><text x="208" y="58" class="s">/analytics</text>
+      <rect y="112" width="150" height="78" rx="16" fill="#fffdfa" stroke="#cbd8d4"/><text x="22" y="146" class="h" font-size="18">Admin</text><text x="22" y="170" class="s">/admin</text>
+      <rect x="186" y="112" width="150" height="78" rx="16" fill="#fffdfa" stroke="#cbd8d4"/><text x="208" y="146" class="h" font-size="18">Tools</text><text x="208" y="170" class="s">presets · labs</text>
+    </g>
+    <line x1="38" y1="380" x2="392" y2="380" class="thin"/>
+    <text x="38" y="425" class="h">Presentation reads SnapshotV1</text>
+    <text x="38" y="456" class="s">selectors · filters · drawer state · warm start</text>
+  </g>
+
+  <path d="M925 455 C995 455 1025 455 1090 455" class="flow"/>
+
+  <g transform="translate(1105 205)">
+    <rect width="410" height="500" rx="32" class="service"/>
+    <text x="38" y="58" class="h">Data + auth plane</text>
+    <text x="38" y="88" class="s">browser-facing backend contracts</text>
+    <g transform="translate(38 130)">
+      <rect width="330" height="68" rx="16" fill="#fffdfa" stroke="#ddc6b6"/><text x="22" y="42" class="h" font-size="18">runtimeContour / public.yaml</text>
+      <rect y="92" width="330" height="68" rx="16" fill="#fffdfa" stroke="#ddc6b6"/><text x="22" y="134" class="h" font-size="18">api.ts · ETag · stale fallback</text>
+      <rect y="184" width="330" height="68" rx="16" fill="#fffdfa" stroke="#ddc6b6"/><text x="22" y="226" class="h" font-size="18">@dtm/schema · SnapshotV1</text>
+      <rect y="276" width="330" height="68" rx="16" fill="#fffdfa" stroke="#ddc6b6"/><text x="22" y="318" class="h" font-size="18">Yandex OAuth · temp links</text>
+    </g>
+  </g>
+
+  <rect x="480" y="760" width="1035" height="70" rx="22" fill="#fffdfa" stroke="#d9d2c4"/>
+  <text x="520" y="805" class="h">UI contract:</text>
+  <text x="670" y="805" class="s">SPA routes stay thin; snapshot normalization and access modes are explicit boundaries.</text>
+</svg>

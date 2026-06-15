@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">DTM backend architecture</title>
+  <desc id="desc">Hybrid 3D-style backend diagram showing the verified read path, async command path, workers, and observability.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#fffdfa"/><stop offset="1" stop-color="#eee7d8"/></linearGradient>
+    <linearGradient id="cubeA" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dcebe8"/></linearGradient>
+    <linearGradient id="cubeB" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f2dfd0"/></linearGradient>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M2 2 10 6 2 10Z" fill="#2f6f79"/></marker>
+    <marker id="arrow2" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M2 2 10 6 2 10Z" fill="#b76035"/></marker>
+    <filter id="shadow" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="20" stdDeviation="18" flood-color="#243036" flood-opacity=".14"/></filter>
+    <style>
+      .title{font:900 38px Georgia,serif;fill:#222b30}
+      .k{font:900 15px Inter,Arial,sans-serif;letter-spacing:.12em;fill:#a7552f}
+      .h{font:850 22px Inter,Arial,sans-serif;fill:#1f2d34}
+      .s{font:700 15px Inter,Arial,sans-serif;fill:#607178}
+      .module{fill:url(#cubeA);stroke:#cbd8d4;stroke-width:2;filter:url(#shadow)}
+      .module2{fill:url(#cubeB);stroke:#ddc6b6;stroke-width:2;filter:url(#shadow)}
+      .rail{fill:none;stroke:#2f6f79;stroke-width:5;marker-end:url(#arrow)}
+      .async{fill:none;stroke:#b76035;stroke-width:5;stroke-dasharray:11 9;marker-end:url(#arrow2)}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <text x="80" y="86" class="k">BACKEND · READ PATH + COMMAND PATH</text>
+  <text x="80" y="132" class="title">Быстрый snapshot для браузера, тяжёлые действия через очередь</text>
+
+  <path d="M242 270 C390 270 410 270 535 270" class="rail"/>
+  <path d="M760 270 C882 270 900 270 1020 270" class="rail"/>
+  <path d="M1238 270 C1320 270 1348 270 1425 270" class="rail"/>
+  <path d="M260 590 C440 590 490 590 660 590" class="async"/>
+  <path d="M865 590 C965 590 1000 590 1105 590" class="async"/>
+  <path d="M1270 565 C1330 510 1360 438 1370 360" class="async"/>
+
+  <g transform="translate(80 200)">
+    <rect width="190" height="140" rx="22" class="module"/>
+    <path d="M34 32h122M34 60h98M34 88h122" stroke="#2f6f79" stroke-width="10" stroke-linecap="round"/>
+    <text x="28" y="185" class="h">Google Sheets</text>
+    <text x="28" y="212" class="s">tasks · milestones · people</text>
+  </g>
+
+  <g transform="translate(545 180)">
+    <rect width="250" height="180" rx="24" class="module"/>
+    <rect x="36" y="42" width="78" height="60" rx="14" fill="#f5fbf4" stroke="#cbd8d4"/>
+    <rect x="136" y="42" width="78" height="60" rx="14" fill="#f5fbf4" stroke="#cbd8d4"/>
+    <rect x="36" y="116" width="178" height="28" rx="14" fill="#2f6f79" opacity=".86"/>
+    <text x="34" y="225" class="h">Snapshot context</text>
+    <text x="34" y="252" class="s">bulk read · normalize · projections</text>
+  </g>
+
+  <g transform="translate(1035 200)">
+    <rect width="230" height="140" rx="22" class="module"/>
+    <path d="M44 44h142v54H44z" fill="#ffffff" stroke="#cbd8d4" stroke-width="2"/>
+    <path d="M58 65h110M58 82h82" stroke="#2f6f79" stroke-width="8" stroke-linecap="round"/>
+    <text x="26" y="185" class="h">Object Storage</text>
+    <text x="26" y="212" class="s">snapshots/* · attachments/*</text>
+  </g>
+
+  <g transform="translate(1375 198)">
+    <rect width="150" height="146" rx="22" class="module"/>
+    <rect x="36" y="26" width="78" height="94" rx="12" fill="#20343d"/>
+    <path d="M51 50h48M51 72h48M51 94h32" stroke="#8bdbe3" stroke-width="6" stroke-linecap="round"/>
+    <text x="-6" y="190" class="h">Access API</text>
+    <text x="-6" y="217" class="s">browser-safe DTO</text>
+  </g>
+
+  <g transform="translate(80 520)">
+    <rect width="210" height="140" rx="22" class="module2"/>
+    <text x="28" y="55" class="h">Entrypoints</text>
+    <text x="28" y="86" class="s">HTTP · Telegram</text>
+    <text x="28" y="112" class="s">timer · admin</text>
+  </g>
+
+  <g transform="translate(670 505)">
+    <rect width="220" height="170" rx="24" class="module2"/>
+    <path d="M42 54h136M42 86h110M42 118h136" stroke="#b76035" stroke-width="10" stroke-linecap="round"/>
+    <text x="30" y="215" class="h">Message Queue</text>
+    <text x="30" y="242" class="s">job_id · type · payload</text>
+  </g>
+
+  <g transform="translate(1120 505)">
+    <rect width="230" height="170" rx="24" class="module2"/>
+    <circle cx="70" cy="78" r="32" fill="#fff" stroke="#ddc6b6" stroke-width="2"/>
+    <circle cx="145" cy="78" r="32" fill="#fff" stroke="#ddc6b6" stroke-width="2"/>
+    <path d="M58 78h24M133 78h24" stroke="#b76035" stroke-width="8" stroke-linecap="round"/>
+    <text x="30" y="215" class="h">Worker shell</text>
+    <text x="30" y="242" class="s">typed errors · job status</text>
+  </g>
+
+  <rect x="80" y="770" width="1445" height="66" rx="22" fill="#fffdfa" stroke="#d9d2c4"/>
+  <text x="112" y="811" class="h">Operational rail</text>
+  <text x="360" y="811" class="s">job status + history</text>
+  <text x="640" y="811" class="s">structured logs</text>
+  <text x="865" y="811" class="s">Prometheus / Yandex Monitoring</text>
+  <text x="1210" y="811" class="s">Grafana · DataLens · /info</text>
+</svg>
