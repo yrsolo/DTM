@@ -35,3 +35,9 @@
   - evidence: Local server returned HTTP 200 for `/`, `/#video`, `/#screen`, `/#back`, `/#front`, and `/#notification`. Promo HLS manifest and HLS.js CDN returned HTTP 200.
   - trust_level: high
   - notes: Desktop and mobile screenshots were rendered with headless Edge; mobile hero wrapping was adjusted after visual review.
+- source: public GitHub Pages deployment
+  - last_verified_at: 2026-06-15
+  - verified_by: Codex
+  - evidence: GitHub Actions `Deploy GitHub Pages showcase` completed successfully for `fix: keep showcase diagram titles readable` on `main`. `https://yrsolo.github.io/DTM/` returned HTTP 200 with the redesigned page marker, and `assets/notification-flow-light.svg` returned HTTP 200 with the fixed embedded title.
+  - trust_level: high
+  - notes: Public deployment URL is live after the redesign and readability fix.
