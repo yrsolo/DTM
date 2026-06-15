@@ -6,12 +6,13 @@ Single source of truth for current campaign lifecycle state.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## In Progress
-- none
+- CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1
 
 ## Planned
 - none
 
 ## Recent Done
+- CAM-2026-06-15-GITHUB-PAGES-SHOWCASE-V1 completed after delivering and verifying a public GitHub Pages project showcase for the backend/frontend system.
 - CAM-2026-04-26-REMINDER-MODEL-CONFIG-MAP-V1 completed after replacing the morning-specific model config key with a generic `models.openai_by_mode` map and verifying fallback behavior.
 - CAM-2026-04-26-MORNING-NOTIFICATIONS-GPT55-V1 completed after routing reminder model selection through the reminders delivery surface and verifying queued/direct morning reminder paths with focused tests.
 - CAM-2026-04-09-OBJECT-STORAGE-PUT-INVESTIGATION-V1 completed after tracing active object-storage writes to the scheduled queue/job-status lifecycle, confirming regular 10-minute `update_snapshot` + render bursts, and showing that recent prod attachment and response-cache writes are negligible compared with `jobs/prod/*`.

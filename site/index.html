@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="DTM — операционная система дизайн-отдела: единый таймлайн, аналитика, автоматизация и контролируемый доступ поверх рабочего контура Google Sheets."
+    />
+    <meta name="theme-color" content="#0a0b0c" />
+    <meta property="og:title" content="DTM — Design Task Management" />
+    <meta
+      property="og:description"
+      content="От рабочей таблицы к управляемой операционной системе дизайн-отдела."
+    />
+    <meta property="og:type" content="website" />
+    <title>DTM — операционная система дизайн-отдела</title>
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://storage.yandexcloud.net" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="DTM, наверх">
+        <span class="brand-mark">D</span>
+        <span>DTM</span>
+      </a>
+      <nav aria-label="Навигация">
+        <a href="#product">Продукт</a>
+        <a href="#architecture">Архитектура</a>
+        <a href="#repositories">Код</a>
+      </nav>
+      <a class="button button-small button-ghost" href="#promo">Смотреть ролик</a>
+    </header>
+
+    <main id="top">
+      <section class="hero section">
+        <div class="hero-glow" aria-hidden="true"></div>
+        <div class="eyebrow reveal"><span></span> Design operations platform</div>
+        <h1 class="reveal">
+          Таблица на входе.<br />
+          <em>Порядок</em> на выходе.
+        </h1>
+        <p class="hero-copy reveal">
+          DTM превращает привычный рабочий контур дизайн-отдела в наблюдаемую систему:
+          единый таймлайн задач, нагрузка команды, вложения, доступы и автоматизация
+          без ручной сборки отчётов.
+        </p>
+        <div class="hero-actions reveal">
+          <a class="button button-primary" href="#architecture">Как устроена система</a>
+          <a class="button button-ghost" href="https://github.com/yrsolo/DTM" target="_blank" rel="noreferrer">
+            GitHub <span>↗</span>
+          </a>
+        </div>
+        <div class="hero-rail reveal" aria-label="Ключевые свойства">
+          <div><strong>01</strong><span>Единая картина производства</span></div>
+          <div><strong>02</strong><span>Быстрый browser read-model</span></div>
+          <div><strong>03</strong><span>Асинхронные тяжёлые операции</span></div>
+          <div><strong>04</strong><span>Наблюдаемый runtime</span></div>
+        </div>
+      </section>
+
+      <section class="section video-section" id="promo">
+        <div class="section-heading reveal">
+          <div>
+            <div class="eyebrow"><span></span> Product in motion</div>
+            <h2>Система, которую видно<br />в работе.</h2>
+          </div>
+          <p>
+            DTM оставляет привычную таблицу источником рабочего процесса, но даёт
+            команде интерфейс, в котором сроки, люди и движение задач читаются сразу.
+          </p>
+        </div>
+        <div class="video-shell reveal">
+          <video id="promo-video" controls playsinline preload="metadata" aria-label="Промо-видео DTM"></video>
+          <div class="video-fallback" id="video-fallback" hidden>
+            <p>Видео не удалось запустить в этом браузере.</p>
+            <a href="https://storage.yandexcloud.net/dtm-presets/video/DTM_hi.m3u8">Открыть поток</a>
+          </div>
+          <span class="video-label">DTM / product film</span>
+        </div>
+      </section>
+
+      <section class="section" id="product">
+        <div class="section-heading reveal">
+          <div>
+            <div class="eyebrow"><span></span> One operational picture</div>
+            <h2>Не ещё один таск-трекер.</h2>
+          </div>
+          <p>
+            DTM строится вокруг реального производственного процесса дизайн-команды:
+            разрозненные строки превращаются в подготовленную модель для ежедневной работы,
+            аналитики и автоматизации.
+          </p>
+        </div>
+        <div class="capability-grid">
+          <article class="capability-card reveal">
+            <span class="card-index">01</span>
+            <h3>Операционный таймлайн</h3>
+            <p>Плотное представление сроков, этапов и статусов без ручной сборки картины проекта.</p>
+            <div class="tag-row"><span>SVG timeline</span><span>filters</span><span>milestones</span></div>
+          </article>
+          <article class="capability-card reveal">
+            <span class="card-index">02</span>
+            <h3>Команда и нагрузка</h3>
+            <p>Срезы по дизайнерам, типам задач и загрузке на том же snapshot-контуре.</p>
+            <div class="tag-row"><span>analytics</span><span>designers</span><span>sorting</span></div>
+          </article>
+          <article class="capability-card reveal">
+            <span class="card-index">03</span>
+            <h3>Управляемый доступ</h3>
+            <p>Yandex OAuth, Telegram Mini App, временные ссылки и masked/full режимы.</p>
+            <div class="tag-row"><span>auth</span><span>admin</span><span>sessions</span></div>
+          </article>
+          <article class="capability-card reveal">
+            <span class="card-index">04</span>
+            <h3>Автоматизация</h3>
+            <p>Очереди, workers, рендеринг, напоминания, вложения и наблюдаемая публикация результата.</p>
+            <div class="tag-row"><span>queue</span><span>workers</span><span>observability</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section architecture-section" id="architecture">
+        <div class="section-heading reveal">
+          <div>
+            <div class="eyebrow"><span></span> System architecture</div>
+            <h2>Быстрое чтение.<br />Явные изменения.</h2>
+          </div>
+          <p>
+            Архитектура разделяет стабильный пользовательский read-path и тяжёлые mutation-paths.
+            Браузер получает подготовленную картину, а долгие операции исполняются отдельно
+            и становятся видимыми только после публикации.
+          </p>
+        </div>
+
+        <article class="architecture-card reveal">
+          <div class="architecture-copy">
+            <span class="architecture-number">A / Backend</span>
+            <h3>Модульный монолит с подготовленным read-model</h3>
+            <p>
+              Python backend нормализует рабочие данные, строит snapshot-артефакты и отдаёт
+              browser-safe payload. Тяжёлые действия проходят через Message Queue и workers.
+            </p>
+            <ul class="flow-list">
+              <li><span>Read path</span>Sheets → snapshot → Object Storage → BFF</li>
+              <li><span>Mutation path</span>HTTP / trigger → command queue → worker → publication</li>
+              <li><span>Operational</span>job status, metrics, Grafana, DataLens</li>
+            </ul>
+          </div>
+          <div class="architecture-visual">
+            <img src="./assets/backend-system.png" alt="Стилизованная схема backend-контура DTM" />
+            <div class="visual-label label-source">Google Sheets</div>
+            <div class="visual-label label-core">Normalize + Snapshot</div>
+            <div class="visual-label label-store">Object Storage</div>
+            <div class="visual-label label-read">Browser read-model</div>
+            <div class="visual-label label-queue">Queue + Workers</div>
+          </div>
+        </article>
+
+        <article class="architecture-card architecture-card-reverse reveal">
+          <div class="architecture-copy">
+            <span class="architecture-number">B / Frontend</span>
+            <h3>Один интерфейс для разных рабочих сценариев</h3>
+            <p>
+              React/Vite SPA объединяет desktop timeline, аналитику, mobile/Telegram shell,
+              admin и runtime workbench. Контракты данных и доступов вынесены из presentation-слоя.
+            </p>
+            <ul class="flow-list">
+              <li><span>Product</span>timeline, designers, task drawer, attachments</li>
+              <li><span>Access</span>Yandex, Telegram, temp links, masked/full modes</li>
+              <li><span>Tools</span>analytics labs, presets, visual workbench</li>
+            </ul>
+          </div>
+          <div class="architecture-visual">
+            <img src="./assets/frontend-system.png" alt="Стилизованная схема frontend-контура DTM" />
+            <div class="visual-label label-ui">React SPA</div>
+            <div class="visual-label label-bff">ops/bff</div>
+            <div class="visual-label label-auth">ops/auth</div>
+            <div class="visual-label label-mobile">Mobile + Telegram</div>
+            <div class="visual-label label-labs">Analytics + Workbench</div>
+          </div>
+        </article>
+
+        <div class="contract-strip reveal" aria-label="Схема взаимодействия frontend и backend">
+          <div class="contract-node">
+            <span>01</span><strong>Рабочие источники</strong><small>Google Sheets · uploads · Telegram</small>
+          </div>
+          <i>→</i>
+          <div class="contract-node">
+            <span>02</span><strong>Backend platform</strong><small>normalize · snapshot · queue · workers</small>
+          </div>
+          <i>→</i>
+          <div class="contract-node contract-node-accent">
+            <span>03</span><strong>Browser contracts</strong><small>ops/bff · ops/auth · SnapshotV1</small>
+          </div>
+          <i>→</i>
+          <div class="contract-node">
+            <span>04</span><strong>DTM interfaces</strong><small>desktop · mobile · analytics · admin</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="section principles">
+        <div class="section-heading reveal">
+          <div>
+            <div class="eyebrow"><span></span> Engineering approach</div>
+            <h2>Спроектировано для эксплуатации.</h2>
+          </div>
+        </div>
+        <div class="principles-grid">
+          <div class="principle reveal"><span>01</span><h3>Stable reads</h3><p>UI не собирает тяжёлую карточку на лету: браузер читает подготовленный payload.</p></div>
+          <div class="principle reveal"><span>02</span><h3>Explicit async</h3><p>Долгие и рискованные действия оформлены как команды с понятным статусом.</p></div>
+          <div class="principle reveal"><span>03</span><h3>Typed boundaries</h3><p>Backend, frontend и auth взаимодействуют через явные контракты и runtime-конфиг.</p></div>
+          <div class="principle reveal"><span>04</span><h3>Operational clarity</h3><p>Диагностика, метрики и runbooks встроены в систему, а не добавлены постфактум.</p></div>
+        </div>
+      </section>
+
+      <section class="section repository-section" id="repositories">
+        <div class="repository-intro reveal">
+          <div class="eyebrow"><span></span> Source code</div>
+          <h2>Два репозитория.<br />Одна система.</h2>
+          <p>
+            Код разделён по ответственности: backend владеет данными, автоматизацией и публикацией;
+            frontend — рабочими интерфейсами, доступом и визуальными инструментами.
+          </p>
+        </div>
+        <div class="repository-grid">
+          <a class="repository-card reveal" href="https://github.com/yrsolo/DTM" target="_blank" rel="noreferrer">
+            <span class="repository-type">Backend / Python</span>
+            <h3>yrsolo/DTM</h3>
+            <p>Snapshot pipeline, BFF, queues, workers, attachments, reminders and observability.</p>
+            <div><span>Открыть репозиторий</span><b>↗</b></div>
+          </a>
+          <a class="repository-card reveal" href="https://github.com/yrsolo/DTM-front" target="_blank" rel="noreferrer">
+            <span class="repository-type">Frontend / React + TypeScript</span>
+            <h3>yrsolo/DTM-front</h3>
+            <p>Timeline, analytics, mobile, auth/admin facade, presets and runtime workbench.</p>
+            <div><span>Открыть репозиторий</span><b>↗</b></div>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <a class="brand" href="#top"><span class="brand-mark">D</span><span>DTM</span></a>
+      <p>Design Task Management · operational platform for design teams</p>
+      <a href="https://github.com/yrsolo" target="_blank" rel="noreferrer">yrsolo on GitHub ↗</a>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.6.15/dist/hls.min.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
