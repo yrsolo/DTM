@@ -73,31 +73,31 @@
           </section>
 
           <section class="media-panel" data-panel="screen" role="tabpanel" hidden>
-            <a class="visual-link" href="./assets/screen-workspace.svg" target="_blank" rel="noreferrer">
-              <img src="./assets/screen-workspace.svg" alt="Макет основного экрана DTM: таймлайн, фильтры, карточка задачи и аналитика" />
+            <a class="visual-link" href="./assets/Screenshot%202026-06-16%20012844.png" target="_blank" rel="noreferrer">
+              <img src="./assets/Screenshot%202026-06-16%20012844.png" alt="Реальный экран DTM: таймлайн задач дизайн-отдела, фильтры, дизайнеры и сроки" />
             </a>
-            <p class="caption">Экран сервиса: календарный таймлайн, фильтры, task drawer, вложения и быстрые показатели проекта.</p>
+            <p class="caption">Реальный экран сервиса. Команда видит задачи на календарном таймлайне: дизайнеры сгруппированы слева, задачи тянутся по датам, а фильтры сверху быстро переключают срезы по бренду, формату и шоу.</p>
           </section>
 
           <section class="media-panel" data-panel="back" role="tabpanel" hidden>
             <a class="visual-link" href="./assets/backend-generated.png" target="_blank" rel="noreferrer">
               <img src="./assets/backend-generated.png" alt="Генеративная backend-схема DTM: Google Sheets, snapshot, object storage, access API, очередь и workers" />
             </a>
-            <p class="caption">Backend: быстрый read-path отделён от команд, очередей и тяжёлых worker-операций.</p>
+            <p class="caption">Backend-часть собирает рабочую таблицу в подготовленный снимок данных для браузера. Быстрое чтение идёт по верхнему потоку: таблица → snapshot → хранилище → API → интерфейс. Действия с побочными эффектами, например вложения и напоминания, уходят в очередь и выполняются worker-ами отдельно.</p>
           </section>
 
           <section class="media-panel" data-panel="front" role="tabpanel" hidden>
             <a class="visual-link" href="./assets/frontend-generated.png" target="_blank" rel="noreferrer">
               <img src="./assets/frontend-generated.png" alt="Генеративная frontend-схема DTM: desktop, mobile, Telegram Mini App, React SPA, snapshot lifecycle и access plane" />
             </a>
-            <p class="caption">Frontend: одна React/Vite SPA собирает desktop, mobile, analytics, admin и Telegram-shell поверх общих контрактов.</p>
+            <p class="caption">Frontend-часть — это один React/Vite-интерфейс для desktop, мобильного режима, аналитики и админских сценариев. Он не пересобирает данные на лету, а читает готовый snapshot, применяет фильтры и показывает разные рабочие экраны поверх одного контракта данных.</p>
           </section>
 
           <section class="media-panel" data-panel="notification" role="tabpanel" hidden>
             <a class="visual-link" href="./assets/notification-generated.png" target="_blank" rel="noreferrer">
               <img src="./assets/notification-generated.png" alt="Генеративная схема уведомлений DTM: scheduler, reminder context, LLM enhancer, queue, worker и Telegram delivery" />
             </a>
-            <p class="caption">Уведомления: планировщик собирает контекст задач, усиливает текст и доставляет напоминания в Telegram.</p>
+            <p class="caption">Контур уведомлений отправляет напоминания от лица виртуальной помощницы. Планировщик берёт задачи, сроки и ответственных из подготовленного snapshot, собирает понятный текст, ставит отправку в очередь и доставляет сообщение в Telegram, сохраняя статус выполнения.</p>
           </section>
         </div>
       </section>
@@ -147,8 +147,14 @@
 
       <section class="section" id="repositories">
         <p class="kicker">РЕПОЗИТОРИИ ПРОЕКТА</p>
-        <h2>Два репозитория, одна система.</h2>
+        <h2>Рабочий сайт и два репозитория.</h2>
         <div class="repo-grid">
+          <a class="repo" href="https://dtm.solofarm.ru" target="_blank" rel="noreferrer">
+            <span>Live product</span>
+            <strong>dtm.solofarm.ru</strong>
+            <p>Рабочий интерфейс DTM: таймлайн задач, фильтры, загрузка дизайнеров и ежедневная витрина состояния дизайн-отдела.</p>
+            <b>Открыть сайт →</b>
+          </a>
           <a class="repo" href="https://github.com/yrsolo/DTM" target="_blank" rel="noreferrer">
             <span>Backend / Python</span>
             <strong>yrsolo/DTM</strong>

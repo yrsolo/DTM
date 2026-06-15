@@ -1,5 +1,6 @@
 # Active Tasks
 
+- CAM-2026-06-16-SHOWCASE-COPY-MEDIA-POLISH-V1: replace notification diagram persona object with a friendly virtual assistant character, use the provided real site screenshot in the screen tab, clarify scheme captions, add the live product link, deploy to Pages.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; the only remaining blocker is rerunning the same smoke after the manual production release workflow is executed.
 
 ## Recent Done
