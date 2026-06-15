@@ -1,9 +1,11 @@
 # Active Tasks
 
+- CAM-2026-06-15-SHOWCASE-DEPLOY-TECH-DIAGRAMS-V1: publishing the showcase, then replacing decorative architecture art with technically accurate labeled diagrams and saved prompts.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; the only remaining blocker is rerunning the same smoke after the manual production release workflow is executed.
 
 ## Recent Done
 
+- CAM-2026-06-15-GITHUB-PAGES-SHOWCASE-V1 completed: added a publish-ready GitHub Pages showcase with generated architecture visuals, verified backend/frontend interaction copy, HLS promo video, repository links, and responsive browser checks.
 - CAM-2026-04-26-REMINDER-MODEL-CONFIG-MAP-V1 completed: reminder OpenAI model overrides now live in `models.openai_by_mode`, with runtime fallback to `openai_default`.
 - CAM-2026-04-26-MORNING-NOTIFICATIONS-GPT55-V1 completed: `morning` reminder enhancement now uses OpenAI `gpt-5.5` via `models.openai_by_mode`, while other reminder modes keep `openai_default`.
 - CAM-2026-04-09-OBJECT-STORAGE-PUT-INVESTIGATION-V1 completed: active bucket writes were traced to `jobs/prod/*` plus the 10-minute timer-driven `update_snapshot` refresh, while prod attachments and response-cache prefixes were effectively cold over the last 24 hours.
