@@ -112,12 +112,12 @@ p {
 }
 
 h1 {
-  max-width: 980px;
+  max-width: 920px;
   margin: 0 auto 22px;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(52px, 8vw, 104px);
-  line-height: 0.92;
-  letter-spacing: -0.055em;
+  font-size: clamp(42px, 5.8vw, 76px);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
 }
 
 h1 span {
@@ -412,7 +412,8 @@ footer a:last-child {
   }
 
   h1 {
-    font-size: 36px;
+    font-size: 33px;
+    line-height: 1.02;
     letter-spacing: -0.04em;
     overflow-wrap: anywhere;
   }

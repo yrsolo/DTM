@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="DTM — операционная система дизайн-отдела: таймлайн, аналитика, доступы, уведомления и автоматизация поверх рабочего контура Google Sheets."
+      content="DTM — управление задачами дизайн-отдела: таймлайн, аналитика, доступы, уведомления и автоматизация поверх рабочего контура Google Sheets."
     />
     <meta name="theme-color" content="#f7f5ee" />
     <meta property="og:title" content="DTM — Design Task Management" />
@@ -14,7 +14,7 @@
       content="Короткая презентация пет-проекта как рабочей операционной системы дизайн-отдела."
     />
     <meta property="og:type" content="website" />
-    <title>DTM — операционная система дизайн-отдела</title>
+    <title>DTM — управление задачами дизайн-отдела</title>
     <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://storage.yandexcloud.net" />
     <link rel="stylesheet" href="./styles.css" />
@@ -37,8 +37,7 @@
         <p class="kicker">DESIGN OPERATIONS PLATFORM</p>
         <h1>
           <span>DTM:</span>
-          <span>операционная</span>
-          <span>система</span>
+          <span>управление задачами</span>
           <span>дизайн-отдела</span>
         </h1>
         <p class="subtitle">
@@ -61,22 +60,20 @@
 
           <section class="media-panel active" data-panel="video" role="tabpanel">
             <div class="video-frame">
-              <video id="promo-video" controls playsinline preload="none" poster="./assets/video-poster.jpg" aria-label="Промо-видео DTM">
-                <source src="./assets/DTM_promo_h264.mp4" type="video/mp4" />
-              </video>
+              <video id="promo-video" controls playsinline preload="metadata" poster="./assets/video-poster.jpg" aria-label="Промо-видео DTM"></video>
               <div class="video-fallback" id="video-fallback" hidden>
                 <p>Браузер не смог запустить встроенное видео.</p>
-                <a href="./assets/DTM_promo_h264.mp4">Открыть MP4 напрямую</a>
+                <a href="https://storage.yandexcloud.net/dtm-presets/video/DTM_hi.m3u8" target="_blank" rel="noreferrer">Открыть HLS-поток напрямую</a>
               </div>
             </div>
-            <p class="caption">Короткое промо: как таблица превращается в рабочий интерфейс и управляемый процесс.</p>
+            <p class="caption">Короткое промо: как наш продукт помогает менеджерам.</p>
           </section>
 
           <section class="media-panel" data-panel="screen" role="tabpanel" hidden>
             <a class="visual-link" href="./assets/Screenshot%202026-06-16%20012844.png" target="_blank" rel="noreferrer">
               <img src="./assets/Screenshot%202026-06-16%20012844.png" alt="Реальный экран DTM: таймлайн задач дизайн-отдела, фильтры, дизайнеры и сроки" />
             </a>
-            <p class="caption">Реальный экран сервиса. Команда видит задачи на календарном таймлайне: дизайнеры сгруппированы слева, задачи тянутся по датам, а фильтры сверху быстро переключают срезы по бренду, формату и шоу.</p>
+            <p class="caption">Команда видит задачи на календарном таймлайне: дизайнеры сгруппированы слева, задачи тянутся по датам, а фильтры сверху быстро переключают срезы по бренду, формату и шоу.</p>
           </section>
 
           <section class="media-panel" data-panel="back" role="tabpanel" hidden>
@@ -97,7 +94,7 @@
             <a class="visual-link" href="./assets/notification-generated.png" target="_blank" rel="noreferrer">
               <img src="./assets/notification-generated.png" alt="Генеративная схема уведомлений DTM: scheduler, reminder context, LLM enhancer, queue, worker и Telegram delivery" />
             </a>
-            <p class="caption">Контур уведомлений отправляет напоминания от лица виртуальной помощницы. Планировщик берёт задачи, сроки и ответственных из подготовленного snapshot, собирает понятный текст, ставит отправку в очередь и доставляет сообщение в Telegram, сохраняя статус выполнения.</p>
+            <p class="caption">Контур уведомлений отправляет напоминания дизайнерам о сроках сдачи задач. Планировщик берёт задачи, сроки и ответственных из подготовленного snapshot, обрабатывает его LLM и от лица виртуальной помощницы доставляет сообщение в Telegram.</p>
           </section>
         </div>
       </section>
@@ -192,6 +189,7 @@
       <a href="https://github.com/yrsolo" target="_blank" rel="noreferrer">yrsolo on GitHub →</a>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>
