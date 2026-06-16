@@ -60,7 +60,10 @@
 
           <section class="media-panel active" data-panel="video" role="tabpanel">
             <div class="video-frame">
-              <video id="promo-video" controls playsinline preload="metadata" poster="./assets/video-poster.jpg" aria-label="Промо-видео DTM"></video>
+              <video id="promo-video" controls playsinline preload="metadata" poster="./assets/video-poster.webp" aria-label="Промо-видео DTM"></video>
+              <button class="video-play-button" id="video-play-button" type="button" aria-label="Запустить промо-видео">
+                <span aria-hidden="true"></span>
+              </button>
               <div class="video-fallback" id="video-fallback" hidden>
                 <p>Браузер не смог запустить встроенное видео.</p>
                 <a href="https://storage.yandexcloud.net/dtm-presets/video/DTM_hi.m3u8" target="_blank" rel="noreferrer">Открыть HLS-поток напрямую</a>

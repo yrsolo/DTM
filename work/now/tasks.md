@@ -1,5 +1,6 @@
 # Active Tasks
 
+- CAM-2026-06-16-SHOWCASE-VIDEO-POSTER-V1: prepare the provided video placeholder as a compressed poster, add a play overlay, verify, and redeploy Pages.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; the only remaining blocker is rerunning the same smoke after the manual production release workflow is executed.
 
 ## Recent Done
