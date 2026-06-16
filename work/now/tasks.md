@@ -1,5 +1,6 @@
 # Active Tasks
 
+- CAM-2026-06-16-SHOWCASE-HERO-VIDEO-COPY-POLISH-V1: polish the GitHub Pages showcase hero title, requested promo video source, screenshot caption, and notification copy, then redeploy.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; the only remaining blocker is rerunning the same smoke after the manual production release workflow is executed.
 
 ## Recent Done
