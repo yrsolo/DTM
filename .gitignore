@@ -21,3 +21,4 @@ __pycache__/
 /work/artifacts/*
 !/work/artifacts/README.md
 /agent/tmp_run_logs/
+/site/assets/hf_*.png

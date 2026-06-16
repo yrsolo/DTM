@@ -1,6 +1,8 @@
 const tabs = [...document.querySelectorAll(".tab")];
 const panels = [...document.querySelectorAll(".media-panel")];
 const promoVideo = document.querySelector("#promo-video");
+const promoVideoFrame = document.querySelector(".video-frame");
+const promoPlayButton = document.querySelector("#video-play-button");
 const videoFallback = document.querySelector("#video-fallback");
 
 const promoHlsSource = "https://storage.yandexcloud.net/dtm-presets/video/DTM_hi.m3u8";
@@ -34,6 +36,8 @@ if (tabs.some((tab) => tab.dataset.panel === initialPanel)) {
 }
 
 function showVideoFallback() {
+  promoVideoFrame?.classList.add("video-error");
+
   if (videoFallback) {
     videoFallback.hidden = false;
   }
@@ -67,4 +71,12 @@ if (promoVideo) {
   }
 
   promoVideo.addEventListener("error", useMp4VideoFallback);
+  promoVideo.addEventListener("play", () => promoVideoFrame?.classList.add("video-started"));
+  promoVideo.addEventListener("ended", () => promoVideoFrame?.classList.remove("video-started"));
+}
+
+if (promoPlayButton && promoVideo) {
+  promoPlayButton.addEventListener("click", () => {
+    promoVideo.play().catch(useMp4VideoFallback);
+  });
 }

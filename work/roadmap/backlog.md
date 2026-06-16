@@ -4,7 +4,7 @@
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## In Progress
-- none
+- CAM-2026-06-16-SHOWCASE-VIDEO-POSTER-V1
 
 ## Planned
 - none
