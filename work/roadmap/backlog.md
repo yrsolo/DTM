@@ -4,12 +4,13 @@
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1
 
 ## In Progress
-- CAM-2026-06-16-SHOWCASE-HERO-VIDEO-COPY-POLISH-V1
+- none
 
 ## Planned
 - none
 
 ## Recent Done
+- CAM-2026-06-16-SHOWCASE-HERO-VIDEO-COPY-POLISH-V1 completed after reducing and renaming the showcase hero, restoring the requested HLS promo stream, tightening screenshot and notification captions, and verifying GitHub Pages.
 - CAM-2026-06-16-SHOWCASE-COPY-MEDIA-POLISH-V1 completed after replacing the notification visual's object tray with a friendly virtual assistant persona, using the real site screenshot in the screen tab, clarifying scheme captions, adding `https://dtm.solofarm.ru`, and verifying Pages.
 - CAM-2026-06-15-SHOWCASE-MEDIA-FIX-RASTER-DIAGRAMS-V1 completed after fixing video playback with a browser-safe H.264 MP4, replacing SVG tab visuals with generated raster technical diagrams, removing the hero CTA row, rewriting the annotation, saving prompts, and verifying GitHub Pages.
 - CAM-2026-06-15-SHOWCASE-SHADOWGEN-REDESIGN-V1 completed after redesigning the public showcase into a shorter ShadowGen-style light landing with video/screen/back/front/notification tabs, accurate hybrid SVG diagrams, saved generation prompts, repository links, and verified Pages deployment.
