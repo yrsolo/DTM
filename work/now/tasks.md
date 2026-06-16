@@ -1,10 +1,10 @@
 # Active Tasks
 
-- CAM-2026-06-16-SHOWCASE-HERO-VIDEO-COPY-POLISH-V1: polish the GitHub Pages showcase hero title, requested promo video source, screenshot caption, and notification copy, then redeploy.
 - CAM-2026-03-15-TASK-ATTACHMENTS-LIVE-SMOKE-V1: `test` live smoke passed end-to-end; the only remaining blocker is rerunning the same smoke after the manual production release workflow is executed.
 
 ## Recent Done
 
+- CAM-2026-06-16-SHOWCASE-HERO-VIDEO-COPY-POLISH-V1 completed: hero title now reads `DTM: управление задачами дизайн-отдела` at a smaller size, promo video uses the requested HLS stream, screenshot/notification captions are updated, and Pages deployment is verified.
 - CAM-2026-06-16-SHOWCASE-COPY-MEDIA-POLISH-V1 completed: notification diagram now uses a friendly virtual assistant persona, the screen tab uses the provided real site screenshot, scheme captions explain the flows plainly, the live product link is present, and Pages deployment is verified.
 - CAM-2026-06-15-SHOWCASE-MEDIA-FIX-RASTER-DIAGRAMS-V1 completed: fixed the showcase video player with an H.264 MP4/poster path, replaced architecture tabs with generated raster-style technical diagrams, removed the hero CTA button row, rewrote the annotation, saved prompts, and verified public Pages deployment.
 - CAM-2026-06-15-SHOWCASE-SHADOWGEN-REDESIGN-V1 completed: GitHub Pages now uses a shorter ShadowGen-style light landing with media tabs, compact project/stack sections, repository links, accurate hybrid diagrams, saved generation prompts, and a verified public deployment.
