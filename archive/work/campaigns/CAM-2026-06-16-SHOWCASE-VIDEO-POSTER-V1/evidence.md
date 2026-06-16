@@ -15,3 +15,10 @@
 - 2026-06-16: `git diff --check` passed with only existing Windows CRLF warnings.
 - 2026-06-16: local `href/src/poster` scan passed; all referenced local assets exist.
 - 2026-06-16: local Edge smoke on `http://127.0.0.1:8771/` confirmed `poster="./assets/video-poster.webp"`, requested HLS source still active, play overlay visible before playback, overlay hidden after click, video playback started, and fallback stayed hidden.
+
+## Deployment Verification
+- 2026-06-16: pushed `feat: add optimized showcase video poster` to `main` as `9330b94`.
+- 2026-06-16: GitHub Actions run `27593457320` (`Deploy GitHub Pages showcase`) completed successfully.
+- 2026-06-16: `https://yrsolo.github.io/DTM/` returned `200`, referenced `./assets/video-poster.webp`, and contained the play overlay markup.
+- 2026-06-16: `https://yrsolo.github.io/DTM/assets/video-poster.webp` returned `200 image/webp`, `128008` bytes.
+- 2026-06-16: public Edge smoke confirmed poster `./assets/video-poster.webp`, HLS source still active, play overlay visible before playback, overlay hidden after click, video playback started, and fallback stayed hidden.
