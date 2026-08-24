@@ -55,6 +55,7 @@ class TelegramSenderFactory:
             default_chat_id=self.default_chat_id,
             proxy_session=proxy,
             metrics=self.metrics,
+            logger=self.logger,
             env_name=self.proxy_settings.env_name,
         )
         async with notifier:

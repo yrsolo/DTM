@@ -24,6 +24,7 @@ class TelegramNotifier:
         *,
         proxy_session: MihomoProxySession | None = None,
         metrics: Any = None,
+        logger: Any = None,
         env_name: str = "unknown",
     ) -> None:
         self._bot_token = str(bot_token or "").strip()
@@ -31,6 +32,7 @@ class TelegramNotifier:
         self._proxy_session = proxy_session
         self._proxy_url: str | None = None
         self._metrics = metrics
+        self._logger = logger
         self._env_name = str(env_name or "unknown")
         self._active = False
         self.default_chat_id = default_chat_id
@@ -214,6 +216,8 @@ class TelegramNotifier:
 
     def _route_metric(self, route: str) -> None:
         self._counter("dtm.telegram.transport_selected_total", result=route)
+        if self._logger is not None:
+            self._logger.info("telegram_transport_selected", route=route)
 
     def _counter(self, name: str, *, result: str) -> None:
         if self._metrics is not None:

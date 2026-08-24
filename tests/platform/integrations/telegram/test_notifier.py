@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import unittest
+from unittest.mock import Mock
 
 from src.platform.errors import PermanentError, TransientError
 from src.platform.integrations.telegram.notifier import TelegramNotifier
@@ -67,6 +68,14 @@ class _FakeBot:
 
 
 class TelegramNotifierTestCase(unittest.TestCase):
+    def test_records_proxy_route_without_endpoint_details(self) -> None:
+        logger = Mock()
+        notifier = TelegramNotifier("token", logger=logger)
+
+        notifier._route_metric("proxy")
+
+        logger.info.assert_called_once_with("telegram_transport_selected", route="proxy")
+
     def test_uses_direct_fallback_when_proxy_is_unavailable(self) -> None:
         proxy = _FakeProxy(None)
         notifier = TelegramNotifier("token", proxy_session=proxy)  # type: ignore[arg-type]
