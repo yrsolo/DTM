@@ -124,6 +124,7 @@ class TelegramSection:
     proxy_group: str = "📢 TELEGA"
     proxy_health_url: str = "https://api.telegram.org"
     proxy_startup_timeout_seconds: float = 5.0
+    proxy_subscription_timeout_seconds: float = 20.0
     proxy_health_timeout_seconds: float = 5.0
     proxy_cache_ttl_seconds: int = 300
     direct_fallback: bool = True

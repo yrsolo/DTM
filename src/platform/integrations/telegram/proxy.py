@@ -31,6 +31,7 @@ class TelegramProxySettings:
     group_name: str = "📢 TELEGA"
     health_url: str = "https://api.telegram.org"
     startup_timeout_seconds: float = 5.0
+    subscription_timeout_seconds: float = 20.0
     health_timeout_seconds: float = 5.0
     cache_ttl_seconds: int = 300
     direct_fallback: bool = True
@@ -199,7 +200,7 @@ class MihomoProxySession:
                 self.settings.subscription_url,
                 headers={"User-Agent": "DTM-Telegram-Transport/1.0"},
             )
-            with urlopen(request, timeout=self.settings.health_timeout_seconds) as response:
+            with urlopen(request, timeout=self.settings.subscription_timeout_seconds) as response:
                 raw = response.read()
             self._validate_source(raw)
             temp_path = cache_path.with_suffix(".tmp")

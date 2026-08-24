@@ -34,6 +34,7 @@ class RuntimeLoaderTestCase(unittest.TestCase):
                 "telegram": {
                     "delivery_transport": "adaptive_proxy",
                     "proxy_group": "TELEGA",
+                    "proxy_subscription_timeout_seconds": 12.0,
                     "proxy_health_timeout_seconds": 7.5,
                     "proxy_cache_ttl_seconds": 120,
                     "direct_fallback": False,
@@ -42,6 +43,7 @@ class RuntimeLoaderTestCase(unittest.TestCase):
             }
         )
         self.assertEqual(runtime.telegram.proxy_group, "TELEGA")
+        self.assertEqual(runtime.telegram.proxy_subscription_timeout_seconds, 12.0)
         self.assertEqual(runtime.telegram.proxy_health_timeout_seconds, 7.5)
         self.assertEqual(runtime.telegram.proxy_cache_ttl_seconds, 120)
         self.assertFalse(runtime.telegram.direct_fallback)

@@ -101,7 +101,9 @@ def _build_base_bootstrap_deps(cfg, structured_logger) -> dict[str, object]:
         "proxy_url": os.getenv("PROXY_URL", "").strip(),
         "telegram_proxy_subscription_url": os.getenv(
             "TELEGRAM_PROXY_SUBSCRIPTION_URL", ""
-        ).strip(),
+        )
+        .strip()
+        .replace(r"\&", "&"),
         "google_llm_api_key": os.getenv("GOOGLE_LLM_API_KEY", "").strip(),
         "yandex_llm_api_key": os.getenv("YANDEX_LLM_API_KEY", "").strip(),
         "tg_webhook_secret_token": os.getenv("TG_WEBHOOK_SECRET_TOKEN", "").strip(),

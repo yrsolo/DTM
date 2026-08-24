@@ -77,7 +77,7 @@ Typed config загружается через:
 - `delivery_transport=adaptive_proxy` включает scoped Mihomo transport;
 - `proxy_group` выбирает группу из Clash-подписки;
 - `proxy_health_url` используется для параллельной проверки узлов;
-- startup/health timeout и cache TTL ограничивают сетевые ожидания;
+- startup, subscription-download, health timeout и cache TTL ограничивают сетевые ожидания;
 - `direct_fallback=true` разрешает прямую отправку только после отказа proxy path;
 - `mihomo_binary_path` указывает на pinned executable внутри deployment package.
 

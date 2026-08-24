@@ -410,6 +410,12 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
             defaults.telegram.proxy_startup_timeout_seconds,
         )
     )
+    defaults.telegram.proxy_subscription_timeout_seconds = float(
+        telegram_raw.get(
+            "proxy_subscription_timeout_seconds",
+            defaults.telegram.proxy_subscription_timeout_seconds,
+        )
+    )
     defaults.telegram.proxy_health_timeout_seconds = float(
         telegram_raw.get(
             "proxy_health_timeout_seconds",

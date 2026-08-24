@@ -56,6 +56,20 @@ class BootstrapInputsTestCase(unittest.TestCase):
                 self.assertTrue(Path(resolved).exists())
                 self.assertEqual(Path(resolved).read_text(encoding="utf-8"), '{"type":"service_account"}')
 
+    def test_build_base_bootstrap_deps_normalizes_markdown_escaped_subscription_separator(self) -> None:
+        cfg = bootstrap_module.load_config()
+        with patch.dict(
+            os.environ,
+            {"TELEGRAM_PROXY_SUBSCRIPTION_URL": "https://subscription.example/api?id=cfg\\&token=secret"},
+            clear=False,
+        ):
+            deps = bootstrap_module._build_base_bootstrap_deps(cfg, structured_logger=object())
+
+        self.assertEqual(
+            deps["telegram_proxy_subscription_url"],
+            "https://subscription.example/api?id=cfg&token=secret",
+        )
+
     def test_resolve_google_key_json_path_returns_empty_when_no_inputs_exist(self) -> None:
         with patch.dict(
             os.environ,
