@@ -23,6 +23,7 @@ def _normalize(target: str, yc: dict[str, Any]) -> dict[str, str]:
     values = {
         "YC_FOLDER_ID": str(yc.get("folder_id", "")).strip(),
         "YC_SERVICE_ACCOUNT_ID": str(yc.get("service_account_id", "")).strip(),
+        "YC_FUNCTION_CODE_BUCKET": str(yc.get("function_code_bucket", "")).strip(),
         "YC_CLOUD_FUNCTION_NAME": str(yc.get(function_name_key, "")).strip(),
         "YC_FUNCTION_RUNTIME": str(yc.get("function_runtime", "python311")).strip(),
         "YC_FUNCTION_TIMEOUT": str(yc.get("function_timeout", "60s")).strip(),
@@ -37,6 +38,7 @@ def _validate_required_source(yc: dict[str, Any], target: str) -> None:
     required = (
         "folder_id",
         "service_account_id",
+        "function_code_bucket",
         function_name_key,
         "function_runtime",
         "function_timeout",
