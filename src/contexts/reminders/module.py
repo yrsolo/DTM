@@ -10,7 +10,6 @@ from src.contexts.snapshot.module import get_read_api
 from src.platform.integrations.llm.google import AsyncGoogleLLMChatAgent
 from src.platform.integrations.llm.openai import AsyncOpenAIChatAgent
 from src.platform.integrations.llm.yandex import AsyncYandexLLMChatAgent
-from src.platform.integrations.telegram.notifier import TelegramNotifier
 from src.platform.runtime.commands.types import SEND_REMINDERS
 
 from .application import ReminderDeliveryApi
@@ -35,11 +34,8 @@ class RemindersModule:
             hidden_stage_names=tuple(ctx.cfg.mapping.hidden_stage_names or ()),
         )
 
-    def sender(self, ctx):
-        return TelegramNotifier(
-            bot_token=str(ctx.deps.get("tg_bot_token", "")),
-            default_chat_id=ctx.deps.get("default_chat_id"),
-        )
+    def sender_session(self, ctx):
+        return ctx.deps["telegram_sender_factory"].session()
 
     def enhancer(self, ctx, *, mock_external: bool):
         if bool(mock_external):

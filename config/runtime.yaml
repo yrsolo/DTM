@@ -102,6 +102,14 @@ telegram:
     - callback_query
   max_connections: 5
   secret_required: true
+  delivery_transport: adaptive_proxy
+  proxy_group: "📢 TELEGA"
+  proxy_health_url: https://api.telegram.org
+  proxy_startup_timeout_seconds: 5.0
+  proxy_health_timeout_seconds: 5.0
+  proxy_cache_ttl_seconds: 300
+  direct_fallback: true
+  mihomo_binary_path: bin/mihomo
 
 notify:
   enhance_concurrency: 4

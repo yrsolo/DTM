@@ -23,8 +23,8 @@ class ReminderDeliveryApi:
     def formatter(self):
         return self._module.formatter(self._ctx)
 
-    def sender(self):
-        return self._module.sender(self._ctx)
+    def sender_session(self):
+        return self._module.sender_session(self._ctx)
 
     def enhancer(self, *, mock_external: bool):
         return self._module.enhancer(self._ctx, mock_external=mock_external)

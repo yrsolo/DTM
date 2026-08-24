@@ -2,12 +2,13 @@
 
 import asyncio
 import unittest
+from contextlib import asynccontextmanager
 from datetime import date, datetime, timezone
 from types import SimpleNamespace
 
+from src.contexts.reminders.internal.job_runner import SendRemindersJob
 from src.platform.context import AppContext
 from src.platform.runtime.commands.model import Command, RequestedBy
-from src.contexts.reminders.internal.job_runner import SendRemindersJob
 
 
 class _FakeReminderResult:
@@ -27,6 +28,7 @@ class _FakeReminderJob:
     last_request = None
     last_kwargs = None
     run_calls = 0
+    delivery_counters = {"candidates_total": 1, "sent": 1}
 
     def __init__(self, **kwargs):  # noqa: ANN003
         self.kwargs = kwargs
@@ -35,7 +37,9 @@ class _FakeReminderJob:
     async def run(self, req):  # noqa: ANN001
         type(self).last_request = req
         type(self).run_calls += 1
-        return _FakeReminderResult()
+        result = _FakeReminderResult()
+        result.delivery_counters = dict(type(self).delivery_counters)
+        return result
 
 
 class _FakeSnapshotEngine:
@@ -55,8 +59,9 @@ class _FakeDeliveryApi:
     def formatter(self):
         return "formatter"
 
-    def sender(self):
-        return "sender"
+    @asynccontextmanager
+    async def sender_session(self):
+        yield "sender"
 
     def enhancer(self, *, mock_external: bool):  # noqa: ARG002
         return None
@@ -133,6 +138,9 @@ def _ctx():
 
 
 class SendRemindersJobTestCase(unittest.TestCase):
+    def setUp(self) -> None:
+        _FakeReminderJob.delivery_counters = {"candidates_total": 1, "sent": 1}
+
     def test_morning_skips_on_saturday(self) -> None:
         import src.contexts.reminders.internal.job_runner as module
 
@@ -248,6 +256,70 @@ class SendRemindersJobTestCase(unittest.TestCase):
         self.assertEqual(_FakeReminderJob.run_calls, 1)
         self.assertEqual(_FakeReminderJob.last_request.today_override.isoformat(), "2026-03-06")
         self.assertEqual(_FakeReminderJob.last_kwargs["llm_model"], "gpt-5.5")
+
+    def test_full_transient_delivery_failure_requests_queue_retry(self) -> None:
+        import src.contexts.reminders.internal.job_runner as module
+
+        original_get_delivery_api = module.get_delivery_api
+        delivery_api = _FakeDeliveryApi()
+        delivery_api.today_in_runtime_timezone = lambda: date(2026, 3, 6)  # type: ignore[method-assign]
+        _FakeReminderJob.delivery_counters = {
+            "candidates_total": 1,
+            "sent": 0,
+            "send_errors": 1,
+            "send_error_transient": 1,
+        }
+        module.get_delivery_api = lambda _ctx: delivery_api  # type: ignore[assignment]
+        try:
+            result = asyncio.run(
+                SendRemindersJob(_ctx()).run(
+                    Command(
+                        job_id="job-transient",
+                        type="send_reminders",
+                        created_at_utc=datetime.now(timezone.utc),
+                        requested_by=RequestedBy(source="admin"),
+                        payload={"mode": "morning"},
+                    )
+                )
+            )
+        finally:
+            module.get_delivery_api = original_get_delivery_api  # type: ignore[assignment]
+
+        self.assertEqual(result["status"], "failed")
+        self.assertTrue(result["retryable"])
+        self.assertEqual(result["failure_kind"], "retryable")
+
+    def test_partial_delivery_is_visible_without_whole_batch_retry(self) -> None:
+        import src.contexts.reminders.internal.job_runner as module
+
+        original_get_delivery_api = module.get_delivery_api
+        delivery_api = _FakeDeliveryApi()
+        delivery_api.today_in_runtime_timezone = lambda: date(2026, 3, 6)  # type: ignore[method-assign]
+        _FakeReminderJob.delivery_counters = {
+            "candidates_total": 2,
+            "sent": 1,
+            "send_errors": 1,
+            "send_error_transient": 1,
+        }
+        module.get_delivery_api = lambda _ctx: delivery_api  # type: ignore[assignment]
+        try:
+            result = asyncio.run(
+                SendRemindersJob(_ctx()).run(
+                    Command(
+                        job_id="job-partial",
+                        type="send_reminders",
+                        created_at_utc=datetime.now(timezone.utc),
+                        requested_by=RequestedBy(source="admin"),
+                        payload={"mode": "morning"},
+                    )
+                )
+            )
+        finally:
+            module.get_delivery_api = original_get_delivery_api  # type: ignore[assignment]
+
+        self.assertEqual(result["status"], "partial")
+        self.assertNotIn("retryable", result)
+        self.assertIn("telegram_delivery_partial", result["warnings"])
 
 
 if __name__ == "__main__":

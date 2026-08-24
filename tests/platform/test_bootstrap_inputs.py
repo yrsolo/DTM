@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import os
+import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import unittest
 from unittest.mock import patch
 
 import src.platform.bootstrap as bootstrap_module
@@ -23,6 +23,7 @@ class BootstrapInputsTestCase(unittest.TestCase):
                 "YC_SA_JSON_CREDENTIALS": "{json}",
                 "YC_SA_KEY_FILE": "/tmp/key.json",
                 "MIGRATION_STORE_FILE": "work/artifacts/custom/store.json",
+                "TELEGRAM_PROXY_SUBSCRIPTION_URL": "https://subscription.invalid/secret",
             },
             clear=False,
         ):
@@ -36,6 +37,10 @@ class BootstrapInputsTestCase(unittest.TestCase):
         self.assertEqual(deps["yc_sa_json_credentials"], "{json}")
         self.assertEqual(deps["yc_sa_key_file"], "/tmp/key.json")
         self.assertEqual(deps["migration_store_file"], "work/artifacts/custom/store.json")
+        self.assertEqual(
+            deps["telegram_proxy_subscription_url"],
+            "https://subscription.invalid/secret",
+        )
 
     def test_resolve_google_key_json_path_supports_raw_json_env(self) -> None:
         with TemporaryDirectory() as tmp_dir:

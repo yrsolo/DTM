@@ -120,6 +120,14 @@ class TelegramSection:
     allowed_updates: list[str] = field(default_factory=lambda: ["message", "callback_query"])
     max_connections: int = 5
     secret_required: bool = True
+    delivery_transport: str = "adaptive_proxy"
+    proxy_group: str = "📢 TELEGA"
+    proxy_health_url: str = "https://api.telegram.org"
+    proxy_startup_timeout_seconds: float = 5.0
+    proxy_health_timeout_seconds: float = 5.0
+    proxy_cache_ttl_seconds: int = 300
+    direct_fallback: bool = True
+    mihomo_binary_path: str = "bin/mihomo"
 
 
 @dataclass(slots=True)

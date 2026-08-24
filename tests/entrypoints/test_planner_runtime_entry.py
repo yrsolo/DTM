@@ -1,9 +1,10 @@
 ﻿from __future__ import annotations
 
 import asyncio
+import unittest
+from contextlib import asynccontextmanager
 from datetime import date
 from types import SimpleNamespace
-import unittest
 from unittest.mock import patch
 
 from src.entrypoints.jobs.runtime_context_job import RuntimeContext
@@ -67,8 +68,9 @@ class _FakeReminderDeliveryApi:
     def formatter(self):
         return "formatter"
 
-    def sender(self):
-        return "sender"
+    @asynccontextmanager
+    async def sender_session(self):
+        yield "sender"
 
     def enhancer(self, *, mock_external: bool):  # noqa: ARG002
         return None

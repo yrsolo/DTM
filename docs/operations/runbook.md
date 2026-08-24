@@ -37,6 +37,22 @@ Backend часть browser auth описана отдельно:
 - reminder runtime читает задачи из prep snapshot;
 - people routing идёт через people snapshot;
 - webhook intake в Telegram должен быстро parse -> route -> enqueue -> return.
+- все исходящие runtime-сообщения используют один scoped sender session;
+- основной route — группа `runtime.telegram.proxy_group` из Lockbox-backed Clash subscription;
+- перед отправкой Mihomo параллельно проверяет группу через Telegram API host;
+- если proxy path не готов, sender проверяет direct route; отказ обоих путей является transient;
+- полный transient reminder failure запрашивает queue retry, а partial delivery фиксируется без
+  повтора всего batch, чтобы не дублировать уже доставленные сообщения.
+
+Operator checks при сбое доставки:
+
+1. Убедиться, что Lockbox содержит `TELEGRAM_PROXY_SUBSCRIPTION_URL` и функция видит latest version.
+2. Проверить наличие executable `bin/mihomo` в deployed source package.
+3. Сравнить `dtm.telegram.transport_selected_total` для `proxy` и `direct`.
+4. Проверить `proxy_nodes_healthy`, `proxy_refresh_total` и `delivery_failover_total`.
+5. Не выводить subscription URL, node names, UUID или proxy endpoints в диагностику.
+
+После ротации subscription token опубликовать новую Lockbox version и новую function version.
 
 Отдельный operator note:
 - [telegram-webhook.md](telegram-webhook.md)

@@ -7,13 +7,17 @@ import subprocess
 import sys
 from pathlib import Path
 
-from agent.deploy.sync_lockbox_from_env import _build_payload_entries, _default_yc_binary, _parse_env_file
-
+from agent.deploy.sync_lockbox_from_env import (
+    _build_payload_entries,
+    _default_yc_binary,
+    _parse_env_file,
+)
 
 REQUIRED_PROD_KEYS = (
     "YC_CLOUD_FUNCTION_PROD_NAME",
     "YC_CLOUD_FUNCTION_PROD_ID",
     "BROWSER_AUTH_PROXY_SECRET",
+    "TELEGRAM_PROXY_SUBSCRIPTION_URL",
 )
 
 

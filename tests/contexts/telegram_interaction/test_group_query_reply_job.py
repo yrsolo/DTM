@@ -2,14 +2,21 @@
 
 import asyncio
 import unittest
+from contextlib import asynccontextmanager
 from datetime import date, datetime, timezone
 from types import SimpleNamespace
 
+from src.contexts.reminders.internal import next_workday
+from src.contexts.snapshot.internal.engine.model import (
+    Milestone,
+    PrepIndexes,
+    PrepSnapshot,
+    TaskSheet,
+    TaskView,
+)
+from src.contexts.telegram_interaction.internal.job_runner import GroupQueryReplyJob
 from src.platform.context import AppContext
 from src.platform.runtime.commands.model import Command, RequestedBy
-from src.contexts.telegram_interaction.internal.job_runner import GroupQueryReplyJob
-from src.contexts.reminders.internal import next_workday
-from src.contexts.snapshot.internal.engine.model import Milestone, PrepIndexes, PrepSnapshot, TaskSheet, TaskView
 
 
 class _FakeSnapshotEngine:
@@ -45,12 +52,15 @@ class _FakeInteractionApi:
         return GroupQueryUseCase(snapshot_read)
 
     def group_query_formatter(self):
-        from src.contexts.telegram_interaction.internal.group_query_formatter import GroupQueryFormatter
+        from src.contexts.telegram_interaction.internal.group_query_formatter import (
+            GroupQueryFormatter,
+        )
 
         return GroupQueryFormatter()
 
-    def sender(self):
-        return self._sender
+    @asynccontextmanager
+    async def sender_session(self):
+        yield self._sender
 
     def request(self, **kwargs):  # noqa: ANN003
         from src.contexts.telegram_interaction.internal.group_query_request import GroupQueryRequest

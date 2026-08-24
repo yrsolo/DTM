@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import os
+import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import unittest
 from unittest.mock import patch
 
 from src.config.loader import _merge_runtime_env_overrides, _runtime_from_dict, load_config
@@ -27,6 +27,25 @@ class RuntimeLoaderTestCase(unittest.TestCase):
     def test_runtime_loader_reads_metrics_delivery_mode(self) -> None:
         runtime = _runtime_from_dict({"runtime": {"metrics_delivery_mode": "off"}})
         self.assertEqual(runtime.runtime.metrics_delivery_mode, "off")
+
+    def test_runtime_loader_reads_telegram_proxy_policy(self) -> None:
+        runtime = _runtime_from_dict(
+            {
+                "telegram": {
+                    "delivery_transport": "adaptive_proxy",
+                    "proxy_group": "TELEGA",
+                    "proxy_health_timeout_seconds": 7.5,
+                    "proxy_cache_ttl_seconds": 120,
+                    "direct_fallback": False,
+                    "mihomo_binary_path": "bin/custom-mihomo",
+                }
+            }
+        )
+        self.assertEqual(runtime.telegram.proxy_group, "TELEGA")
+        self.assertEqual(runtime.telegram.proxy_health_timeout_seconds, 7.5)
+        self.assertEqual(runtime.telegram.proxy_cache_ttl_seconds, 120)
+        self.assertFalse(runtime.telegram.direct_fallback)
+        self.assertEqual(runtime.telegram.mihomo_binary_path, "bin/custom-mihomo")
 
     def test_runtime_loader_env_overrides_metrics_delivery_mode(self) -> None:
         with patch.dict(os.environ, {"METRICS_DELIVERY_MODE": "buffered"}, clear=False):

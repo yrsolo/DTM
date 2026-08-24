@@ -7,11 +7,10 @@ import traceback
 from dataclasses import dataclass
 from typing import Any
 
-from src.platform.context import AppContext
 from src.entrypoints.http.dto import HttpResponse
 from src.entrypoints.http.response_utils import error_response
+from src.platform.context import AppContext
 from src.platform.errors import AppError, PermanentError, TransientError, UserError
-from src.platform.integrations.telegram.notifier import TelegramNotifier
 
 
 @dataclass(frozen=True)
@@ -31,10 +30,6 @@ class RuntimeExecutor:
 
     async def execute(self, request: RuntimeExecutionRequest, *, main_func: Any, request_factory: Any, is_http_event: bool) -> HttpResponse:
         deps = self._ctx.deps
-        notifier = TelegramNotifier(
-            bot_token=str(deps.get("tg_bot_token", "")),
-            default_chat_id=deps.get("default_chat_id"),
-        )
         try:
             runtime_request = request_factory(
                 event=request.planner_event,
@@ -73,9 +68,13 @@ class RuntimeExecutor:
                 )
             print(txt)
             try:
-                await notifier.alog(txt)
+                sender_factory = deps.get("telegram_sender_factory")
+                if sender_factory is None:
+                    raise RuntimeError("telegram_sender_factory_missing")
+                async with sender_factory.session() as notifier:
+                    await notifier.alog(txt)
             except Exception as notifier_error:
-                print(f"Error notifier failed: {notifier_error}")
+                print(f"Error notifier failed: {type(notifier_error).__name__}")
 
             return HttpResponse(status=200, body="!!!EGGORR!!!")
 

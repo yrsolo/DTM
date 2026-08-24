@@ -6,14 +6,14 @@ from dataclasses import dataclass
 from typing import Any
 
 from src.contexts.reminders.public import get_delivery_api as get_reminder_delivery_api
+from src.contexts.snapshot.adapters.sources.sheets_normalized_source import (
+    build_sheets_normalized_task_source,
+)
 from src.entrypoints.jobs.quality_report_job import print_quality_report as _print_quality_report
 from src.entrypoints.jobs.runtime_context_job import RuntimeContextRequest, resolve_runtime_context
 from src.entrypoints.jobs.timer_job import TimerJob
 from src.entrypoints.runtime.runtime_contract import STANDARD_RUN_MODES, is_legacy_mode
 from src.platform.runtime.render_runtime import run_render_runtime
-from src.contexts.snapshot.adapters.sources.sheets_normalized_source import (
-    build_sheets_normalized_task_source,
-)
 from src.platform.runtime.timer_pipeline import RunRequest as TimerRunRequest
 from src.platform.runtime.timer_pipeline import TimerPipeline
 
@@ -50,37 +50,37 @@ async def _run_reminder_mode(
     snapshot_read = delivery_api.snapshot_read_api()
     usecase = delivery_api.usecase(snapshot_read)
     formatter = delivery_api.formatter()
-    sender = delivery_api.sender()
     notify_cfg = cfg.runtime.notify
     llm_mode = str(notify_cfg.llm_mode_default or "provider")
     mock_llm = bool(mock_external or llm_mode == "draft_only" or runtime_env == "test")
     enhancer = delivery_api.enhancer(mock_external=mock_llm)
-    reminder_result = await delivery_api.job_runner(
-        usecase=usecase,
-        formatter=formatter,
-        sender=sender,
-        helper_character=str(cfg.llm.assistant.get("helper_character", "")),
-        enhancer=enhancer,
-        people_lookup=snapshot_read,
-        default_chat_id=str(deps.get("default_chat_id", "")).strip(),
-        enhance_concurrency=int(notify_cfg.enhance_concurrency),
-        send_retry_attempts=int(notify_cfg.send_retry_attempts),
-        send_retry_backoff_seconds=float(notify_cfg.send_retry_backoff_seconds),
-        send_retry_backoff_multiplier=float(notify_cfg.send_retry_backoff_multiplier),
-        llm_mode=llm_mode,
-        llm_model=delivery_api.llm_model_for_mode(normalized_mode),
-        runtime_env=runtime_env,
-        mock_llm=mock_llm,
-    ).run(
-        delivery_api.request(
-            mode=normalized_mode,
-            statuses=["work", "pre_done"],
-            include_today=True,
-            include_next_workday=True,
-            force_test_chat=(runtime_env == "test" or normalized_mode == "test"),
-            test_chat_id_override=str(notify_cfg.test_chat_id_override or ""),
+    async with delivery_api.sender_session() as sender:
+        reminder_result = await delivery_api.job_runner(
+            usecase=usecase,
+            formatter=formatter,
+            sender=sender,
+            helper_character=str(cfg.llm.assistant.get("helper_character", "")),
+            enhancer=enhancer,
+            people_lookup=snapshot_read,
+            default_chat_id=str(deps.get("default_chat_id", "")).strip(),
+            enhance_concurrency=int(notify_cfg.enhance_concurrency),
+            send_retry_attempts=int(notify_cfg.send_retry_attempts),
+            send_retry_backoff_seconds=float(notify_cfg.send_retry_backoff_seconds),
+            send_retry_backoff_multiplier=float(notify_cfg.send_retry_backoff_multiplier),
+            llm_mode=llm_mode,
+            llm_model=delivery_api.llm_model_for_mode(normalized_mode),
+            runtime_env=runtime_env,
+            mock_llm=mock_llm,
+        ).run(
+            delivery_api.request(
+                mode=normalized_mode,
+                statuses=["work", "pre_done"],
+                include_today=True,
+                include_next_workday=True,
+                force_test_chat=(runtime_env == "test" or normalized_mode == "test"),
+                test_chat_id_override=str(notify_cfg.test_chat_id_override or ""),
+            )
         )
-    )
     if normalized_mode in {"reminder_v2", "reminders-only", "morning"}:
         return {
             "artifact": reminder_result.artifact,

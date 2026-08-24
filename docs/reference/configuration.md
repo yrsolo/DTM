@@ -61,6 +61,7 @@ Typed config загружается через:
 - Google credentials
 - Object Storage credentials
 - Telegram token
+- полный URL Clash-подписки для Telegram transport (`TELEGRAM_PROXY_SUBSCRIPTION_URL`)
 - LLM provider tokens
 - Yandex Cloud service secrets
 - `YANDEX_PROMETHEUS_API_KEY`
@@ -68,6 +69,22 @@ Typed config загружается через:
 - `BROWSER_AUTH_PROXY_SECRET`
 
 Они подаются через env/secret storage и читаются только в loader/bootstrap.
+
+## Telegram delivery transport
+
+`runtime.telegram` задаёт policy исходящей доставки:
+
+- `delivery_transport=adaptive_proxy` включает scoped Mihomo transport;
+- `proxy_group` выбирает группу из Clash-подписки;
+- `proxy_health_url` используется для параллельной проверки узлов;
+- startup/health timeout и cache TTL ограничивают сетевые ожидания;
+- `direct_fallback=true` разрешает прямую отправку только после отказа proxy path;
+- `mihomo_binary_path` указывает на pinned executable внутри deployment package.
+
+Секрет `TELEGRAM_PROXY_SUBSCRIPTION_URL` поступает из Lockbox. `PROXY_URL` остаётся
+отдельным статическим proxy input для LLM и не используется Telegram transport.
+Runtime генерирует минимальный loopback-only Mihomo config и удаляет его после batch;
+адреса, UUID, node names и subscription URL не попадают в логи или метрики.
 
 ## Browser auth secret wiring
 

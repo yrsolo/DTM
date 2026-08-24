@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from src.platform.context import AppContext
 from src.contexts.telegram_interaction.public import get_interaction_api
+from src.platform.context import AppContext
 
 
 class GroupQueryReplyJob:
@@ -32,8 +32,8 @@ class GroupQueryReplyJob:
                 today=today,
                 next_workday=next_workday,
             )
-        sender = interaction_api.sender()
-        await sender.send_message(cmd.payload.get("chat_id"), reply, parse_mode=None)
+        async with interaction_api.sender_session() as sender:
+            await sender.send_message(cmd.payload.get("chat_id"), reply, parse_mode=None)
         return {
             "artifact": "group_query_reply",
             "status": "ok",

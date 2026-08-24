@@ -5,8 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from src.contexts.snapshot.module import get_read_api
+
 from .application.interaction_api import TelegramInteractionApi
-from .internal import TelegramCommandRouter, TelegramSender, TelegramUpdateParser, TelegramWebhookHandler
+from .internal import TelegramCommandRouter, TelegramUpdateParser, TelegramWebhookHandler
 from .internal.group_query_formatter import GroupQueryFormatter
 from .internal.group_query_usecase import GroupQueryUseCase
 
@@ -39,11 +40,8 @@ class TelegramInteractionModule:
     def group_query_formatter(self):
         return GroupQueryFormatter()
 
-    def sender(self, ctx):
-        return TelegramSender(
-            bot_token=str(ctx.deps.get("tg_bot_token", "")),
-            default_chat_id=ctx.deps.get("default_chat_id"),
-        )
+    def sender_session(self, ctx):
+        return ctx.deps["telegram_sender_factory"].session()
 
     def request(self, **kwargs):
         from .internal.group_query_request import GroupQueryRequest

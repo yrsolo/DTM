@@ -7,9 +7,9 @@ gspread
 oauth2client
 aiohttp
 pytz
-python-telegram-bot
+python-telegram-bot==22.7
 python-dotenv
-httpx
+httpx==0.28.1
 openai
 boto3
 ydb

@@ -26,8 +26,8 @@ class TelegramInteractionApi:
     def group_query_formatter(self):
         return self._module.group_query_formatter()
 
-    def sender(self):
-        return self._module.sender(self._ctx)
+    def sender_session(self):
+        return self._module.sender_session(self._ctx)
 
     def request(self, **kwargs):
         return self._module.request(**kwargs)

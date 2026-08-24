@@ -83,6 +83,16 @@
 - `dtm.telegram.rejected_total`
 - `dtm.telegram.enqueue_ms`
 - `dtm.telegram.command_total`
+- `dtm.telegram.proxy_health_ms`
+- `dtm.telegram.proxy_nodes_checked`
+- `dtm.telegram.proxy_nodes_healthy`
+- `dtm.telegram.proxy_refresh_total`
+- `dtm.telegram.proxy_cache_total`
+- `dtm.telegram.transport_selected_total`
+- `dtm.telegram.delivery_failover_total`
+
+Proxy metrics используют только bounded labels (`proxy`, `direct`, `success`, `failed`, cache
+outcomes). Node names, endpoints, UUID и subscription URL запрещены как labels и log fields.
 
 ### Worker / Queue
 

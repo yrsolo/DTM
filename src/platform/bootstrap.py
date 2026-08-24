@@ -4,17 +4,17 @@ from __future__ import annotations
 
 import base64
 import os
-from pathlib import Path
 import tempfile
+from pathlib import Path
 
 from dotenv import load_dotenv
 
 from src.config.loader import load_config
-from src.platform.observability import NoopMetricsClient, StdoutJsonLogger
 from src.platform.context import AppContext
 from src.platform.infra.monitoring_bootstrap import build_metrics_dependencies
+from src.platform.integrations.telegram.factory import TelegramSenderFactory
+from src.platform.observability import NoopMetricsClient, StdoutJsonLogger
 from src.platform.runtime.queue_bootstrap import build_queue_runtime
-
 
 _APP_CONTEXT = None
 
@@ -99,6 +99,9 @@ def _build_base_bootstrap_deps(cfg, structured_logger) -> dict[str, object]:
         "openai_token": os.getenv("OPENAI_TOKEN", "").strip(),
         "org_token": os.getenv("ORG_TOKEN", "").strip(),
         "proxy_url": os.getenv("PROXY_URL", "").strip(),
+        "telegram_proxy_subscription_url": os.getenv(
+            "TELEGRAM_PROXY_SUBSCRIPTION_URL", ""
+        ).strip(),
         "google_llm_api_key": os.getenv("GOOGLE_LLM_API_KEY", "").strip(),
         "yandex_llm_api_key": os.getenv("YANDEX_LLM_API_KEY", "").strip(),
         "tg_webhook_secret_token": os.getenv("TG_WEBHOOK_SECRET_TOKEN", "").strip(),
@@ -124,6 +127,7 @@ def build_app_context() -> AppContext:
     ctx = AppContext(cfg=cfg, deps=deps)
     deps.update(build_metrics_dependencies(ctx, deps, structured_logger=structured_logger))
     deps.update(build_queue_runtime(ctx, deps))
+    deps["telegram_sender_factory"] = TelegramSenderFactory.from_context(ctx)
     return ctx
 
 

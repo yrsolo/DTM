@@ -5,12 +5,18 @@ import hashlib
 from datetime import date
 from typing import Any
 
+from src.platform.errors import PermanentError, TransientError
+
 from .formatter import ReminderFormatter
 from .model import ReminderRequest, ReminderResult
 from .usecase import ReminderUseCase, normalize_person_name
 
 
 def classify_delivery_error(error: Exception) -> dict[str, Any]:
+    if isinstance(error, TransientError):
+        return {"is_transient": True, "kind": str(error.code or "telegram_transient")}
+    if isinstance(error, PermanentError):
+        return {"is_transient": False, "kind": str(error.code or "telegram_permanent")}
     status_code = getattr(error, "status_code", None)
     if status_code in {408, 425, 429, 500, 502, 503, 504}:
         return {"is_transient": True, "kind": f"http_{status_code}"}

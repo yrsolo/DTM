@@ -89,6 +89,7 @@ ENV_SECRETS_ONLY = frozenset(
         "GOOGLE_LLM_API_KEY",
         "YANDEX_LLM_API_KEY",
         "PUBLIC_BASE_URL",
+        "TELEGRAM_PROXY_SUBSCRIPTION_URL",
     }
 )
 
@@ -394,6 +395,36 @@ def _runtime_from_dict(data: dict[str, Any]) -> RuntimeConfig:
         defaults.telegram.allowed_updates = [str(item).strip() for item in allowed_updates if str(item).strip()]
     defaults.telegram.max_connections = int(telegram_raw.get("max_connections", defaults.telegram.max_connections))
     defaults.telegram.secret_required = bool(telegram_raw.get("secret_required", defaults.telegram.secret_required))
+    defaults.telegram.delivery_transport = str(
+        telegram_raw.get("delivery_transport", defaults.telegram.delivery_transport)
+    ).strip().lower()
+    defaults.telegram.proxy_group = str(
+        telegram_raw.get("proxy_group", defaults.telegram.proxy_group)
+    ).strip()
+    defaults.telegram.proxy_health_url = str(
+        telegram_raw.get("proxy_health_url", defaults.telegram.proxy_health_url)
+    ).strip()
+    defaults.telegram.proxy_startup_timeout_seconds = float(
+        telegram_raw.get(
+            "proxy_startup_timeout_seconds",
+            defaults.telegram.proxy_startup_timeout_seconds,
+        )
+    )
+    defaults.telegram.proxy_health_timeout_seconds = float(
+        telegram_raw.get(
+            "proxy_health_timeout_seconds",
+            defaults.telegram.proxy_health_timeout_seconds,
+        )
+    )
+    defaults.telegram.proxy_cache_ttl_seconds = int(
+        telegram_raw.get("proxy_cache_ttl_seconds", defaults.telegram.proxy_cache_ttl_seconds)
+    )
+    defaults.telegram.direct_fallback = bool(
+        telegram_raw.get("direct_fallback", defaults.telegram.direct_fallback)
+    )
+    defaults.telegram.mihomo_binary_path = str(
+        telegram_raw.get("mihomo_binary_path", defaults.telegram.mihomo_binary_path)
+    ).strip()
     defaults.notify.enhance_concurrency = int(
         notify_raw.get("enhance_concurrency", defaults.notify.enhance_concurrency)
     )

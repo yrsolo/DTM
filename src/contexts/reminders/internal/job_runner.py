@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from src.platform.context import AppContext
 from src.contexts.reminders.public import get_delivery_api
+from src.platform.context import AppContext
 from src.platform.observability import timed
 
 
@@ -16,7 +16,6 @@ class SendRemindersJob:
         snapshot_read = delivery_api.snapshot_read_api()
         usecase = delivery_api.usecase(snapshot_read)
         formatter = delivery_api.formatter()
-        sender = delivery_api.sender()
         notify_cfg = self._ctx.cfg.runtime.notify
         mode = str(cmd.payload.get("mode", "morning")).strip().lower() or "morning"
         today = delivery_api.today_in_runtime_timezone()
@@ -49,37 +48,61 @@ class SendRemindersJob:
                 "result": "finished",
             },
         ):
-            result = await delivery_api.job_runner(
-                usecase=usecase,
-                formatter=formatter,
-                sender=sender,
-                helper_character=str(self._ctx.cfg.llm.assistant.get("helper_character", "")),
-                enhancer=delivery_api.enhancer(mock_external=mock_llm),
-                people_lookup=snapshot_read,
-                default_chat_id=str(self._ctx.deps.get("default_chat_id", "")).strip(),
-                enhance_concurrency=int(notify_cfg.enhance_concurrency),
-                send_retry_attempts=int(notify_cfg.send_retry_attempts),
-                send_retry_backoff_seconds=float(notify_cfg.send_retry_backoff_seconds),
-                send_retry_backoff_multiplier=float(notify_cfg.send_retry_backoff_multiplier),
-                llm_mode=llm_mode,
-                llm_model=delivery_api.llm_model_for_mode(mode),
-                runtime_env=str(self._ctx.cfg.runtime.runtime.env_default),
-                mock_llm=mock_llm,
-            ).run(
-                delivery_api.request(
-                    mode=mode,
-                    statuses=list(cmd.payload.get("statuses", ["work", "pre_done"])),
-                    include_today=bool(cmd.payload.get("include_today", True)),
-                    include_next_workday=bool(cmd.payload.get("include_next_workday", True)),
-                    today_override=today if mode == "morning" else None,
-                    force_test_chat=bool(cmd.payload.get("force_test_chat", False))
-                    or mode == "test"
-                    or str(self._ctx.cfg.runtime.runtime.env_default).strip().lower() == "test",
-                    test_chat_id_override=str(
-                        cmd.payload.get("test_chat_id_override", notify_cfg.test_chat_id_override or "")
-                    ),
+            async with delivery_api.sender_session() as sender:
+                result = await delivery_api.job_runner(
+                    usecase=usecase,
+                    formatter=formatter,
+                    sender=sender,
+                    helper_character=str(self._ctx.cfg.llm.assistant.get("helper_character", "")),
+                    enhancer=delivery_api.enhancer(mock_external=mock_llm),
+                    people_lookup=snapshot_read,
+                    default_chat_id=str(self._ctx.deps.get("default_chat_id", "")).strip(),
+                    enhance_concurrency=int(notify_cfg.enhance_concurrency),
+                    send_retry_attempts=int(notify_cfg.send_retry_attempts),
+                    send_retry_backoff_seconds=float(notify_cfg.send_retry_backoff_seconds),
+                    send_retry_backoff_multiplier=float(notify_cfg.send_retry_backoff_multiplier),
+                    llm_mode=llm_mode,
+                    llm_model=delivery_api.llm_model_for_mode(mode),
+                    runtime_env=str(self._ctx.cfg.runtime.runtime.env_default),
+                    mock_llm=mock_llm,
+                ).run(
+                    delivery_api.request(
+                        mode=mode,
+                        statuses=list(cmd.payload.get("statuses", ["work", "pre_done"])),
+                        include_today=bool(cmd.payload.get("include_today", True)),
+                        include_next_workday=bool(cmd.payload.get("include_next_workday", True)),
+                        today_override=today if mode == "morning" else None,
+                        force_test_chat=bool(cmd.payload.get("force_test_chat", False))
+                        or mode == "test"
+                        or str(self._ctx.cfg.runtime.runtime.env_default).strip().lower() == "test",
+                        test_chat_id_override=str(
+                            cmd.payload.get(
+                                "test_chat_id_override",
+                                notify_cfg.test_chat_id_override or "",
+                            )
+                        ),
+                    )
                 )
-            )
+        counters = dict(result.delivery_counters)
+        sent = int(counters.get("sent", 0))
+        send_errors = int(counters.get("send_errors", 0))
+        transient_errors = int(counters.get("send_error_transient", 0))
+        warnings = list(result.warnings)
+        status = str(result.status)
+        retryable = False
+        failure_kind = ""
+        error_code = ""
+        error = None
+        if send_errors > 0 and sent > 0:
+            status = "partial"
+            warnings.append("telegram_delivery_partial")
+        elif send_errors > 0:
+            status = "failed"
+            retryable = transient_errors > 0
+            failure_kind = "retryable" if retryable else "terminal"
+            error_code = "telegram_delivery_failed"
+            error = {"code": error_code}
+            warnings.append("telegram_delivery_failed")
         if metrics is not None:
             metrics.counter(
                 "dtm.notify.total",
@@ -87,7 +110,7 @@ class SendRemindersJob:
                     "env": str(self._ctx.cfg.runtime.runtime.env_default),
                     "module": "notify",
                     "operation": mode,
-                    "result": "success",
+                    "result": status,
                 },
             )
             metrics.gauge(
@@ -97,7 +120,7 @@ class SendRemindersJob:
                     "env": str(self._ctx.cfg.runtime.runtime.env_default),
                     "module": "notify",
                     "operation": mode,
-                    "result": "success",
+                    "result": status,
                 },
             )
         if logger is not None:
@@ -106,19 +129,30 @@ class SendRemindersJob:
                 mode=mode,
                 groups=len(result.groups),
                 sent=int(result.delivery_counters.get("sent", 0)),
-                warnings=len(result.warnings),
+                warnings=len(warnings),
+                status=status,
             )
-        return {
+        payload = {
             "artifact": result.artifact,
-            "status": result.status,
+            "status": status,
             "mode": result.mode,
             "today": result.today,
             "next_workday": result.next_workday,
             "groups": len(result.groups),
             "delivery_counters": dict(result.delivery_counters),
             "enhancement_counters": dict(result.enhancement_counters),
-            "warnings": list(result.warnings),
+            "warnings": warnings,
         }
+        if status == "failed":
+            payload.update(
+                {
+                    "retryable": retryable,
+                    "failure_kind": failure_kind,
+                    "error_code": error_code,
+                    "error": error,
+                }
+            )
+        return payload
 
 
 __all__ = ["SendRemindersJob"]

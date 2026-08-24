@@ -59,6 +59,19 @@ jobs:
           python scripts/check_entrypoint_import_boundaries.py
           python scripts/check_active_import_boundaries.py
 
+      - name: Prepare pinned Mihomo transport
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p bin
+          curl --fail --silent --show-error --location \
+            "https://github.com/MetaCubeX/mihomo/releases/download/v1.19.29/mihomo-linux-amd64-compatible-v1.19.29.gz" \
+            --output bin/mihomo.gz
+          echo "5612e698e96c8b8ad15abc4c0a4f098eba9234354b4f248cb97f2528e215b094  bin/mihomo.gz" | sha256sum --check --strict
+          gzip --decompress --stdout bin/mihomo.gz > bin/mihomo
+          chmod 0755 bin/mihomo
+          rm bin/mihomo.gz
+
       - name: Preflight required variables
         shell: bash
         env:
@@ -127,6 +140,7 @@ jobs:
             OPENAI_TOKEN=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/OPENAI_TOKEN
             ORG_TOKEN=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/ORG_TOKEN
             PROXY_URL=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/PROXY_URL
+            TELEGRAM_PROXY_SUBSCRIPTION_URL=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/TELEGRAM_PROXY_SUBSCRIPTION_URL
             BROWSER_AUTH_PROXY_SECRET=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/BROWSER_AUTH_PROXY_SECRET
             GOOGLE_KEY_JSON=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/GOOGLE_KEY_JSON
             DEFAULT_CHAT_ID=${{ vars.YC_LOCKBOX_SECRET_ID || secrets.YC_LOCKBOX_SECRET_ID }}/latest/DEFAULT_CHAT_ID
@@ -142,6 +156,7 @@ jobs:
             src/**/*.js
             config/**/*.yaml
             requirements.txt
+            bin/mihomo
             run_timer.cmd
             AGENTS.md
             README.md
