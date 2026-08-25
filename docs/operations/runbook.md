@@ -47,10 +47,11 @@ Backend часть browser auth описана отдельно:
 Operator checks при сбое доставки:
 
 1. Убедиться, что Lockbox содержит `TELEGRAM_PROXY_SUBSCRIPTION_URL` и функция видит latest version.
-2. Проверить наличие executable `bin/mihomo` в deployed source package.
-3. Сравнить `dtm.telegram.transport_selected_total` для `proxy` и `direct`.
-4. Проверить `proxy_nodes_healthy`, `proxy_refresh_total` и `delivery_failover_total`.
-5. Не выводить subscription URL, node names, UUID или proxy endpoints в диагностику.
+2. Учитывать, что transient subscription HTTP/network failure повторяется по policy `proxy_subscription_retry_attempts` с bounded backoff; только после этого используется cache/direct fallback.
+3. Проверить наличие executable `bin/mihomo` в deployed source package.
+4. Сравнить `dtm.telegram.transport_selected_total` для `proxy` и `direct`.
+5. Проверить `proxy_nodes_healthy`, `proxy_refresh_total` и `delivery_failover_total`.
+6. Не выводить subscription URL, node names, UUID или proxy endpoints в диагностику.
 
 После ротации subscription token опубликовать новую Lockbox version и новую function version.
 

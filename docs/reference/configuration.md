@@ -78,6 +78,7 @@ Typed config загружается через:
 - `proxy_group` выбирает группу из Clash-подписки;
 - `proxy_health_url` используется для параллельной проверки узлов;
 - startup, subscription-download, health timeout и cache TTL ограничивают сетевые ожидания;
+- `proxy_subscription_retry_attempts` и `proxy_subscription_retry_backoff_seconds` задают bounded retry для transient HTTP/network ошибок до cache/direct fallback;
 - `direct_fallback=true` разрешает прямую отправку только после отказа proxy path;
 - `mihomo_binary_path` указывает на pinned executable внутри deployment package.
 

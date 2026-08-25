@@ -123,8 +123,10 @@ class TelegramSection:
     delivery_transport: str = "adaptive_proxy"
     proxy_group: str = "📢 TELEGA"
     proxy_health_url: str = "https://api.telegram.org"
-    proxy_startup_timeout_seconds: float = 5.0
+    proxy_startup_timeout_seconds: float = 10.0
     proxy_subscription_timeout_seconds: float = 20.0
+    proxy_subscription_retry_attempts: int = 3
+    proxy_subscription_retry_backoff_seconds: float = 2.0
     proxy_health_timeout_seconds: float = 5.0
     proxy_cache_ttl_seconds: int = 300
     direct_fallback: bool = True

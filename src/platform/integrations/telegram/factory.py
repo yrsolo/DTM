@@ -30,6 +30,10 @@ class TelegramSenderFactory:
             health_url=str(telegram.proxy_health_url),
             startup_timeout_seconds=float(telegram.proxy_startup_timeout_seconds),
             subscription_timeout_seconds=float(telegram.proxy_subscription_timeout_seconds),
+            subscription_retry_attempts=int(telegram.proxy_subscription_retry_attempts),
+            subscription_retry_backoff_seconds=float(
+                telegram.proxy_subscription_retry_backoff_seconds
+            ),
             health_timeout_seconds=float(telegram.proxy_health_timeout_seconds),
             cache_ttl_seconds=int(telegram.proxy_cache_ttl_seconds),
             direct_fallback=bool(telegram.direct_fallback),

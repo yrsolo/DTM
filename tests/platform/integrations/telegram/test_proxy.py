@@ -112,9 +112,28 @@ class MihomoProxySessionTestCase(unittest.TestCase):
             with patch.object(session, "_cache_path", return_value=cache_path), patch(
                 "src.platform.integrations.telegram.proxy.urlopen",
                 side_effect=OSError("offline"),
-            ) as mocked_urlopen:
+            ) as mocked_urlopen, patch("src.platform.integrations.telegram.proxy.sleep"):
                 raw = session._load_subscription()
-                mocked_urlopen.assert_called_once()
+                self.assertEqual(mocked_urlopen.call_count, 3)
+        self.assertEqual(session._validate_source(raw)["proxy-groups"][0]["name"], "📢 TELEGA")
+
+    def test_retries_transient_subscription_failure_before_succeeding(self) -> None:
+        session = self._session()
+        with TemporaryDirectory() as tmp_dir:
+            cache_path = Path(tmp_dir) / "subscription.yaml"
+            response = MagicMock()
+            response.__enter__.return_value.read.return_value = _subscription()
+            with patch.object(session, "_cache_path", return_value=cache_path), patch(
+                "src.platform.integrations.telegram.proxy.urlopen",
+                side_effect=[OSError("temporary"), OSError("temporary"), response],
+            ) as mocked_urlopen, patch(
+                "src.platform.integrations.telegram.proxy.sleep"
+            ) as mocked_sleep:
+                raw = session._load_subscription()
+
+        self.assertEqual(mocked_urlopen.call_count, 3)
+        self.assertEqual(mocked_sleep.call_args_list[0].args, (2.0,))
+        self.assertEqual(mocked_sleep.call_args_list[1].args, (4.0,))
         self.assertEqual(session._validate_source(raw)["proxy-groups"][0]["name"], "📢 TELEGA")
 
     def test_refresh_excludes_failed_selected_node_and_pins_next_best(self) -> None:

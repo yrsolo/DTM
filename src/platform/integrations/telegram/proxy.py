@@ -13,7 +13,7 @@ import subprocess
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from time import monotonic, time
+from time import monotonic, sleep, time
 from typing import Any
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
@@ -30,8 +30,10 @@ class TelegramProxySettings:
     subscription_url: str = ""
     group_name: str = "📢 TELEGA"
     health_url: str = "https://api.telegram.org"
-    startup_timeout_seconds: float = 5.0
+    startup_timeout_seconds: float = 10.0
     subscription_timeout_seconds: float = 20.0
+    subscription_retry_attempts: int = 3
+    subscription_retry_backoff_seconds: float = 2.0
     health_timeout_seconds: float = 5.0
     cache_ttl_seconds: int = 300
     direct_fallback: bool = True
@@ -196,13 +198,7 @@ class MihomoProxySession:
             self._counter("dtm.telegram.proxy_cache_total", result="fresh_hit")
             return cache_path.read_bytes()
         try:
-            request = Request(
-                self.settings.subscription_url,
-                headers={"User-Agent": "DTM-Telegram-Transport/1.0"},
-            )
-            with urlopen(request, timeout=self.settings.subscription_timeout_seconds) as response:
-                raw = response.read()
-            self._validate_source(raw)
+            raw = self._download_subscription_with_retries()
             temp_path = cache_path.with_suffix(".tmp")
             temp_path.write_bytes(raw)
             os.chmod(temp_path, 0o600)
@@ -217,6 +213,33 @@ class MihomoProxySession:
                 return raw
             self._counter("dtm.telegram.proxy_cache_total", result="miss")
             raise
+
+    def _download_subscription_with_retries(self) -> bytes:
+        attempts = max(1, int(self.settings.subscription_retry_attempts))
+        for attempt in range(1, attempts + 1):
+            try:
+                request = Request(
+                    self.settings.subscription_url,
+                    headers={"User-Agent": "DTM-Telegram-Transport/1.0"},
+                )
+                with urlopen(request, timeout=self.settings.subscription_timeout_seconds) as response:
+                    raw = response.read()
+                self._validate_source(raw)
+                return raw
+            except OSError as error:
+                if attempt >= attempts:
+                    raise
+                fields: dict[str, Any] = {
+                    "attempt": attempt,
+                    "max_attempts": attempts,
+                    "error_type": type(error).__name__,
+                }
+                status_code = getattr(error, "code", None)
+                if isinstance(status_code, int):
+                    fields["http_status"] = status_code
+                self._warning("telegram_proxy_subscription_attempt_failed", **fields)
+                sleep(max(0.0, self.settings.subscription_retry_backoff_seconds) * attempt)
+        raise RuntimeError("telegram_proxy_subscription_retry_exhausted")
 
     def _validate_source(self, raw: bytes) -> dict[str, Any]:
         data = yaml.safe_load(raw.decode("utf-8-sig")) or {}
